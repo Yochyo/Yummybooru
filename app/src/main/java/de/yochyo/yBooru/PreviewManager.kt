@@ -9,10 +9,12 @@ import android.widget.ImageView
 import de.yochyo.danbooruAPI.Api
 import de.yochyo.yBooru.api.Post
 import de.yochyo.yBooru.utils.runAsync
+import kotlinx.coroutines.delay
 
 class PreviewManager(val context: Context, val view: RecyclerView) {
     var page = 1
     var currentTags = ArrayList<String>(4)
+    var isLoadingPage = false
 
     private val dataSet = ArrayList<Post?>(200)
     private val adapter = Adapter()
@@ -24,30 +26,42 @@ class PreviewManager(val context: Context, val view: RecyclerView) {
         view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                if (layoutManager.findLastVisibleItemPosition() + 1 >= dataSet.size) {
-                    loadPictures(++page)
+                if (!isLoadingPage) {
+                    if (layoutManager.findLastVisibleItemPosition() + 1 >= dataSet.size) {
+                        loadPictures(++page)
+                        println(page)
+                    }
                 }
             }
         })
     }
 
     fun loadPictures(page: Int, vararg tags: String) {
-        runAsync(context,{Api.getPosts(page, tags)}){posts->
+        isLoadingPage = true
+        runAsync(context, { Api.getPosts(page, tags) }) { posts ->
             var i = dataSet.size
             for (t in 0 until posts.size)
                 dataSet.add(null)
-            adapter.notifyItemRangeInserted(i-1, posts.size)
+            adapter.notifyItemRangeInserted(i - 1, posts.size)
+            var finishedCount = 0
             for (post in posts) {
                 val index = i++
                 runAsync(context, { Api.downloadImage(post.filePreviewURL, "${post.id}Preview") }) {
                     dataSet[index] = post
                     adapter.notifyItemChanged(index)
+                    finishedCount++
                 }
+            }
+            runAsync {
+                while (finishedCount < posts.size) {//TODO was ist wenn es einen downloadfehler gibt
+                    delay(200)
+                }
+                isLoadingPage = false
             }
         }
     }
 
-    fun reloadView(){
+    fun reloadView() {
         dataSet.clear()
         adapter.notifyDataSetChanged()
         loadPictures(1, *currentTags.toTypedArray())

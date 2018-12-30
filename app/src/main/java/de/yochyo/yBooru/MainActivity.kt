@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         //TODO immer nächste seite laden und auf der festplatte speichern, wenn alle preview-downloads fertig sind
         cache = Cache(this)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activitgy_main)
+        setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
         val toggle = ActionBarDrawerToggle(

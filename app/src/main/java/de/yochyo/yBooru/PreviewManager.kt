@@ -12,6 +12,7 @@ import de.yochyo.yBooru.utils.runAsync
 
 class PreviewManager(val context: Context, val view: RecyclerView) {
     var page = 1
+    var currentTags = ArrayList<String>(4)
 
     private val dataSet = ArrayList<Post?>(200)
     private val adapter = Adapter()
@@ -44,7 +45,12 @@ class PreviewManager(val context: Context, val view: RecyclerView) {
                 }
             }
         }
+    }
 
+    fun reloadView(){
+        dataSet.clear()
+        adapter.notifyDataSetChanged()
+        loadPictures(1, *currentTags.toTypedArray())
     }
 
 

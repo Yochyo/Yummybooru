@@ -15,7 +15,7 @@ import java.net.URL
 
 
 object Api {
-    val limit = 10
+    val limit = 50
     private val downloading = ArrayList<String>(20)
 
 
@@ -30,7 +30,7 @@ object Api {
         }
     }
 
-    suspend fun getPosts(page: Int, tags: Array<out String>): ArrayList<Post> {
+    suspend fun getPosts(page: Int, tags: Array<out String>, safe: Boolean = true): List<Post> {//TODO rating ist safe
         var url = "https://danbooru.donmai.us/posts.json?limit=$limit&page=$page"
         if (tags.isNotEmpty()) {
             url += "&tags="
@@ -45,7 +45,8 @@ object Api {
             if (post != null)
                 array += post
         }
-        return array
+        if(safe) return array.filter { it.rating == "s" }
+        else return array
     }
 
     suspend private fun getJson(urlToRead: String): JSONArray {

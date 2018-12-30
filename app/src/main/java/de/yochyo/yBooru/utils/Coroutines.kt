@@ -3,6 +3,7 @@ package de.yochyo.yBooru.utils
 import android.content.Context
 import android.os.Handler
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 
 fun <R> runAsync(context: Context, async: suspend () -> R, onMainThread: (result: R) -> Unit) {
@@ -13,8 +14,8 @@ fun <R> runAsync(context: Context, async: suspend () -> R, onMainThread: (result
     }
 }
 
-fun <R> runAsync(async: suspend () -> R) {
-    GlobalScope.async {
+fun <R> runAsync(async: suspend () -> R): Job {
+    return GlobalScope.async {
         async()
     }
 }

@@ -10,7 +10,7 @@ import de.yochyo.danbooruAPI.Api
 import de.yochyo.yBooru.api.Post
 import de.yochyo.yBooru.utils.runAsync
 
-class PreviewManager(val context: Context,val view: RecyclerView) {
+class PreviewManager(val context: Context, val view: RecyclerView) {
     var page = 1
 
     private val dataSet = ArrayList<Post?>(200)
@@ -20,31 +20,32 @@ class PreviewManager(val context: Context,val view: RecyclerView) {
     init {
         view.layoutManager = layoutManager
         view.adapter = adapter
-        view.addOnScrollListener(object: RecyclerView.OnScrollListener(){
+        view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                if(layoutManager.findLastVisibleItemPosition()+1 >= dataSet.size){
+                if (layoutManager.findLastVisibleItemPosition() + 1 >= dataSet.size) {
                     loadPictures(++page)
                 }
-                println("${layoutManager.findLastVisibleItemPosition()} from ${dataSet.size}")
             }
         })
     }
 
-    fun loadPictures(page: Int, vararg tags: String){
-        val posts = Api.getPosts(page, tags)
-        var i = dataSet.size
-        for(post in posts){
-            dataSet.add(null)
-            val index = i++
-            runAsync(context, {Api.downloadImage(post.filePreviewURL, "${post.id}Preview")}){
-                dataSet[index] = post
-                adapter.notifyItemChanged(index)
+    fun loadPictures(page: Int, vararg tags: String) {
+        runAsync(context,{Api.getPosts(page, tags)}){posts->
+            var i = dataSet.size
+            for (t in 0 until posts.size)
+                dataSet.add(null)
+            adapter.notifyItemRangeInserted(i-1, posts.size)
+            for (post in posts) {
+                val index = i++
+                runAsync(context, { Api.downloadImage(post.filePreviewURL, "${post.id}Preview") }) {
+                    dataSet[index] = post
+                    adapter.notifyItemChanged(index)
+                }
             }
         }
-        adapter.notifyDataSetChanged()
-    }
 
+    }
 
 
     private inner class Adapter : RecyclerView.Adapter<MyViewHolder>() {

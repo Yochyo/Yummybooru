@@ -15,9 +15,22 @@ import java.net.URL
 
 
 object Api {
-    val limit = 50
+    val limit = 10
+    private val downloading = ArrayList<String>(20)
 
-    fun getPosts(page: Int, tags: Array<out String>): ArrayList<Post> {
+
+    suspend fun downloadImage(url: String, id: String): Bitmap {
+        if (downloading.contains(id))
+            return cache.awaitPicture(id)
+        else {
+            downloading += id
+            val bitmap = BitmapFactory.decodeStream(URL(url).openStream()).apply { cache.cacheBitmap(id, this) }
+            downloading -= id
+            return bitmap
+        }
+    }
+
+    suspend fun getPosts(page: Int, tags: Array<out String>): ArrayList<Post> {
         var url = "https://danbooru.donmai.us/posts.json?limit=$limit&page=$page"
         if (tags.isNotEmpty()) {
             url += "&tags="
@@ -35,9 +48,9 @@ object Api {
         return array
     }
 
-    private fun getJson(urlToRead: String): JSONArray {
+    suspend private fun getJson(urlToRead: String): JSONArray {
         var array: JSONArray? = null
-        runAsync {
+        val job = runAsync {
             val result = StringBuilder()
             val url = URL(urlToRead)
             val conn = url.openConnection() as HttpURLConnection
@@ -51,24 +64,9 @@ object Api {
             }
             rd.close()
             array = JSONArray(result.toString())
-
         }
-        while (array == null) {
-            Thread.sleep(5)//TODO so geht das nicht
-        }
+        job.join()
         return array!!
     }
 
-    private val downloading = ArrayList<String>(20)
-    suspend fun downloadImage(url: String, id: String): Bitmap {
-        if (downloading.contains(id)){
-            return cache.awaitPicture(id)
-        }
-        else {
-            downloading += id
-            val bitmap = BitmapFactory.decodeStream(URL(url).openStream()).apply { cache.cacheBitmap(id, this) }
-            downloading -= id
-            return bitmap
-        }
-    }
 }

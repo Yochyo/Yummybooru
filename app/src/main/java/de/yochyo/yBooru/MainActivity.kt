@@ -25,6 +25,7 @@ import kotlinx.coroutines.delay
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        //TODO gifs und videos
         cache = Cache(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)

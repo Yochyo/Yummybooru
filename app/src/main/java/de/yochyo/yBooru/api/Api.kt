@@ -27,7 +27,7 @@ object Api {
             return bitmap
         }
     }
-    val safe: Boolean = true
+    val safe: Boolean = false
     suspend fun getPosts(page: Int, vararg tags: String): List<Post> {//TODO rating ist safe
         var url = "https://danbooru.donmai.us/posts.json?limit=$limit&page=$page"
         if (tags.isNotEmpty()) {

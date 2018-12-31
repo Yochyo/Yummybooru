@@ -37,6 +37,12 @@ class Cache(private val context: Context) {
         }
         return bitmap
     }
+    fun clearMemory(){
+        memory.evictAll()
+    }
+    fun clearDisk(){
+        disk.clearCache()
+    }
 }
 
 

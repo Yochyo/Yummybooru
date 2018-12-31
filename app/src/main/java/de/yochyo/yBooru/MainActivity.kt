@@ -4,31 +4,19 @@ import android.graphics.Color
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
-import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
-import android.view.ViewGroup
-import android.widget.ImageView
-import de.yochyo.danbooruAPI.Api
 import de.yochyo.yBooru.layout.Frame
-import de.yochyo.yBooru.utils.main
-import de.yochyo.yBooru.utils.runAsync
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.coroutines.delay
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     lateinit var previewManager: PreviewManager
     override fun onCreate(savedInstanceState: Bundle?) {
-        //TODO gifs und videos
-        //TODO immer nächste seite laden und auf der festplatte speichern, wenn alle preview-downloads fertig sind
         cache = Cache(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -42,7 +30,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         frame_view.addView(Frame(this))
 
-        previewManager = PreviewManager(this, recycler_view).apply { loadPictures(1) }
+        previewManager = PreviewManager(this, recycler_view).apply { loadPage(1) }
         swipeRefreshLayout()
 
     }

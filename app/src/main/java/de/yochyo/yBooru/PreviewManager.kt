@@ -13,7 +13,9 @@ import kotlinx.coroutines.delay
 
 class PreviewManager(val context: Context, val view: RecyclerView) {
     var page = 1
-    var currentTags = ArrayList<String>(4)
+    private val pages = HashMap<Int, List<Post>>() //page, posts
+    val currentTags = ArrayList<String>(2)
+
     var isLoadingPage = false
 
     private val dataSet = ArrayList<Post?>(200)
@@ -28,7 +30,7 @@ class PreviewManager(val context: Context, val view: RecyclerView) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (!isLoadingPage) {
                     if (layoutManager.findLastVisibleItemPosition() + 1 >= dataSet.size) {
-                        loadPictures(++page)
+                        loadPage(++page)
                         println(page)
                     }
                 }
@@ -36,14 +38,17 @@ class PreviewManager(val context: Context, val view: RecyclerView) {
         })
     }
 
-    fun loadPictures(page: Int, vararg tags: String) {
+    fun loadPage(page: Int, vararg tags: String) {
         isLoadingPage = true
-        runAsync(context, { Api.getPosts(page, tags) }) { posts ->
+        currentTags += tags
+        runAsync(context, { runAsync{pages[page+1] = Api.getPosts(page +1, *currentTags.toTypedArray())};getOrDownloadPage(page, *tags) }, { posts ->
+            var finishedCount = 0
             var i = dataSet.size
+
             for (t in 0 until posts.size)
                 dataSet.add(null)
             adapter.notifyItemRangeInserted(i - 1, posts.size)
-            var finishedCount = 0
+            isLoadingPage = false
             for (post in posts) {
                 val index = i++
                 runAsync(context, { Api.downloadImage(post.filePreviewURL, "${post.id}Preview") }) {
@@ -52,19 +57,26 @@ class PreviewManager(val context: Context, val view: RecyclerView) {
                     finishedCount++
                 }
             }
-            runAsync {
-                while (finishedCount < posts.size) {//TODO was ist wenn es einen downloadfehler gibt
-                    delay(200)
-                }
-                isLoadingPage = false
-            }
-        }
+        })
+    }
+
+    private suspend fun getOrDownloadPage(page: Int, vararg tags: String): List<Post> {
+        val p = pages[page]
+        return if (p == null) Api.getPosts(page, *tags)
+        else p
     }
 
     fun reloadView() {
         dataSet.clear()
         adapter.notifyDataSetChanged()
-        loadPictures(1, *currentTags.toTypedArray())
+        loadPage(1, *currentTags.toTypedArray())
+    }
+    fun clearView() {
+        dataSet.clear()
+        pages.clear()
+        adapter.notifyDataSetChanged()
+        currentTags.clear()
+        loadPage(1)
     }
 
 

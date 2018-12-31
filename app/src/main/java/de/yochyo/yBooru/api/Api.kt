@@ -5,8 +5,6 @@ import android.graphics.BitmapFactory
 import de.yochyo.yBooru.api.Post
 import de.yochyo.yBooru.cache
 import de.yochyo.yBooru.utils.runAsync
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import org.json.JSONArray
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -15,7 +13,7 @@ import java.net.URL
 
 
 object Api {
-    val limit = 50
+    val limit = 100
     private val downloading = ArrayList<String>(20)
 
 
@@ -29,8 +27,8 @@ object Api {
             return bitmap
         }
     }
-
-    suspend fun getPosts(page: Int, tags: Array<out String>, safe: Boolean = true): List<Post> {//TODO rating ist safe
+    val safe: Boolean = true
+    suspend fun getPosts(page: Int, vararg tags: String): List<Post> {//TODO rating ist safe
         var url = "https://danbooru.donmai.us/posts.json?limit=$limit&page=$page"
         if (tags.isNotEmpty()) {
             url += "&tags="

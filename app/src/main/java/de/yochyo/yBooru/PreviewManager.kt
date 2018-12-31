@@ -10,7 +10,7 @@ import de.yochyo.danbooruAPI.Api
 import de.yochyo.yBooru.api.Post
 import de.yochyo.yBooru.utils.runAsync
 
-class PreviewManager(val context: Context, val view: RecyclerView) {
+class PreviewManager(private val context: Context, val view: RecyclerView) {
     var page = 1
     private val pages = HashMap<Int, List<Post>>() //page, posts
     val currentTags = ArrayList<String>(2)
@@ -73,16 +73,14 @@ class PreviewManager(val context: Context, val view: RecyclerView) {
 
     fun reloadView() {
         dataSet.clear()
+        pages.clear()
         adapter.notifyDataSetChanged()
         loadPage(1, *currentTags.toTypedArray())
     }
 
     fun clearView() {
-        dataSet.clear()
-        pages.clear()
-        adapter.notifyDataSetChanged()
         currentTags.clear()
-        loadPage(1)
+        reloadView()
     }
 
 

@@ -13,7 +13,8 @@ import java.net.URL
 
 
 object Api {
-    val limit = 100
+    val limit = 30
+    var safeSearch: Boolean = true
     private val downloading = ArrayList<String>(20)
 
 
@@ -27,8 +28,7 @@ object Api {
             return bitmap
         }
     }
-    val safe: Boolean = false
-    suspend fun getPosts(page: Int, vararg tags: String): List<Post> {//TODO rating ist safe
+    suspend fun getPosts(page: Int, vararg tags: String): List<Post> {//TODO rating ist safeSearch
         var url = "https://danbooru.donmai.us/posts.json?limit=$limit&page=$page"
         if (tags.isNotEmpty()) {
             url += "&tags="
@@ -43,7 +43,7 @@ object Api {
             if (post != null)
                 array += post
         }
-        if(safe) return array.filter { it.rating == "s" }
+        if(safeSearch) return array.filter { it.rating == "s" }
         else return array
     }
 

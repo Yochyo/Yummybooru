@@ -17,9 +17,10 @@ import kotlinx.android.synthetic.main.content_main.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     lateinit var previewManager: PreviewManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        cache = Cache(this)
         super.onCreate(savedInstanceState)
+        cache = Cache(this)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 

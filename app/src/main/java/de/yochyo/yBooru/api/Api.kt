@@ -4,7 +4,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import de.yochyo.yBooru.api.Post
 import de.yochyo.yBooru.cache
-import de.yochyo.yBooru.utils.runAsync
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import org.json.JSONArray
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -49,7 +50,7 @@ object Api {
 
     suspend private fun getJson(urlToRead: String): JSONArray {
         var array: JSONArray? = null
-        val job = runAsync {
+        val job = GlobalScope.async {
             val result = StringBuilder()
             val url = URL(urlToRead)
             val conn = url.openConnection() as HttpURLConnection

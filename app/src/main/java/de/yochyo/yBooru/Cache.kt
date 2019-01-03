@@ -4,10 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.LruCache
-import android.widget.ImageView
-import de.yochyo.danbooruAPI.Api
-import de.yochyo.yBooru.utils.main
-import de.yochyo.yBooru.utils.runAsync
 import kotlinx.coroutines.delay
 import java.io.ByteArrayOutputStream
 import java.io.File

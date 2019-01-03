@@ -8,22 +8,74 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import de.yochyo.danbooruAPI.Api
 import de.yochyo.yBooru.api.Post
-import de.yochyo.yBooru.utils.runAsync
+import de.yochyo.yBooru.utils.addChild
+import kotlinx.coroutines.*
 
-class PreviewManager(private val context: Context, val view: RecyclerView) {
-    var page = 1
+class PreviewManager(private val context: Context, val view: RecyclerView, val tags: Array<String> = arrayOf()) {
+    var root = SupervisorJob()
+
     private val pages = HashMap<Int, List<Post>>() //page, posts
-    val currentTags = ArrayList<String>(2)
+    private var page = 1
 
-    var isLoadingView = false
+    private var isLoadingView = false
 
+    private val layoutManager = GridLayoutManager(context, 3)
     private val dataSet = ArrayList<Post?>(200)
     private val adapter = Adapter()
-    private val layoutManager = GridLayoutManager(context, 3)
 
     init {
         view.layoutManager = layoutManager
         view.adapter = adapter
+        scrollView()
+    }
+
+    fun loadPage(page: Int) {
+        isLoadingView = true
+        addChild(root) {
+            async { pages[page + 1] = Api.getPosts(page + 1, *tags) }
+
+            val posts = getOrDownloadPage(page, *tags)
+
+            launch(Dispatchers.Main) {
+                var finishedCount = 0
+                var i = dataSet.size
+
+                for (t in 0 until posts.size)
+                    dataSet.add(null)
+                adapter.notifyItemRangeInserted(i - 1, posts.size)
+                isLoadingView = false
+                for (post in posts) {
+                    val index = i++
+                    addChild(root, isAsync = true) {//TODO deaktivieren um daten zu sparen
+                        withContext(Dispatchers.Default) { Api.downloadImage(post.filePreviewURL, "${post.id}Preview") }
+                        if (isActive) {
+                            dataSet[index] = post
+                            launch(Dispatchers.Main) { adapter.notifyItemChanged(index) }
+                            finishedCount++
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+
+    fun reloadView() {
+        root.cancel()
+        root = SupervisorJob()
+        dataSet.clear()
+        pages.clear()
+        adapter.notifyDataSetChanged()
+        loadPage(1)
+    }
+
+    fun clearView() {
+        reloadView()
+    }
+
+
+    private fun scrollView() {
         view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
@@ -37,52 +89,19 @@ class PreviewManager(private val context: Context, val view: RecyclerView) {
         })
     }
 
-    fun loadPage(page: Int, vararg tags: String) {
-        isLoadingView = true
-        currentTags += tags
-        runAsync(context, { runAsync { pages[page + 1] = Api.getPosts(page + 1, *currentTags.toTypedArray()) };getOrDownloadPage(page, *tags) }, { posts ->
-            var finishedCount = 0
-            var i = dataSet.size
-
-            for (t in 0 until posts.size)
-                dataSet.add(null)
-            adapter.notifyItemRangeInserted(i - 1, posts.size)
-            isLoadingView = false
-            for (post in posts) {
-                val index = i++
-                runAsync(context, { Api.downloadImage(post.filePreviewURL, "${post.id}Preview") }) {
-                    dataSet[index] = post
-                    adapter.notifyItemChanged(index)
-                    finishedCount++
-                }
-            }
-        })
-    }
-
     private suspend fun getOrDownloadPage(page: Int, vararg tags: String): List<Post> {
         var p = pages[page]
         if (p == null) p = Api.getPosts(page, *tags)
         if (dataSet.isNotEmpty()) {
             val lastFromLastPage = dataSet.last()
-            val samePost = p.find { it.id == lastFromLastPage!!.id }
-            if (samePost != null)
-                p.takeWhile { println(it);it.id != samePost.id }
+            if(lastFromLastPage != null){
+                val samePost = p.find { it.id == lastFromLastPage.id }
+                if (samePost != null)
+                    p.takeWhile { println(it);it.id != samePost.id }
+            }
         }
         return p
     }
-
-    fun reloadView() {
-        dataSet.clear()
-        pages.clear()
-        adapter.notifyDataSetChanged()
-        loadPage(1, *currentTags.toTypedArray())
-    }
-
-    fun clearView() {
-        currentTags.clear()
-        reloadView()
-    }
-
 
     private inner class Adapter : RecyclerView.Adapter<MyViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder = MyViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.recycle_view_grid, parent, false) as ImageView))

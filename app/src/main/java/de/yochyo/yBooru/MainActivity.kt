@@ -13,6 +13,8 @@ import de.yochyo.yBooru.layout.Frame
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -34,7 +36,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         previewManager = PreviewManager(this, recycler_view).apply { loadPage(1) }
         swipeRefreshLayout()
-
     }
 
     private fun swipeRefreshLayout(){

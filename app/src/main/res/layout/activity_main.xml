@@ -8,11 +8,6 @@
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
         tools:openDrawer="start">
-
-    <TableLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-    </TableLayout>
     <include
             layout="@layout/app_bar_main"
             android:layout_width="match_parent"
@@ -24,7 +19,9 @@
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:fitsSystemWindows="true"
+            android:background="@color/dark_grey"
             app:headerLayout="@layout/nav_header_main"
+            app:itemTextColor="@color/white"
             app:menu="@menu/activity_main_drawer"/>
     <FrameLayout
             android:id="@+id/frame_view"
@@ -32,6 +29,6 @@
             android:layout_gravity="end"
             android:layout_height="match_parent"
             android:foregroundGravity="right"
-            android:background="@android:color/holo_blue_dark"/>
+            android:background="@color/dark_grey"/>
 
 </android.support.v4.widget.DrawerLayout>

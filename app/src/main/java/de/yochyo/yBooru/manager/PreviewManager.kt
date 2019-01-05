@@ -1,4 +1,4 @@
-package de.yochyo.yBooru
+package de.yochyo.yBooru.manager
 
 import android.content.Context
 import android.support.v7.widget.GridLayoutManager
@@ -7,49 +7,55 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import de.yochyo.danbooruAPI.Api
+import de.yochyo.yBooru.R
 import de.yochyo.yBooru.api.Post
+import de.yochyo.yBooru.cache
 import de.yochyo.yBooru.utils.addChild
 import kotlinx.coroutines.*
 
-class PreviewManager(private val context: Context, val view: RecyclerView, val tags: Array<String> = arrayOf()) {
+class PreviewManager(private val context: Context, val view: RecyclerView, vararg val tags: String) {
     var root = SupervisorJob()
-
-    private val pages = HashMap<Int, List<Post>>() //page, posts
-    private var page = 1
+    val m = Manager.getOrInit(tags)
+    private val layoutManager = GridLayoutManager(context, 3)
+    private val adapter = Adapter()
 
     private var isLoadingView = false
-
-    private val layoutManager = GridLayoutManager(context, 3)
-    private val dataSet = ArrayList<Post?>(200)
-    private val adapter = Adapter()
 
     init {
         view.layoutManager = layoutManager
         view.adapter = adapter
         scrollView()
+        loadPage(1)
     }
 
     fun loadPage(page: Int) {
         isLoadingView = true
         addChild(root) {
-            async { pages[page + 1] = Api.getPosts(page + 1, *tags) }
+            async {
+                val time = System.currentTimeMillis()
+                val posts = Api.getPosts(page + 1, *tags)
+                println(">>>>>>   ${System.currentTimeMillis() - time}")
+                if (m.pages[page + 1] == null)
+                    m.pages[page + 1] = posts
+            }
 
             val posts = getOrDownloadPage(page, *tags)
 
             launch(Dispatchers.Main) {
                 var finishedCount = 0
-                var i = dataSet.size
+                var i = m.dataSet.size
 
                 for (t in 0 until posts.size)
-                    dataSet.add(null)
+                    m.dataSet.add(null)
                 adapter.notifyItemRangeInserted(i - 1, posts.size)
                 isLoadingView = false
                 for (post in posts) {
                     val index = i++
-                    addChild(root, isAsync = true) {//TODO deaktivieren um daten zu sparen
+                    addChild(root, isAsync = true) {
+                        //TODO deaktivieren um daten zu sparen
                         withContext(Dispatchers.Default) { Api.downloadImage(post.filePreviewURL, "${post.id}Preview") }
                         if (isActive) {
-                            dataSet[index] = post
+                            m.dataSet[index] = post
                             launch(Dispatchers.Main) { adapter.notifyItemChanged(index) }
                             finishedCount++
                         }
@@ -64,8 +70,8 @@ class PreviewManager(private val context: Context, val view: RecyclerView, val t
     fun reloadView() {
         root.cancel()
         root = SupervisorJob()
-        dataSet.clear()
-        pages.clear()
+        m.dataSet.clear()
+        m.pages.clear()
         adapter.notifyDataSetChanged()
         loadPage(1)
     }
@@ -80,9 +86,9 @@ class PreviewManager(private val context: Context, val view: RecyclerView, val t
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (!isLoadingView) {
-                    if (layoutManager.findLastVisibleItemPosition() + 1 >= dataSet.size) {
-                        loadPage(++page)
-                        println(page)
+                    if (layoutManager.findLastVisibleItemPosition() + 1 >= m.dataSet.size) {
+                        loadPage(++m.currentPage)
+                        println(m.currentPage)
                     }
                 }
             }
@@ -90,11 +96,11 @@ class PreviewManager(private val context: Context, val view: RecyclerView, val t
     }
 
     private suspend fun getOrDownloadPage(page: Int, vararg tags: String): List<Post> {
-        var p = pages[page]
+        var p = m.pages[page]
         if (p == null) p = Api.getPosts(page, *tags)
-        if (dataSet.isNotEmpty()) {
-            val lastFromLastPage = dataSet.last()
-            if(lastFromLastPage != null){
+        if (m.dataSet.isNotEmpty()) {
+            val lastFromLastPage = m.dataSet.last()
+            if (lastFromLastPage != null) {
                 val samePost = p.find { it.id == lastFromLastPage.id }
                 if (samePost != null)
                     p.takeWhile { println(it);it.id != samePost.id }
@@ -105,9 +111,9 @@ class PreviewManager(private val context: Context, val view: RecyclerView, val t
 
     private inner class Adapter : RecyclerView.Adapter<MyViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder = MyViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.recycle_view_grid, parent, false) as ImageView))
-        override fun getItemCount(): Int = dataSet.size
+        override fun getItemCount(): Int = m.dataSet.size
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-            val post = dataSet[position]
+            val post = m.dataSet[position]
             if (post != null) {
                 val bitmap = cache.getCachedBitmap("${post.id}Preview")
                 if (bitmap != null) {

@@ -1,6 +1,6 @@
-package de.yochyo.yBooru
+package de.yochyo.yBooru.layout
 
-import android.graphics.Color
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
@@ -8,18 +8,14 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import de.yochyo.danbooruAPI.Api
-import de.yochyo.yBooru.layout.Frame
+import de.yochyo.yBooru.Cache
+import de.yochyo.yBooru.R
+import de.yochyo.yBooru.cache
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
-import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-    lateinit var previewManager: PreviewManager
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         cache = Cache(this)
@@ -31,21 +27,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         nav_view.setNavigationItemSelectedListener(this)
-
-        frame_view.addView(Frame(this))
-
-        previewManager = PreviewManager(this, recycler_view).apply { loadPage(1) }
-        swipeRefreshLayout()
+        startActivity(Intent(this, PreviewActivity::class.java))
     }
 
-    private fun swipeRefreshLayout(){
-        val swipe = swipeRefreshLayout
-        swipe.setColorSchemeColors(Color.BLUE)
-        swipe.setOnRefreshListener {
-            previewManager.reloadView()
-            swipe.isRefreshing = false
-        }
-    }
+
 
 
     override fun onBackPressed() {
@@ -57,19 +42,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
             R.id.action_r18 -> {
-                Api.safeSearch = !Api.safeSearch
-                previewManager.clearView()
+                TODO()
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -77,7 +57,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Handle navigation view item clicks here.
         when (item.itemId) {
             R.id.nav_help -> {
 

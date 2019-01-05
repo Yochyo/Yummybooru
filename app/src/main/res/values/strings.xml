@@ -7,4 +7,5 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Enter R-18 mode</string>
     <string name="title_activity_preview">PreviewActivity</string>
+    <string name="title_activity_picture">PictureActivity</string>
 </resources>

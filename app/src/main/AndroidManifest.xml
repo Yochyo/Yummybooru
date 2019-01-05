@@ -30,6 +30,11 @@
                 android:label="@string/title_activity_preview"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
+        <activity
+                android:name=".layout.PictureActivity"
+                android:label="@string/title_activity_picture"
+                android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>

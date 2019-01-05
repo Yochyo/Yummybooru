@@ -1,4 +1,4 @@
-package de.yochyo.yBooru
+package de.yochyo.yBooru.utils
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -10,7 +10,7 @@ import java.io.File
 
 lateinit var cache: Cache
 
-class Cache(private val context: Context) {
+class Cache(context: Context) {
     private val memory = MemoryCache()
     private val disk = DiskCache(context.cacheDir)
 

@@ -1,16 +1,17 @@
 package de.yochyo.yBooru.manager
 
 import android.content.Context
+import android.content.Intent
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
-import de.yochyo.danbooruAPI.Api
 import de.yochyo.yBooru.R
 import de.yochyo.yBooru.api.Post
-import de.yochyo.yBooru.cache
+import de.yochyo.yBooru.layout.PictureActivity
 import de.yochyo.yBooru.utils.addChild
+import de.yochyo.yBooru.utils.cache
 import kotlinx.coroutines.*
 
 class PreviewManager(private val context: Context, val view: RecyclerView, vararg val tags: String) {
@@ -110,7 +111,14 @@ class PreviewManager(private val context: Context, val view: RecyclerView, varar
     }
 
     private inner class Adapter : RecyclerView.Adapter<MyViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder = MyViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.recycle_view_grid, parent, false) as ImageView))
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder = MyViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.recycle_view_grid, parent, false) as ImageView)).apply {
+            imageView.setOnClickListener {
+                val intent = Intent(context, PictureActivity::class.java)
+                intent.putExtra("tags", tags)
+                context.startActivity(intent)
+            }
+        }
+
         override fun getItemCount(): Int = m.dataSet.size
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
             val post = m.dataSet[position]

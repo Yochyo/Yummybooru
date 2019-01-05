@@ -1,9 +1,8 @@
-package de.yochyo.danbooruAPI
+package de.yochyo.yBooru.api
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import de.yochyo.yBooru.api.Post
-import de.yochyo.yBooru.cache
+import de.yochyo.yBooru.utils.cache
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import org.json.JSONArray
@@ -48,7 +47,7 @@ object Api {
         else return array
     }
 
-    suspend private fun getJson(urlToRead: String): JSONArray {
+    private suspend fun getJson(urlToRead: String): JSONArray {
         var array: JSONArray? = null
         val job = GlobalScope.async {
             val result = StringBuilder()

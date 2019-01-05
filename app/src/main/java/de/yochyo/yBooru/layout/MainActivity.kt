@@ -8,9 +8,9 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import de.yochyo.yBooru.Cache
 import de.yochyo.yBooru.R
-import de.yochyo.yBooru.cache
+import de.yochyo.yBooru.utils.Cache
+import de.yochyo.yBooru.utils.cache
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 

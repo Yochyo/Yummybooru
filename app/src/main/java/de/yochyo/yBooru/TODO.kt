@@ -8,3 +8,5 @@ package de.yochyo.yBooru
 //TODO was passiert, wenn man eine previewactivity mit den gleichen tags 2 mal öffnet
 
 //TODO Stackbar ode Toast als benachrichtigung
+
+//TODO cache so wie anko

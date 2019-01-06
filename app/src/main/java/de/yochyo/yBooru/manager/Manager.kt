@@ -1,23 +1,23 @@
 package de.yochyo.yBooru.manager
 
 import de.yochyo.yBooru.api.Post
-import java.lang.NullPointerException
 
 class Manager {
     companion object {
-        private val map = HashMap<Array<out String>, Manager>()//tags, manager
-        fun get(tags: Array<String>): Manager {
+        private val map = HashMap<String, Manager>()//tags (seperated with ' '), manager
+        fun get(tags: String): Manager {
             val m = map[tags]
             if (m != null) return m
-            else throw NullPointerException("Manager was not yet initialized")
+            else throw NullPointerException("Manager ($tags) was not yet initialized")
         }
-        fun getOrInit(tags: Array<out String>): Manager{
+
+        fun getOrInit(tags: String): Manager {
             val m = map[tags]
             if (m != null) return m
             else return initialize(tags)
         }
 
-        fun initialize(tags: Array<out String>): Manager {
+        fun initialize(tags: String): Manager {
             val manager = map[tags]
             if (manager == null) {
                 val m = Manager()

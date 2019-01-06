@@ -7,6 +7,9 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:showIn="@layout/activity_picture"
+        android:background="@color/dark_grey"
         tools:context=".layout.PictureActivity">
+    <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
+               android:background="@color/transparent" android:id="@+id/image_view"/>
 
 </android.support.constraint.ConstraintLayout>

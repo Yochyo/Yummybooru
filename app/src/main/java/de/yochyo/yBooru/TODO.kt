@@ -5,12 +5,6 @@ package de.yochyo.yBooru
 //TODO Preview-Jobs canceln wenn nicht mehr nötig?
 
 
-/**TODO mainactivity erstellen, die den Tab und das Frame anbietet, mehr nicht
- * die leitet auf eine PreviewActivity weiter, welche beim klicken auf ein bild eine PictureActivity startet
- * wird die pictureactivity verlassen, wird bei previewactivity mit onResume() das fenster gesetzt, außerdem braucht
- * die pictureactivity ein putextra (id der previewactivity) um durch eine hashmap die previewactity zu erhalten
- *
- *
- *
- */
+//TODO was passiert, wenn man eine previewactivity mit den gleichen tags 2 mal öffnet
 
+//TODO Stackbar ode Toast als benachrichtigung

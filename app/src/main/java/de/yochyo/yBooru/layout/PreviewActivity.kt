@@ -8,7 +8,7 @@ import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*
 
 class PreviewActivity : AppCompatActivity() {
-    lateinit var previewManager: PreviewManager
+    private lateinit var previewManager: PreviewManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_preview)

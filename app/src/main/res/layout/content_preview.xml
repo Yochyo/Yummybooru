@@ -7,6 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:background="@color/dark_grey"
         tools:context=".layout.PreviewActivity">
 
     <android.support.v7.widget.RecyclerView
@@ -15,7 +16,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:layout_weight="3"
-            android:background="@color/dark_grey"/>
+            android:layout_weight="3"/>
 
 </android.support.v4.widget.SwipeRefreshLayout>

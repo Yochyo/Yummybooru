@@ -5,18 +5,20 @@ import android.content.Intent
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import de.yochyo.yBooru.R
+import de.yochyo.yBooru.api.Api
 import de.yochyo.yBooru.api.Post
 import de.yochyo.yBooru.layout.PictureActivity
 import de.yochyo.yBooru.utils.addChild
 import de.yochyo.yBooru.utils.cache
 import kotlinx.coroutines.*
 
-class PreviewManager(private val context: Context, val view: RecyclerView, vararg val tags: String) {
+class PreviewManager(private val context: Context, val view: RecyclerView, private vararg val tags: String) {
     var root = SupervisorJob()
-    val m = Manager.getOrInit(tags)
+    val m = Manager.getOrInit(tags.joinToString(" "))
     private val layoutManager = GridLayoutManager(context, 3)
     private val adapter = Adapter()
 
@@ -33,9 +35,7 @@ class PreviewManager(private val context: Context, val view: RecyclerView, varar
         isLoadingView = true
         addChild(root) {
             async {
-                val time = System.currentTimeMillis()
                 val posts = Api.getPosts(page + 1, *tags)
-                println(">>>>>>   ${System.currentTimeMillis() - time}")
                 if (m.pages[page + 1] == null)
                     m.pages[page + 1] = posts
             }
@@ -64,7 +64,6 @@ class PreviewManager(private val context: Context, val view: RecyclerView, varar
                 }
             }
         }
-
     }
 
 
@@ -76,11 +75,6 @@ class PreviewManager(private val context: Context, val view: RecyclerView, varar
         adapter.notifyDataSetChanged()
         loadPage(1)
     }
-
-    fun clearView() {
-        reloadView()
-    }
-
 
     private fun scrollView() {
         view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -112,11 +106,7 @@ class PreviewManager(private val context: Context, val view: RecyclerView, varar
 
     private inner class Adapter : RecyclerView.Adapter<MyViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder = MyViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.recycle_view_grid, parent, false) as ImageView)).apply {
-            imageView.setOnClickListener {
-                val intent = Intent(context, PictureActivity::class.java)
-                intent.putExtra("tags", tags)
-                context.startActivity(intent)
-            }
+            imageView.setOnClickListener(this)
         }
 
         override fun getItemCount(): Int = m.dataSet.size
@@ -132,7 +122,14 @@ class PreviewManager(private val context: Context, val view: RecyclerView, varar
             holder.imageView.setImageDrawable(null)
         }
     }
+
+    private inner class MyViewHolder(val imageView: ImageView) : RecyclerView.ViewHolder(imageView), View.OnClickListener {
+        override fun onClick(v: View?) {
+            m.position = layoutPosition
+            val intent = Intent(context, PictureActivity::class.java)
+            intent.putExtra("tags", tags.joinToString(" "))
+            context.startActivity(intent)
+        }
+
+    }
 }
-
-
-private class MyViewHolder(val imageView: ImageView) : RecyclerView.ViewHolder(imageView)

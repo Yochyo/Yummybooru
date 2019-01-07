@@ -34,13 +34,15 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "database", 
 
 
     fun addTag(name: String, isFavorite: Boolean) {
-        val tag = Tag(name, isFavorite, Date())
+        val date = Date()
+        val tag = Tag(name, isFavorite, date)
         if (tags.find { it.name == tag.name } == null) {
             tags += tag
             use {
                 insert(TABLE_TAGS,
                         COLUMN_NAME to tag.name,
-                        COLUMN_IS_FAVORITE to if (tag.isFavorite) 1 else 0)
+                        COLUMN_IS_FAVORITE to if (tag.isFavorite) 1 else 0,
+                        COLUMN_DATE to DateFormat.getInstance().format(date))
             }
         }
     }

@@ -8,11 +8,17 @@ import kotlinx.coroutines.delay
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-lateinit var cache: Cache
-
-class Cache(context: Context) {
+abstract class Cache(context: Context) {
     private val memory = MemoryCache()
     private val disk = DiskCache(context.cacheDir)
+
+    companion object {
+        private var _instance: Cache? = null
+        fun getInstance(context: Context): Cache {
+            if (_instance == null) _instance = object : Cache(context) {}
+            return _instance!!
+        }
+    }
 
     fun getCachedBitmap(id: String): Bitmap? {
         memory.getBitmap(id)?.apply { return this }
@@ -33,10 +39,12 @@ class Cache(context: Context) {
         }
         return bitmap
     }
-    fun clearMemory(){
+
+    fun clearMemory() {
         memory.evictAll()
     }
-    fun clearDisk(){
+
+    fun clearDisk() {
         disk.clearCache()
     }
 }
@@ -82,3 +90,6 @@ private class DiskCache(val cache: File) {
             null
     }
 }
+
+val Context.cache: Cache
+    get() = Cache.getInstance(this)

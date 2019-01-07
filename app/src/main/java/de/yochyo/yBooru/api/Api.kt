@@ -1,5 +1,6 @@
 package de.yochyo.yBooru.api
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import de.yochyo.yBooru.utils.cache
@@ -18,12 +19,12 @@ object Api {
     private val downloading = ArrayList<String>(20)
 
 
-    suspend fun downloadImage(url: String, id: String): Bitmap {
+    suspend fun downloadImage(context: Context, url: String, id: String): Bitmap {
         if (downloading.contains(id))
-            return cache.awaitPicture(id)
+            return context.cache.awaitPicture(id)
         else {
             downloading += id
-            val bitmap = BitmapFactory.decodeStream(URL(url).openStream()).apply { cache.cacheBitmap(id, this) }
+            val bitmap = BitmapFactory.decodeStream(URL(url).openStream()).apply { context.cache.cacheBitmap(id, this) }
             downloading -= id
             return bitmap
         }

@@ -54,7 +54,7 @@ class PreviewManager(private val context: Context, val view: RecyclerView, priva
                     val index = i++
                     addChild(root, isAsync = true) {
                         //TODO deaktivieren um daten zu sparen
-                        withContext(Dispatchers.Default) { Api.downloadImage(post.filePreviewURL, "${post.id}Preview") }
+                        withContext(Dispatchers.Default) { Api.downloadImage(context, post.filePreviewURL, "${post.id}Preview") }
                         if (isActive) {
                             m.dataSet[index] = post
                             launch(Dispatchers.Main) { adapter.notifyItemChanged(index) }
@@ -113,7 +113,7 @@ class PreviewManager(private val context: Context, val view: RecyclerView, priva
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
             val post = m.dataSet[position]
             if (post != null) {
-                val bitmap = cache.getCachedBitmap("${post.id}Preview")
+                val bitmap = context.cache.getCachedBitmap("${post.id}Preview")
                 if (bitmap != null) {
                     holder.imageView.setImageBitmap(bitmap)
                     return

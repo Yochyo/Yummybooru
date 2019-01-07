@@ -7,7 +7,7 @@ import java.text.DateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-class Database(context: Context) : ManagedSQLiteOpenHelper(context, "database", null, 1) {
+abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "database", null, 1) {
     private val TABLE_TAGS = "tags"
     private val TABLE_SUBSCRIPTION = "subs"
     private val COLUMN_NAME = "name"
@@ -19,8 +19,8 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "database", 
     companion object {
         private var _instance: Database? = null
         fun getInstance(context: Context): Database {
-            return if (_instance != null) _instance!!
-            else Database(context).apply { _instance = this }
+            if (_instance == null) _instance = object : Database(context) {}
+            return _instance!!
         }
     }
 

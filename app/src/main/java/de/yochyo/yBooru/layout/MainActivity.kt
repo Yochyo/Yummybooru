@@ -13,8 +13,6 @@ import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import de.yochyo.yBooru.R
-import de.yochyo.yBooru.utils.Cache
-import de.yochyo.yBooru.utils.cache
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 
@@ -23,7 +21,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     val dataSet = ArrayList<String>().apply { add("1");add("2");add("31");add("4");add("5");add("6");add("7");add("8");add("9");add("10");add("11");add("12");add("13");add("14");add("15");add("16");add("17");add("18");add("19") }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        cache = Cache(this)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 

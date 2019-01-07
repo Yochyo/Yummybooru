@@ -24,7 +24,7 @@ class PictureActivity : AppCompatActivity() {
         val post = m.dataSet[m.position]
         if (post != null) {
             GlobalScope.launch {
-                val bitmap = Api.downloadImage(post.fileLargeURL, "${post.id}Large")
+                val bitmap = Api.downloadImage(this@PictureActivity, post.fileLargeURL, "${post.id}Large")
                 launch(Dispatchers.Main) { image_view.setImageBitmap(bitmap) }
             }
         }

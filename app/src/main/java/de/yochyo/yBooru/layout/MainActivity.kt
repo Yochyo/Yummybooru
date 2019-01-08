@@ -11,7 +11,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
-import android.widget.LinearLayout
+import android.widget.Toolbar
 import de.yochyo.yBooru.R
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -75,12 +75,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 
     private inner class Adapter : RecyclerView.Adapter<SearchItemViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchItemViewHolder = SearchItemViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.search_item_layout, parent, false) as LinearLayout))
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchItemViewHolder = SearchItemViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.search_item_layout, parent, false) as Toolbar).apply { inflateMenu(R.menu.activity_main_search_menu) })
 
         override fun getItemCount(): Int = dataSet.size
         override fun onBindViewHolder(holder: SearchItemViewHolder, position: Int) {
         }
     }
 
-    private inner class SearchItemViewHolder(val layout: LinearLayout) : RecyclerView.ViewHolder(layout)
+    private inner class SearchItemViewHolder(val toolbar: Toolbar) : RecyclerView.ViewHolder(toolbar)
 }

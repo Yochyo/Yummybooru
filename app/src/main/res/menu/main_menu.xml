@@ -6,8 +6,8 @@
           android:orderInCategory="100"
           app:showAsAction="never"/>
     <item android:id="@+id/search"
-          android:title="@string/action_settings"
+          android:title="Search"
           android:orderInCategory="100"
           android:icon="@drawable/search"
-          app:showAsAction="always"/>
+          app:showAsAction="ifRoom"/>
 </menu>

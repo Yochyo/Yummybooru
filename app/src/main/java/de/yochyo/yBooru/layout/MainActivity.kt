@@ -69,6 +69,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 return true
             }
             R.id.search -> {
+                drawer_layout.openDrawer(GravityCompat.END)
                 return true
             }
             else -> return super.onOptionsItemSelected(item)

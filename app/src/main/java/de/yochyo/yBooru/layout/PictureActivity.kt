@@ -19,7 +19,6 @@ class PictureActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         val tags = intent.getStringExtra("tags")
-        println(":::::: $tags")
         m = Manager.get(tags)
         val post = m.dataSet[m.position]
         if (post != null) {

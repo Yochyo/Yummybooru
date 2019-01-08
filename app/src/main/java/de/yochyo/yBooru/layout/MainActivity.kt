@@ -1,9 +1,11 @@
 package de.yochyo.yBooru.layout
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -11,14 +13,20 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
-import android.widget.Toolbar
+import android.widget.*
 import de.yochyo.yBooru.R
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-    val dataSet = ArrayList<String>().apply { add("1");add("2");add("31");add("4");add("5");add("6");add("7");add("8");add("9");add("10");add("11");add("12");add("13");add("14");add("15");add("16");add("17");add("18");add("19") }
+    private val dataSet = ArrayList<String>()
+    private val selectedTags = ArrayList<String>()
+
+    private lateinit var recycleView: RecyclerView
+    private lateinit var adapter: Adapter
+    private lateinit var layoutmanager: LinearLayoutManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -29,11 +37,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         nav_view.setNavigationItemSelectedListener(this)
-
-
-        val searchView = nav_search.getHeaderView(0).findViewById<RecyclerView>(R.id.recycler_view_search)
-        searchView.adapter = Adapter()
-        searchView.layoutManager = LinearLayoutManager(this)
+        val searchHeader = nav_search.getHeaderView(0)
+        recycleView = searchHeader.findViewById(R.id.recycler_view_search)
+        adapter = Adapter().apply { recycleView.adapter = this }
+        layoutmanager = LinearLayoutManager(this).apply { recycleView.layoutManager = this }
+        initAddTagButton(searchHeader.findViewById(R.id.add_search))
+        initSearchButton(searchHeader.findViewById(R.id.start_search))
     }
 
 
@@ -74,11 +83,47 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
 
+    private fun initAddTagButton(b: Button) {
+        b.setOnClickListener {
+            val builder = AlertDialog.Builder(this)
+            val layout = LayoutInflater.from(this).inflate(R.layout.search_item_dialog_view, null) as LinearLayout
+            val editText = layout.findViewById<EditText>(R.id.add_tag_edittext)
+            builder.setMessage("Add Tag").setPositiveButton("OK") { dialog, id ->
+                dataSet.add(editText.text.toString()) //TODO if is valid?
+                adapter.notifyItemInserted(dataSet.lastIndex)
+            }.setNegativeButton("CANCEL") { dialog, id -> }
+            builder.setView(layout)
+            builder.create().show()
+        }
+    }
+
+    private fun initSearchButton(b: Button) {
+        b.setOnClickListener {
+            val intent = Intent(this, PreviewActivity::class.java)
+            intent.putExtra("tags", selectedTags.joinToString(" "))
+            startActivity(intent)
+        }
+    }
+
     private inner class Adapter : RecyclerView.Adapter<SearchItemViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchItemViewHolder = SearchItemViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.search_item_layout, parent, false) as Toolbar).apply { inflateMenu(R.menu.activity_main_search_menu) })
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchItemViewHolder = SearchItemViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.search_item_layout, parent, false) as Toolbar)
+                .apply {
+                    inflateMenu(R.menu.activity_main_search_menu)
+                    setOnClickListener {
+                        val check = findViewById<CheckBox>(R.id.search_checkbox)
+                        if (check.isChecked) {
+                            check.isChecked = false
+                            selectedTags.remove(findViewById<TextView>(R.id.search_textview).text)
+                        } else {
+                            check.isChecked = true
+                            selectedTags.add(findViewById<TextView>(R.id.search_textview).text.toString())
+                        }
+                    }
+                })
 
         override fun getItemCount(): Int = dataSet.size
         override fun onBindViewHolder(holder: SearchItemViewHolder, position: Int) {
+            holder.toolbar.findViewById<TextView>(R.id.search_textview).text = dataSet[position]
         }
     }
 

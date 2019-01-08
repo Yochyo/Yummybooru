@@ -4,12 +4,16 @@
          android:layout_width="match_parent"
          android:layout_height="wrap_content"
          android:id="@+id/search_toolbar">
-    <CheckBox android:layout_width="wrap_content"
+    <CheckBox android:id="@+id/search_checkbox"
+              android:layout_width="wrap_content"
               android:layout_height="match_parent"
               android:buttonTint="@color/white"
-              android:gravity="center_vertical"/>
-    <TextView android:layout_width="match_parent"
+              android:gravity="center_vertical"
+              android:layout_marginEnd="16dp"/>
+    <TextView android:id="@+id/search_textview"
+              android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:textColor="@color/white"
-              android:gravity="center_vertical"/>
+              android:gravity="center_vertical"
+              android:textSize="16sp"/>
 </Toolbar>

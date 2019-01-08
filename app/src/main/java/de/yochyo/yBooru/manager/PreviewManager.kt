@@ -16,7 +16,7 @@ import de.yochyo.yBooru.utils.addChild
 import de.yochyo.yBooru.utils.cache
 import kotlinx.coroutines.*
 
-class PreviewManager(private val context: Context, val view: RecyclerView, private vararg val tags: String) {
+class PreviewManager(private val context: Context, val view: RecyclerView, private val tags: Array<String>) {
     var root = SupervisorJob()
     val m = Manager.getOrInit(tags.joinToString(" "))
     private val layoutManager = GridLayoutManager(context, 3)
@@ -83,7 +83,6 @@ class PreviewManager(private val context: Context, val view: RecyclerView, priva
                 if (!isLoadingView) {
                     if (layoutManager.findLastVisibleItemPosition() + 1 >= m.dataSet.size) {
                         loadPage(++m.currentPage)
-                        println(m.currentPage)
                     }
                 }
             }
@@ -98,14 +97,14 @@ class PreviewManager(private val context: Context, val view: RecyclerView, priva
             if (lastFromLastPage != null) {
                 val samePost = p.find { it.id == lastFromLastPage.id }
                 if (samePost != null)
-                    p.takeWhile { println(it);it.id != samePost.id }
+                    p.takeWhile { it.id != samePost.id }
             }
         }
         return p
     }
 
     private inner class Adapter : RecyclerView.Adapter<MyViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder = MyViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.recycle_view_grid, parent, false) as ImageView)).apply {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder = MyViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
             imageView.setOnClickListener(this)
         }
 

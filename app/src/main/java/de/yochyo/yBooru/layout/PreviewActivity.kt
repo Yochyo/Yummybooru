@@ -13,7 +13,7 @@ class PreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_preview)
         setSupportActionBar(toolbar)
-        previewManager = PreviewManager(this, recycler_view)
+        previewManager = PreviewManager(this, recycler_view, intent.getStringExtra("tags").split(" ").toTypedArray())
         swipeRefreshLayout.setOnRefreshListener {
             swipeRefreshLayout.isRefreshing = false
             previewManager.reloadView()

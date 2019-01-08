@@ -33,7 +33,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
     }
 
 
-    fun addTag(name: String, isFavorite: Boolean) {
+    fun addTag(name: String, isFavorite: Boolean): Tag? {
         val date = Date()
         val tag = Tag(name, isFavorite, date)
         if (tags.find { it.name == tag.name } == null) {
@@ -44,7 +44,9 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
                         COLUMN_IS_FAVORITE to if (tag.isFavorite) 1 else 0,
                         COLUMN_DATE to DateFormat.getInstance().format(date))
             }
+            return tag
         }
+        return null
     }
 
     fun addSubscription(name: String, startID: Int) {
@@ -114,7 +116,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
             select(TABLE_TAGS, COLUMN_NAME, COLUMN_IS_FAVORITE, COLUMN_DATE).parseList(object : MapRowParser<ArrayList<Tag>> {
                 override fun parseRow(columns: Map<String, Any?>): ArrayList<Tag> {
                     val name = columns[COLUMN_NAME].toString()
-                    val isFavorite = columns[COLUMN_IS_FAVORITE] as Int
+                    val isFavorite = (columns[COLUMN_IS_FAVORITE] as Long).toInt()
                     val date = DateFormat.getInstance().parse(columns[COLUMN_DATE].toString())
 
                     t += Tag(name, isFavorite == 1, date)
@@ -132,8 +134,8 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
             select(TABLE_SUBSCRIPTION, COLUMN_NAME, COLUMN_SUBSCRIBED_SINCE, COLUMN_SUBSCRIBED_STATUS).parseList(object : MapRowParser<ArrayList<Subscription>> {
                 override fun parseRow(columns: Map<String, Any?>): ArrayList<Subscription> {
                     val name = columns[COLUMN_NAME].toString()
-                    val startID = columns[COLUMN_SUBSCRIBED_SINCE] as Int
-                    val currentID = columns[COLUMN_SUBSCRIBED_STATUS] as Int
+                    val startID = (columns[COLUMN_SUBSCRIBED_SINCE] as Long).toInt()
+                    val currentID = (columns[COLUMN_SUBSCRIBED_STATUS] as Long).toInt()
                     s += Subscription(name, startID, currentID)
                     return s
                 }

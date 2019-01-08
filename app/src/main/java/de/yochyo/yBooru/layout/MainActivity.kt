@@ -15,12 +15,14 @@ import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.*
 import de.yochyo.yBooru.R
+import de.yochyo.yBooru.Tag
+import de.yochyo.yBooru.database
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-    private val dataSet = ArrayList<String>()
+    private val dataSet = ArrayList<Tag>()
     private val selectedTags = ArrayList<String>()
 
     private lateinit var recycleView: RecyclerView
@@ -37,6 +39,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         nav_view.setNavigationItemSelectedListener(this)
+
+        dataSet += database.getTags()
         val searchHeader = nav_search.getHeaderView(0)
         recycleView = searchHeader.findViewById(R.id.recycler_view_search)
         adapter = Adapter().apply { recycleView.adapter = this }
@@ -88,10 +92,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val builder = AlertDialog.Builder(this)
             val layout = LayoutInflater.from(this).inflate(R.layout.search_item_dialog_view, null) as LinearLayout
             val editText = layout.findViewById<EditText>(R.id.add_tag_edittext)
-            builder.setMessage("Add Tag").setPositiveButton("OK") { dialog, id ->
-                dataSet.add(editText.text.toString()) //TODO if is valid?
-                adapter.notifyItemInserted(dataSet.lastIndex)
-            }.setNegativeButton("CANCEL") { dialog, id -> }
+            builder.setMessage("Add Tag").setPositiveButton("OK") { _, _ ->
+                val tag = database.addTag(editText.text.toString(), false)
+                if (tag != null) {
+                    dataSet.add(tag)
+                    adapter.notifyItemInserted(dataSet.lastIndex)
+                    database.addTag(editText.text.toString(), false)
+                }
+            }.setNegativeButton("CANCEL") { _, _ -> }
             builder.setView(layout)
             builder.create().show()
         }
@@ -123,7 +131,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         override fun getItemCount(): Int = dataSet.size
         override fun onBindViewHolder(holder: SearchItemViewHolder, position: Int) {
-            holder.toolbar.findViewById<TextView>(R.id.search_textview).text = dataSet[position]
+            holder.toolbar.findViewById<TextView>(R.id.search_textview).text = dataSet[position].name
         }
     }
 

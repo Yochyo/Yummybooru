@@ -15,7 +15,7 @@ import java.net.URL
 
 object Api {
     val limit = 30
-    var safeSearch: Boolean = true
+    var safeSearch: Boolean = false
     private val downloading = ArrayList<String>(20)
 
 

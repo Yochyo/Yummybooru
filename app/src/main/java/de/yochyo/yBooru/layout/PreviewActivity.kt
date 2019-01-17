@@ -30,6 +30,7 @@ class PreviewActivity : AppCompatActivity() {
     private lateinit var adapter: Adapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_preview)
         setSupportActionBar(toolbar)
@@ -64,15 +65,18 @@ class PreviewActivity : AppCompatActivity() {
                     m.dataSet.add(null)
                 adapter.notifyItemRangeInserted(i - 1, posts.size)
                 isLoadingView = false
-                for (post in posts) {
-                    val index = i++
-                    addChild(root, isAsync = true) {
-                        //TODO deaktivieren um daten zu sparen
-                        withContext(Dispatchers.Default) { Api.downloadImage(this@PreviewActivity, post.filePreviewURL, "${post.id}Preview") }
+
+                addChild(root, isAsync = true) {
+                    for (post in posts) {
+                        val index = i++
+                        Api.downloadImage(this@PreviewActivity, post.filePreviewURL, "${post.id}Preview")
                         if (isActive) {
                             m.dataSet[index] = post
-                            launch(Dispatchers.Main) { adapter.notifyItemChanged(index) }
                             finishedCount++
+                            withContext(Dispatchers.Main) {
+                                m.dataSet[index] = post
+                                adapter.notifyItemChanged(index)
+                            }
                         }
                     }
                 }

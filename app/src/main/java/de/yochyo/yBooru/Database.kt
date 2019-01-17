@@ -8,6 +8,8 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "database", null, 1) {
+    private val prefs = context.getSharedPreferences("default.xml", Context.MODE_PRIVATE)
+
     private val TABLE_TAGS = "tags"
     private val TABLE_SUBSCRIPTION = "subs"
     private val COLUMN_NAME = "name"
@@ -143,6 +145,23 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
             s
         }
     }
+
+    private var _r18: Boolean? = null
+        set(value) {
+            field = value
+            with(prefs.edit()) {
+                putBoolean("r18", value!!)
+                apply()
+            }
+        }
+    var r18: Boolean
+        get() {
+            if (_r18 == null) _r18 = prefs.getBoolean("r18", false)
+            return _r18!!
+        }
+        set(value) {
+            _r18 = value
+        }
 
 
     override fun onCreate(db: SQLiteDatabase) {

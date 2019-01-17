@@ -16,6 +16,7 @@ import android.view.ViewGroup
 import android.widget.*
 import de.yochyo.yBooru.R
 import de.yochyo.yBooru.Tag
+import de.yochyo.yBooru.api.Api
 import de.yochyo.yBooru.database
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -34,13 +35,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        val toggle = ActionBarDrawerToggle(
-                this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
-        drawer_layout.addDrawerListener(toggle)
-        toggle.syncState()
-        nav_view.setNavigationItemSelectedListener(this)
+        initDrawer()
+
 
         dataSet += database.getTags()
+        initIsFilteredText()
         val searchHeader = nav_search.getHeaderView(0)
         recycleView = searchHeader.findViewById(R.id.recycler_view_search)
         adapter = Adapter().apply { recycleView.adapter = this }
@@ -66,6 +65,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_r18 -> {
+                Api.safeSearch = !Api.safeSearch
                 return true
             }
             R.id.search -> {
@@ -104,6 +104,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             builder.setView(layout)
             builder.create().show()
         }
+    }
+
+    private fun initIsFilteredText() {
+        if (database.r18)
+            toolbar.menu.findItem(R.id.action_r18).title = getString(R.string.enter_r18)
+        else
+            toolbar.menu.findItem(R.id.action_r18).title = getString(R.string.leave_r18)
+    }
+
+    private fun initDrawer() {
+        val toggle = ActionBarDrawerToggle(this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+        drawer_layout.addDrawerListener(toggle)
+        toggle.syncState()
+        nav_view.setNavigationItemSelectedListener(this)
     }
 
     private fun initSearchButton(b: Button) {

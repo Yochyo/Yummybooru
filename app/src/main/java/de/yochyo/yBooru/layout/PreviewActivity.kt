@@ -50,7 +50,7 @@ class PreviewActivity : AppCompatActivity() {
         isLoadingView = true
         addChild(root) {
             async {
-                val posts = Api.getPosts(page + 1, *tags)
+                val posts = Api.getPosts(this@PreviewActivity, page + 1, *tags)
                 if (m.pages[page + 1] == null)
                     m.pages[page + 1] = posts
             }
@@ -109,7 +109,7 @@ class PreviewActivity : AppCompatActivity() {
 
     private suspend fun getOrDownloadPage(page: Int, vararg tags: String): List<Post> {
         var p = m.pages[page]
-        if (p == null) p = Api.getPosts(page, *tags)
+        if (p == null) p = Api.getPosts(this, page, *tags)
         if (m.dataSet.isNotEmpty()) {
             val lastFromLastPage = m.dataSet.last()
             if (lastFromLastPage != null) {

@@ -3,6 +3,7 @@ package de.yochyo.yBooru.api
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import de.yochyo.yBooru.database
 import de.yochyo.yBooru.utils.cache
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -15,7 +16,6 @@ import java.net.URL
 
 object Api {
     val limit = 30
-    var safeSearch: Boolean = false
     private val downloading = ArrayList<String>(20)
 
 
@@ -29,7 +29,8 @@ object Api {
             return bitmap
         }
     }
-    suspend fun getPosts(page: Int, vararg tags: String): List<Post> {//TODO rating ist safeSearch
+
+    suspend fun getPosts(context: Context, page: Int, vararg tags: String): List<Post> {//TODO rating ist safeSearch
         var url = "https://danbooru.donmai.us/posts.json?limit=$limit&page=$page"
         if (tags.isNotEmpty()) {
             url += "&tags="
@@ -44,7 +45,7 @@ object Api {
             if (post != null)
                 array += post
         }
-        if(safeSearch) return array.filter { it.rating == "s" }
+        if (context.database.r18) return array.filter { it.rating == "s" }
         else return array
     }
 

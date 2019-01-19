@@ -16,13 +16,14 @@ import android.view.ViewGroup
 import android.widget.*
 import de.yochyo.yBooru.R
 import de.yochyo.yBooru.Tag
-import de.yochyo.yBooru.api.Api
 import de.yochyo.yBooru.database
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+    private lateinit var menu: Menu
+
     private val dataSet = ArrayList<Tag>()
     private val selectedTags = ArrayList<String>()
 
@@ -38,7 +39,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 
         dataSet += database.getTags()
-        initIsFilteredText()
         val searchHeader = nav_search.getHeaderView(0)
         recycleView = searchHeader.findViewById(R.id.recycler_view_search)
         adapter = Adapter().apply { recycleView.adapter = this }
@@ -57,14 +57,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        this.menu = menu
         menuInflater.inflate(R.menu.main_menu, menu)
+        setMenuR18Text()
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_r18 -> {
-                Api.safeSearch = !Api.safeSearch
+                database.r18 = !database.r18
+                setMenuR18Text()
                 return true
             }
             R.id.search -> {
@@ -73,17 +76,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             else -> return super.onOptionsItemSelected(item)
         }
-
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_help -> {
-
             }
         }
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    private fun setMenuR18Text() {
+        if (database.r18) menu.findItem(R.id.action_r18).title = getString(R.string.enter_r18)
+        else menu.findItem(R.id.action_r18).title = getString(R.string.leave_r18)
     }
 
 
@@ -103,13 +109,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             builder.setView(layout)
             builder.create().show()
         }
-    }
-
-    private fun initIsFilteredText() {
-        if (database.r18)
-            toolbar.menu.findItem(R.id.action_r18).title = getString(R.string.enter_r18)
-        else
-            toolbar.menu.findItem(R.id.action_r18).title = getString(R.string.leave_r18)
     }
 
     private fun initDrawer() {

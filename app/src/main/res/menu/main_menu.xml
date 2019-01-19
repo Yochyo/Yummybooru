@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/action_r18"
-          android:title="@string/action_settings"
+          android:title="@string/enter_r18"
           android:orderInCategory="100"
           app:showAsAction="never"/>
     <item android:id="@+id/search"

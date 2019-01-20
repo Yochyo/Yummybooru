@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import de.yochyo.yBooru.R
 import de.yochyo.yBooru.api.Api
+import de.yochyo.yBooru.api.Tag
 import de.yochyo.yBooru.manager.Manager
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
@@ -17,7 +18,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class PictureActivity : AppCompatActivity() {
-    private val currentTags = ArrayList<PostTag>()
+    private val currentTags = ArrayList<Tag>()
     lateinit var m: Manager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +29,7 @@ class PictureActivity : AppCompatActivity() {
         nav_view_picture.bringToFront()
         val post = m.currentPost
         if (post != null) {
-            currentTags.apply { addAll(post.tagsCopyright.map { PostTag(it, PostTag.COYPRIGHT) });addAll(post.tagsArtist.map { PostTag(it, PostTag.ARTIST) }); addAll(post.tagsCharacter.map { PostTag(it, PostTag.CHARACTER) }); addAll(post.tagsGeneral.map { PostTag(it, PostTag.GENERAL) }) }
+            currentTags.apply { addAll(post.tagsCopyright.map { Tag(it, Tag.COPYPRIGHT) });addAll(post.tagsArtist.map { Tag(it, Tag.ARTIST) }); addAll(post.tagsCharacter.map { Tag(it, Tag.CHARACTER) }); addAll(post.tagsGeneral.map { Tag(it, Tag.GENERAL) }) }
             GlobalScope.launch {
                 val bitmap = Api.downloadImage(this@PictureActivity, post.fileLargeURL, "${post.id}Large")
                 launch(Dispatchers.Main) { image_view.setImageBitmap(bitmap) }
@@ -50,18 +51,4 @@ class PictureActivity : AppCompatActivity() {
     }
 
     private inner class InfoButtonHolder(val button: Button) : RecyclerView.ViewHolder(button)
-}
-
-private class PostTag(val name: String, val type: String) {
-    companion object {
-        val GENERAL = "g"
-        val CHARACTER = "c"
-        val COYPRIGHT = "cr"
-        val ARTIST = "a"
-    }
-
-    val color: Int
-        get() {
-            return 1
-        }
 }

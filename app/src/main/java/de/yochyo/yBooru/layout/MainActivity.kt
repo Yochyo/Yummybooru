@@ -15,7 +15,7 @@ import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.*
 import de.yochyo.yBooru.R
-import de.yochyo.yBooru.Tag
+import de.yochyo.yBooru.api.Tag
 import de.yochyo.yBooru.database
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -98,11 +98,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val layout = LayoutInflater.from(this).inflate(R.layout.search_item_dialog_view, null) as LinearLayout
             val editText = layout.findViewById<EditText>(R.id.add_tag_edittext)
             builder.setMessage("Add Tag").setPositiveButton("OK") { _, _ ->
-                val tag = database.addTag(editText.text.toString(), false)
+                val tag = database.addTag(editText.text.toString(), Tag.UNKNOWN, false)
                 if (tag != null) {
                     dataSet.add(tag)
                     adapter.notifyItemInserted(dataSet.lastIndex)
-                    database.addTag(editText.text.toString(), false)
+                    database.addTag(editText.text.toString(), Tag.UNKNOWN, false)
                 }
             }.setNegativeButton("CANCEL") { _, _ -> }
             builder.setView(layout)

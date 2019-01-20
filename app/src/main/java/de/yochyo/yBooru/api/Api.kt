@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory
 import de.yochyo.yBooru.database
 import de.yochyo.yBooru.utils.cache
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -51,20 +51,25 @@ object Api {
 
     private suspend fun getJson(urlToRead: String): JSONArray {
         var array: JSONArray? = null
-        val job = GlobalScope.async {
-            val result = StringBuilder()
-            val url = URL(urlToRead)
-            val conn = url.openConnection() as HttpURLConnection
-            conn.addRequestProperty("User-Agent", "Mozilla/5.00")
-            conn.requestMethod = "GET"
-            val rd = BufferedReader(InputStreamReader(conn.inputStream))
-            var line: String? = rd.readLine()
-            while (line != null) {
-                result.append(line)
-                line = rd.readLine()
+        println("URL: $urlToRead")
+        val job = GlobalScope.launch {
+            try {
+                val result = StringBuilder()
+                val url = URL(urlToRead)
+                val conn = url.openConnection() as HttpURLConnection
+                conn.addRequestProperty("User-Agent", "Mozilla/5.00")
+                conn.requestMethod = "GET"
+                val rd = BufferedReader(InputStreamReader(conn.inputStream))
+                var line: String? = rd.readLine()
+                while (line != null) {
+                    result.append(line)
+                    line = rd.readLine()
+                }
+                rd.close()
+                array = JSONArray(result.toString())
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
-            rd.close()
-            array = JSONArray(result.toString())
         }
         job.join()
         return array!!

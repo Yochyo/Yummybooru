@@ -2,6 +2,8 @@ package de.yochyo.yBooru
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import de.yochyo.yBooru.api.Subscription
+import de.yochyo.yBooru.api.Tag
 import org.jetbrains.anko.db.*
 import java.text.DateFormat
 import java.util.*
@@ -14,6 +16,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
     private val TABLE_SUBSCRIPTION = "subs"
     private val COLUMN_NAME = "name"
     private val COLUMN_IS_FAVORITE = "isFavorite"
+    private val COLUMN_TYPE = "type"
     private val COLUMN_DATE = "Date"
     private val COLUMN_SUBSCRIBED_SINCE = "start"
     private val COLUMN_SUBSCRIBED_STATUS = "current"
@@ -35,9 +38,9 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
     }
 
 
-    fun addTag(name: String, isFavorite: Boolean): Tag? {
+    fun addTag(name: String, type: String, isFavorite: Boolean): Tag? {
         val date = Date()
-        val tag = Tag(name, isFavorite, date)
+        val tag = Tag(name, type, isFavorite, date)
         if (tags.find { it.name == tag.name } == null) {
             tags += tag
             use {
@@ -120,8 +123,9 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
                     val name = columns[COLUMN_NAME].toString()
                     val isFavorite = (columns[COLUMN_IS_FAVORITE] as Long).toInt()
                     val date = DateFormat.getInstance().parse(columns[COLUMN_DATE].toString())
+                    val type = columns[COLUMN_TYPE].toString()
 
-                    t += Tag(name, isFavorite == 1, date)
+                    t += Tag(name, type, isFavorite == 1, date)
                     return t
                 }
             })
@@ -181,6 +185,3 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
 
 val Context.database: Database
     get() = Database.getInstance(this)
-
-class Tag(val name: String, var isFavorite: Boolean, val creation: Date)
-class Subscription(val name: String, val startID: Int, var currentID: Int)

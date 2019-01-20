@@ -29,7 +29,6 @@
     </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
-            android:layout_marginBottom="32dp"
             android:id="@+id/recycler_view_search"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>

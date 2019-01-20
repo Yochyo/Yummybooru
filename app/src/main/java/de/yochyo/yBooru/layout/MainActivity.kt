@@ -92,7 +92,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         else menu.findItem(R.id.action_r18).title = getString(R.string.leave_r18)
     }
 
-
     private fun initAddTagButton(b: Button) {
         b.setOnClickListener {
             val builder = AlertDialog.Builder(this)

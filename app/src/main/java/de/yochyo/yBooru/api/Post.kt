@@ -1,7 +1,6 @@
 package de.yochyo.yBooru.api
 
 import org.json.JSONObject
-import java.lang.Exception
 
 interface Post {
     companion object {
@@ -19,13 +18,12 @@ interface Post {
                     override val tagsCharacter = json.getString("tag_string_character").split(" ")
                     override val tagsCopyright = json.getString("tag_string_copyright").split(" ")
                     override val tagsArtist = json.getString("tag_string_artist").split(" ")
-                    override val tagsMeta = json.getString("tag_string_meta").split(" ")
                     override fun toString(): String {
-                        return "[$id] [${width}x$height]\nTags: $tagsGeneral\nTagsCharacters: $tagsCharacter\nTagsCopyright: $tagsCopyright\nTagsArtists: $tagsArtist\nTagsMeta: $tagsMeta\n$fileURL\n$fileLargeURL\n$filePreviewURL"
+                        return "[$id] [${width}x$height]\nTags: $tagsGeneral\nTagsCharacters: $tagsCharacter\nTagsCopyright: $tagsCopyright\nTagsArtists: $tagsArtist\n$fileURL\n$fileLargeURL\n$filePreviewURL"
                     }
                 }
                 return post
-            }catch(e: Exception){
+            } catch (e: Exception) {
                 return null
             }
         }
@@ -43,5 +41,4 @@ interface Post {
     val tagsCharacter: List<String>
     val tagsCopyright: List<String>
     val tagsArtist: List<String>
-    val tagsMeta: List<String>
 }

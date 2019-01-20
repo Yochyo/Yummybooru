@@ -9,10 +9,7 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
 import de.yochyo.yBooru.R
 import de.yochyo.yBooru.api.Tag
@@ -106,7 +103,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             }.setNegativeButton("CANCEL") { _, _ -> }
             builder.setView(layout)
-            builder.create().show()
+            val dialog = builder.create()
+            dialog.show()
+            editText.requestFocus()
+            dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+
         }
     }
 

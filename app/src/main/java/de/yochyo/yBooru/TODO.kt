@@ -14,8 +14,7 @@ package de.yochyo.yBooru
 //TODO namen der xml elemente optimieren
 //Zoom für picture
 //todo wenn man mit r18 gesucht hat und r18 dann deaktiviert sind die r18 posts immer noch drin
-//TODO meta tags wieder einführen
-//TODO beim hinzufügen eines tags automatisch den type/farbe angeben
 
 //TODO nächste seite in preview erst nach der seite davor runterladen
 //TODO app stürzt ab wenn kein internet
+//TODO md5 des bildes benutzen

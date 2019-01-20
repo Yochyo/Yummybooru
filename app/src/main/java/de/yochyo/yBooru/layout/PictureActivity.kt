@@ -29,7 +29,7 @@ class PictureActivity : AppCompatActivity() {
         nav_view_picture.bringToFront()
         val post = m.currentPost
         if (post != null) {
-            currentTags.apply { addAll(post.tagsCopyright.map { Tag(it, Tag.COPYPRIGHT) });addAll(post.tagsArtist.map { Tag(it, Tag.ARTIST) }); addAll(post.tagsCharacter.map { Tag(it, Tag.CHARACTER) }); addAll(post.tagsGeneral.map { Tag(it, Tag.GENERAL) }); addAll(post.tagsMeta.map { Tag(it, Tag.META) }) }
+            currentTags.apply { addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
             GlobalScope.launch {
                 val bitmap = Api.downloadImage(this@PictureActivity, post.fileLargeURL, "${post.id}Large")
                 launch(Dispatchers.Main) { image_view.setImageBitmap(bitmap) }

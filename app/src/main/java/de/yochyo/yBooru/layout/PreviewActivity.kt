@@ -64,6 +64,8 @@ class PreviewActivity : AppCompatActivity() {
                 for (t in 0 until posts.size)
                     m.dataSet.add(null)
                 adapter.notifyItemRangeInserted(i - 1, posts.size)
+                for (t in 0 until posts.size)
+                    m.dataSet[i + t] = posts[t]
                 isLoadingView = false
 
                 addChild(root, isAsync = true) {
@@ -74,7 +76,6 @@ class PreviewActivity : AppCompatActivity() {
                             m.dataSet[index] = post
                             finishedCount++
                             withContext(Dispatchers.Main) {
-                                m.dataSet[index] = post
                                 adapter.notifyItemChanged(index)
                             }
                         }

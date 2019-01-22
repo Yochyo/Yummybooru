@@ -1,10 +1,13 @@
 package de.yochyo.yBooru.layout
 
 import android.os.Bundle
+import android.support.v4.view.GravityCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.Button
 import de.yochyo.yBooru.R
@@ -38,6 +41,24 @@ class PictureActivity : AppCompatActivity() {
         val recycleView = nav_view_picture.getHeaderView(0).findViewById<RecyclerView>(R.id.recycle_view_info)
         recycleView.adapter = Adapter()
         recycleView.layoutManager = LinearLayoutManager(this)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.show_info -> {
+                drawer_picture.openDrawer(GravityCompat.END)
+                return true
+            }
+            R.id.save -> {
+                return true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.picture_menu, menu)
+        return true
     }
 
     private inner class Adapter : RecyclerView.Adapter<InfoButtonHolder>() {

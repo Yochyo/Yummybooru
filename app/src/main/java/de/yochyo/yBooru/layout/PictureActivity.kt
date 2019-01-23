@@ -10,9 +10,11 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.Toast
 import de.yochyo.yBooru.R
 import de.yochyo.yBooru.api.Api
 import de.yochyo.yBooru.api.Tag
+import de.yochyo.yBooru.file.FileManager
 import de.yochyo.yBooru.manager.Manager
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
@@ -50,6 +52,10 @@ class PictureActivity : AppCompatActivity() {
                 return true
             }
             R.id.save -> {
+                val p = m.currentPost
+                if (p != null)
+                    GlobalScope.launch { FileManager.writeFile(p, Api.downloadImage(this@PictureActivity, p.fileLargeURL, "${p.id}Large")); launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } }
+                //TODO ausprobieren
                 return true
             }
             else -> return super.onOptionsItemSelected(item)

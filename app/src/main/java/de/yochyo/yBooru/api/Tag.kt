@@ -5,12 +5,12 @@ import java.util.*
 
 class Tag(val name: String, val type: String = UNKNOWN, var isFavorite: Boolean = false, val creation: Date? = null) {
     companion object {
-        val GENERAL = "g"
-        val CHARACTER = "c"
-        val COPYPRIGHT = "cr"
-        val ARTIST = "a"
-        val META = "m"
-        val UNKNOWN = "u"
+        const val GENERAL = "g"
+        const val CHARACTER = "c"
+        const val COPYPRIGHT = "cr"
+        const val ARTIST = "a"
+        const val META = "m"
+        const val UNKNOWN = "u"
     }
 
     val color: Int

@@ -20,8 +20,9 @@ object Api {
 
 
     suspend fun downloadImage(context: Context, url: String, id: String): Bitmap {
-        if (downloading.contains(id))
-            return context.cache.awaitPicture(id)
+        val b = context.cache.getCachedBitmap(id)
+        if (b != null) return b
+        if (downloading.contains(id)) return context.cache.awaitPicture(id)
         else {
             downloading += id
             val bitmap = BitmapFactory.decodeStream(URL(url).openStream()).apply { context.cache.cacheBitmap(id, this) }

@@ -18,3 +18,5 @@ package de.yochyo.yBooru
 //TODO nächste seite in preview erst nach der seite davor runterladen
 //TODO app stürzt ab wenn kein internet
 //TODO md5 des bildes benutzen
+
+//TODO mainactivity, don´t scroll the actionbar

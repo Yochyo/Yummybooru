@@ -63,7 +63,7 @@ class PictureActivity : AppCompatActivity() {
     }
 
     private fun loadImage(post: Post) {
-        currentTags.apply { addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
+        currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
         recycleView.adapter?.notifyDataSetChanged()
         GlobalScope.launch {
             val preview = Api.downloadImage(this@PictureActivity, post.filePreviewURL, "${post.id}Preview")

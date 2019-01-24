@@ -1,5 +1,6 @@
 package de.yochyo.yBooru.layout
 
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.AppCompatActivity
@@ -35,9 +36,15 @@ class PictureActivity : AppCompatActivity() {
         val post = m.currentPost
         if (post != null) {
             currentTags.apply { addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
+
+
             GlobalScope.launch {
-                val bitmap = Api.downloadImage(this@PictureActivity, post.fileLargeURL, "${post.id}Large")
-                launch(Dispatchers.Main) { image_view.setImageBitmap(bitmap) }
+                val preview = Api.downloadImage(this@PictureActivity, post.filePreviewURL, "${post.id}Preview")
+                launch(Dispatchers.Main) { image_view.setImageBitmap(preview) }
+                launch {
+                    val bitmap = Api.downloadImage(this@PictureActivity, post.fileLargeURL, "${post.id}Large")
+                    launch(Dispatchers.Main) { image_view.setImageBitmap(bitmap) }
+                }
             }
         }
         val recycleView = nav_view_picture.getHeaderView(0).findViewById<RecyclerView>(R.id.recycle_view_info)
@@ -49,7 +56,6 @@ class PictureActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.show_info -> {
                 drawer_picture.openDrawer(GravityCompat.END)
-                println(m.currentPost)
                 return true
             }
             R.id.save -> {
@@ -74,6 +80,10 @@ class PictureActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
             holder.button.text = currentTags[position].name
+            if (Build.VERSION.SDK_INT > 22)
+                holder.button.setTextColor(getColor(currentTags[position].color))
+            else
+                holder.button.setTextColor(resources.getColor(currentTags[position].color))
         }
     }
 

@@ -26,7 +26,7 @@ class Tag(val name: String, val type: String = UNKNOWN, var isFavorite: Boolean 
         }
 
     override fun toString(): String {
-        return "$name (type = $type) [isFavorite = $isFavorite]"
+        return "[$name (type = $type)(isFavorite = $isFavorite)]"
     }
 }
 

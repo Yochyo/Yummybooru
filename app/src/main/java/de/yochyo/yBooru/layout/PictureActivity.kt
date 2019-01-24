@@ -49,13 +49,13 @@ class PictureActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.show_info -> {
                 drawer_picture.openDrawer(GravityCompat.END)
+                println(m.currentPost)
                 return true
             }
             R.id.save -> {
                 val p = m.currentPost
                 if (p != null)
                     GlobalScope.launch { FileManager.writeFile(p, Api.downloadImage(this@PictureActivity, p.fileLargeURL, "${p.id}Large")); launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } }
-                //TODO ausprobieren
                 return true
             }
             else -> return super.onOptionsItemSelected(item)

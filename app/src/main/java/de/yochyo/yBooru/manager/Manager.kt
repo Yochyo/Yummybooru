@@ -26,6 +26,10 @@ class Manager {
             } else
                 return manager
         }
+
+        fun reset(tags: String) {
+            map.remove(tags)
+        }
     }
 
     val dataSet = ArrayList<Post?>(200)

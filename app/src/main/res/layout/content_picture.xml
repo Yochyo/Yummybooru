@@ -23,7 +23,7 @@
             app:itemTextColor="@color/white"
             app:headerLayout="@layout/nav_header_picture"/>
 
-    <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
-               android:background="@color/transparent" android:id="@+id/image_view"/>
+    <android.support.v4.view.ViewPager android:layout_width="match_parent" android:layout_height="match_parent"
+                                       android:background="@color/transparent" android:id="@+id/view_pager"/>
 
 </android.support.v4.widget.DrawerLayout>

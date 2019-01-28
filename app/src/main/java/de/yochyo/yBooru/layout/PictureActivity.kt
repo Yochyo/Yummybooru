@@ -16,7 +16,10 @@ import de.yochyo.yBooru.R
 import de.yochyo.yBooru.api.Api
 import de.yochyo.yBooru.api.Tag
 import de.yochyo.yBooru.file.FileManager
+import de.yochyo.yBooru.large
 import de.yochyo.yBooru.manager.Manager
+import de.yochyo.yBooru.preview
+import de.yochyo.yBooru.utils.cache
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers
@@ -91,10 +94,10 @@ class PictureActivity : AppCompatActivity() {
             val post = m.dataSet[position]
             if (post != null) {
                 GlobalScope.launch {
-                    val preview = Api.downloadImage(this@PictureActivity, post.filePreviewURL, "${post.id}Preview")
+                    val preview = Api.downloadImage(this@PictureActivity, post.filePreviewURL, preview(post.id))
                     launch(Dispatchers.Main) { imageView.setImageBitmap(preview) }
                     launch {
-                        val bitmap = Api.downloadImage(this@PictureActivity, post.fileLargeURL, "${post.id}Large")
+                        val bitmap = Api.downloadImage(this@PictureActivity, post.fileLargeURL, large(post.id), false)
                         launch(Dispatchers.Main) { imageView.setImageBitmap(bitmap) }
                     }
                 }
@@ -104,7 +107,10 @@ class PictureActivity : AppCompatActivity() {
         }
 
         override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-            //TODO was soll ich machen
+            val post = m.dataSet[position]
+            if (post != null) {
+                cache.removeBitmap(large(post.id))
+            }
         }
 
     }

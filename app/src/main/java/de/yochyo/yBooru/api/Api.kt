@@ -19,13 +19,13 @@ object Api {
     private val downloading = ArrayList<String>(20)
 
 
-    suspend fun downloadImage(context: Context, url: String, id: String): Bitmap {
+    suspend fun downloadImage(context: Context, url: String, id: String, cacheOnStorage: Boolean = true): Bitmap {
         val b = context.cache.getCachedBitmap(id)
         if (b != null) return b
         if (downloading.contains(id)) return context.cache.awaitPicture(id)
         else {
             downloading += id
-            val bitmap = BitmapFactory.decodeStream(URL(url).openStream()).apply { context.cache.cacheBitmap(id, this) }
+            val bitmap = BitmapFactory.decodeStream(URL(url).openStream()).apply { context.cache.cacheBitmap(id, this, cacheOnStorage) }
             downloading -= id
             return bitmap
         }

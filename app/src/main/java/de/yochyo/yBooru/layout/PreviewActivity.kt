@@ -13,6 +13,7 @@ import de.yochyo.yBooru.R
 import de.yochyo.yBooru.api.Api
 import de.yochyo.yBooru.api.Post
 import de.yochyo.yBooru.manager.Manager
+import de.yochyo.yBooru.preview
 import de.yochyo.yBooru.utils.addChild
 import de.yochyo.yBooru.utils.cache
 import kotlinx.android.synthetic.main.activity_preview.*
@@ -71,7 +72,7 @@ class PreviewActivity : AppCompatActivity() {
                 addChild(root, isAsync = true) {
                     for (post in posts) {
                         val index = i++
-                        Api.downloadImage(this@PreviewActivity, post.filePreviewURL, "${post.id}Preview")
+                        Api.downloadImage(this@PreviewActivity, post.filePreviewURL, preview(post.id))
                         if (isActive) {
                             m.dataSet[index] = post
                             finishedCount++
@@ -138,7 +139,7 @@ class PreviewActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
             val post = m.dataSet[position]
             if (post != null) {
-                val bitmap = this@PreviewActivity.cache.getCachedBitmap("${post.id}Preview")
+                val bitmap = this@PreviewActivity.cache.getCachedBitmap(preview(post.id))
                 if (bitmap != null) {
                     holder.imageView.setImageBitmap(bitmap)
                     return

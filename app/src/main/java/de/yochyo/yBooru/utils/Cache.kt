@@ -26,10 +26,17 @@ abstract class Cache(context: Context) {
         return null
     }
 
-    fun cacheBitmap(id: String, bitmap: Bitmap) {
+    fun cacheBitmap(id: String, bitmap: Bitmap, onStorage: Boolean = true) {
         memory.addBitmap(id, bitmap)
-        disk.addBitmap(id, ByteArrayOutputStream().apply { bitmap.compress(Bitmap.CompressFormat.PNG, 100, this) }.toByteArray())
+        if (onStorage)
+            disk.addBitmap(id, ByteArrayOutputStream().apply { bitmap.compress(Bitmap.CompressFormat.PNG, 100, this) }.toByteArray())
     }
+
+    fun removeBitmap(id: String) {
+        memory.remove(id)
+        disk.removeBitmap(id)
+    }
+
 
     suspend fun awaitPicture(id: String): Bitmap {
         var bitmap = getCachedBitmap(id)
@@ -80,6 +87,13 @@ private class DiskCache(val cache: File) {
         cache.listFiles().forEach {
             if (it.isFile)
                 it.delete()//TODO on exit delete all
+        }
+    }
+
+    fun removeBitmap(id: String) {
+        with(File("${cache.absolutePath}/$id")) {
+            if (exists())
+                File("${cache.absolutePath}/$id").delete()
         }
     }
 

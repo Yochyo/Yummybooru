@@ -1,4 +1,4 @@
-package de.yochyo.yBooru.layout
+package de.yochyo.ybooru.layout
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,13 +9,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import de.yochyo.yBooru.R
-import de.yochyo.yBooru.api.Api
-import de.yochyo.yBooru.api.Post
-import de.yochyo.yBooru.manager.Manager
-import de.yochyo.yBooru.preview
-import de.yochyo.yBooru.utils.addChild
-import de.yochyo.yBooru.utils.cache
+import de.yochyo.ybooru.R
+import de.yochyo.ybooru.api.Api
+import de.yochyo.ybooru.api.Post
+import de.yochyo.ybooru.manager.Manager
+import de.yochyo.ybooru.utils.preview
+import de.yochyo.ybooru.utils.addChild
+import de.yochyo.ybooru.utils.cache
 import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*
 import kotlinx.coroutines.*

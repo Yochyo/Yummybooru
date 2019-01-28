@@ -1,6 +1,6 @@
-package de.yochyo.yBooru.api
+package de.yochyo.ybooru.api
 
-import de.yochyo.yBooru.R
+import de.yochyo.ybooru.R
 import java.util.*
 
 class Tag(val name: String, val type: String = UNKNOWN, var isFavorite: Boolean = false, val creation: Date? = null) {

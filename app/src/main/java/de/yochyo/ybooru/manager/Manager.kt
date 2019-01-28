@@ -1,6 +1,6 @@
-package de.yochyo.yBooru.manager
+package de.yochyo.ybooru.manager
 
-import de.yochyo.yBooru.api.Post
+import de.yochyo.ybooru.api.Post
 
 class Manager {
     companion object {

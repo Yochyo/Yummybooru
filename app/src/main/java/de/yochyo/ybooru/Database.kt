@@ -1,9 +1,9 @@
-package de.yochyo.yBooru
+package de.yochyo.ybooru
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import de.yochyo.yBooru.api.Subscription
-import de.yochyo.yBooru.api.Tag
+import de.yochyo.ybooru.api.Subscription
+import de.yochyo.ybooru.api.Tag
 import org.jetbrains.anko.db.*
 import java.text.DateFormat
 import java.util.*

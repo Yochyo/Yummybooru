@@ -1,4 +1,4 @@
-package de.yochyo.yBooru.layout
+package de.yochyo.ybooru.layout
 
 import android.os.Build
 import android.os.Bundle
@@ -12,14 +12,14 @@ import android.view.*
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
-import de.yochyo.yBooru.R
-import de.yochyo.yBooru.api.Api
-import de.yochyo.yBooru.api.Tag
-import de.yochyo.yBooru.file.FileManager
-import de.yochyo.yBooru.large
-import de.yochyo.yBooru.manager.Manager
-import de.yochyo.yBooru.preview
-import de.yochyo.yBooru.utils.cache
+import de.yochyo.ybooru.R
+import de.yochyo.ybooru.api.Api
+import de.yochyo.ybooru.api.Tag
+import de.yochyo.ybooru.file.FileManager
+import de.yochyo.ybooru.utils.large
+import de.yochyo.ybooru.manager.Manager
+import de.yochyo.ybooru.utils.preview
+import de.yochyo.ybooru.utils.cache
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers

@@ -1,4 +1,4 @@
-package de.yochyo.yBooru
+package de.yochyo.ybooru.utils
 
 fun large(id: Int) = "${id}Large"
 fun preview(id: Int) = "${id}Preview"

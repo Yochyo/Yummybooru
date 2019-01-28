@@ -1,4 +1,4 @@
-package de.yochyo.yBooru
+package de.yochyo.ybooru
 
 import android.view.GestureDetector
 import android.view.MotionEvent

@@ -1,10 +1,10 @@
-package de.yochyo.yBooru.api
+package de.yochyo.ybooru.api
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import de.yochyo.yBooru.database
-import de.yochyo.yBooru.utils.cache
+import de.yochyo.ybooru.database
+import de.yochyo.ybooru.utils.cache
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONArray

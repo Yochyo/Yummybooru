@@ -1,4 +1,4 @@
-package de.yochyo.yBooru.api
+package de.yochyo.ybooru.api
 
 import org.json.JSONObject
 

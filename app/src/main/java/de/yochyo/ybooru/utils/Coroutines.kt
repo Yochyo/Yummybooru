@@ -1,4 +1,4 @@
-package de.yochyo.yBooru.utils
+package de.yochyo.ybooru.utils
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job

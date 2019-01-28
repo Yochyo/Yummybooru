@@ -1,4 +1,4 @@
-package de.yochyo.yBooru
+package de.yochyo.ybooru
 
 
 //TODO gifs und videos

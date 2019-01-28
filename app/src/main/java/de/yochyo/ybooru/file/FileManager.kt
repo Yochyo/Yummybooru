@@ -1,8 +1,8 @@
-package de.yochyo.yBooru.file
+package de.yochyo.ybooru.file
 
 import android.graphics.Bitmap
 import android.os.Environment
-import de.yochyo.yBooru.api.Post
+import de.yochyo.ybooru.api.Post
 import java.io.ByteArrayOutputStream
 import java.io.File
 

@@ -1,4 +1,4 @@
-package de.yochyo.yBooru.layout
+package de.yochyo.ybooru.layout
 
 import android.Manifest
 import android.content.Intent
@@ -13,9 +13,9 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.widget.*
-import de.yochyo.yBooru.R
-import de.yochyo.yBooru.api.Tag
-import de.yochyo.yBooru.database
+import de.yochyo.ybooru.R
+import de.yochyo.ybooru.api.Tag
+import de.yochyo.ybooru.database
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 

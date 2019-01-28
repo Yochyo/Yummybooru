@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="de.yochyo.yBooru">
+          package="de.yochyo.ybooru">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -15,7 +15,7 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
         <activity
-                android:name=".layout.MainActivity"
+                android:name="de.yochyo.ybooru.layout.MainActivity"
                 android:label="@string/app_name"
                 android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -24,12 +24,12 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".layout.PreviewActivity"
+                android:name="de.yochyo.ybooru.layout.PreviewActivity"
                 android:label="@string/title_activity_preview"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-                android:name=".layout.PictureActivity"
+                android:name="de.yochyo.ybooru.layout.PictureActivity"
                 android:label="@string/title_activity_picture"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>

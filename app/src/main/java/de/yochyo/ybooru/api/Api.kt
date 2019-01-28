@@ -24,6 +24,7 @@ object Api {
         if (b != null) return b
         if (downloading.contains(id)) return context.cache.awaitPicture(id)
         else {
+            //TODO hier könnten auch mp4 sein
             downloading += id
             val bitmap = BitmapFactory.decodeStream(URL(url).openStream()).apply { context.cache.cacheBitmap(id, this, cacheOnStorage) }
             downloading -= id

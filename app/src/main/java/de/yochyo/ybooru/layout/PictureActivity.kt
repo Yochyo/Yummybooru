@@ -16,10 +16,10 @@ import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Api
 import de.yochyo.ybooru.api.Tag
 import de.yochyo.ybooru.file.FileManager
-import de.yochyo.ybooru.utils.large
 import de.yochyo.ybooru.manager.Manager
-import de.yochyo.ybooru.utils.preview
 import de.yochyo.ybooru.utils.cache
+import de.yochyo.ybooru.utils.large
+import de.yochyo.ybooru.utils.preview
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +32,6 @@ class PictureActivity : AppCompatActivity() {
     private lateinit var recycleView: RecyclerView
     lateinit var m: Manager
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_picture)
@@ -40,9 +39,8 @@ class PictureActivity : AppCompatActivity() {
 
         m = Manager.get(intent.getStringExtra("tags"))
         nav_view_picture.bringToFront()
-        recycleView = nav_view_picture.getHeaderView(0).findViewById(R.id.recycle_view_info)
-        recycleView.adapter = InfoAdapter()
-        recycleView.layoutManager = LinearLayoutManager(this)
+
+        initRecycleView()
         with(view_pager) {
             adapter = PageAdapter()
             currentItem = m.position
@@ -54,8 +52,8 @@ class PictureActivity : AppCompatActivity() {
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                 override fun onPageScrollStateChanged(p0: Int) {}
                 override fun onPageScrolled(p0: Int, p1: Float, p2: Int) {}
-                override fun onPageSelected(p0: Int) {
-                    val post = m.dataSet[p0]
+                override fun onPageSelected(position: Int) {
+                    val post = m.dataSet[position]
                     if (post != null) {
                         currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
                         recycleView.adapter?.notifyDataSetChanged()
@@ -64,6 +62,7 @@ class PictureActivity : AppCompatActivity() {
             })
         }
     }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -80,20 +79,26 @@ class PictureActivity : AppCompatActivity() {
             else -> return super.onOptionsItemSelected(item)
         }
     }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.picture_menu, menu)
         return true
     }
 
+    private fun initRecycleView() {
+        recycleView = nav_view_picture.getHeaderView(0).findViewById(R.id.recycle_view_info)
+        recycleView.adapter = InfoAdapter()
+        recycleView.layoutManager = LinearLayoutManager(this)
+    }
+
     private inner class PageAdapter : PagerAdapter() {
-        override fun isViewFromObject(p0: View, p1: Any): Boolean = p0 == p1
+        override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
         override fun getCount(): Int = m.dataSet.size
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
             val imageView = LayoutInflater.from(this@PictureActivity).inflate(R.layout.picture_item_view, container, false) as ImageView
             val post = m.dataSet[position]
             if (post != null) {
                 GlobalScope.launch {
+                    //TODO schauen ob hier gewartet wird
                     val preview = Api.downloadImage(this@PictureActivity, post.filePreviewURL, preview(post.id))
                     launch(Dispatchers.Main) { imageView.setImageBitmap(preview) }
                     launch {
@@ -108,26 +113,19 @@ class PictureActivity : AppCompatActivity() {
 
         override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
             val post = m.dataSet[position]
-            if (post != null) {
-                cache.removeBitmap(large(post.id))
-            }
+            if (post != null) cache.removeBitmap(large(post.id))
         }
 
     }
-
     private inner class InfoAdapter : RecyclerView.Adapter<InfoButtonHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InfoButtonHolder = InfoButtonHolder(LayoutInflater.from(parent.context).inflate(R.layout.info_item_button, parent, false) as Button)
-
         override fun getItemCount(): Int = currentTags.size
-
         override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
-            holder.button.text = currentTags[position].name
-            if (Build.VERSION.SDK_INT > 22)
-                holder.button.setTextColor(getColor(currentTags[position].color))
-            else
-                holder.button.setTextColor(resources.getColor(currentTags[position].color))
+            val tag = currentTags[position]
+            holder.button.text = tag.name
+            if (Build.VERSION.SDK_INT > 22) holder.button.setTextColor(getColor(tag.color))
+            else holder.button.setTextColor(resources.getColor(tag.color))
         }
     }
-
     private inner class InfoButtonHolder(val button: Button) : RecyclerView.ViewHolder(button)
 }

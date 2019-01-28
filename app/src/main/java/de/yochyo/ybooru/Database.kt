@@ -38,82 +38,6 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
     }
 
 
-    fun addTag(name: String, type: String, isFavorite: Boolean): Tag? {
-        val date = Date()
-        val tag = Tag(name, type, isFavorite, date)
-        if (tags.find { it.name == tag.name } == null) {
-            tags += tag
-            use {
-                insert(TABLE_TAGS,
-                        COLUMN_NAME to tag.name,
-                        COLUMN_IS_FAVORITE to if (tag.isFavorite) 1 else 0,
-                        COLUMN_DATE to DateFormat.getInstance().format(date))
-            }
-            return tag
-        }
-        return null
-    }
-
-    fun addSubscription(name: String, startID: Int) {
-        val sub = Subscription(name, startID, startID)
-        if (subs.find { it.name == name } == null) {
-            subs += sub
-            use {
-                insert(TABLE_SUBSCRIPTION,
-                        COLUMN_NAME to name,
-                        COLUMN_SUBSCRIBED_SINCE to startID,
-                        COLUMN_SUBSCRIBED_SINCE to startID)
-            }
-        }
-    }
-
-    fun removeTag(name: String) {
-        val tag = tags.find { it.name == name }
-        if (tag != null) {
-            tags.remove(tag)
-            use {
-                delete(TABLE_TAGS, whereClause = "$COLUMN_NAME = {name}", args = *arrayOf("name" to name))
-            }
-        }
-    }
-
-    fun removeSubscription(name: String) {
-        val sub = subs.find { it.name == name }
-        if (sub != null) {
-            subs.remove(sub)
-            use {
-                delete(TABLE_SUBSCRIPTION, whereClause = "$COLUMN_NAME = {name}", args = *arrayOf("name" to name))
-            }
-        }
-    }
-
-    fun changeTag(changedTag: Tag) {
-        val tag = tags.find { it.name == changedTag.name }
-        if (tag != null) {
-            tag.isFavorite = changedTag.isFavorite
-            use {
-                update(TABLE_TAGS,
-                        COLUMN_IS_FAVORITE to if (changedTag.isFavorite) 1 else 0)
-                        .whereArgs("$COLUMN_NAME = {name}", "name" to changedTag.name).exec()
-            }
-        }
-    }
-
-    fun changeSubscription(changedSub: Subscription) {
-        val sub = subs.find { it.name == changedSub.name }
-        if (sub != null) {
-            sub.currentID = changedSub.currentID
-            use {
-                update(TABLE_SUBSCRIPTION,
-                        COLUMN_SUBSCRIBED_STATUS to changedSub.currentID)
-                        .whereArgs("$COLUMN_NAME = {name}", "name" to changedSub.name).exec()
-            }
-        }
-    }
-
-    fun getSubscription(name: String) = getSubscriptions().find { it.name == name }
-    fun getTag(name: String) = getTags().find { it.name == name }
-
     fun getTags(): List<Tag> {
         if (tags.isNotEmpty()) return tags
         else return use {
@@ -130,6 +54,38 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
                 }
             })
             t
+        }
+    }
+
+    fun getTag(name: String) = getTags().find { it.name == name }
+    fun addTag(name: String, type: String, isFavorite: Boolean): Tag? {
+        val date = Date()
+        val tag = Tag(name, type, isFavorite, date)
+        if (tags.find { it.name == tag.name } == null) {
+            tags += tag
+            use {
+                insert(TABLE_TAGS, COLUMN_NAME to tag.name,
+                        COLUMN_IS_FAVORITE to if (tag.isFavorite) 1 else 0, COLUMN_DATE to DateFormat.getInstance().format(date))
+            }
+            return tag
+        }
+        return null
+    }
+    fun removeTag(name: String) {
+        val tag = tags.find { it.name == name }
+        if (tag != null) {
+            tags.remove(tag)
+            use { delete(TABLE_TAGS, whereClause = "$COLUMN_NAME = {name}", args = *arrayOf("name" to name)) }
+        }
+    }
+    fun changeTag(changedTag: Tag) {
+        val tag = tags.find { it.name == changedTag.name }
+        if (tag != null) {
+            tag.isFavorite = changedTag.isFavorite
+            use {
+                update(TABLE_TAGS, COLUMN_IS_FAVORITE to if (changedTag.isFavorite) 1 else 0)
+                        .whereArgs("$COLUMN_NAME = {name}", "name" to changedTag.name).exec()
+            }
         }
     }
 
@@ -150,14 +106,39 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
         }
     }
 
-    private var _r18: Boolean? = null
-        set(value) {
-            field = value
-            with(prefs.edit()) {
-                putBoolean("r18", value!!)
-                apply()
+    fun getSubscription(name: String) = getSubscriptions().find { it.name == name }
+    fun addSubscription(name: String, startID: Int) {
+        val sub = Subscription(name, startID, startID)
+        if (subs.find { it.name == name } == null) {
+            subs += sub
+            use {
+                insert(TABLE_SUBSCRIPTION, COLUMN_NAME to name,
+                        COLUMN_SUBSCRIBED_SINCE to startID, COLUMN_SUBSCRIBED_SINCE to startID)
             }
         }
+    }
+
+    fun removeSubscription(name: String) {
+        val sub = subs.find { it.name == name }
+        if (sub != null) {
+            subs.remove(sub)
+            use { delete(TABLE_SUBSCRIPTION, whereClause = "$COLUMN_NAME = {name}", args = *arrayOf("name" to name)) }
+        }
+    }
+
+    fun changeSubscription(changedSub: Subscription) {
+        val sub = subs.find { it.name == changedSub.name }
+        if (sub != null) {
+            sub.currentID = changedSub.currentID
+            use {
+                update(TABLE_SUBSCRIPTION, COLUMN_SUBSCRIBED_STATUS to changedSub.currentID)
+                        .whereArgs("$COLUMN_NAME = {name}", "name" to changedSub.name).exec()
+            }
+        }
+    }
+
+
+    private var _r18: Boolean? = null
     var r18: Boolean
         get() {
             if (_r18 == null) _r18 = prefs.getBoolean("r18", false)
@@ -165,6 +146,10 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
         }
         set(value) {
             _r18 = value
+            with(prefs.edit()) {
+                putBoolean("r18", value)
+                apply()
+            }
         }
 
 
@@ -178,7 +163,6 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
                 COLUMN_SUBSCRIBED_SINCE to INTEGER,
                 COLUMN_SUBSCRIBED_STATUS to INTEGER)
     }
-
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {}
 
 }

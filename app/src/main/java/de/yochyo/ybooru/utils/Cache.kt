@@ -40,18 +40,21 @@ abstract class Cache(context: Context) {
 
     suspend fun awaitPicture(id: String): Bitmap {
         var bitmap = getCachedBitmap(id)
+        var i = 0
         while (bitmap == null) {
             delay(50)
             bitmap = getCachedBitmap(id)
+            i++
+            if (i > 100) throw Exception("awaited picture [$id] does not appear in cache")
         }
         return bitmap
     }
 
-    fun clearMemory() {
+    private fun clearMemory() {
         memory.evictAll()
     }
 
-    fun clearDisk() {
+    private fun clearDisk() {
         disk.clearCache()
     }
 }

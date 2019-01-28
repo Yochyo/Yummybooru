@@ -4,7 +4,7 @@ import de.yochyo.ybooru.api.Post
 
 class Manager {
     companion object {
-        private val map = HashMap<String, Manager>()//tags (seperated with ' '), manager
+        private val map = HashMap<String, Manager>()
         fun get(tags: String): Manager {
             val m = map[tags]
             if (m != null) return m
@@ -29,6 +29,10 @@ class Manager {
 
         fun reset(tags: String) {
             map.remove(tags)
+        }
+
+        fun resetAll() {
+            map.clear()
         }
     }
 

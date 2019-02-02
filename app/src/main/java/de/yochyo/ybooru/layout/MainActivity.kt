@@ -1,7 +1,6 @@
 package de.yochyo.ybooru.layout
 
 import android.Manifest
-import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.app.ActivityCompat
@@ -117,9 +116,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
     private fun initSearchButton(b: Button) {
         b.setOnClickListener {
-            val intent = Intent(this, PreviewActivity::class.java)
-            intent.putExtra("tags", selectedTags.toTagString())
-            startActivity(intent)
+            PreviewActivity.startActivity(this, selectedTags.toTagString())
         }
     }
 

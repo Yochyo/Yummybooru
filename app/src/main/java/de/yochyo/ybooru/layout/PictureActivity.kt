@@ -1,5 +1,7 @@
 package de.yochyo.ybooru.layout
 
+import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.view.GravityCompat
@@ -28,6 +30,10 @@ import kotlinx.coroutines.launch
 
 
 class PictureActivity : AppCompatActivity() {
+    companion object {
+        fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PictureActivity::class.java).apply { putExtra("tags", tags) })
+    }
+
     private var currentTags = ArrayList<Tag>()
     private lateinit var recycleView: RecyclerView
     lateinit var m: Manager
@@ -79,6 +85,7 @@ class PictureActivity : AppCompatActivity() {
             else -> return super.onOptionsItemSelected(item)
         }
     }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.picture_menu, menu)
         return true
@@ -117,6 +124,7 @@ class PictureActivity : AppCompatActivity() {
         }
 
     }
+
     private inner class InfoAdapter : RecyclerView.Adapter<InfoButtonHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InfoButtonHolder = InfoButtonHolder(LayoutInflater.from(parent.context).inflate(R.layout.info_item_button, parent, false) as Button)
         override fun getItemCount(): Int = currentTags.size
@@ -127,5 +135,6 @@ class PictureActivity : AppCompatActivity() {
             else holder.button.setTextColor(resources.getColor(tag.color))
         }
     }
+
     private inner class InfoButtonHolder(val button: Button) : RecyclerView.ViewHolder(button)
 }

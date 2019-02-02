@@ -1,5 +1,6 @@
 package de.yochyo.ybooru.layout
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -21,6 +22,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class PreviewActivity : AppCompatActivity() {
+    companion object {
+        fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PreviewActivity::class.java).apply { putExtra("tags", tags) })
+    }
     private var root = SupervisorJob()
     private lateinit var m: Manager
     private lateinit var tags: Array<String>
@@ -114,9 +118,7 @@ class PreviewActivity : AppCompatActivity() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder = MyViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
             imageView.setOnClickListener {
                 m.position = layoutPosition
-                val intent = Intent(this@PreviewActivity, PictureActivity::class.java)
-                intent.putExtra("tags", tags.toTagString())
-                this@PreviewActivity.startActivity(intent)
+                PictureActivity.startActivity(this@PreviewActivity, tags.toTagString())
             }
         }
         override fun getItemCount(): Int = m.dataSet.size

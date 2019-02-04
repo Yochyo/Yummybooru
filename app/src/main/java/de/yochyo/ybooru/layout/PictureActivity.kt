@@ -126,7 +126,13 @@ class PictureActivity : AppCompatActivity() {
     }
 
     private inner class InfoAdapter : RecyclerView.Adapter<InfoButtonHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InfoButtonHolder = InfoButtonHolder(LayoutInflater.from(parent.context).inflate(R.layout.info_item_button, parent, false) as Button)
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InfoButtonHolder = InfoButtonHolder(LayoutInflater.from(parent.context).inflate(R.layout.info_item_button, parent, false) as Button).apply {
+            button.setOnClickListener {
+                println()
+                PreviewActivity.startActivity(this@PictureActivity, button.text.toString())
+                drawer_picture.closeDrawer(GravityCompat.END)
+            }
+        }
         override fun getItemCount(): Int = currentTags.size
         override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
             val tag = currentTags[position]
@@ -138,3 +144,4 @@ class PictureActivity : AppCompatActivity() {
 
     private inner class InfoButtonHolder(val button: Button) : RecyclerView.ViewHolder(button)
 }
+

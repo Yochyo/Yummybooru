@@ -71,6 +71,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
         }
         return null
     }
+
     fun removeTag(name: String) {
         val tag = tags.find { it.name == name }
         if (tag != null) {
@@ -78,6 +79,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
             use { delete(TABLE_TAGS, whereClause = "$COLUMN_NAME = {name}", args = *arrayOf("name" to name)) }
         }
     }
+
     fun changeTag(changedTag: Tag) {
         val tag = tags.find { it.name == changedTag.name }
         if (tag != null) {
@@ -138,6 +140,20 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
     }
 
 
+    private var _limit: Int? = null
+    var limit: Int
+        get() {
+            if (_limit == null) _limit = prefs.getInt("limit", 30)
+            return _limit!!
+        }
+        set(value) {
+            _limit = value
+            with(prefs.edit()) {
+                putInt("limit", value)
+                apply()
+            }
+        }
+
     private var _r18: Boolean? = null
     var r18: Boolean
         get() {
@@ -163,6 +179,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
                 COLUMN_SUBSCRIBED_SINCE to INTEGER,
                 COLUMN_SUBSCRIBED_STATUS to INTEGER)
     }
+
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {}
 
 }

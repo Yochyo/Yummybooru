@@ -58,10 +58,11 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
     }
 
     fun getTag(name: String) = getTags().find { it.name == name }
-    fun addTag(name: String, type: String, isFavorite: Boolean): Tag? {
+    fun addTag(name: String, type: String, isFavorite: Boolean): Tag {
         val date = Date()
         val tag = Tag(name, type, isFavorite, date)
-        if (tags.find { it.name == tag.name } == null) {
+        val existingTag = tags.find { it.name == tag.name }
+        if (existingTag == null) {
             tags += tag
             use {
                 insert(TABLE_TAGS, COLUMN_NAME to tag.name,
@@ -69,7 +70,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
             }
             return tag
         }
-        return null
+        return existingTag
     }
 
     fun removeTag(name: String) {

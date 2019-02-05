@@ -36,7 +36,7 @@ class Manager {
         }
     }
 
-    val dataSet = ArrayList<Post?>(200)
+    val dataSet = ArrayList<Post>(200)
     val pages = HashMap<Int, List<Post>>()
     var position = -1
     var currentPage = 1

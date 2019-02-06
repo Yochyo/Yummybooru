@@ -10,7 +10,9 @@ interface Post {
                     override val id = json.getInt("id")
                     override val width = json.getInt("image_width")
                     override val height = json.getInt("image_height")
+                    override val extension = json.getString("file_ext")
                     override val rating = json.getString("rating")
+                    override val fileSize = json.getInt("file_size")
                     override val fileURL = json.getString("file_url")
                     override val fileLargeURL = json.getString("large_file_url")
                     override val filePreviewURL = json.getString("preview_file_url")
@@ -30,9 +32,11 @@ interface Post {
     }
 
     val id: Int
+    val extension: String
     val width: Int
     val height: Int
     val rating: String
+    val fileSize: Int
     val fileURL: String
     val fileLargeURL: String
     val filePreviewURL: String

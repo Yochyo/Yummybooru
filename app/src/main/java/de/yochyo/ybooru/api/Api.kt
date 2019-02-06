@@ -40,12 +40,13 @@ object Api {
             url = url.substring(0, url.length - 1)
         }
         val json = getJson(url)
-        val array = ArrayList<Post>(context.database.limit)
+        var array: List<Post> = ArrayList(context.database.limit)
         for (i in 0 until json.length()) {
             val post = Post.getPostFromJson(json.getJSONObject(i))
             if (post != null)
                 array += post
         }
+        array = array.filter { it.extension == "png" || it.extension == "jpg" || it.extension == "jpeg" }
         if (context.database.r18) return array.filter { it.rating == "s" }
         else return array
     }

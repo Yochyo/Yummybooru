@@ -69,6 +69,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.action_r18 -> {
                 database.r18 = !database.r18
                 setMenuR18Text()
+                Manager.resetAll()
                 return true
             }
             R.id.search -> {

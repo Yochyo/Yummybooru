@@ -28,11 +28,17 @@ class Manager {
         }
 
         fun reset(tags: String) {
-            map.remove(tags)
+            val m = map[tags]
+            if (m != null) {
+                m.dataSet.clear()
+                m.pages.clear()
+                m.position = -1
+                m.currentPage = 1
+            }
         }
-
         fun resetAll() {
-            map.clear()
+            for (m in map.keys)
+                reset(m)
         }
     }
 

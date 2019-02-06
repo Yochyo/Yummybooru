@@ -9,4 +9,6 @@
     <string name="leave_r18">Leave R-18 mode</string>
     <string name="title_activity_preview">PreviewActivity</string>
     <string name="title_activity_picture">PictureActivity</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="title_activity_subscription">SubscriptionActivity</string>
 </resources>

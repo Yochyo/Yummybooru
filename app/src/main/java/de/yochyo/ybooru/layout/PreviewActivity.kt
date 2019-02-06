@@ -168,11 +168,9 @@ class PreviewActivity : AppCompatActivity() {
         override fun getItemCount(): Int = m.dataSet.size
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
             val post = m.dataSet[position]
-            if (post != null) {
-                val bitmap = this@PreviewActivity.cache.getCachedBitmap(preview(post.id))
-                if (bitmap != null)
-                    holder.imageView.setImageBitmap(bitmap)
-            } else holder.imageView.setImageDrawable(null)
+            val bitmap = this@PreviewActivity.cache.getCachedBitmap(preview(post.id))
+            if (bitmap != null) holder.imageView.setImageBitmap(bitmap)
+            else holder.imageView.setImageBitmap(null)
         }
     }
 

@@ -14,6 +14,7 @@ import android.view.*
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
+import de.yochyo.ybooru.GestureListener
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Api
 import de.yochyo.ybooru.api.Tag
@@ -55,6 +56,22 @@ class PictureActivity : AppCompatActivity() {
                 currentTags.apply { clear();addAll(p.tagsCopyright);addAll(p.tagsArtist); addAll(p.tagsCharacter); addAll(p.tagsGeneral); addAll(p.tagsMeta) }
                 recycleView.adapter?.notifyDataSetChanged()
             }
+            val detector = GestureDetector(this@PictureActivity, object : GestureListener() {
+                override fun onSwipe(direction: Direction): Boolean {
+                    when (direction) {
+                        Direction.up -> println("UP")
+                        Direction.down -> finish()
+                        else -> return false
+                    }
+                    return true
+                }
+            })
+            setOnTouchListener(object : View.OnTouchListener {
+                override fun onTouch(v: View, event: MotionEvent): Boolean {
+                    return detector.onTouchEvent(event)
+                }
+            })
+
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                 override fun onPageScrollStateChanged(p0: Int) {}
                 override fun onPageScrolled(p0: Int, p1: Float, p2: Int) {}

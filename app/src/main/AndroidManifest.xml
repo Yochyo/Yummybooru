@@ -35,11 +35,6 @@
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-                android:name=".layout.SettingsActivity"
-                android:label="@string/title_activity_settings"
-                android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-        <activity
                 android:name=".layout.SubscriptionActivity"
                 android:label="@string/title_activity_subscription"
                 android:theme="@style/AppTheme.NoActionBar">

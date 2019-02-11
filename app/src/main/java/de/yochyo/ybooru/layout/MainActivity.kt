@@ -1,6 +1,7 @@
 package de.yochyo.ybooru.layout
 
 import android.Manifest
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.app.ActivityCompat
@@ -81,7 +82,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.nav_help -> {
+            R.id.nav_settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
             }
         }
         drawer_layout.closeDrawer(GravityCompat.START)
@@ -101,11 +103,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val editText = layout.findViewById<EditText>(R.id.add_tag_edittext)
             builder.setMessage("Add Tag").setPositiveButton("OK") { _, _ ->
                 val tag = database.addTag(editText.text.toString(), Tag.UNKNOWN, false)
-                if (tag != null) {
                     dataSet.add(tag)
                     adapter.notifyItemInserted(dataSet.lastIndex)
                     database.addTag(editText.text.toString(), Tag.UNKNOWN, false)
-                }
             }
             builder.setView(layout)
             val dialog = builder.create()

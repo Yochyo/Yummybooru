@@ -27,7 +27,9 @@ import kotlinx.coroutines.*
 
 class PreviewActivity : AppCompatActivity() {
     companion object {
-        fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PreviewActivity::class.java).apply { putExtra("tags", tags) })
+        fun startActivity(context: Context, tags: String) {
+            context.startActivity(Intent(context, PreviewActivity::class.java).apply { putExtra("tags", tags) })
+        }
     }
 
     private var root = SupervisorJob()

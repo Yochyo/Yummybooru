@@ -1,0 +1,11 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+            android:key="limit"
+            android:title="Post per page"
+            android:summary="More posts can cause longer loading times."
+            android:defaultValue="30"
+            android:entries="@array/post_limit"
+            android:entryValues="@array/post_limit"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"/>
+</PreferenceScreen>

@@ -33,7 +33,7 @@ object Api {
 
     suspend fun getPosts(context: Context, page: Int, vararg tags: String): List<Post> {//TODO rating ist safeSearch
         var url = "https://danbooru.donmai.us/posts.json?limit=${context.database.limit}&page=$page"
-        if (tags.isNotEmpty()) {
+        if (tags.filter { it != "" }.isNotEmpty()) {
             url += "&tags="
             for (tag in tags)
                 url += "$tag "
@@ -53,7 +53,6 @@ object Api {
 
     private suspend fun getJson(urlToRead: String): JSONArray {
         var array: JSONArray? = null
-        println("URL: $urlToRead")
         val job = GlobalScope.launch {
             try {
                 val result = StringBuilder()

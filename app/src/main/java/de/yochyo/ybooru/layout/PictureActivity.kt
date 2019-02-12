@@ -28,9 +28,13 @@ import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 
 class PictureActivity : AppCompatActivity() {
+    private var loadingNextPage = false
+    private lateinit var tags: Array<out String>
+
     companion object {
         fun startActivity(context: Context, tags: String) {
             context.startActivity(Intent(context, PictureActivity::class.java).apply { putExtra("tags", tags) })
@@ -45,8 +49,7 @@ class PictureActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_picture)
         setSupportActionBar(toolbar_picture)
-
-        m = Manager.get(intent.getStringExtra("tags"))
+        m = Manager.get(intent.getStringExtra("tags").apply { tags = this.split(" ").toTypedArray() })
         nav_view_picture.bringToFront()
 
         initRecycleView()
@@ -61,7 +64,6 @@ class PictureActivity : AppCompatActivity() {
             val detector = GestureDetector(this@PictureActivity, object : GestureListener() {
                 override fun onSwipe(direction: Direction): Boolean {
                     when (direction) {
-                        Direction.up -> println("UP")
                         Direction.down -> finish()
                         else -> return false
                     }
@@ -115,10 +117,23 @@ class PictureActivity : AppCompatActivity() {
         recycleView.layoutManager = LinearLayoutManager(this)
     }
 
+    fun loadNextPage(page: Int) {
+        loadingNextPage = true
+        runBlocking {
+            val job = GlobalScope.launch { m.getAndInitPage(this@PictureActivity, page) }
+            job.join()
+        }
+        view_pager.adapter?.notifyDataSetChanged()
+        loadingNextPage = false
+
+    }
+
     private inner class PageAdapter : PagerAdapter() {
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
         override fun getCount(): Int = m.dataSet.size
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
+            if (position == m.dataSet.lastIndex && !loadingNextPage)
+                loadNextPage(m.currentPage + 1)
             val imageView = LayoutInflater.from(this@PictureActivity).inflate(R.layout.picture_item_view, container, false) as ImageView
             val post = m.dataSet[position]
             GlobalScope.launch {
@@ -138,13 +153,11 @@ class PictureActivity : AppCompatActivity() {
         override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
             cache.removeBitmap(large(m.dataSet[position].id))
         }
-
     }
 
     private inner class InfoAdapter : RecyclerView.Adapter<InfoButtonHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InfoButtonHolder = InfoButtonHolder(LayoutInflater.from(parent.context).inflate(R.layout.info_item_button, parent, false) as Button).apply {
             button.setOnClickListener {
-                println()
                 PreviewActivity.startActivity(this@PictureActivity, button.text.toString())
                 drawer_picture.closeDrawer(GravityCompat.END)
             }

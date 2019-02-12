@@ -26,7 +26,6 @@ object FileManager {
         val stream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
         val file = File("$saveDirectory/${postToFilename(post)}")
-        println("Name: ${file.absolutePath}")
         file.createNewFile()
         file.writeBytes(stream.toByteArray())
     }

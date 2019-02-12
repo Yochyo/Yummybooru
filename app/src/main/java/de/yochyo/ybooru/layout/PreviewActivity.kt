@@ -17,7 +17,6 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Api
-import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.file.FileManager
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.*
@@ -34,7 +33,6 @@ class PreviewActivity : AppCompatActivity() {
 
     private var root = SupervisorJob()
     private lateinit var m: Manager
-    private lateinit var tags: Array<String>
 
     private var isLoadingView = false
 
@@ -45,9 +43,7 @@ class PreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_preview)
         setSupportActionBar(toolbar)
-        val tagString = intent.getStringExtra("tags")
-        tags = intent.getStringExtra("tags").toTagArray()
-        m = Manager.getOrInit(tagString)
+        m = Manager.getOrInit(intent.getStringExtra("tags"))
 
         recycler_view.layoutManager = GridLayoutManager(this, 3).apply { layoutManager = this }
         recycler_view.adapter = Adapter().apply { adapter = this }
@@ -60,14 +56,10 @@ class PreviewActivity : AppCompatActivity() {
     fun loadPage(page: Int) {
         isLoadingView = true
         addChild(root) {
-            val posts = getOrDownloadPage(page, *tags)
-
+            val i = m.dataSet.size
+            val posts = m.getAndInitPage(this@PreviewActivity, page)
             launch(Dispatchers.Main) {
-                val i = m.dataSet.size
-
-                for (t in 0 until posts.size)
-                    m.dataSet.add(posts[t])
-                adapter.notifyItemRangeInserted(i - 1, posts.size)
+                adapter.notifyItemRangeInserted(if (i > 0) i - 1 else 0, posts.size)
                 isLoadingView = false
                 for (offset in 0..2) {
                     var c = i + offset
@@ -81,24 +73,11 @@ class PreviewActivity : AppCompatActivity() {
                         }
                     }
                 }
-
             }
             launch {
-                if (m.pages[page + 1] == null) m.pages[page + 1] = Api.getPosts(this@PreviewActivity, page + 1, *tags)
+                m.getOrDownloadPage(this@PreviewActivity, m.currentPage + 1)
             }
         }
-    }
-
-    private suspend fun getOrDownloadPage(page: Int, vararg tags: String): List<Post> {
-        var p = m.pages[page]
-        if (p == null) p = Api.getPosts(this, page, *tags)
-        if (m.dataSet.isNotEmpty()) {
-            val lastFromLastPage = m.dataSet.last()
-            val samePost = p.find { it.id == lastFromLastPage.id }
-            if (samePost != null)
-                p.takeWhile { it.id != samePost.id }
-        }
-        return p
     }
 
 
@@ -107,7 +86,7 @@ class PreviewActivity : AppCompatActivity() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (!isLoadingView)
-                    if (layoutManager.findLastVisibleItemPosition() + 1 >= m.dataSet.size) loadPage(++m.currentPage)
+                    if (layoutManager.findLastVisibleItemPosition() + 1 >= m.dataSet.size) loadPage(m.currentPage + 1)
             }
         })
     }
@@ -122,8 +101,7 @@ class PreviewActivity : AppCompatActivity() {
     fun reloadView() {
         root.cancel()
         root = SupervisorJob()
-        m.dataSet.clear()
-        m.pages.clear()
+        m.reset()
         adapter.notifyDataSetChanged()
         loadPage(1)
     }
@@ -173,7 +151,7 @@ class PreviewActivity : AppCompatActivity() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder = MyViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
             imageView.setOnClickListener {
                 m.position = layoutPosition
-                PictureActivity.startActivity(this@PreviewActivity, tags.toTagString())
+                PictureActivity.startActivity(this@PreviewActivity, m.tags.toTagString())
             }
         }
 

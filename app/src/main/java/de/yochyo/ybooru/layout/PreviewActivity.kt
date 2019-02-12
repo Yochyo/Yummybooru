@@ -63,20 +63,25 @@ class PreviewActivity : AppCompatActivity() {
             val posts = getOrDownloadPage(page, *tags)
 
             launch(Dispatchers.Main) {
-                var i = m.dataSet.size
+                val i = m.dataSet.size
 
                 for (t in 0 until posts.size)
                     m.dataSet.add(posts[t])
                 adapter.notifyItemRangeInserted(i - 1, posts.size)
                 isLoadingView = false
-
-                addChild(root, isAsync = true) {
-                    for (post in posts) {
-                        val index = i++
-                        Api.downloadImage(this@PreviewActivity, post.filePreviewURL, preview(post.id))
-                        withContext(Dispatchers.Main) { adapter.notifyItemChanged(index) }
+                for (offset in 0..2) {
+                    var c = i + offset
+                    addChild(root, isAsync = true) {
+                        for (post in offset..posts.lastIndex step 3) {
+                            val p = posts[post]
+                            val index = c
+                            c += 3
+                            Api.downloadImage(this@PreviewActivity, p.filePreviewURL, preview(p.id))
+                            withContext(Dispatchers.Main) { adapter.notifyItemChanged(index) }
+                        }
                     }
                 }
+
             }
             launch {
                 if (m.pages[page + 1] == null) m.pages[page + 1] = Api.getPosts(this@PreviewActivity, page + 1, *tags)

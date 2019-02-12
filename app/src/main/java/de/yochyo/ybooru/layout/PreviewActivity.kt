@@ -123,6 +123,11 @@ class PreviewActivity : AppCompatActivity() {
         loadPage(1)
     }
 
+    override fun onResume() {
+        super.onResume()
+        layoutManager.scrollToPosition(m.position)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.download_all -> {

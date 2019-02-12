@@ -32,7 +32,9 @@ import kotlinx.coroutines.launch
 
 class PictureActivity : AppCompatActivity() {
     companion object {
-        fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PictureActivity::class.java).apply { putExtra("tags", tags) })
+        fun startActivity(context: Context, tags: String) {
+            context.startActivity(Intent(context, PictureActivity::class.java).apply { putExtra("tags", tags) })
+        }
     }
 
     private var currentTags = ArrayList<Tag>()
@@ -76,11 +78,10 @@ class PictureActivity : AppCompatActivity() {
                 override fun onPageScrollStateChanged(p0: Int) {}
                 override fun onPageScrolled(p0: Int, p1: Float, p2: Int) {}
                 override fun onPageSelected(position: Int) {
+                    m.position = position
                     val post = m.dataSet[position]
-                    if (post != null) {
-                        currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
-                        recycleView.adapter?.notifyDataSetChanged()
-                    }
+                    currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
+                    recycleView.adapter?.notifyDataSetChanged()
                 }
             })
         }
@@ -96,7 +97,7 @@ class PictureActivity : AppCompatActivity() {
             R.id.save -> {
                 val p = m.currentPost
                 if (p != null)
-                    GlobalScope.launch { FileManager.writeFile(p, Api.downloadImage(this@PictureActivity, p.fileLargeURL, "${p.id}Large")); launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } }
+                    GlobalScope.launch { FileManager.writeFile(p, Api.downloadImage(this@PictureActivity, p.fileLargeURL, large(p.id))); launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } }
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -120,24 +121,22 @@ class PictureActivity : AppCompatActivity() {
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
             val imageView = LayoutInflater.from(this@PictureActivity).inflate(R.layout.picture_item_view, container, false) as ImageView
             val post = m.dataSet[position]
-            if (post != null) {
-                GlobalScope.launch {
-                    //TODO schauen ob hier gewartet wird
-                    val preview = Api.downloadImage(this@PictureActivity, post.filePreviewURL, preview(post.id))
-                    launch(Dispatchers.Main) { imageView.setImageBitmap(preview) }
-                    launch {
+            GlobalScope.launch {
+                val preview = Api.downloadImage(this@PictureActivity, post.filePreviewURL, preview(post.id))
+                launch(Dispatchers.Main) {
+                    imageView.setImageBitmap(preview)
+                    launch(Dispatchers.Default) {
                         val bitmap = Api.downloadImage(this@PictureActivity, post.fileLargeURL, large(post.id), false)
                         launch(Dispatchers.Main) { imageView.setImageBitmap(bitmap) }
                     }
                 }
-                container.addView(imageView)
             }
+            container.addView(imageView)
             return imageView
         }
 
         override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-            val post = m.dataSet[position]
-            if (post != null) cache.removeBitmap(large(post.id))
+            cache.removeBitmap(large(m.dataSet[position].id))
         }
 
     }
@@ -150,6 +149,7 @@ class PictureActivity : AppCompatActivity() {
                 drawer_picture.closeDrawer(GravityCompat.END)
             }
         }
+
         override fun getItemCount(): Int = currentTags.size
         override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
             val tag = currentTags[position]

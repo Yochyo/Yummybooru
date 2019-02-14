@@ -28,11 +28,10 @@ import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 
 class PictureActivity : AppCompatActivity() {
-    private var loadingNextPage = false
+    private var currentPage: Int = 1
     private lateinit var tags: Array<out String>
 
     companion object {
@@ -50,6 +49,7 @@ class PictureActivity : AppCompatActivity() {
         setContentView(R.layout.activity_picture)
         setSupportActionBar(toolbar_picture)
         m = Manager.get(intent.getStringExtra("tags").apply { tags = this.split(" ").toTypedArray() })
+        currentPage = m.currentPage
         nav_view_picture.bringToFront()
 
         initRecycleView()
@@ -118,32 +118,42 @@ class PictureActivity : AppCompatActivity() {
     }
 
     fun loadNextPage(page: Int) {
-        loadingNextPage = true
-        runBlocking {
-            val job = GlobalScope.launch { m.getAndInitPage(this@PictureActivity, page) }
-            job.join()
-        }
-        view_pager.adapter?.notifyDataSetChanged()
-        loadingNextPage = false
+        if (currentPage - 1 == m.currentPage)
+            GlobalScope.launch {
+                m.getOrDownloadPage(this@PictureActivity, page)
+                launch(Dispatchers.Main) {
+                    m.getAndInitPage(this@PictureActivity, page)
+                    view_pager.adapter!!.notifyDataSetChanged()
+                }
+            }
+    }
 
+    fun preloadNextPage(page: Int) {
+        if (currentPage == m.currentPage) {
+            currentPage++
+            GlobalScope.launch {
+                m.getOrDownloadPage(this@PictureActivity, page)
+            }
+        }
     }
 
     private inner class PageAdapter : PagerAdapter() {
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
         override fun getCount(): Int = m.dataSet.size
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
-            if (position == m.dataSet.lastIndex && !loadingNextPage)
+            if (position + 3 >= m.dataSet.lastIndex)
+                preloadNextPage(m.currentPage + 1)
+            if (position == m.dataSet.lastIndex)
                 loadNextPage(m.currentPage + 1)
             val imageView = LayoutInflater.from(this@PictureActivity).inflate(R.layout.picture_item_view, container, false) as ImageView
             val post = m.dataSet[position]
+
             GlobalScope.launch {
                 val preview = Api.downloadImage(this@PictureActivity, post.filePreviewURL, preview(post.id))
-                launch(Dispatchers.Main) {
-                    imageView.setImageBitmap(preview)
-                    launch(Dispatchers.Default) {
-                        val bitmap = Api.downloadImage(this@PictureActivity, post.fileLargeURL, large(post.id), false)
-                        launch(Dispatchers.Main) { imageView.setImageBitmap(bitmap) }
-                    }
+                launch(Dispatchers.Main) { imageView.setImageBitmap(preview) }
+                launch {
+                    val bitmap = Api.downloadImage(this@PictureActivity, post.fileLargeURL, large(post.id), false)
+                    launch(Dispatchers.Main) { imageView.setImageBitmap(bitmap) }
                 }
             }
             container.addView(imageView)

@@ -1,10 +1,7 @@
 package de.yochyo.ybooru.api
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import de.yochyo.ybooru.database
-import de.yochyo.ybooru.utils.cache
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONArray
@@ -15,21 +12,6 @@ import java.net.URL
 
 
 object Api {
-    private val downloading = ArrayList<String>(20)
-
-
-    suspend fun downloadImage(context: Context, url: String, id: String, cacheOnStorage: Boolean = true): Bitmap {
-        val b = context.cache.getCachedBitmap(id)
-        if (b != null) return b
-        if (downloading.contains(id)) return context.cache.awaitPicture(id)
-        else {
-            //TODO hier könnten auch mp4 sein
-            downloading += id
-            val bitmap = BitmapFactory.decodeStream(URL(url).openStream()).apply { context.cache.cacheBitmap(id, this, cacheOnStorage) }
-            downloading -= id
-            return bitmap
-        }
-    }
 
     suspend fun getPosts(context: Context, page: Int, vararg tags: String): List<Post> {//TODO rating ist safeSearch
         var url = "https://danbooru.donmai.us/posts.json?limit=${context.database.limit}&page=$page"

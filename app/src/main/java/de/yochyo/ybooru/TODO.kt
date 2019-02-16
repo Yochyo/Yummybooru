@@ -16,3 +16,10 @@ package de.yochyo.ybooru
 
 //TODO Settings
 //TODO Subs
+
+
+//TODO pictureactivity bugt
+//-- selbst wenn man zwischen 2 seiten hin und her wechselt verbraucht es immer mehr und mehr RAM????????? Immer noch?
+
+
+

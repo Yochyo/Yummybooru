@@ -53,6 +53,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             when (preference.key) {
                 "limit" -> {
                     database.limit = value.toString().toInt(); Manager.resetAll()
+                    Manager.resetAll()
                 }
             }
             true

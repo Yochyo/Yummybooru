@@ -16,22 +16,26 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.api.Api
+import de.yochyo.ybooru.api.downloadImage
 import de.yochyo.ybooru.file.FileManager
 import de.yochyo.ybooru.manager.Manager
-import de.yochyo.ybooru.utils.*
+import de.yochyo.ybooru.utils.large
+import de.yochyo.ybooru.utils.preview
+import de.yochyo.ybooru.utils.toTagString
 import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class PreviewActivity : AppCompatActivity() {
+    var isScrolling = false
     companion object {
         fun startActivity(context: Context, tags: String) {
             context.startActivity(Intent(context, PreviewActivity::class.java).apply { putExtra("tags", tags) })
         }
     }
 
-    private var root = SupervisorJob()
     private lateinit var m: Manager
 
     private var isLoadingView = false
@@ -55,24 +59,12 @@ class PreviewActivity : AppCompatActivity() {
 
     fun loadPage(page: Int) {
         isLoadingView = true
-        addChild(root) {
+        GlobalScope.launch {
             val i = m.dataSet.size
             val posts = m.getAndInitPage(this@PreviewActivity, page)
             launch(Dispatchers.Main) {
                 adapter.notifyItemRangeInserted(if (i > 0) i - 1 else 0, posts.size)
                 isLoadingView = false
-                for (offset in 0..2) {
-                    var c = i + offset
-                    addChild(root, isAsync = true) {
-                        for (post in offset..posts.lastIndex step 3) {
-                            val p = posts[post]
-                            val index = c
-                            c += 3
-                            Api.downloadImage(this@PreviewActivity, p.filePreviewURL, preview(p.id))
-                            withContext(Dispatchers.Main) { adapter.notifyItemChanged(index) }
-                        }
-                    }
-                }
             }
             launch {
                 m.getOrDownloadPage(this@PreviewActivity, m.currentPage + 1)
@@ -84,6 +76,10 @@ class PreviewActivity : AppCompatActivity() {
     private fun initScrollView() {
         recycler_view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                when (newState) {
+                    RecyclerView.SCROLL_STATE_IDLE -> isScrolling = false
+                    RecyclerView.SCROLL_STATE_DRAGGING -> isScrolling = true
+                }
                 super.onScrollStateChanged(recyclerView, newState)
                 if (!isLoadingView)
                     if (layoutManager.findLastVisibleItemPosition() + 1 >= m.dataSet.size) loadPage(m.currentPage + 1)
@@ -99,8 +95,6 @@ class PreviewActivity : AppCompatActivity() {
     }
 
     fun reloadView() {
-        root.cancel()
-        root = SupervisorJob()
         m.reset()
         adapter.notifyDataSetChanged()
         loadPage(1)
@@ -122,8 +116,10 @@ class PreviewActivity : AppCompatActivity() {
                 layout.findViewById<Button>(R.id.download_all_visible).setOnClickListener {
                     GlobalScope.launch {
                         for (p in m.dataSet)
-                            FileManager.writeFile(p, Api.downloadImage(this@PreviewActivity, p.fileLargeURL, large(p.id), false))
-                        withContext(Dispatchers.Main) { Toast.makeText(this@PreviewActivity, "Downloaded every picture", Toast.LENGTH_SHORT).show() }//TODO Notification
+                            downloadImage(p.fileLargeURL, large(p.id), {
+                                FileManager.writeFile(p, it)
+                                Toast.makeText(this@PreviewActivity, "Downloaded every picture", Toast.LENGTH_SHORT).show()
+                            }, false)
                     }
                     dialog.dismiss()
                 }
@@ -157,10 +153,23 @@ class PreviewActivity : AppCompatActivity() {
 
         override fun getItemCount(): Int = m.dataSet.size
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-            val post = m.dataSet[position]
-            val bitmap = this@PreviewActivity.cache.getCachedBitmap(preview(post.id))
-            if (bitmap != null) holder.imageView.setImageBitmap(bitmap)
-            else holder.imageView.setImageBitmap(null)
+
+        }
+
+        override fun onViewDetachedFromWindow(holder: MyViewHolder) {
+            super.onViewDetachedFromWindow(holder)
+            holder.imageView.setImageBitmap(null)
+        }
+
+        override fun onViewAttachedToWindow(holder: MyViewHolder) {
+            val pos = holder.adapterPosition
+            if (pos != -1) {
+                val p = m.dataSet[holder.adapterPosition]
+                downloadImage(p.filePreviewURL, preview(p.id), {
+                    if (pos == holder.adapterPosition)
+                        holder.imageView.setImageBitmap(it)
+                }, isScrolling)
+            }
         }
     }
 

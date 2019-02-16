@@ -16,11 +16,10 @@ import android.widget.ImageView
 import android.widget.Toast
 import de.yochyo.ybooru.GestureListener
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.api.Api
 import de.yochyo.ybooru.api.Tag
+import de.yochyo.ybooru.api.downloadImage
 import de.yochyo.ybooru.file.FileManager
 import de.yochyo.ybooru.manager.Manager
-import de.yochyo.ybooru.utils.cache
 import de.yochyo.ybooru.utils.large
 import de.yochyo.ybooru.utils.preview
 import kotlinx.android.synthetic.main.activity_picture.*
@@ -56,6 +55,7 @@ class PictureActivity : AppCompatActivity() {
         with(view_pager) {
             adapter = PageAdapter()
             currentItem = m.position
+            offscreenPageLimit = 2
             val p = m.currentPost
             if (p != null) {
                 currentTags.apply { clear();addAll(p.tagsCopyright);addAll(p.tagsArtist); addAll(p.tagsCharacter); addAll(p.tagsGeneral); addAll(p.tagsMeta) }
@@ -99,7 +99,7 @@ class PictureActivity : AppCompatActivity() {
             R.id.save -> {
                 val p = m.currentPost
                 if (p != null)
-                    GlobalScope.launch { FileManager.writeFile(p, Api.downloadImage(this@PictureActivity, p.fileLargeURL, large(p.id))); launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } }
+                    downloadImage(p.fileLargeURL, large(p.id), { launch { FileManager.writeFile(p, it); Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } }, true)
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -146,22 +146,20 @@ class PictureActivity : AppCompatActivity() {
             if (position == m.dataSet.lastIndex)
                 loadNextPage(m.currentPage + 1)
             val imageView = LayoutInflater.from(this@PictureActivity).inflate(R.layout.picture_item_view, container, false) as ImageView
-            val post = m.dataSet[position]
+            val p = m.dataSet[position]
 
             GlobalScope.launch {
-                val preview = Api.downloadImage(this@PictureActivity, post.filePreviewURL, preview(post.id))
-                launch(Dispatchers.Main) { imageView.setImageBitmap(preview) }
-                launch {
-                    val bitmap = Api.downloadImage(this@PictureActivity, post.fileLargeURL, large(post.id), false)
-                    launch(Dispatchers.Main) { imageView.setImageBitmap(bitmap) }
-                }
+                downloadImage(p.filePreviewURL, preview(p.id), {
+                    imageView.setImageBitmap(it)
+                    downloadImage(p.fileLargeURL, large(p.id), { imageView.setImageBitmap(it) }, true)
+                }, true)
             }
             container.addView(imageView)
             return imageView
         }
 
         override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-            cache.removeBitmap(large(m.dataSet[position].id))
+            container.removeView(`object` as View)
         }
     }
 

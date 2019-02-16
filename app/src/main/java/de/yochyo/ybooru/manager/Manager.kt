@@ -81,5 +81,6 @@ abstract class Manager(val tags: Array<String>) {
         dataSet.clear()
         position = -1
         _currentPage = 0
+        pages.clear()
     }
 }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+            android:id="@+id/picture_info_item_add_history"
+            android:title="Add to history"/>
+    <item
+            android:id="@+id/picture_info_item_add_favorite"
+            android:title="Add as favorite"/>
+    <item
+            android:id="@+id/picture_info_item_subscribe"
+            android:title="Subscribe"/>
+</menu>

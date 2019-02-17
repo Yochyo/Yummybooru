@@ -11,13 +11,15 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.*
-import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
+import android.widget.Toolbar
 import de.yochyo.ybooru.GestureListener
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Tag
 import de.yochyo.ybooru.api.downloadImage
+import de.yochyo.ybooru.database
 import de.yochyo.ybooru.file.FileManager
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.large
@@ -164,22 +166,38 @@ class PictureActivity : AppCompatActivity() {
     }
 
     private inner class InfoAdapter : RecyclerView.Adapter<InfoButtonHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InfoButtonHolder = InfoButtonHolder(LayoutInflater.from(parent.context).inflate(R.layout.info_item_button, parent, false) as Button).apply {
-            button.setOnClickListener {
-                PreviewActivity.startActivity(this@PictureActivity, button.text.toString())
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InfoButtonHolder = InfoButtonHolder(LayoutInflater.from(parent.context).inflate(R.layout.info_item_button, parent, false) as Toolbar).apply {
+            toolbar.setOnClickListener {
+                PreviewActivity.startActivity(this@PictureActivity, toolbar.findViewById<TextView>(R.id.info_textview).text.toString())
                 drawer_picture.closeDrawer(GravityCompat.END)
+            }
+            toolbar.inflateMenu(R.menu.picture_info_menu)
+            toolbar.setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.picture_info_item_add_history -> {
+                        val tag = currentTags[adapterPosition]
+                        database.addTag(tag.name, tag.type, false)
+                    }
+                    R.id.picture_info_item_add_favorite -> {
+                        val tag = currentTags[adapterPosition]
+                        database.addTag(tag.name, tag.type, true)
+                    }
+                    R.id.picture_info_item_subscribe -> TODO()
+                }
+                true
             }
         }
 
         override fun getItemCount(): Int = currentTags.size
         override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
             val tag = currentTags[position]
-            holder.button.text = tag.name
-            if (Build.VERSION.SDK_INT > 22) holder.button.setTextColor(getColor(tag.color))
-            else holder.button.setTextColor(resources.getColor(tag.color))
+            val textView = holder.toolbar.findViewById<TextView>(R.id.info_textview)
+            textView.text = tag.name
+            if (Build.VERSION.SDK_INT > 22) textView.setTextColor(getColor(tag.color))
+            else textView.setTextColor(resources.getColor(tag.color))
         }
     }
 
-    private inner class InfoButtonHolder(val button: Button) : RecyclerView.ViewHolder(button)
+    private inner class InfoButtonHolder(val toolbar: Toolbar) : RecyclerView.ViewHolder(toolbar)
 }
 

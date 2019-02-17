@@ -25,7 +25,6 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var menu: Menu
 
-    private val dataSet = ArrayList<Tag>()
     private val selectedTags = ArrayList<String>()
 
     private lateinit var recycleView: RecyclerView
@@ -39,7 +38,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         initDrawer()
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
 
-        dataSet += database.getTags()
         val searchHeader = nav_search.getHeaderView(0)
         recycleView = searchHeader.findViewById(R.id.recycler_view_search)
         adapter = Adapter().apply { recycleView.adapter = this }
@@ -58,6 +56,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         else if (drawer_layout.isDrawerOpen(GravityCompat.END)) drawer_layout.closeDrawer(GravityCompat.END)
         else super.onBackPressed()
     }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         this.menu = menu
         menuInflater.inflate(R.menu.main_menu, menu)
@@ -65,6 +64,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         Manager.resetAll()
         return true
     }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_r18 -> {
@@ -80,6 +80,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             else -> return super.onOptionsItemSelected(item)
         }
     }
+
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_settings -> {
@@ -90,12 +91,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
+    override fun onResume() {
+        super.onResume()
+        adapter.notifyDataSetChanged()
+    }
+
     private fun initDrawer() {
         val toggle = ActionBarDrawerToggle(this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         nav_view.setNavigationItemSelectedListener(this)
     }
+
     private fun initAddTagButton(b: Button) {
         b.setOnClickListener {
             val builder = AlertDialog.Builder(this)
@@ -103,9 +110,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val editText = layout.findViewById<EditText>(R.id.add_tag_edittext)
             builder.setMessage("Add Tag").setPositiveButton("OK") { _, _ ->
                 val tag = database.addTag(editText.text.toString(), Tag.UNKNOWN, false)
-                    dataSet.add(tag)
-                    adapter.notifyItemInserted(dataSet.lastIndex)
-                    database.addTag(editText.text.toString(), Tag.UNKNOWN, false)
+                adapter.notifyItemInserted(database.getTags().lastIndex)
             }
             builder.setView(layout)
             val dialog = builder.create()
@@ -115,27 +120,45 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         }
     }
+
     private fun initSearchButton(b: Button) {
         b.setOnClickListener {
+            drawer_layout.closeDrawer(GravityCompat.END)
             PreviewActivity.startActivity(this, selectedTags.toTagString())
         }
     }
 
     private inner class Adapter : RecyclerView.Adapter<SearchItemViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchItemViewHolder = SearchItemViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.search_item_layout, parent, false) as Toolbar).apply {
-            inflateMenu(R.menu.activity_main_search_menu)
-            setOnClickListener {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchItemViewHolder = SearchItemViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.search_item_layout, parent, false) as Toolbar)).apply {
+            toolbar.setOnClickListener {
                 val check = findViewById<CheckBox>(R.id.search_checkbox)
                 if (check.isChecked) selectedTags.remove(findViewById<TextView>(R.id.search_textview).text)
                 else selectedTags.add(findViewById<TextView>(R.id.search_textview).text.toString())
                 check.isChecked = !check.isChecked
             }
-        })
+            toolbar.inflateMenu(R.menu.activity_main_search_menu)
+            toolbar.setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.main_search_favorite_tag -> {
+                        val tag = database.getTags()[adapterPosition].apply { isFavorite = true }
+                        database.changeTag(tag)
+                        adapter.notifyItemChanged(adapterPosition)
+                    }
+                    R.id.main_search_subscribe_tag -> TODO()
+                    R.id.main_search_delete_tag -> {
+                        database.removeTag(database.getTags()[adapterPosition].name)
+                        adapter.notifyItemRemoved(adapterPosition)
+                    }
+                }
+                true
+            }
+        }
 
-        override fun getItemCount(): Int = dataSet.size
+        override fun getItemCount(): Int = database.getTags().size
         override fun onBindViewHolder(holder: SearchItemViewHolder, position: Int) {
-            holder.toolbar.findViewById<TextView>(R.id.search_textview).text = dataSet[position].name
+            holder.toolbar.findViewById<TextView>(R.id.search_textview).text = database.getTags()[position].name
         }
     }
+
     private inner class SearchItemViewHolder(val toolbar: Toolbar) : RecyclerView.ViewHolder(toolbar)
 }

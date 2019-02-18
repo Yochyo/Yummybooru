@@ -114,13 +114,11 @@ class PreviewActivity : AppCompatActivity() {
                 val dialog = builder.create()
                 dialog.show()
                 layout.findViewById<Button>(R.id.download_all_visible).setOnClickListener {
-                    GlobalScope.launch {
                         for (p in m.dataSet)
                             downloadImage(p.fileLargeURL, large(p.id), {
                                 FileManager.writeFile(p, it)
                                 Toast.makeText(this@PreviewActivity, "Downloaded every picture", Toast.LENGTH_SHORT).show()
                             }, false)
-                    }
                     dialog.dismiss()
                 }
                 layout.findViewById<Button>(R.id.download_all_from_tags).setOnClickListener {

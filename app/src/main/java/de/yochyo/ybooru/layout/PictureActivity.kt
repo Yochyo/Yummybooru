@@ -46,6 +46,7 @@ class PictureActivity : AppCompatActivity() {
     lateinit var m: Manager
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        println("Picture: ${Thread.currentThread()}")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_picture)
         setSupportActionBar(toolbar_picture)
@@ -63,6 +64,8 @@ class PictureActivity : AppCompatActivity() {
                 currentTags.apply { clear();addAll(p.tagsCopyright);addAll(p.tagsArtist); addAll(p.tagsCharacter); addAll(p.tagsGeneral); addAll(p.tagsMeta) }
                 recycleView.adapter?.notifyDataSetChanged()
             }
+
+
             val detector = GestureDetector(this@PictureActivity, object : GestureListener() {
                 override fun onSwipe(direction: Direction): Boolean {
                     when (direction) {
@@ -78,16 +81,22 @@ class PictureActivity : AppCompatActivity() {
                 }
             })
 
+
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                 override fun onPageScrollStateChanged(p0: Int) {}
-                override fun onPageScrolled(p0: Int, p1: Float, p2: Int) {}
-                override fun onPageSelected(position: Int) {
-                    m.position = position
-                    val post = m.dataSet[position]
-                    currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
-                    recycleView.adapter?.notifyDataSetChanged()
+                override fun onPageScrolled(position: Int, offset: Float, p2: Int) {
+                    //TODO hier optimieren falls switchen der seiten laggt
+                    if (offset == 0.0F && m.position != position) {
+                        m.position = position
+                        val post = m.dataSet[position]
+                        currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
+                        recycleView.adapter?.notifyDataSetChanged()
+                    }
                 }
+
+                override fun onPageSelected(position: Int) {}
             })
+
         }
     }
 
@@ -150,12 +159,11 @@ class PictureActivity : AppCompatActivity() {
             val imageView = LayoutInflater.from(this@PictureActivity).inflate(R.layout.picture_item_view, container, false) as ImageView
             val p = m.dataSet[position]
 
-            GlobalScope.launch {
-                downloadImage(p.filePreviewURL, preview(p.id), {
-                    imageView.setImageBitmap(it)
-                    downloadImage(p.fileLargeURL, large(p.id), { imageView.setImageBitmap(it) }, true)
-                }, true)
-            }
+            downloadImage(p.filePreviewURL, preview(p.id), {
+                imageView.setImageBitmap(it)
+                downloadImage(p.fileLargeURL, large(p.id), { imageView.setImageBitmap(it) }, true)
+            }, true)
+
             container.addView(imageView)
             return imageView
         }

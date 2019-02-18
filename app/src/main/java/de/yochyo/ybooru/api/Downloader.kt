@@ -25,25 +25,25 @@ abstract class Downloader(context: Context) {
     init {
         clearCache()
 
-        GlobalScope.launch {
-            repeat(3) {
-                launch {
-                    while (true) {
-                        if (downloads.isNotEmpty()) {
-                            val download = downloads.takeLast()
-                            var bitmap = getCachedBitmap(download.id)
-                            if (bitmap == null) {
-                                val stream = URL(download.url).openStream()
-                                bitmap = BitmapFactory.decodeStream(stream)
-                                stream.close()
-                            }
-                            if (download.cache)
-                                launch { cacheBitmap(download.id, bitmap!!) }
-                            launch(Dispatchers.Main) { download.doAfter.invoke(this, bitmap!!) }
-                            delay(5)
-                        } else
-                            delay(100)
-                    }
+        for (i in 1..3) {
+            GlobalScope.launch(Dispatchers.IO) {
+                val delayTime = i * 50L
+                println("Download: ${Thread.currentThread()}")
+                while (true) {
+                    if (downloads.isNotEmpty()) {
+                        val download = downloads.takeLast()
+                        var bitmap = getCachedBitmap(download.id)
+                        if (bitmap == null) {
+                            val stream = URL(download.url).openStream()
+                            bitmap = BitmapFactory.decodeStream(stream)
+                            stream.close()
+                        }
+                        if (download.cache)
+                            launch(Dispatchers.IO) { cacheBitmap(download.id, bitmap!!) }
+                        launch(Dispatchers.Main) { download.doAfter.invoke(this, bitmap!!) }
+                        delay(5)
+                    } else
+                        delay(delayTime)
                 }
             }
         }

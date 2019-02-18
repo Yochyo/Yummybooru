@@ -134,8 +134,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchItemViewHolder = SearchItemViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.search_item_layout, parent, false) as Toolbar)).apply {
             toolbar.setOnClickListener {
                 val check = it.findViewById<CheckBox>(R.id.search_checkbox)
-                if (check.isChecked) selectedTags.remove(findViewById<TextView>(R.id.search_textview).text)
-                else selectedTags.add(findViewById<TextView>(R.id.search_textview).text.toString())
+                if (check.isChecked) selectedTags.remove(it.findViewById<TextView>(R.id.search_textview).text)
+                else selectedTags.add(it.findViewById<TextView>(R.id.search_textview).text.toString())
                 check.isChecked = !check.isChecked
             }
             toolbar.inflateMenu(R.menu.activity_main_search_menu)

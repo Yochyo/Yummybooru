@@ -138,6 +138,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 else selectedTags.add(it.findViewById<TextView>(R.id.search_textview).text.toString())
                 check.isChecked = !check.isChecked
             }
+            toolbar.findViewById<CheckBox>(R.id.search_checkbox).setOnClickListener {
+                it as CheckBox
+                if (!it.isChecked) selectedTags.remove(toolbar.findViewById<TextView>(R.id.search_textview).text)
+                else selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
+            }
             toolbar.inflateMenu(R.menu.activity_main_search_menu)
             toolbar.setOnMenuItemClickListener {
                 val tag = database.getTags()[adapterPosition].apply { isFavorite = !isFavorite }

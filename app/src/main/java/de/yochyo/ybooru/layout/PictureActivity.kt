@@ -21,6 +21,7 @@ import de.yochyo.ybooru.api.Tag
 import de.yochyo.ybooru.api.downloadImage
 import de.yochyo.ybooru.database
 import de.yochyo.ybooru.file.FileManager
+import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.large
 import de.yochyo.ybooru.utils.preview
@@ -46,7 +47,6 @@ class PictureActivity : AppCompatActivity() {
     lateinit var m: Manager
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        println("Picture: ${Thread.currentThread()}")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_picture)
         setSupportActionBar(toolbar_picture)
@@ -181,16 +181,27 @@ class PictureActivity : AppCompatActivity() {
             }
             toolbar.inflateMenu(R.menu.picture_info_menu)
             toolbar.setOnMenuItemClickListener {
+                val tag = currentTags[adapterPosition]
                 when (it.itemId) {
                     R.id.picture_info_item_add_history -> {
-                        val tag = currentTags[adapterPosition]
                         database.addTag(tag.name, tag.type, false)
+                        Toast.makeText(this@PictureActivity, "Add tag ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
                     R.id.picture_info_item_add_favorite -> {
-                        val tag = currentTags[adapterPosition]
-                        database.addTag(tag.name, tag.type, true)
+                        val tagInDatabase = database.getTag(tag.name)
+                        if (tagInDatabase == null) database.addTag(tag.name, tag.type, true)
+                        else database.changeTag(tag.apply { isFavorite = true })
+                        Toast.makeText(this@PictureActivity, "Add favorite ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
-                    R.id.picture_info_item_subscribe -> TODO()
+                    R.id.picture_info_item_subscribe -> {
+                        if (database.getSubscription(tag.name) == null) {
+                            database.addSubscription(tag.name, 0)
+                            Toast.makeText(this@PictureActivity, "Subscribed ${tag.name}", Toast.LENGTH_SHORT).show()
+                        } else {
+                            database.removeSubscription(tag.name)
+                            Toast.makeText(this@PictureActivity, "Unsubscribed ${tag.name}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
                 true
             }
@@ -199,6 +210,7 @@ class PictureActivity : AppCompatActivity() {
         override fun getItemCount(): Int = currentTags.size
         override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
             val tag = currentTags[position]
+            Menus.initPictureInfoTagMenu(this@PictureActivity, holder.toolbar.menu, tag)
             val textView = holder.toolbar.findViewById<TextView>(R.id.info_textview)
             textView.text = tag.name
             if (Build.VERSION.SDK_INT > 22) textView.setTextColor(getColor(tag.color))

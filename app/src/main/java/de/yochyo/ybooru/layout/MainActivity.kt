@@ -2,6 +2,7 @@ package de.yochyo.ybooru.layout
 
 import android.Manifest
 import android.content.Intent
+import android.graphics.Paint
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.app.ActivityCompat
@@ -16,6 +17,7 @@ import android.widget.*
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Tag
 import de.yochyo.ybooru.database
+import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.toTagString
 import kotlinx.android.synthetic.main.activity_main.*
@@ -131,22 +133,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private inner class Adapter : RecyclerView.Adapter<SearchItemViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchItemViewHolder = SearchItemViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.search_item_layout, parent, false) as Toolbar)).apply {
             toolbar.setOnClickListener {
-                val check = findViewById<CheckBox>(R.id.search_checkbox)
+                val check = it.findViewById<CheckBox>(R.id.search_checkbox)
                 if (check.isChecked) selectedTags.remove(findViewById<TextView>(R.id.search_textview).text)
                 else selectedTags.add(findViewById<TextView>(R.id.search_textview).text.toString())
                 check.isChecked = !check.isChecked
             }
             toolbar.inflateMenu(R.menu.activity_main_search_menu)
             toolbar.setOnMenuItemClickListener {
+                val tag = database.getTags()[adapterPosition].apply { isFavorite = !isFavorite }
                 when (it.itemId) {
                     R.id.main_search_favorite_tag -> {
-                        val tag = database.getTags()[adapterPosition].apply { isFavorite = true }
                         database.changeTag(tag)
                         adapter.notifyItemChanged(adapterPosition)
                     }
-                    R.id.main_search_subscribe_tag -> TODO()
+                    R.id.main_search_subscribe_tag -> {
+                        if (database.getSubscription(tag.name) == null) {
+                            database.addSubscription(tag.name, 0)//TODO
+                            Toast.makeText(this@MainActivity, "Subscribed ${tag.name}", Toast.LENGTH_SHORT).show()
+                        } else {
+                            database.removeSubscription(tag.name)
+                            Toast.makeText(this@MainActivity, "Unsubscribed ${tag.name}", Toast.LENGTH_SHORT).show()
+                        }
+                        adapter.notifyItemChanged(adapterPosition)
+                    }
                     R.id.main_search_delete_tag -> {
-                        database.removeTag(database.getTags()[adapterPosition].name)
+                        database.removeTag(tag.name)
                         adapter.notifyItemRemoved(adapterPosition)
                     }
                 }
@@ -156,7 +167,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         override fun getItemCount(): Int = database.getTags().size
         override fun onBindViewHolder(holder: SearchItemViewHolder, position: Int) {
-            holder.toolbar.findViewById<TextView>(R.id.search_textview).text = database.getTags()[position].name
+            val tag = database.getTags()[position]
+            val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
+            Menus.initMainSearchTagMenu(this@MainActivity, holder.toolbar.menu, tag)
+            if (tag.isFavorite) textView.paintFlags = textView.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+            textView.text = tag.name
         }
     }
 

@@ -46,8 +46,9 @@ class PreviewActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_preview)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(toolbar_preview)
         m = Manager.getOrInit(intent.getStringExtra("tags"))
+        supportActionBar?.title = m.tags.toTagString()
 
         recycler_view.layoutManager = GridLayoutManager(this, 3).apply { layoutManager = this }
         recycler_view.adapter = Adapter().apply { adapter = this }

@@ -28,7 +28,6 @@ abstract class Downloader(context: Context) {
         for (i in 1..3) {
             GlobalScope.launch(Dispatchers.IO) {
                 val delayTime = i * 50L
-                println("Download: ${Thread.currentThread()}")
                 while (true) {
                     if (downloads.isNotEmpty()) {
                         val download = downloads.takeLast()

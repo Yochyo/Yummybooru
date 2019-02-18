@@ -116,7 +116,8 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
             subs += sub
             use {
                 insert(TABLE_SUBSCRIPTION, COLUMN_NAME to name,
-                        COLUMN_SUBSCRIBED_SINCE to startID, COLUMN_SUBSCRIBED_SINCE to startID)
+                        COLUMN_SUBSCRIBED_SINCE to startID.toLong(),
+                        COLUMN_SUBSCRIBED_STATUS to startID.toLong())
             }
         }
     }

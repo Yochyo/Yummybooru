@@ -50,6 +50,7 @@ class PictureActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_picture)
         setSupportActionBar(toolbar_picture)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         m = Manager.get(intent.getStringExtra("tags").apply { tags = this.split(" ").toTypedArray() })
         currentPage = m.currentPage
         nav_view_picture.bringToFront()
@@ -103,6 +104,9 @@ class PictureActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            android.R.id.home -> {
+                finish();return true
+            }
             R.id.show_info -> {
                 drawer_picture.openDrawer(GravityCompat.END)
                 return true

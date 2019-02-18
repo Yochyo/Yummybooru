@@ -49,6 +49,7 @@ class PreviewActivity : AppCompatActivity() {
         setSupportActionBar(toolbar_preview)
         m = Manager.getOrInit(intent.getStringExtra("tags"))
         supportActionBar?.title = m.tags.toTagString()
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         recycler_view.layoutManager = GridLayoutManager(this, 3).apply { layoutManager = this }
         recycler_view.adapter = Adapter().apply { adapter = this }
@@ -108,6 +109,7 @@ class PreviewActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            android.R.id.home -> finish()
             R.id.download_all -> {
                 val builder = AlertDialog.Builder(this)
                 val layout = LayoutInflater.from(this).inflate(R.layout.download_pictures_dialog_view, null) as LinearLayout

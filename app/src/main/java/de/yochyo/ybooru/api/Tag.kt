@@ -1,16 +1,29 @@
 package de.yochyo.ybooru.api
 
 import de.yochyo.ybooru.R
+import org.json.JSONObject
 import java.util.*
 
-class Tag(val name: String, val type: String = UNKNOWN, var isFavorite: Boolean = false, val creation: Date? = null) {
+class Tag(val name: String, val type: Int = UNKNOWN, var isFavorite: Boolean = false, val creation: Date? = null) {
     companion object {
-        const val GENERAL = "g"
-        const val CHARACTER = "c"
-        const val COPYPRIGHT = "cr"
-        const val ARTIST = "a"
-        const val META = "m"
-        const val UNKNOWN = "u"
+        const val GENERAL = 0
+        const val CHARACTER = 4
+        const val COPYPRIGHT = 3
+        const val ARTIST = 1
+        const val META = 5
+        const val UNKNOWN = 99
+
+        fun getTagFromJson(json: JSONObject): Tag? {
+            return try {
+                var type = json.getInt("category")
+                if (type !in 0..5)
+                    type = UNKNOWN
+                Tag(json.getString("name"), type)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
     }
 
     val color: Int
@@ -26,7 +39,7 @@ class Tag(val name: String, val type: String = UNKNOWN, var isFavorite: Boolean 
         }
 
     override fun toString(): String {
-        return "[$name (type = $type)(isFavorite = $isFavorite)]"
+        return name
     }
 }
 

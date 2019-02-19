@@ -12,6 +12,26 @@ import java.net.URL
 
 
 object Api {
+    private val searchTagLimit = 10
+
+    suspend fun searchTags(beginSequence: String): List<Tag> {
+        val url = "https://danbooru.donmai.us/tags.json?search[name_matches]=$beginSequence*&limit=$searchTagLimit"
+        val json = getJson(url)
+        var array = ArrayList<Tag>(searchTagLimit)
+        for (i in 0 until json.length()) {
+            val tag = Tag.getTagFromJson(json.getJSONObject(i))
+            if (tag != null) array.add(tag)
+        }
+        array.sortBy { it.type }
+        return array
+    }
+
+    suspend fun getTag(name: String): Tag? {
+        val url = "https://danbooru.donmai.us/tags.json?search[name_matches]=$name"
+        val json = getJson(url)
+        if (!json.isNull(0)) return Tag.getTagFromJson(json.getJSONObject(0))
+        else return null
+    }
 
     suspend fun getPosts(context: Context, page: Int, vararg tags: String): List<Post> {//TODO rating ist safeSearch
         var url = "https://danbooru.donmai.us/posts.json?limit=${context.database.limit}&page=$page"

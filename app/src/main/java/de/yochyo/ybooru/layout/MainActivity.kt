@@ -3,6 +3,7 @@ package de.yochyo.ybooru.layout
 import android.Manifest
 import android.content.Intent
 import android.graphics.Paint
+import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.app.ActivityCompat
@@ -12,9 +13,12 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.*
 import android.widget.*
 import de.yochyo.ybooru.R
+import de.yochyo.ybooru.api.Api
 import de.yochyo.ybooru.api.Tag
 import de.yochyo.ybooru.database
 import de.yochyo.ybooru.layout.res.Menus
@@ -22,6 +26,9 @@ import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.toTagString
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -109,15 +116,49 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         b.setOnClickListener {
             val builder = AlertDialog.Builder(this)
             val layout = LayoutInflater.from(this).inflate(R.layout.search_item_dialog_view, null) as LinearLayout
-            val editText = layout.findViewById<EditText>(R.id.add_tag_edittext)
+            val editText = layout.findViewById<AutoCompleteTextView>(R.id.add_tag_edittext)
+            val arrayAdapter = ArrayAdapter<Tag>(this@MainActivity, android.R.layout.simple_dropdown_item_1line)
+
+            editText.setAdapter(arrayAdapter)
+            editText.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable) {
+                    editText.setAdapter(arrayAdapter) //Because of bug, that suggestions aren´t correctly updated
+                    val name = s.toString()
+                    GlobalScope.launch {
+                        val tags = Api.searchTags(name)
+                        launch(Dispatchers.Main) {
+                            if (editText.text.toString() == name) {
+                                arrayAdapter.apply { clear(); addAll(tags); notifyDataSetChanged() }
+                                editText.showDropDown()
+                            }
+                        }
+                    }
+                }
+
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                    editText.dismissDropDown()
+                    editText.setAdapter(null)//Because of bug, that suggestions aren´t correctly updated
+                }
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            })
             builder.setMessage("Add Tag").setPositiveButton("OK") { _, _ ->
-                val tag = database.addTag(editText.text.toString(), Tag.UNKNOWN, false)
-                adapter.notifyItemInserted(database.getTags().lastIndex)
+                GlobalScope.launch {
+                    val tag = Api.getTag(editText.text.toString())
+                    launch(Dispatchers.Main) {
+                        if (tag != null) database.addTag(tag.name, tag.type, tag.isFavorite)
+                        else database.addTag(editText.text.toString(), Tag.UNKNOWN, false)
+                        adapter.notifyItemInserted(database.getTags().lastIndex) //TODO
+                    }
+                }
             }
             builder.setView(layout)
             val dialog = builder.create()
             dialog.show()
             editText.requestFocus()
+            dialog.window?.setGravity(Gravity.TOP)
+            dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
             dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
 
         }
@@ -177,6 +218,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             Menus.initMainSearchTagMenu(this@MainActivity, holder.toolbar.menu, tag)
             if (tag.isFavorite) textView.paintFlags = textView.paintFlags or Paint.UNDERLINE_TEXT_FLAG
             textView.text = tag.name
+            if (Build.VERSION.SDK_INT > 22) textView.setTextColor(getColor(tag.color))
+            else textView.setTextColor(resources.getColor(tag.color))
         }
     }
 

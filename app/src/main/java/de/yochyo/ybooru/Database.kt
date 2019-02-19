@@ -10,7 +10,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "database", null, 1) {
-    private val prefs = context.getSharedPreferences("default.xml", Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
 
     private val TABLE_TAGS = "tags"
     private val TABLE_SUBSCRIPTION = "subs"
@@ -42,12 +42,12 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
         if (tags.isNotEmpty()) return tags
         else return use {
             val t = ArrayList<Tag>()
-            select(TABLE_TAGS, COLUMN_NAME, COLUMN_IS_FAVORITE, COLUMN_DATE).parseList(object : MapRowParser<ArrayList<Tag>> {
+            select(TABLE_TAGS, COLUMN_NAME, COLUMN_TYPE, COLUMN_IS_FAVORITE, COLUMN_DATE).parseList(object : MapRowParser<ArrayList<Tag>> {
                 override fun parseRow(columns: Map<String, Any?>): ArrayList<Tag> {
                     val name = columns[COLUMN_NAME].toString()
                     val isFavorite = (columns[COLUMN_IS_FAVORITE] as Long).toInt()
                     val date = DateFormat.getInstance().parse(columns[COLUMN_DATE].toString())
-                    val type = columns[COLUMN_TYPE].toString()
+                    val type = columns[COLUMN_TYPE].toString().toInt()
 
                     t += Tag(name, type, isFavorite == 1, date)
                     return t
@@ -58,14 +58,14 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
     }
 
     fun getTag(name: String) = getTags().find { it.name == name }
-    fun addTag(name: String, type: String, isFavorite: Boolean): Tag {
+    fun addTag(name: String, type: Int, isFavorite: Boolean): Tag {
         val date = Date()
         val tag = Tag(name, type, isFavorite, date)
         val existingTag = tags.find { it.name == tag.name }
         if (existingTag == null) {
             tags += tag
             use {
-                insert(TABLE_TAGS, COLUMN_NAME to tag.name,
+                insert(TABLE_TAGS, COLUMN_NAME to tag.name, COLUMN_TYPE to tag.type,
                         COLUMN_IS_FAVORITE to if (tag.isFavorite) 1 else 0, COLUMN_DATE to DateFormat.getInstance().format(date))
             }
             return tag
@@ -173,13 +173,14 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
 
     override fun onCreate(db: SQLiteDatabase) {
         db.createTable(TABLE_TAGS, true,
-                COLUMN_NAME to TEXT + PRIMARY_KEY + UNIQUE,
-                COLUMN_IS_FAVORITE to INTEGER,
-                COLUMN_DATE to TEXT)
+                COLUMN_NAME to TEXT + PRIMARY_KEY + UNIQUE + NOT_NULL,
+                COLUMN_TYPE to INTEGER + NOT_NULL,
+                COLUMN_IS_FAVORITE to INTEGER + NOT_NULL,
+                COLUMN_DATE to TEXT + NOT_NULL)
         db.createTable(TABLE_SUBSCRIPTION, true,
-                COLUMN_NAME to TEXT + PRIMARY_KEY + UNIQUE,
-                COLUMN_SUBSCRIBED_SINCE to INTEGER,
-                COLUMN_SUBSCRIBED_STATUS to INTEGER)
+                COLUMN_NAME to TEXT + PRIMARY_KEY + UNIQUE + NOT_NULL,
+                COLUMN_SUBSCRIBED_SINCE to INTEGER + NOT_NULL,
+                COLUMN_SUBSCRIBED_STATUS to INTEGER + NOT_NULL)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {}

@@ -126,7 +126,7 @@ class PictureActivity : AppCompatActivity() {
             R.id.save -> {
                 val p = m.currentPost
                 if (p != null)
-                    downloadImage(p.fileLargeURL, large(p.id), { launch { FileManager.writeFile(p, it); Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } }, true)
+                    downloadImage(p.fileLargeURL, large(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
                 return true
             }
             else -> return super.onOptionsItemSelected(item)

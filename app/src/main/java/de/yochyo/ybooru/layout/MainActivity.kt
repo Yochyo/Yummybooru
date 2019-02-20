@@ -47,12 +47,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         initDrawer()
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
 
-        val searchHeader = nav_search.getHeaderView(0)
-        recycleView = searchHeader.findViewById(R.id.recycler_view_search)
-        adapter = Adapter().apply { recycleView.adapter = this }
+        val navLayout = nav_search.findViewById<LinearLayout>(R.id.nav_search_layout)
+        initAddTagButton(navLayout.findViewById(R.id.add_search))
+        initSearchButton(navLayout.findViewById(R.id.start_search))
+        recycleView = navLayout.findViewById(R.id.recycler_view_search)
         layoutmanager = LinearLayoutManager(this).apply { recycleView.layoutManager = this }
-        initAddTagButton(searchHeader.findViewById(R.id.add_search))
-        initSearchButton(searchHeader.findViewById(R.id.start_search))
+        adapter = Adapter().apply { recycleView.adapter = this }
     }
 
     private fun setMenuR18Text() {
@@ -114,6 +114,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun initAddTagButton(b: Button) {
         b.setOnClickListener {
+            var dialogIsDismissed = false
             val builder = AlertDialog.Builder(this)
             val layout = LayoutInflater.from(this).inflate(R.layout.search_item_dialog_view, null) as LinearLayout
             val editText = layout.findViewById<AutoCompleteTextView>(R.id.add_tag_edittext)
@@ -127,7 +128,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     GlobalScope.launch {
                         val tags = Api.searchTags(name)
                         launch(Dispatchers.Main) {
-                            if (editText.text.toString() == name) {
+                            if (!dialogIsDismissed && editText.text.toString() == name) {
                                 arrayAdapter.apply { clear(); addAll(tags); notifyDataSetChanged() }
                                 editText.showDropDown()
                             }
@@ -145,11 +146,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             })
             builder.setMessage("Add Tag").setPositiveButton("OK") { _, _ ->
                 GlobalScope.launch {
-                    val tag = Api.getTag(editText.text.toString())
-                    launch(Dispatchers.Main) {
-                        if (tag != null) database.addTag(tag.name, tag.type, tag.isFavorite)
-                        else database.addTag(editText.text.toString(), Tag.UNKNOWN, false)
-                        adapter.notifyItemInserted(database.getTags().lastIndex) //TODO
+                    if (database.getTag(editText.text.toString()) == null) {
+                        val tag = Api.getTag(editText.text.toString())
+                        launch(Dispatchers.Main) {
+                            val newTag: Tag
+                            if (tag != null) newTag = database.addTag(tag.name, tag.type, tag.isFavorite)
+                            else newTag = database.addTag(editText.text.toString(), Tag.UNKNOWN, false)
+                            adapter.notifyItemInserted(database.getTags().indexOf(newTag))
+                        }
                     }
                 }
             }
@@ -157,6 +161,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val dialog = builder.create()
             dialog.show()
             editText.requestFocus()
+            dialog.setOnDismissListener { dialogIsDismissed = true }
             dialog.window?.setGravity(Gravity.TOP)
             dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
             dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
@@ -173,6 +178,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private inner class Adapter : RecyclerView.Adapter<SearchItemViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchItemViewHolder = SearchItemViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.search_item_layout, parent, false) as Toolbar)).apply {
+            //TODO App schmiert in querformat ab
             toolbar.setOnClickListener {
                 val check = it.findViewById<CheckBox>(R.id.search_checkbox)
                 if (check.isChecked) selectedTags.remove(it.findViewById<TextView>(R.id.search_textview).text)

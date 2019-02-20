@@ -56,6 +56,11 @@ class PictureActivity : AppCompatActivity() {
         nav_view_picture.bringToFront()
 
         initRecycleView()
+        nav_view_picture.postOnAnimation {
+            val post = m.dataSet[m.position]
+            currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
+            recycleView.adapter?.notifyDataSetChanged()
+        }
         with(view_pager) {
             adapter = PageAdapter()
             currentItem = m.position
@@ -89,9 +94,11 @@ class PictureActivity : AppCompatActivity() {
                     //TODO hier optimieren falls switchen der seiten laggt
                     if (offset == 0.0F && m.position != position) {
                         m.position = position
+
                         val post = m.dataSet[position]
                         currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
                         recycleView.adapter?.notifyDataSetChanged()
+
                     }
                 }
 
@@ -108,6 +115,11 @@ class PictureActivity : AppCompatActivity() {
                 finish();return true
             }
             R.id.show_info -> {
+                /**
+                 * val post = m.dataSet[m.position]
+                currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
+                recycleView.adapter?.notifyDataSetChanged()
+                 */
                 drawer_picture.openDrawer(GravityCompat.END)
                 return true
             }
@@ -127,7 +139,7 @@ class PictureActivity : AppCompatActivity() {
     }
 
     private fun initRecycleView() {
-        recycleView = nav_view_picture.getHeaderView(0).findViewById(R.id.recycle_view_info)
+        recycleView = nav_view_picture.findViewById(R.id.recycle_view_info)
         recycleView.adapter = InfoAdapter()
         recycleView.layoutManager = LinearLayoutManager(this)
     }

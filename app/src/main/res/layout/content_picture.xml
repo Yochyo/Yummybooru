@@ -20,8 +20,18 @@
             android:layout_gravity="end"
             android:fitsSystemWindows="true"
             android:background="@color/dark_grey"
-            app:itemTextColor="@color/white"
-            app:headerLayout="@layout/nav_header_picture"/>
+            app:itemTextColor="@color/white">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+            <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recycle_view_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+        </LinearLayout>
+    </android.support.design.widget.NavigationView>
 
     <android.support.v4.view.ViewPager android:layout_width="match_parent" android:layout_height="match_parent"
                                        android:background="@color/transparent" android:id="@+id/view_pager"/>

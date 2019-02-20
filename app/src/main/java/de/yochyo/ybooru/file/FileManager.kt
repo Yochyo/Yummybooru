@@ -31,7 +31,7 @@ object FileManager {
     }
 
     private fun postToFilename(p: Post): String {
-        val s = "${p.id}  ${p.tagsCopyright.joinToString(" ") { it.name }}  ${p.tagsArtist.joinToString(" ") { it.name }}  ${p.tagsCharacter.joinToString(" ") { it.name }}  ${p.tagsGeneral.joinToString(" ") { it.name }}  ${p.tagsMeta.joinToString(" ") { it.name }}".replace("\\W+", "")
+        val s = "${p.id}  ${p.tagsCopyright.joinToString(" ") { it.name }}  ${p.tagsArtist.joinToString(" ") { it.name }}  ${p.tagsCharacter.joinToString(" ") { it.name }}  ${p.tagsGeneral.joinToString(" ") { it.name }}  ${p.tagsMeta.joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '<' && it != '>' }
         var last = s.lastIndex
         if (last > 123) last = 123
         return "${s.substring(0, last)}.png"

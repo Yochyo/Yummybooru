@@ -18,7 +18,7 @@
                 android:layout_height="?attr/actionBarSize"
                 android:background="@color/transparent"
 
-                app:layout_scrollFlags="scroll|enterAlwaysCollapsed"/>
+                app:layout_scrollFlags="scroll|enterAlwaysCollapsed|enterAlways"/>
 
     </android.support.design.widget.AppBarLayout>
 

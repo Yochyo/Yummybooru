@@ -5,6 +5,10 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
+    repositories {
+        maven { url "https://jitpack.io" }
+    }
+
     compileSdkVersion 28
     defaultConfig {
         applicationId "de.yochyo.yBooru"

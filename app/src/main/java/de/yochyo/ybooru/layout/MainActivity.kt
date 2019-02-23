@@ -175,7 +175,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun initSearchButton(b: Button) {
         b.setOnClickListener {
             drawer_layout.closeDrawer(GravityCompat.END)
-            PreviewActivity.startActivity(this, selectedTags.toTagString())
+            if (selectedTags.isEmpty())
+                PreviewActivity.startActivity(this, "*")
+            else
+                PreviewActivity.startActivity(this, selectedTags.toTagString())
         }
     }
 

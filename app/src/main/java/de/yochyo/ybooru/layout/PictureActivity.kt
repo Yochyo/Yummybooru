@@ -64,7 +64,6 @@ class PictureActivity : AppCompatActivity() {
         with(view_pager) {
             adapter = PageAdapter()
             currentItem = m.position
-            offscreenPageLimit = 2
             val p = m.currentPost
             if (p != null) {
                 currentTags.apply { clear();addAll(p.tagsCopyright);addAll(p.tagsArtist); addAll(p.tagsCharacter); addAll(p.tagsGeneral); addAll(p.tagsMeta) }
@@ -76,6 +75,11 @@ class PictureActivity : AppCompatActivity() {
                 override fun onSwipe(direction: Direction): Boolean {
                     when (direction) {
                         Direction.down -> finish()
+                        Direction.up -> {
+                            val p = m.currentPost
+                            if (p != null)
+                                downloadImage(p.fileLargeURL, large(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
+                        }
                         else -> return false
                     }
                     return true
@@ -111,26 +115,15 @@ class PictureActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> {
-                finish();return true
-            }
-            R.id.show_info -> {
-                /**
-                 * val post = m.dataSet[m.position]
-                currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
-                recycleView.adapter?.notifyDataSetChanged()
-                 */
-                drawer_picture.openDrawer(GravityCompat.END)
-                return true
-            }
+            android.R.id.home -> finish()
+            R.id.show_info -> drawer_picture.openDrawer(GravityCompat.END)
             R.id.save -> {
                 val p = m.currentPost
                 if (p != null)
                     downloadImage(p.fileLargeURL, large(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
-                return true
             }
-            else -> return super.onOptionsItemSelected(item)
         }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -219,6 +212,7 @@ class PictureActivity : AppCompatActivity() {
                         }
                     }
                 }
+                drawer_picture.closeDrawer(GravityCompat.END)
                 true
             }
         }

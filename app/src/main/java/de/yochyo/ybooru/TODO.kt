@@ -7,19 +7,15 @@ package de.yochyo.ybooru
 //TODO beim tag adden wird der focus direkt auf das textview gesetzt
 //TODO namen der xml elemente optimieren
 //Zoom für picture
-//TODO fragment stat activity für bessere ladezeiten
 
 //TODO app stürzt ab wenn kein internet
 //TODO md5 des bildes benutzen
 
-//TODO info-nav ist häßlich
-
-//TODO Settings
-//TODO Subs
-
-
 //TODO pictureactivity bugt
 //-- selbst wenn man zwischen 2 seiten hin und her wechselt verbraucht es immer mehr und mehr RAM????????? Immer noch?
+
+
+//TODO subscription statt startID macht man lastID
 
 
 

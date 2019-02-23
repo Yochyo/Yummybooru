@@ -92,12 +92,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.nav_subs -> Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show()
             R.id.nav_settings -> {
                 startActivity(Intent(this, SettingsActivity::class.java))
             }
+            R.id.nav_about -> Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show()
+            R.id.nav_help -> Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show()
         }
         drawer_layout.closeDrawer(GravityCompat.START)
-        return true
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onResume() {
@@ -192,15 +195,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             toolbar.inflateMenu(R.menu.activity_main_search_menu)
             toolbar.setOnMenuItemClickListener {
-                val tag = database.getTags()[adapterPosition].apply { isFavorite = !isFavorite }
+                val tag = database.getTags()[adapterPosition]
                 when (it.itemId) {
                     R.id.main_search_favorite_tag -> {
-                        database.changeTag(tag)
+                        database.changeTag(tag.apply { isFavorite = !isFavorite })
                         adapter.notifyItemChanged(adapterPosition)
                     }
                     R.id.main_search_subscribe_tag -> {
                         if (database.getSubscription(tag.name) == null) {
-                            database.addSubscription(tag.name, 0)//TODO
+                            database.addSubscription(tag.name, 0)
                             Toast.makeText(this@MainActivity, "Subscribed ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             database.removeSubscription(tag.name)
@@ -210,6 +213,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
                     R.id.main_search_delete_tag -> {
                         database.removeTag(tag.name)
+                        selectedTags.remove(tag.name)
                         adapter.notifyItemRemoved(adapterPosition)
                     }
                 }

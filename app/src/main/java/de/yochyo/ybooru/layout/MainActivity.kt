@@ -196,9 +196,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             toolbar.inflateMenu(R.menu.activity_main_search_menu)
             toolbar.setOnMenuItemClickListener {
                 val tag = database.getTags()[adapterPosition]
+                println("Click on item $adapterPosition")
                 when (it.itemId) {
                     R.id.main_search_favorite_tag -> {
-                        database.changeTag(tag.apply { isFavorite = !isFavorite })
+                        tag.isFavorite = !tag.isFavorite
+                        database.changeTag(tag)
                         adapter.notifyItemChanged(adapterPosition)
                     }
                     R.id.main_search_subscribe_tag -> {
@@ -223,10 +225,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         override fun getItemCount(): Int = database.getTags().size
         override fun onBindViewHolder(holder: SearchItemViewHolder, position: Int) {
+            println("Update $position")
             val tag = database.getTags()[position]
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
             Menus.initMainSearchTagMenu(this@MainActivity, holder.toolbar.menu, tag)
-            if (tag.isFavorite) textView.paintFlags = textView.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+            if (tag.isFavorite) textView.paintFlags = Paint().apply { isUnderlineText = true }.flags
+            else textView.paintFlags = Paint().apply { isUnderlineText = false }.flags
+
             textView.text = tag.name
             if (Build.VERSION.SDK_INT > 22) textView.setTextColor(getColor(tag.color))
             else textView.setTextColor(resources.getColor(tag.color))

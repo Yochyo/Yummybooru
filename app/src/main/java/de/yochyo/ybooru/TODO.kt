@@ -11,10 +11,6 @@ package de.yochyo.ybooru
 //TODO app stürzt ab wenn kein internet
 //TODO md5 des bildes benutzen
 
-//TODO pictureactivity bugt
-//-- selbst wenn man zwischen 2 seiten hin und her wechselt verbraucht es immer mehr und mehr RAM????????? Immer noch?
-
-
 //TODO subscription statt startID macht man lastID
 
 

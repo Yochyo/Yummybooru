@@ -30,16 +30,20 @@ abstract class Downloader(context: Context) {
                 val delayTime = i * 50L
                 while (true) {
                     if (downloads.isNotEmpty()) {
-                        val download = downloads.takeLast()
-                        var bitmap = getCachedBitmap(download.id)
-                        if (bitmap == null) {
-                            val stream = URL(download.url).openStream()
-                            bitmap = BitmapFactory.decodeStream(stream)
-                            stream.close()
+                        try {
+                            val download = downloads.takeLast()
+                            var bitmap = getCachedBitmap(download.id)
+                            if (bitmap == null) {
+                                val stream = URL(download.url).openStream()
+                                bitmap = BitmapFactory.decodeStream(stream)
+                                stream.close()
+                            }
+                            if (download.cache)
+                                launch(Dispatchers.IO) { cacheBitmap(download.id, bitmap!!) }
+                            launch(Dispatchers.Main) { download.doAfter.invoke(this, bitmap!!) }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
-                        if (download.cache)
-                            launch(Dispatchers.IO) { cacheBitmap(download.id, bitmap!!) }
-                        launch(Dispatchers.Main) { download.doAfter.invoke(this, bitmap!!) }
                         delay(5)
                     } else
                         delay(delayTime)

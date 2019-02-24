@@ -11,10 +11,11 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.*
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import android.widget.Toolbar
+import com.github.chrisbanes.photoview.OnSingleFlingListener
+import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.ybooru.GestureListener
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Tag
@@ -23,6 +24,7 @@ import de.yochyo.ybooru.database
 import de.yochyo.ybooru.file.FileManager
 import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.manager.Manager
+import de.yochyo.ybooru.utils.Fling
 import de.yochyo.ybooru.utils.large
 import de.yochyo.ybooru.utils.preview
 import kotlinx.android.synthetic.main.activity_picture.*
@@ -70,32 +72,9 @@ class PictureActivity : AppCompatActivity() {
                 recycleView.adapter?.notifyDataSetChanged()
             }
 
-
-            val detector = GestureDetector(this@PictureActivity, object : GestureListener() {
-                override fun onSwipe(direction: Direction): Boolean {
-                    when (direction) {
-                        Direction.down -> finish()
-                        Direction.up -> {
-                            val p = m.currentPost
-                            if (p != null)
-                                downloadImage(p.fileLargeURL, large(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
-                        }
-                        else -> return false
-                    }
-                    return true
-                }
-            })
-            setOnTouchListener(object : View.OnTouchListener {
-                override fun onTouch(v: View, event: MotionEvent): Boolean {
-                    return detector.onTouchEvent(event)
-                }
-            })
-
-
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                 override fun onPageScrollStateChanged(p0: Int) {}
                 override fun onPageScrolled(position: Int, offset: Float, p2: Int) {
-                    //TODO hier optimieren falls switchen der seiten laggt
                     if (offset == 0.0F && m.position != position) {
                         m.position = position
 
@@ -165,12 +144,44 @@ class PictureActivity : AppCompatActivity() {
                 preloadNextPage(m.currentPage + 1)
             if (position == m.dataSet.lastIndex)
                 loadNextPage(m.currentPage + 1)
-            val imageView = LayoutInflater.from(this@PictureActivity).inflate(R.layout.picture_item_view, container, false) as ImageView
+            val imageView = LayoutInflater.from(this@PictureActivity).inflate(R.layout.picture_item_view, container, false) as PhotoView
+            imageView.setZoomable(false)
+            imageView.setAllowParentInterceptOnEdge(true)
+            val detector = GestureDetector(this@PictureActivity, object : GestureListener() {
+                override fun onSwipe(direction: Direction): Boolean {
+                    when (direction) {
+                        Direction.down -> finish()
+                        Direction.up -> {
+                            val p = m.currentPost
+                            if (p != null)
+                                downloadImage(p.fileLargeURL, large(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
+                        }
+                        else -> return false
+                    }
+                    return true
+                }
+            })
+            imageView.setOnSingleFlingListener(object : OnSingleFlingListener {
+                override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+                    when (Fling.getDirection(e1, e2)) {
+                        Fling.Direction.down -> finish()
+                        Fling.Direction.up -> {
+                            val p = m.currentPost
+                            if (p != null)
+                                downloadImage(p.fileLargeURL, large(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
+                        }
+                        else -> return false
+                    }
+                    return true
+                }
+            })
+
+
             val p = m.dataSet[position]
 
             downloadImage(p.filePreviewURL, preview(p.id), {
                 imageView.setImageBitmap(it)
-                downloadImage(p.fileLargeURL, large(p.id), { imageView.setImageBitmap(it) }, true)
+                downloadImage(p.fileLargeURL, large(p.id), { imageView.setImageBitmap(it);imageView.setZoomable(true) }, true)
             }, true)
 
             container.addView(imageView)

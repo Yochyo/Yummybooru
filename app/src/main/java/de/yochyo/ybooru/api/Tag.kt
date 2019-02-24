@@ -42,5 +42,3 @@ class Tag(val name: String, val type: Int = UNKNOWN, var isFavorite: Boolean = f
         return name
     }
 }
-
-class Subscription(val name: String, val startID: Int, var currentID: Int)

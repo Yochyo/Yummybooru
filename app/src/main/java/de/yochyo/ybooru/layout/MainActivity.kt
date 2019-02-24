@@ -93,11 +93,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_subs -> Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show()
-            R.id.nav_settings -> {
-                startActivity(Intent(this, SettingsActivity::class.java))
-            }
-            R.id.nav_about -> Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show()
-            R.id.nav_help -> Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show()
+            R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
+            R.id.community -> Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show()
+            R.id.nav_help -> Toast.makeText(this, "Ask me some questions", Toast.LENGTH_SHORT).show()
         }
         drawer_layout.closeDrawer(GravityCompat.START)
         return super.onOptionsItemSelected(item)
@@ -121,7 +119,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val builder = AlertDialog.Builder(this)
             val layout = LayoutInflater.from(this).inflate(R.layout.search_item_dialog_view, null) as LinearLayout
             val editText = layout.findViewById<AutoCompleteTextView>(R.id.add_tag_edittext)
-            val arrayAdapter = ArrayAdapter<Tag>(this@MainActivity, android.R.layout.simple_dropdown_item_1line)
+            val arrayAdapter = object : ArrayAdapter<Tag>(this@MainActivity, android.R.layout.simple_dropdown_item_1line) {
+                override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                    val tag = getItem(position)
+                    val textView = super.getView(position, convertView, parent) as TextView
+                    if (tag != null) {
+                        if (Build.VERSION.SDK_INT > 22) textView.setTextColor(getColor(tag.color))
+                        else textView.setTextColor(resources.getColor(tag.color))
+                    }
+                    return textView
+                }
+            }
 
             editText.setAdapter(arrayAdapter)
             editText.addTextChangedListener(object : TextWatcher {
@@ -199,7 +207,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             toolbar.inflateMenu(R.menu.activity_main_search_menu)
             toolbar.setOnMenuItemClickListener {
                 val tag = database.getTags()[adapterPosition]
-                println("Click on item $adapterPosition")
                 when (it.itemId) {
                     R.id.main_search_favorite_tag -> {
                         tag.isFavorite = !tag.isFavorite
@@ -228,7 +235,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         override fun getItemCount(): Int = database.getTags().size
         override fun onBindViewHolder(holder: SearchItemViewHolder, position: Int) {
-            println("Update $position")
             val tag = database.getTags()[position]
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
             Menus.initMainSearchTagMenu(this@MainActivity, holder.toolbar.menu, tag)

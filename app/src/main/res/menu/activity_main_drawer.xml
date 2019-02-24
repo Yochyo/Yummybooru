@@ -13,9 +13,9 @@
                 android:icon="@drawable/settings"
                 android:title="Settings"/>
         <item
-                android:id="@+id/nav_about"
+                android:id="@+id/community"
                 android:icon="@drawable/info"
-                android:title="About"/>
+                android:title="Community"/>
         <item
                 android:id="@+id/nav_help"
                 android:icon="@drawable/help"

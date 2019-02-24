@@ -18,7 +18,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
     private val COLUMN_IS_FAVORITE = "isFavorite"
     private val COLUMN_TYPE = "type"
     private val COLUMN_DATE = "Date"
-    private val COLUMN_SUBSCRIBED_SINCE = "start"
+    private val COLUMN_SUBSCRIBED_LAST = "last"
     private val COLUMN_SUBSCRIBED_STATUS = "current"
 
     companion object {
@@ -96,12 +96,12 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
         if (subs.isNotEmpty()) return subs
         else return use {
             val s = ArrayList<Subscription>()
-            select(TABLE_SUBSCRIPTION, COLUMN_NAME, COLUMN_SUBSCRIBED_SINCE, COLUMN_SUBSCRIBED_STATUS).parseList(object : MapRowParser<ArrayList<Subscription>> {
+            select(TABLE_SUBSCRIPTION, COLUMN_NAME, COLUMN_SUBSCRIBED_LAST, COLUMN_SUBSCRIBED_STATUS).parseList(object : MapRowParser<ArrayList<Subscription>> {
                 override fun parseRow(columns: Map<String, Any?>): ArrayList<Subscription> {
                     val name = columns[COLUMN_NAME].toString()
-                    val startID = (columns[COLUMN_SUBSCRIBED_SINCE] as Long).toInt()
+                    val lastID = (columns[COLUMN_SUBSCRIBED_LAST] as Long).toInt()
                     val currentID = (columns[COLUMN_SUBSCRIBED_STATUS] as Long).toInt()
-                    s += Subscription(name, startID, currentID)
+                    s += Subscription(name, lastID, currentID)
                     return s
                 }
             })
@@ -116,7 +116,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
             subs += sub
             use {
                 insert(TABLE_SUBSCRIPTION, COLUMN_NAME to name,
-                        COLUMN_SUBSCRIBED_SINCE to startID.toLong(),
+                        COLUMN_SUBSCRIBED_LAST to startID.toLong(),
                         COLUMN_SUBSCRIBED_STATUS to startID.toLong())
             }
         }
@@ -179,7 +179,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
                 COLUMN_DATE to TEXT + NOT_NULL)
         db.createTable(TABLE_SUBSCRIPTION, true,
                 COLUMN_NAME to TEXT + PRIMARY_KEY + UNIQUE + NOT_NULL,
-                COLUMN_SUBSCRIBED_SINCE to INTEGER + NOT_NULL,
+                COLUMN_SUBSCRIBED_LAST to INTEGER + NOT_NULL,
                 COLUMN_SUBSCRIBED_STATUS to INTEGER + NOT_NULL)
     }
 

@@ -25,6 +25,11 @@
         </activity>
         <activity
                 android:label=""
+                android:name=".layout.SubscriptionPreviewActivity"
+                android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+                android:label=""
                 android:name=".layout.PreviewActivity"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
@@ -34,7 +39,7 @@
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-                android:label=""
+                android:label="Subs"
                 android:name=".layout.SubscriptionActivity"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>

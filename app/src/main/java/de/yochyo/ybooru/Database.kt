@@ -101,7 +101,9 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
                     val name = columns[COLUMN_NAME].toString()
                     val lastID = (columns[COLUMN_SUBSCRIBED_LAST] as Long).toInt()
                     val currentID = (columns[COLUMN_SUBSCRIBED_STATUS] as Long).toInt()
-                    s += Subscription(name, lastID, currentID)
+
+                    val tag = getTag(name)
+                    s += Subscription(if (tag != null) tag else Tag(name), lastID, currentID)
                     return s
                 }
             })
@@ -109,10 +111,11 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
         }
     }
 
-    fun getSubscription(name: String) = getSubscriptions().find { it.name == name }
+    fun getSubscription(name: String) = getSubscriptions().find { it.tag.name == name }
     fun addSubscription(name: String, startID: Int) {
-        val sub = Subscription(name, startID, startID)
-        if (subs.find { it.name == name } == null) {
+        val tag = getTag(name)
+        val sub = Subscription(if (tag != null) tag else Tag(name), startID, startID)
+        if (subs.find { it.tag.name == name } == null) {
             subs += sub
             use {
                 insert(TABLE_SUBSCRIPTION, COLUMN_NAME to name,
@@ -123,7 +126,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
     }
 
     fun removeSubscription(name: String) {
-        val sub = subs.find { it.name == name }
+        val sub = subs.find { it.tag.name == name }
         if (sub != null) {
             subs.remove(sub)
             use { delete(TABLE_SUBSCRIPTION, whereClause = "$COLUMN_NAME = {name}", args = *arrayOf("name" to name)) }
@@ -131,12 +134,12 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
     }
 
     fun changeSubscription(changedSub: Subscription) {
-        val sub = subs.find { it.name == changedSub.name }
+        val sub = subs.find { it.tag.name == changedSub.tag.name }
         if (sub != null) {
             sub.currentID = changedSub.currentID
             use {
                 update(TABLE_SUBSCRIPTION, COLUMN_SUBSCRIBED_STATUS to changedSub.currentID)
-                        .whereArgs("$COLUMN_NAME = {name}", "name" to changedSub.name).exec()
+                        .whereArgs("$COLUMN_NAME = {name}", "name" to changedSub.tag.name).exec()
             }
         }
     }

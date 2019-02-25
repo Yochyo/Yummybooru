@@ -28,15 +28,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class PreviewActivity : AppCompatActivity() {
+class SubscriptionPreviewActivity : AppCompatActivity() {
     var isScrolling = false
+
     companion object {
-        fun startActivity(context: Context, tags: String) {
-            context.startActivity(Intent(context, PreviewActivity::class.java).apply { putExtra("tags", tags) })
+        fun startActivity(context: Context, tags: String, maxID: Int) {
+            context.startActivity(Intent(context, SubscriptionPreviewActivity::class.java).apply { putExtra("tags", tags); putExtra("maxID", maxID) })
         }
     }
 
     private lateinit var m: Manager
+    private var maxID: Int = 0
 
     private var isLoadingView = false
 
@@ -48,6 +50,7 @@ class PreviewActivity : AppCompatActivity() {
         setContentView(R.layout.activity_preview)
         setSupportActionBar(toolbar_preview)
         m = Manager.getOrInit(intent.getStringExtra("tags"))
+        maxID = intent.getIntExtra("maxID", 0)
         supportActionBar?.title = m.tags.toTagString()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -63,13 +66,13 @@ class PreviewActivity : AppCompatActivity() {
         isLoadingView = true
         GlobalScope.launch {
             val i = m.dataSet.size
-            val posts = m.getPage(this@PreviewActivity, page)
+            val posts = m.getPage(this@SubscriptionPreviewActivity, page, idNewerThan = maxID)
             launch(Dispatchers.Main) {
                 adapter.notifyItemRangeInserted(if (i > 0) i - 1 else 0, posts.size)
                 isLoadingView = false
             }
             launch {
-                m.downloadPage(this@PreviewActivity, m.currentPage + 1)
+                m.downloadPage(this@SubscriptionPreviewActivity, m.currentPage + 1, idNewerThan = maxID)
             }
         }
     }
@@ -92,7 +95,6 @@ class PreviewActivity : AppCompatActivity() {
     private fun initSwipeRefreshLayout() {
         swipeRefreshLayout.setOnRefreshListener {
             swipeRefreshLayout.isRefreshing = false
-            reloadView()
         }
     }
 
@@ -117,16 +119,16 @@ class PreviewActivity : AppCompatActivity() {
                 val dialog = builder.create()
                 dialog.show()
                 layout.findViewById<Button>(R.id.download_all_visible).setOnClickListener {
-                        for (p in m.dataSet)
-                            downloadImage(p.fileLargeURL, large(p.id), {
-                                FileManager.writeFile(p, it)
-                                Toast.makeText(this@PreviewActivity, "Downloaded every picture", Toast.LENGTH_SHORT).show()
-                            }, false)
+                    for (p in m.dataSet)
+                        downloadImage(p.fileLargeURL, large(p.id), {
+                            FileManager.writeFile(p, it)
+                            Toast.makeText(this@SubscriptionPreviewActivity, "Downloaded every picture", Toast.LENGTH_SHORT).show()
+                        }, false)
                     dialog.dismiss()
                 }
                 layout.findViewById<Button>(R.id.download_all_from_tags).setOnClickListener {
                     dialog.dismiss()
-                    val b = AlertDialog.Builder(this@PreviewActivity)
+                    val b = AlertDialog.Builder(this@SubscriptionPreviewActivity)
                     b.setTitle("Download")
                     b.setMessage("Do you want to download everything that could be on this page?\n(You should not use this when using no tags or tags with many pictures)")//TODO einfach alle posts laden, bis die gesamtdateilänge mehr als der freie speicher ist oder alle posts da sind
                     b.setPositiveButton("Yes") { _, _ -> TODO() }//download all
@@ -147,8 +149,8 @@ class PreviewActivity : AppCompatActivity() {
     private inner class Adapter : RecyclerView.Adapter<MyViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder = MyViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
             imageView.setOnClickListener {
-                m.position = layoutPosition
-                PictureActivity.startActivity(this@PreviewActivity, m.tags.toTagString())
+                m.position = adapterPosition
+                PictureActivity.startActivity(this@SubscriptionPreviewActivity, m.tags.toTagString())
             }
         }
 

@@ -45,15 +45,15 @@ abstract class Manager(val tags: Array<String>) {
     val dataSet = ArrayList<Post>(200)
     private val pages = HashMap<Int, List<Post>>()
     var position = -1
-    var _currentPage = 0
+    private var _currentPage = 0
     val currentPage: Int
         get() = _currentPage
     val currentPost: Post?
         get() = dataSet[position]
 
 
-    suspend fun getAndInitPage(context: Context, page: Int): List<Post> {
-        val p = getOrDownloadPage(context, page)
+    suspend fun getPage(context: Context, page: Int, idNewerThan: Int = 0): List<Post> {
+        val p = downloadPage(context, page, idNewerThan)
         if (page > currentPage) {
             _currentPage = page
             withContext(Dispatchers.Main) { dataSet += p }
@@ -61,10 +61,10 @@ abstract class Manager(val tags: Array<String>) {
         return p
     }
 
-    suspend fun getOrDownloadPage(context: Context, page: Int): List<Post> {
+    suspend fun downloadPage(context: Context, page: Int, idNewerThan: Int = 0): List<Post> {
         var p = pages[page]
         if (p == null) {
-            val posts = Api.getPosts(context, page, *tags)
+            val posts = Api.getPosts(context, page, tags, newerThan = idNewerThan)
             p = posts
             if (dataSet.isNotEmpty()) {
                 val lastFromLastPage = dataSet.last()

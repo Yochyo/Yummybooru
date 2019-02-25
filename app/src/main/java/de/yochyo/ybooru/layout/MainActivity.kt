@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.nav_subs -> Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show()
+            R.id.nav_subs -> startActivity(Intent(this, SubscriptionActivity::class.java))
             R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
             R.id.community -> Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show()
             R.id.nav_help -> Toast.makeText(this, "Ask me some questions", Toast.LENGTH_SHORT).show()
@@ -141,7 +141,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         launch(Dispatchers.Main) {
                             if (!dialogIsDismissed && editText.text.toString() == name) {
                                 arrayAdapter.apply { clear(); addAll(tags); notifyDataSetChanged() }
-                                editText.showDropDown()
+                                if (tags.size == 1 && tags.first().name == name) editText.dismissDropDown()
+                                else editText.showDropDown()
                             }
                         }
                     }
@@ -226,6 +227,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     R.id.main_search_delete_tag -> {
                         database.removeTag(tag.name)
                         selectedTags.remove(tag.name)
+                        database.removeSubscription(tag.name)
                         adapter.notifyItemRemoved(adapterPosition)
                     }
                 }

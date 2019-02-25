@@ -37,11 +37,13 @@ object Api {
         return null
     }
 
-    suspend fun getPosts(context: Context, page: Int, vararg tags: String): List<Post> {
-        var array: List<Post> = ArrayList(context.database.limit)
-        var url = "https://danbooru.donmai.us/posts.json?limit=${context.database.limit}&page=$page"
-        if (tags.filter { it != "" }.isNotEmpty()) {
+    suspend fun getPosts(context: Context, page: Int, tags: Array<String>, newerThan: Int = 0, limit: Int = context.database.limit): List<Post> {
+        var array: List<Post> = ArrayList(limit)
+        var url = "https://danbooru.donmai.us/posts.json?limit=$limit&page=$page"
+        if (tags.filter { it != "" }.isNotEmpty() || newerThan != 0) {
             url += "&tags="
+            if (newerThan != 0)
+                url += "id:>$newerThan "
             for (tag in tags)
                 url += "$tag "
             url = url.substring(0, url.length - 1)
@@ -57,6 +59,15 @@ object Api {
             if (context.database.r18) return array.filter { it.rating == "s" }
         }
         return array
+    }
+
+    suspend fun newestID(context: Context): Int {
+        val url = "https://danbooru.donmai.us/posts.json?limit=1&page=1"
+        val json = getJson(url)
+        if (json != null) {
+            return json.getJSONObject(0).getInt("id")
+        }
+        return 0
     }
 
     private suspend fun getJson(urlToRead: String): JSONArray? {
@@ -87,5 +98,4 @@ object Api {
         }
         return array
     }
-
 }

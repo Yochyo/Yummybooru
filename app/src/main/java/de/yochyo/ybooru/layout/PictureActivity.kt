@@ -119,9 +119,9 @@ class PictureActivity : AppCompatActivity() {
     fun loadNextPage(page: Int) {
         if (currentPage - 1 == m.currentPage)
             GlobalScope.launch {
-                m.getOrDownloadPage(this@PictureActivity, page)
+                m.downloadPage(this@PictureActivity, page)
                 launch(Dispatchers.Main) {
-                    m.getAndInitPage(this@PictureActivity, page)
+                    m.getPage(this@PictureActivity, page)
                     view_pager.adapter!!.notifyDataSetChanged()
                 }
             }
@@ -131,7 +131,7 @@ class PictureActivity : AppCompatActivity() {
         if (currentPage == m.currentPage) {
             currentPage++
             GlobalScope.launch {
-                m.getOrDownloadPage(this@PictureActivity, page)
+                m.downloadPage(this@PictureActivity, page)
             }
         }
     }

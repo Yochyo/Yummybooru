@@ -7,6 +7,13 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:showIn="@layout/activity_subscription"
+        android:background="@color/dark_grey"
         tools:context="de.yochyo.ybooru.layout.SubscriptionActivity">
+
+    <android.support.v7.widget.RecyclerView
+            android:id="@+id/subs_recycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+    </android.support.v7.widget.RecyclerView>
 
 </android.support.constraint.ConstraintLayout>

@@ -1,6 +1,9 @@
 package de.yochyo.ybooru.utils
 
+import android.os.Build
 import android.view.MotionEvent
+import android.widget.TextView
+import de.yochyo.ybooru.api.Tag
 
 fun large(id: Int) = "${id}Large"
 fun preview(id: Int) = "${id}Preview"
@@ -13,6 +16,10 @@ fun String.toTagArray(): Array<String> = split(" ").toTypedArray()
 fun Array<String>.toTagString() = joinToString(" ")
 fun List<String>.toTagString() = joinToString(" ")
 
+fun TextView.setColor(tag: Tag) {
+    if (Build.VERSION.SDK_INT > 22) setTextColor(context.getColor(tag.color))
+    else setTextColor(context.resources.getColor(tag.color))
+}
 
 object Fling {
     fun getDirection(e1: MotionEvent, e2: MotionEvent): Direction {

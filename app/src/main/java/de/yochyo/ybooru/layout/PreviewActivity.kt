@@ -17,8 +17,8 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.downloadImage
-import de.yochyo.ybooru.file.FileManager
 import de.yochyo.ybooru.manager.Manager
+import de.yochyo.ybooru.utils.FileManager
 import de.yochyo.ybooru.utils.large
 import de.yochyo.ybooru.utils.preview
 import de.yochyo.ybooru.utils.toTagString
@@ -28,20 +28,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class PreviewActivity : AppCompatActivity() {
-    var isScrolling = false
+open class PreviewActivity : AppCompatActivity() {
     companion object {
-        fun startActivity(context: Context, tags: String) {
-            context.startActivity(Intent(context, PreviewActivity::class.java).apply { putExtra("tags", tags) })
-        }
+        fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PreviewActivity::class.java).apply { putExtra("tags", tags) })
     }
 
-    private lateinit var m: Manager
+    protected var isLoadingView = false
+    protected var isScrolling = false
 
-    private var isLoadingView = false
-
-    private lateinit var layoutManager: GridLayoutManager
-    private lateinit var adapter: Adapter
+    protected lateinit var layoutManager: GridLayoutManager
+    protected lateinit var previewAdapter: PreviewAdapter
+    protected lateinit var m: Manager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,20 +49,24 @@ class PreviewActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         recycler_view.layoutManager = GridLayoutManager(this, 3).apply { layoutManager = this }
-        recycler_view.adapter = Adapter().apply { adapter = this }
+        recycler_view.adapter = PreviewAdapter().apply { previewAdapter = this }
+
+        swipeRefreshLayout.setOnRefreshListener {
+            swipeRefreshLayout.isRefreshing = false
+            reloadView()
+        }
 
         initScrollView()
-        initSwipeRefreshLayout()
         loadPage(1)
     }
 
-    fun loadPage(page: Int) {
+    open fun loadPage(page: Int) {
         isLoadingView = true
         GlobalScope.launch {
             val i = m.dataSet.size
             val posts = m.getPage(this@PreviewActivity, page)
             launch(Dispatchers.Main) {
-                adapter.notifyItemRangeInserted(if (i > 0) i - 1 else 0, posts.size)
+                previewAdapter.notifyItemRangeInserted(if (i > 0) i - 1 else 0, posts.size)
                 isLoadingView = false
             }
             launch {
@@ -74,7 +75,6 @@ class PreviewActivity : AppCompatActivity() {
         }
     }
 
-
     private fun initScrollView() {
         recycler_view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -82,29 +82,16 @@ class PreviewActivity : AppCompatActivity() {
                     RecyclerView.SCROLL_STATE_IDLE -> isScrolling = false
                     RecyclerView.SCROLL_STATE_DRAGGING -> isScrolling = true
                 }
-                super.onScrollStateChanged(recyclerView, newState)
                 if (!isLoadingView)
                     if (layoutManager.findLastVisibleItemPosition() + 1 >= m.dataSet.size) loadPage(m.currentPage + 1)
+                return super.onScrollStateChanged(recyclerView, newState)
             }
         })
     }
-
-    private fun initSwipeRefreshLayout() {
-        swipeRefreshLayout.setOnRefreshListener {
-            swipeRefreshLayout.isRefreshing = false
-            reloadView()
-        }
-    }
-
     fun reloadView() {
         m.reset()
-        adapter.notifyDataSetChanged()
+        previewAdapter.notifyDataSetChanged()
         loadPage(1)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        layoutManager.scrollToPosition(m.position)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -117,12 +104,13 @@ class PreviewActivity : AppCompatActivity() {
                 val dialog = builder.create()
                 dialog.show()
                 layout.findViewById<Button>(R.id.download_all_visible).setOnClickListener {
-                        for (p in m.dataSet)
-                            downloadImage(p.fileLargeURL, large(p.id), {
-                                FileManager.writeFile(p, it)
-                                Toast.makeText(this@PreviewActivity, "Downloaded every picture", Toast.LENGTH_SHORT).show()
-                            }, false)
                     dialog.dismiss()
+                    Toast.makeText(this@PreviewActivity, "Download All visible pictures", Toast.LENGTH_SHORT).show()
+                    for (p in m.dataSet)
+                        downloadImage(p.fileLargeURL, large(p.id), {
+                            FileManager.writeFile(p, it)
+                            //TODO notification
+                        }, false)
                 }
                 layout.findViewById<Button>(R.id.download_all_from_tags).setOnClickListener {
                     dialog.dismiss()
@@ -138,14 +126,18 @@ class PreviewActivity : AppCompatActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.preview_menu, menu)
         return true
     }
 
-    private inner class Adapter : RecyclerView.Adapter<MyViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder = MyViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
+    override fun onResume() {
+        super.onResume()
+        layoutManager.scrollToPosition(m.position)
+    }
+
+    protected inner class PreviewAdapter : RecyclerView.Adapter<PreviewViewHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
             imageView.setOnClickListener {
                 m.position = layoutPosition
                 PictureActivity.startActivity(this@PreviewActivity, m.tags.toTagString())
@@ -153,16 +145,16 @@ class PreviewActivity : AppCompatActivity() {
         }
 
         override fun getItemCount(): Int = m.dataSet.size
-        override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+        override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) {
 
         }
 
-        override fun onViewDetachedFromWindow(holder: MyViewHolder) {
+        override fun onViewDetachedFromWindow(holder: PreviewViewHolder) {
             super.onViewDetachedFromWindow(holder)
             holder.imageView.setImageBitmap(null)
         }
 
-        override fun onViewAttachedToWindow(holder: MyViewHolder) {
+        override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
             val pos = holder.adapterPosition
             if (pos != -1) {
                 val p = m.dataSet[holder.adapterPosition]
@@ -174,5 +166,7 @@ class PreviewActivity : AppCompatActivity() {
         }
     }
 
-    private inner class MyViewHolder(val imageView: ImageView) : RecyclerView.ViewHolder(imageView)
+    protected inner class PreviewViewHolder(val imageView: ImageView) : RecyclerView.ViewHolder(imageView)
+
+
 }

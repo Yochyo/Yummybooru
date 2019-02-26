@@ -20,12 +20,28 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         fragmentManager.beginTransaction().replace(android.R.id.content, GeneralPreferenceFragment()).commit()
     }
 
+    companion object {
+        private val sBindPreferenceSummaryToValueListener = Preference.OnPreferenceChangeListener { preference, value ->
+            val database = preference.context.database
+            when (preference.key) {
+                "limit" -> {
+                    database.limit = value.toString().toInt(); Manager.resetAll()
+                    Manager.resetAll()
+                }
+                //Add here
+            }
+            true
+        }
 
-    override fun onIsMultiPane() = isXLargeTablet(this)
+        private fun isXLargeTablet(context: Context): Boolean {
+            return context.resources.configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK >= Configuration.SCREENLAYOUT_SIZE_XLARGE
+        }
 
-    override fun isValidFragment(fragmentName: String): Boolean {
-        return PreferenceFragment::class.java.name == fragmentName
-                || GeneralPreferenceFragment::class.java.name == fragmentName
+        private fun bindPreferenceSummaryToValue(preference: Preference) {
+            preference.onPreferenceChangeListener = sBindPreferenceSummaryToValueListener
+            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
+                    PreferenceManager.getDefaultSharedPreferences(preference.context).getString(preference.key, ""))
+        }
     }
 
     class GeneralPreferenceFragment : PreferenceFragment() {
@@ -47,26 +63,10 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         }
     }
 
-    companion object {
-        private val sBindPreferenceSummaryToValueListener = Preference.OnPreferenceChangeListener { preference, value ->
-            val database = preference.context.database
-            when (preference.key) {
-                "limit" -> {
-                    database.limit = value.toString().toInt(); Manager.resetAll()
-                    Manager.resetAll()
-                }
-            }
-            true
-        }
-
-        private fun isXLargeTablet(context: Context): Boolean {
-            return context.resources.configuration.screenLayout and Configuration.SCREENLAYOUT_SIZE_MASK >= Configuration.SCREENLAYOUT_SIZE_XLARGE
-        }
-
-        private fun bindPreferenceSummaryToValue(preference: Preference) {
-            preference.onPreferenceChangeListener = sBindPreferenceSummaryToValueListener
-            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-                    PreferenceManager.getDefaultSharedPreferences(preference.context).getString(preference.key, ""))
-        }
+    override fun isValidFragment(fragmentName: String): Boolean {
+        return PreferenceFragment::class.java.name == fragmentName
+                || GeneralPreferenceFragment::class.java.name == fragmentName
     }
+
+    override fun onIsMultiPane() = isXLargeTablet(this)
 }

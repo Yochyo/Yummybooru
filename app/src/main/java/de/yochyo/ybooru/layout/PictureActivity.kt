@@ -2,7 +2,6 @@ package de.yochyo.ybooru.layout
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.support.v4.view.GravityCompat
 import android.support.v4.view.PagerAdapter
@@ -16,17 +15,13 @@ import android.widget.Toast
 import android.widget.Toolbar
 import com.github.chrisbanes.photoview.OnSingleFlingListener
 import com.github.chrisbanes.photoview.PhotoView
-import de.yochyo.ybooru.GestureListener
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Tag
 import de.yochyo.ybooru.api.downloadImage
 import de.yochyo.ybooru.database
-import de.yochyo.ybooru.file.FileManager
 import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.manager.Manager
-import de.yochyo.ybooru.utils.Fling
-import de.yochyo.ybooru.utils.large
-import de.yochyo.ybooru.utils.preview
+import de.yochyo.ybooru.utils.*
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers
@@ -35,17 +30,12 @@ import kotlinx.coroutines.launch
 
 
 class PictureActivity : AppCompatActivity() {
-    private var currentPage: Int = 1
-    private lateinit var tags: Array<out String>
-
     companion object {
-        fun startActivity(context: Context, tags: String) {
-            context.startActivity(Intent(context, PictureActivity::class.java).apply { putExtra("tags", tags) })
-        }
+        fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PictureActivity::class.java).apply { putExtra("tags", tags) })
     }
 
-    private var currentTags = ArrayList<Tag>()
     private lateinit var recycleView: RecyclerView
+    private var currentTags = ArrayList<Tag>()
     lateinit var m: Manager
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,16 +43,13 @@ class PictureActivity : AppCompatActivity() {
         setContentView(R.layout.activity_picture)
         setSupportActionBar(toolbar_picture)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        m = Manager.get(intent.getStringExtra("tags").apply { tags = this.split(" ").toTypedArray() })
-        currentPage = m.currentPage
+        m = Manager.get(intent.getStringExtra("tags"))
         nav_view_picture.bringToFront()
 
-        initRecycleView()
-        nav_view_picture.postOnAnimation {
-            val post = m.dataSet[m.position]
-            currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
-            recycleView.adapter?.notifyDataSetChanged()
-        }
+        recycleView = nav_view_picture.findViewById(R.id.recycle_view_info)
+        recycleView.adapter = InfoAdapter()
+        recycleView.layoutManager = LinearLayoutManager(this)
+
         with(view_pager) {
             adapter = PageAdapter()
             currentItem = m.position
@@ -73,18 +60,19 @@ class PictureActivity : AppCompatActivity() {
             }
 
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-                override fun onPageScrollStateChanged(p0: Int) {}
                 override fun onPageScrolled(position: Int, offset: Float, p2: Int) {
                     if (offset == 0.0F && m.position != position) {
                         m.position = position
 
-                        val post = m.dataSet[position]
-                        currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
-                        recycleView.adapter?.notifyDataSetChanged()
-
+                        val post = m.currentPost
+                        if (post != null) {
+                            currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
+                            recycleView.adapter?.notifyDataSetChanged()
+                        }
                     }
                 }
 
+                override fun onPageScrollStateChanged(p0: Int) {}
                 override fun onPageSelected(position: Int) {}
             })
 
@@ -110,29 +98,19 @@ class PictureActivity : AppCompatActivity() {
         return true
     }
 
-    private fun initRecycleView() {
-        recycleView = nav_view_picture.findViewById(R.id.recycle_view_info)
-        recycleView.adapter = InfoAdapter()
-        recycleView.layoutManager = LinearLayoutManager(this)
-    }
-
     fun loadNextPage(page: Int) {
-        if (currentPage - 1 == m.currentPage)
-            GlobalScope.launch {
-                m.downloadPage(this@PictureActivity, page)
-                launch(Dispatchers.Main) {
-                    m.getPage(this@PictureActivity, page)
-                    view_pager.adapter!!.notifyDataSetChanged()
-                }
+        GlobalScope.launch {
+            m.downloadPage(this@PictureActivity, page)
+            launch(Dispatchers.Main) {
+                m.getPage(this@PictureActivity, page)
+                view_pager.adapter!!.notifyDataSetChanged()
             }
+        }
     }
 
     fun preloadNextPage(page: Int) {
-        if (currentPage == m.currentPage) {
-            currentPage++
-            GlobalScope.launch {
-                m.downloadPage(this@PictureActivity, page)
-            }
+        GlobalScope.launch {
+            m.downloadPage(this@PictureActivity, page)
         }
     }
 
@@ -140,45 +118,25 @@ class PictureActivity : AppCompatActivity() {
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
         override fun getCount(): Int = m.dataSet.size
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
-            if (position + 3 >= m.dataSet.lastIndex)
-                preloadNextPage(m.currentPage + 1)
-            if (position == m.dataSet.lastIndex)
-                loadNextPage(m.currentPage + 1)
+            if (position + 3 >= m.dataSet.lastIndex) preloadNextPage(m.currentPage + 1)
+            if (position == m.dataSet.lastIndex) loadNextPage(m.currentPage + 1)
             val imageView = LayoutInflater.from(this@PictureActivity).inflate(R.layout.picture_item_view, container, false) as PhotoView
             imageView.setZoomable(false)
             imageView.setAllowParentInterceptOnEdge(true)
-            val detector = GestureDetector(this@PictureActivity, object : GestureListener() {
-                override fun onSwipe(direction: Direction): Boolean {
-                    when (direction) {
-                        Direction.down -> finish()
-                        Direction.up -> {
-                            val p = m.currentPost
-                            if (p != null)
-                                downloadImage(p.fileLargeURL, large(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
-                        }
-                        else -> return false
-                    }
-                    return true
-                }
-            })
             imageView.setOnSingleFlingListener(object : OnSingleFlingListener {
                 override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
                     when (Fling.getDirection(e1, e2)) {
                         Fling.Direction.down -> finish()
                         Fling.Direction.up -> {
-                            val p = m.currentPost
-                            if (p != null)
-                                downloadImage(p.fileLargeURL, large(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
+                            val p = m.dataSet[position]
+                            downloadImage(p.fileLargeURL, large(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
                         }
                         else -> return false
                     }
                     return true
                 }
             })
-
-
             val p = m.dataSet[position]
-
             downloadImage(p.filePreviewURL, preview(p.id), {
                 imageView.setImageBitmap(it)
                 downloadImage(p.fileLargeURL, large(p.id), { imageView.setImageBitmap(it);imageView.setZoomable(true) }, true)
@@ -188,18 +146,16 @@ class PictureActivity : AppCompatActivity() {
             return imageView
         }
 
-        override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-            container.removeView(`object` as View)
-        }
+        override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) = container.removeView(`object` as View)
     }
 
     private inner class InfoAdapter : RecyclerView.Adapter<InfoButtonHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InfoButtonHolder = InfoButtonHolder(LayoutInflater.from(parent.context).inflate(R.layout.info_item_button, parent, false) as Toolbar).apply {
+            toolbar.inflateMenu(R.menu.picture_info_menu)
             toolbar.setOnClickListener {
                 PreviewActivity.startActivity(this@PictureActivity, toolbar.findViewById<TextView>(R.id.info_textview).text.toString())
                 drawer_picture.closeDrawer(GravityCompat.END)
             }
-            toolbar.inflateMenu(R.menu.picture_info_menu)
             toolbar.setOnMenuItemClickListener {
                 val tag = currentTags[adapterPosition]
                 when (it.itemId) {
@@ -208,8 +164,7 @@ class PictureActivity : AppCompatActivity() {
                         Toast.makeText(this@PictureActivity, "Add tag ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
                     R.id.picture_info_item_add_favorite -> {
-                        val tagInDatabase = database.getTag(tag.name)
-                        if (tagInDatabase == null) database.addTag(tag.name, tag.type, true)
+                        if (database.getTag(tag.name) == null) database.addTag(tag.name, tag.type, true)
                         else database.changeTag(tag.apply { isFavorite = true })
                         Toast.makeText(this@PictureActivity, "Add favorite ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
@@ -231,11 +186,10 @@ class PictureActivity : AppCompatActivity() {
         override fun getItemCount(): Int = currentTags.size
         override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
             val tag = currentTags[position]
-            Menus.initPictureInfoTagMenu(this@PictureActivity, holder.toolbar.menu, tag)
             val textView = holder.toolbar.findViewById<TextView>(R.id.info_textview)
             textView.text = tag.name
-            if (Build.VERSION.SDK_INT > 22) textView.setTextColor(getColor(tag.color))
-            else textView.setTextColor(resources.getColor(tag.color))
+            textView.setColor(tag)
+            Menus.initPictureInfoTagMenu(this@PictureActivity, holder.toolbar.menu, tag)
         }
     }
 

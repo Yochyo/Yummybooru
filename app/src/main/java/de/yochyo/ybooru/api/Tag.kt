@@ -1,10 +1,12 @@
 package de.yochyo.ybooru.api
 
+import android.content.Context
 import de.yochyo.ybooru.R
+import de.yochyo.ybooru.database
 import org.json.JSONObject
 import java.util.*
 
-class Tag(val name: String, val type: Int = UNKNOWN, var isFavorite: Boolean = false, val creation: Date? = null) {
+class Tag(val context: Context, val name: String, val type: Int = UNKNOWN, var isFavorite: Boolean = false, val creation: Date? = null) : Comparable<Tag> {
     companion object {
         const val GENERAL = 0
         const val CHARACTER = 4
@@ -13,12 +15,12 @@ class Tag(val name: String, val type: Int = UNKNOWN, var isFavorite: Boolean = f
         const val META = 5
         const val UNKNOWN = 99
 
-        fun getTagFromJson(json: JSONObject): Tag? {
+        fun getTagFromJson(context: Context, json: JSONObject): Tag? {
             return try {
                 var type = json.getInt("category")
                 if (type !in 0..5)
                     type = UNKNOWN
-                Tag(json.getString("name"), type)
+                Tag(context, json.getString("name"), type)
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
@@ -40,5 +42,16 @@ class Tag(val name: String, val type: Int = UNKNOWN, var isFavorite: Boolean = f
 
     override fun toString(): String {
         return name
+    }
+
+    override fun compareTo(other: Tag): Int {
+        if (context.database.sortTagsByFavorite) {
+            if (isFavorite && !other.isFavorite)
+                return -1
+            if (!isFavorite && other.isFavorite)
+                return 1
+        }
+        if (context.database.sortTagsByAlphabet) return name.compareTo(other.name)
+        return 0
     }
 }

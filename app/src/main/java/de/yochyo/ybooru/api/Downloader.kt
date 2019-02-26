@@ -10,6 +10,10 @@ import java.net.URL
 import java.util.concurrent.LinkedBlockingDeque
 
 abstract class Downloader(context: Context) {
+    private val path = "${context.cacheDir}/"
+    private val directory = File(path)
+    private val downloads = LinkedBlockingDeque<Download>()
+
     companion object {
         private var _instance: Downloader? = null
         fun getInstance(context: Context): Downloader {
@@ -17,10 +21,6 @@ abstract class Downloader(context: Context) {
             return _instance!!
         }
     }
-
-    private val path = "${context.cacheDir}/"
-    private val directory = File(path)
-    private val downloads = LinkedBlockingDeque<Download>()
 
     init {
         clearCache()
@@ -38,8 +38,7 @@ abstract class Downloader(context: Context) {
                                 bitmap = BitmapFactory.decodeStream(stream)
                                 stream.close()
                             }
-                            if (download.cache)
-                                launch(Dispatchers.IO) { cacheBitmap(download.id, bitmap!!) }
+                            if (download.cache) launch(Dispatchers.IO) { cacheBitmap(download.id, bitmap!!) }
                             launch(Dispatchers.Main) { download.doAfter.invoke(this, bitmap!!) }
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -71,22 +70,35 @@ abstract class Downloader(context: Context) {
 
     private fun cacheBitmap(id: String, bitmap: Bitmap) {
         val f = file(id)
-        if (!f.exists()) {
-            f.createNewFile()
-            val output = ByteArrayOutputStream().apply { bitmap.compress(Bitmap.CompressFormat.PNG, 100, this) }
-            f.writeBytes(output.toByteArray())
-            output.close()
+        try {
+            if (!f.exists()) {
+                f.createNewFile()
+                val output = ByteArrayOutputStream().apply { bitmap.compress(Bitmap.CompressFormat.PNG, 100, this) }
+                f.writeBytes(output.toByteArray())
+                output.close()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
     private fun removeCachedBitmap(id: String) {
-        file(id).delete()
+        try {
+            file(id).delete()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun clearCache() {
         directory.listFiles().forEach {
-            if (it.isFile)
-                it.delete()
+            if (it.isFile) {
+                try {
+                    it.delete()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
     }
 

@@ -23,6 +23,7 @@ import de.yochyo.ybooru.api.Tag
 import de.yochyo.ybooru.database
 import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.manager.Manager
+import de.yochyo.ybooru.utils.setColor
 import de.yochyo.ybooru.utils.toTagString
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -32,85 +33,30 @@ import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+    private val selectedTags = ArrayList<String>()
     private lateinit var menu: Menu
 
-    private val selectedTags = ArrayList<String>()
-
     private lateinit var recycleView: RecyclerView
-    private lateinit var adapter: Adapter
-    private lateinit var layoutmanager: LinearLayoutManager
+    private lateinit var adapter: SearchTagAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        initDrawer()
+
+        val toggle = ActionBarDrawerToggle(this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+        drawer_layout.addDrawerListener(toggle)
+        toggle.syncState()
+        nav_view.setNavigationItemSelectedListener(this)
+
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
 
         val navLayout = nav_search.findViewById<LinearLayout>(R.id.nav_search_layout)
         initAddTagButton(navLayout.findViewById(R.id.add_search))
         initSearchButton(navLayout.findViewById(R.id.start_search))
         recycleView = navLayout.findViewById(R.id.recycler_view_search)
-        layoutmanager = LinearLayoutManager(this).apply { recycleView.layoutManager = this }
-        adapter = Adapter().apply { recycleView.adapter = this }
-    }
-
-    private fun setMenuR18Text() {
-        if (database.r18) menu.findItem(R.id.action_r18).title = getString(R.string.enter_r18)
-        else menu.findItem(R.id.action_r18).title = getString(R.string.leave_r18)
-    }
-
-    override fun onBackPressed() {
-        if (drawer_layout.isDrawerOpen(GravityCompat.START)) drawer_layout.closeDrawer(GravityCompat.START)
-        else if (drawer_layout.isDrawerOpen(GravityCompat.END)) drawer_layout.closeDrawer(GravityCompat.END)
-        else super.onBackPressed()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        this.menu = menu
-        menuInflater.inflate(R.menu.main_menu, menu)
-        setMenuR18Text()
-        Manager.resetAll()
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_r18 -> {
-                database.r18 = !database.r18
-                setMenuR18Text()
-                Manager.resetAll()
-                return true
-            }
-            R.id.search -> {
-                drawer_layout.openDrawer(GravityCompat.END)
-                return true
-            }
-            else -> return super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.nav_subs -> startActivity(Intent(this, SubscriptionActivity::class.java))
-            R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
-            R.id.community -> Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show()
-            R.id.nav_help -> Toast.makeText(this, "Ask me some questions", Toast.LENGTH_SHORT).show()
-        }
-        drawer_layout.closeDrawer(GravityCompat.START)
-        return super.onOptionsItemSelected(item)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        adapter.notifyDataSetChanged()
-    }
-
-    private fun initDrawer() {
-        val toggle = ActionBarDrawerToggle(this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
-        drawer_layout.addDrawerListener(toggle)
-        toggle.syncState()
-        nav_view.setNavigationItemSelectedListener(this)
+        recycleView.layoutManager = LinearLayoutManager(this)
+        adapter = SearchTagAdapter().apply { recycleView.adapter = this }
     }
 
     private fun initAddTagButton(b: Button) {
@@ -137,7 +83,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     editText.setAdapter(arrayAdapter) //Because of bug, that suggestions aren´t correctly updated
                     val name = s.toString()
                     GlobalScope.launch {
-                        val tags = Api.searchTags(name)
+                        val tags = Api.searchTags(this@MainActivity, name)
                         launch(Dispatchers.Main) {
                             if (!dialogIsDismissed && editText.text.toString() == name) {
                                 arrayAdapter.apply { clear(); addAll(tags); notifyDataSetChanged() }
@@ -156,10 +102,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             })
-            builder.setMessage("Add Tag").setPositiveButton("OK") { _, _ ->
-                GlobalScope.launch {
-                    if (database.getTag(editText.text.toString()) == null) {
-                        val tag = Api.getTag(editText.text.toString())
+            builder.setMessage("Add Tag").setView(layout)
+            builder.setPositiveButton("OK") { _, _ ->
+                if (database.getTag(editText.text.toString()) == null) {
+                    GlobalScope.launch {
+                        val tag = Api.getTag(this@MainActivity, editText.text.toString())
                         launch(Dispatchers.Main) {
                             val newTag: Tag
                             if (tag != null) newTag = database.addTag(tag.name, tag.type, tag.isFavorite)
@@ -169,7 +116,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
                 }
             }
-            builder.setView(layout)
+
             val dialog = builder.create()
             dialog.show()
             editText.requestFocus()
@@ -180,38 +127,78 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         }
     }
-
     private fun initSearchButton(b: Button) {
         b.setOnClickListener {
             drawer_layout.closeDrawer(GravityCompat.END)
-            if (selectedTags.isEmpty())
-                PreviewActivity.startActivity(this, "*")
-            else
-                PreviewActivity.startActivity(this, selectedTags.toTagString())
+            if (selectedTags.isEmpty()) PreviewActivity.startActivity(this, "*")
+            else PreviewActivity.startActivity(this, selectedTags.toTagString())
         }
     }
 
-    private inner class Adapter : RecyclerView.Adapter<SearchItemViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchItemViewHolder = SearchItemViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.search_item_layout, parent, false) as Toolbar)).apply {
-            //TODO App schmiert in querformat ab
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        this.menu = menu
+        menuInflater.inflate(R.menu.main_menu, menu)
+        setMenuR18Text()
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_r18 -> {
+                database.r18 = !database.r18
+                setMenuR18Text()
+                Manager.resetAll()
+            }
+            R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.nav_subs -> startActivity(Intent(this, SubscriptionActivity::class.java))
+            R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
+            R.id.community -> Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show()
+            R.id.nav_help -> Toast.makeText(this, "Ask me some questions", Toast.LENGTH_SHORT).show()
+        }
+        drawer_layout.closeDrawer(GravityCompat.START)
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun setMenuR18Text() {
+        if (database.r18) menu.findItem(R.id.action_r18).title = getString(R.string.enter_r18)
+        else menu.findItem(R.id.action_r18).title = getString(R.string.leave_r18)
+    }
+
+    override fun onBackPressed() {
+        if (drawer_layout.isDrawerOpen(GravityCompat.START)) drawer_layout.closeDrawer(GravityCompat.START)
+        else if (drawer_layout.isDrawerOpen(GravityCompat.END)) drawer_layout.closeDrawer(GravityCompat.END)
+        else super.onBackPressed()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adapter.notifyDataSetChanged()
+    }
+
+    private inner class SearchTagAdapter : RecyclerView.Adapter<SearchTagViewHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchTagViewHolder = SearchTagViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.search_item_layout, parent, false) as Toolbar)).apply {
+            val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
+            toolbar.inflateMenu(R.menu.activity_main_search_menu)
             toolbar.setOnClickListener {
-                val check = it.findViewById<CheckBox>(R.id.search_checkbox)
                 if (check.isChecked) selectedTags.remove(it.findViewById<TextView>(R.id.search_textview).text)
                 else selectedTags.add(it.findViewById<TextView>(R.id.search_textview).text.toString())
                 check.isChecked = !check.isChecked
             }
-            toolbar.findViewById<CheckBox>(R.id.search_checkbox).setOnClickListener {
-                it as CheckBox
-                if (!it.isChecked) selectedTags.remove(toolbar.findViewById<TextView>(R.id.search_textview).text)
+            check.setOnClickListener {
+                if (!(it as CheckBox).isChecked) selectedTags.remove(toolbar.findViewById<TextView>(R.id.search_textview).text)
                 else selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
             }
-            toolbar.inflateMenu(R.menu.activity_main_search_menu)
             toolbar.setOnMenuItemClickListener {
                 val tag = database.getTags()[adapterPosition]
                 when (it.itemId) {
                     R.id.main_search_favorite_tag -> {
-                        tag.isFavorite = !tag.isFavorite
-                        database.changeTag(tag)
+                        database.changeTag(tag.apply { isFavorite = !isFavorite })
                         adapter.notifyItemChanged(adapterPosition)
                     }
                     R.id.main_search_subscribe_tag -> {
@@ -236,18 +223,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         override fun getItemCount(): Int = database.getTags().size
-        override fun onBindViewHolder(holder: SearchItemViewHolder, position: Int) {
+        override fun onBindViewHolder(holder: SearchTagViewHolder, position: Int) {
             val tag = database.getTags()[position]
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
-            Menus.initMainSearchTagMenu(this@MainActivity, holder.toolbar.menu, tag)
+            textView.text = tag.name
+            textView.setColor(tag)
+
             if (tag.isFavorite) textView.paintFlags = Paint().apply { isUnderlineText = true }.flags
             else textView.paintFlags = Paint().apply { isUnderlineText = false }.flags
 
-            textView.text = tag.name
-            if (Build.VERSION.SDK_INT > 22) textView.setTextColor(getColor(tag.color))
-            else textView.setTextColor(resources.getColor(tag.color))
+            Menus.initMainSearchTagMenu(this@MainActivity, holder.toolbar.menu, tag)
         }
     }
 
-    private inner class SearchItemViewHolder(val toolbar: Toolbar) : RecyclerView.ViewHolder(toolbar)
+    private inner class SearchTagViewHolder(val toolbar: Toolbar) : RecyclerView.ViewHolder(toolbar)
 }

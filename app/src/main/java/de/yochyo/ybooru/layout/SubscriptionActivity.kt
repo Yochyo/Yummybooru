@@ -1,6 +1,5 @@
 package de.yochyo.ybooru.layout
 
-import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -16,6 +15,7 @@ import de.yochyo.ybooru.api.Api
 import de.yochyo.ybooru.api.Subscription
 import de.yochyo.ybooru.database
 import de.yochyo.ybooru.manager.Manager
+import de.yochyo.ybooru.utils.setColor
 import kotlinx.android.synthetic.main.activity_subscription.*
 import kotlinx.android.synthetic.main.content_subscription.*
 import kotlinx.coroutines.Dispatchers
@@ -39,32 +39,32 @@ class SubscriptionActivity : AppCompatActivity() {
         recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
     }
 
-    override fun onResume() {
-        super.onResume()
-        if (clickedSub != null) {
-            val sub = subs[clickedSub!!]
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Save")
-            builder.setMessage("Update last id?")
-            builder.setNegativeButton("No") { _, _ -> }
-            builder.setPositiveButton("Yes") { _, _ ->
-                GlobalScope.launch {
-                    sub.lastID = sub.currentID
-                    sub.currentID = Api.newestID(this@SubscriptionActivity)
-                    database.changeSubscription(sub)
-                    GlobalScope.launch(Dispatchers.Main) {
-                        adapter.notifyItemChanged(clickedSub!!)
-                        clickedSub = null
-                    }
-                }
-            }
-            builder.create().show()
-        }
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         Manager.resetAll()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (clickedSub != null) {
+            val pos = clickedSub!!
+            clickedSub = null
+            val sub = subs[pos]
+            if (Manager.getOrInit(sub.tagString).dataSet.isNotEmpty()) {
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle("Save").setMessage("Update last id?")
+                builder.setNegativeButton("No") { _, _ -> }
+                builder.setPositiveButton("Yes") { _, _ ->
+                    GlobalScope.launch {
+                        sub.lastID = sub.currentID
+                        sub.currentID = Api.newestID(this@SubscriptionActivity)
+                        database.changeSubscription(sub)
+                        GlobalScope.launch(Dispatchers.Main) { adapter.notifyItemChanged(pos) }
+                    }
+                }
+                builder.create().show()
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -80,21 +80,17 @@ class SubscriptionActivity : AppCompatActivity() {
         override fun onCreateViewHolder(parent: ViewGroup, p1: Int): SubscribedTagViewHolder = SubscribedTagViewHolder(LayoutInflater.from(this@SubscriptionActivity).inflate(R.layout.subscription_item_layout, parent, false) as LinearLayout).apply {
             layout.setOnClickListener {
                 val sub = subs[adapterPosition]
-                if (Manager.getOrInit(sub.tag.name).dataSet.isNotEmpty()) {
-                    clickedSub = adapterPosition
-                    SubscriptionPreviewActivity.startActivity(this@SubscriptionActivity, subs[adapterPosition].tag.name, sub.currentID)
-                }
+                clickedSub = adapterPosition
+                SubscriptionPreviewActivity.startActivity(this@SubscriptionActivity, sub.tagString)
             }
             layout.setOnLongClickListener {
                 val builder = AlertDialog.Builder(this@SubscriptionActivity)
-                builder.setTitle("Delete")
-                builder.setMessage("Delete sub?")
+                builder.setTitle("Delete").setMessage("Delete sub?")
                 builder.setNegativeButton("No") { _, _ -> }
                 builder.setPositiveButton("Yes") { _, _ ->
-                    val pos = adapterPosition
-                    val sub = subs[pos]
+                    val sub = subs[adapterPosition]
                     subs.remove(sub)
-                    adapter.notifyItemChanged(pos)
+                    adapter.notifyItemChanged(adapterPosition)
                     database.removeSubscription(sub.tag.name)
                 }
                 builder.create().show()
@@ -107,29 +103,26 @@ class SubscriptionActivity : AppCompatActivity() {
             val text2 = holder.layout.findViewById<TextView>(android.R.id.text2)
             val sub = subs[position]
             text1.text = sub.tag.name
-            if (Build.VERSION.SDK_INT > 22) text1.setTextColor(getColor(sub.tag.color))
-            else text1.setTextColor(resources.getColor(sub.tag.color))
-            if (sub.currentID == 0)
-                text2.text = "Number of new pictures: ~"
+            text1.setColor(sub.tag)
+            if (sub.currentID == 0) text2.text = "Number of new pictures: ~"
             else {
                 text2.text = "Number of new pictures: "
                 GlobalScope.launch {
                     val pos = holder.adapterPosition
-                    Manager.reset(sub.tag.name)
-                    val m = Manager.getOrInit(sub.tag.name)
+                    //  Manager.reset(sub.tag.name)
+                    val m = Manager.getOrInit(sub.tagString)
                     var oldestID = Int.MAX_VALUE
                     var currentPage = 0
                     var posts = 0
                     try {
                         while (oldestID > sub.currentID) {
-                            val page = m.downloadPage(this@SubscriptionActivity, ++currentPage, idNewerThan = sub.currentID)
+                            val page = m.downloadPage(this@SubscriptionActivity, ++currentPage)
                             posts += page.size
                             oldestID = page.last().id
                         }
                     } catch (e: Exception) {
                     }
-                    if (holder.adapterPosition == pos)
-                        launch(Dispatchers.Main) { text2.text = "Number of new pictures: $posts" }
+                    if (holder.adapterPosition == pos) launch(Dispatchers.Main) { text2.text = "Number of new pictures: $posts" }
                 }
             }
         }

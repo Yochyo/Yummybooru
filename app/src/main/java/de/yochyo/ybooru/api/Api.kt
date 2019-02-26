@@ -12,15 +12,15 @@ import java.net.URL
 
 
 object Api {
-    private val searchTagLimit = 10
+    private const val searchTagLimit = 10
 
-    suspend fun searchTags(beginSequence: String): List<Tag> {
+    suspend fun searchTags(context: Context, beginSequence: String): List<Tag> {
         val array = ArrayList<Tag>(searchTagLimit)
         val url = "https://danbooru.donmai.us/tags.json?search[name_matches]=$beginSequence*&limit=$searchTagLimit"
         val json = getJson(url)
         if (json != null) {
             for (i in 0 until json.length()) {
-                val tag = Tag.getTagFromJson(json.getJSONObject(i))
+                val tag = Tag.getTagFromJson(context, json.getJSONObject(i))
                 if (tag != null) array.add(tag)
             }
             array.sortBy { it.type }
@@ -28,22 +28,20 @@ object Api {
         return array
     }
 
-    suspend fun getTag(name: String): Tag? {
+    suspend fun getTag(context: Context, name: String): Tag? {
         val url = "https://danbooru.donmai.us/tags.json?search[name_matches]=$name"
         val json = getJson(url)
         if (json != null)
             if (!json.isNull(0))
-                return Tag.getTagFromJson(json.getJSONObject(0))
+                return Tag.getTagFromJson(context, json.getJSONObject(0))
         return null
     }
 
-    suspend fun getPosts(context: Context, page: Int, tags: Array<String>, newerThan: Int = 0, limit: Int = context.database.limit): List<Post> {
+    suspend fun getPosts(context: Context, page: Int, tags: Array<String>, limit: Int = context.database.limit): List<Post> {
         var array: List<Post> = ArrayList(limit)
         var url = "https://danbooru.donmai.us/posts.json?limit=$limit&page=$page"
-        if (tags.filter { it != "" }.isNotEmpty() || newerThan != 0) {
+        if (tags.filter { it != "" }.isNotEmpty()) {
             url += "&tags="
-            if (newerThan != 0)
-                url += "id:>$newerThan "
             for (tag in tags)
                 url += "$tag "
             url = url.substring(0, url.length - 1)
@@ -51,7 +49,7 @@ object Api {
         val json = getJson(url)
         if (json != null) {
             for (i in 0 until json.length()) {
-                val post = Post.getPostFromJson(json.getJSONObject(i))
+                val post = Post.getPostFromJson(context, json.getJSONObject(i))
                 if (post != null)
                     array += post
             }
@@ -64,7 +62,7 @@ object Api {
     suspend fun newestID(context: Context): Int {
         val url = "https://danbooru.donmai.us/posts.json?limit=1&page=1"
         val json = getJson(url)
-        if (json != null) {
+        if (json?.getJSONObject(0) != null) {
             return json.getJSONObject(0).getInt("id")
         }
         return 0

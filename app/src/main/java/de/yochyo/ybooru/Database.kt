@@ -9,7 +9,7 @@ import java.text.DateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "database", null, 1) {
+abstract class Database(val context: Context) : ManagedSQLiteOpenHelper(context, "database", null, 1) {
     private val prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
 
     private val TABLE_TAGS = "tags"
@@ -49,7 +49,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
                     val date = DateFormat.getInstance().parse(columns[COLUMN_DATE].toString())
                     val type = columns[COLUMN_TYPE].toString().toInt()
 
-                    t += Tag(name, type, isFavorite == 1, date)
+                    t += Tag(context, name, type, isFavorite == 1, date)
                     return t
                 }
             })
@@ -60,7 +60,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
     fun getTag(name: String) = getTags().find { it.name == name }
     fun addTag(name: String, type: Int, isFavorite: Boolean): Tag {
         val date = Date()
-        val tag = Tag(name, type, isFavorite, date)
+        val tag = Tag(context, name, type, isFavorite, date)
         val existingTag = tags.find { it.name == tag.name }
         if (existingTag == null) {
             tags += tag
@@ -103,7 +103,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
                     val currentID = (columns[COLUMN_SUBSCRIBED_STATUS] as Long).toInt()
 
                     val tag = getTag(name)
-                    s += Subscription(if (tag != null) tag else Tag(name), lastID, currentID)
+                    s += Subscription(context, if (tag != null) tag else Tag(context, name), lastID, currentID)
                     return s
                 }
             })
@@ -114,7 +114,7 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
     fun getSubscription(name: String) = getSubscriptions().find { it.tag.name == name }
     fun addSubscription(name: String, startID: Int) {
         val tag = getTag(name)
-        val sub = Subscription(if (tag != null) tag else Tag(name), startID, startID)
+        val sub = Subscription(context, if (tag != null) tag else Tag(context, name), startID, startID)
         if (subs.find { it.tag.name == name } == null) {
             subs += sub
             use {
@@ -169,6 +169,60 @@ abstract class Database(context: Context) : ManagedSQLiteOpenHelper(context, "da
             _r18 = value
             with(prefs.edit()) {
                 putBoolean("r18", value)
+                apply()
+            }
+        }
+    private var _sortSubsByFavorite: Boolean? = null
+    var sortSubsByFavorite: Boolean
+        get() {
+            if (_sortSubsByFavorite == null) _sortSubsByFavorite = prefs.getBoolean("sortSubsByFavorite", false)
+            return _sortSubsByFavorite!!
+        }
+        set(value) {
+            _sortSubsByFavorite = value
+            with(prefs.edit()) {
+                putBoolean("sortSubsByFavorite", value)
+                apply()
+            }
+        }
+    private var _sortSubsByAlphabet: Boolean? = null
+    var sortSubsByAlphabet: Boolean
+        get() {
+            if (_sortSubsByAlphabet == null) _sortSubsByAlphabet = prefs.getBoolean("sortSubsByAlphabet", false)
+            return _sortSubsByAlphabet!!
+        }
+        set(value) {
+            _sortSubsByAlphabet = value
+            with(prefs.edit()) {
+                putBoolean("sortSubsByAlphabet", value)
+                apply()
+            }
+        }
+
+
+    private var _sortTagsByFavorite: Boolean? = null
+    var sortTagsByFavorite: Boolean
+        get() {
+            if (_sortTagsByFavorite == null) _sortTagsByFavorite = prefs.getBoolean("sortTagsByFavorite", false)
+            return _sortTagsByFavorite!!
+        }
+        set(value) {
+            _sortTagsByFavorite = value
+            with(prefs.edit()) {
+                putBoolean("sortTagsByFavorite", value)
+                apply()
+            }
+        }
+    private var _sortTagsByAlphabet: Boolean? = null
+    var sortTagsByAlphabet: Boolean
+        get() {
+            if (_sortTagsByAlphabet == null) _sortTagsByAlphabet = prefs.getBoolean("sortTagsByAlphabet", false)
+            return _sortTagsByAlphabet!!
+        }
+        set(value) {
+            _sortTagsByAlphabet = value
+            with(prefs.edit()) {
+                putBoolean("sortTagsByAlphabet", value)
                 apply()
             }
         }

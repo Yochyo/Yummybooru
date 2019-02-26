@@ -52,8 +52,8 @@ abstract class Manager(val tags: Array<String>) {
         get() = dataSet[position]
 
 
-    suspend fun getPage(context: Context, page: Int, idNewerThan: Int = 0): List<Post> {
-        val p = downloadPage(context, page, idNewerThan)
+    suspend fun getPage(context: Context, page: Int): List<Post> {
+        val p = downloadPage(context, page)
         if (page > currentPage) {
             _currentPage = page
             withContext(Dispatchers.Main) { dataSet += p }
@@ -61,10 +61,10 @@ abstract class Manager(val tags: Array<String>) {
         return p
     }
 
-    suspend fun downloadPage(context: Context, page: Int, idNewerThan: Int = 0): List<Post> {
+    suspend fun downloadPage(context: Context, page: Int): List<Post> {
         var p = pages[page]
         if (p == null) {
-            val posts = Api.getPosts(context, page, tags, newerThan = idNewerThan)
+            val posts = Api.getPosts(context, page, tags)
             p = posts
             if (dataSet.isNotEmpty()) {
                 val lastFromLastPage = dataSet.last()

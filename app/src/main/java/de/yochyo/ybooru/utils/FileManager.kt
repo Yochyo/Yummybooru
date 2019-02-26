@@ -1,4 +1,4 @@
-package de.yochyo.ybooru.file
+package de.yochyo.ybooru.utils
 
 import android.graphics.Bitmap
 import android.os.Environment

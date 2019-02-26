@@ -25,9 +25,11 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             val database = preference.context.database
             when (preference.key) {
                 "limit" -> {
-                    database.limit = value.toString().toInt(); Manager.resetAll()
+                    database.limit = value.toString().toInt()
                     Manager.resetAll()
                 }
+                "sortSubs" -> database.sortSubs = value.toString()
+                "sortTags" -> database.sortTags = value.toString()
                 //Add here
             }
             true
@@ -51,6 +53,8 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             setHasOptionsMenu(true)
 
             bindPreferenceSummaryToValue(findPreference("limit"))
+            bindPreferenceSummaryToValue(findPreference("sortSubs"))
+            bindPreferenceSummaryToValue(findPreference("sortTags"))
         }
 
         override fun onOptionsItemSelected(item: MenuItem): Boolean {

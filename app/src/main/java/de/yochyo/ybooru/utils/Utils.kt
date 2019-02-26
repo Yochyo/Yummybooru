@@ -1,5 +1,6 @@
 package de.yochyo.ybooru.utils
 
+import android.graphics.Paint
 import android.os.Build
 import android.view.MotionEvent
 import android.widget.TextView
@@ -19,6 +20,11 @@ fun List<String>.toTagString() = joinToString(" ")
 fun TextView.setColor(tag: Tag) {
     if (Build.VERSION.SDK_INT > 22) setTextColor(context.getColor(tag.color))
     else setTextColor(context.resources.getColor(tag.color))
+}
+
+fun TextView.underline(underline: Boolean) {
+    if (underline) paintFlags = Paint().apply { isUnderlineText = true }.flags
+    else paintFlags = Paint().apply { isUnderlineText = false }.flags
 }
 
 object Fling {

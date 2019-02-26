@@ -2,7 +2,6 @@ package de.yochyo.ybooru.layout
 
 import android.Manifest
 import android.content.Intent
-import android.graphics.Paint
 import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.NavigationView
@@ -25,6 +24,7 @@ import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.setColor
 import de.yochyo.ybooru.utils.toTagString
+import de.yochyo.ybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.coroutines.Dispatchers
@@ -178,6 +178,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onResume() {
         super.onResume()
+        println("tag favorite ${database.sortTagsByFavorite}")
+        println("tag alphabet ${database.sortTagsByAlphabet}")
+        database.getTags().sort()
         adapter.notifyDataSetChanged()
     }
 
@@ -228,9 +231,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
             textView.text = tag.name
             textView.setColor(tag)
-
-            if (tag.isFavorite) textView.paintFlags = Paint().apply { isUnderlineText = true }.flags
-            else textView.paintFlags = Paint().apply { isUnderlineText = false }.flags
+            textView.underline(tag.isFavorite)
 
             Menus.initMainSearchTagMenu(this@MainActivity, holder.toolbar.menu, tag)
         }

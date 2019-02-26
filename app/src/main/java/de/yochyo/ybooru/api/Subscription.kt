@@ -15,6 +15,7 @@ class Subscription(val context: Context, val tag: Tag, var lastID: Int, var curr
                 return 1
         }
         if (context.database.sortSubsByAlphabet) return tag.name.compareTo(other.tag.name)
+        if (tag.creation != null && other.tag.creation != null) return tag.creation.compareTo(other.tag.creation)
         return 0
     }
 }

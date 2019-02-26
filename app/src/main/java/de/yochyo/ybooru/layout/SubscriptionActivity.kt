@@ -12,10 +12,10 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Api
-import de.yochyo.ybooru.api.Subscription
 import de.yochyo.ybooru.database
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.setColor
+import de.yochyo.ybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_subscription.*
 import kotlinx.android.synthetic.main.content_subscription.*
 import kotlinx.coroutines.Dispatchers
@@ -24,16 +24,16 @@ import kotlinx.coroutines.launch
 
 class SubscriptionActivity : AppCompatActivity() {
     private var clickedSub: Int? = null
-    private val subs = ArrayList<Subscription>()
     private lateinit var adapter: SubscribedTagAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        println("sub favorite ${database.sortSubsByFavorite}")
+        println("sub alphabet ${database.sortSubsByAlphabet}")
         Manager.resetAll()
         setContentView(R.layout.activity_subscription)
         setSupportActionBar(toolbar_subs)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        subs += database.getSubscriptions()
         val recyclerView = subs_recycler
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
@@ -45,11 +45,13 @@ class SubscriptionActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
+        database.getSubscriptions().sort()
+        adapter.notifyDataSetChanged()
         super.onResume()
         if (clickedSub != null) {
             val pos = clickedSub!!
             clickedSub = null
-            val sub = subs[pos]
+            val sub = database.getSubscriptions()[pos]
             if (Manager.getOrInit(sub.tagString).dataSet.isNotEmpty()) {
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle("Save").setMessage("Update last id?")
@@ -75,11 +77,11 @@ class SubscriptionActivity : AppCompatActivity() {
     }
 
     private inner class SubscribedTagAdapter : RecyclerView.Adapter<SubscribedTagViewHolder>() {
-        override fun getItemCount(): Int = subs.size
+        override fun getItemCount(): Int = database.getSubscriptions().size
 
         override fun onCreateViewHolder(parent: ViewGroup, p1: Int): SubscribedTagViewHolder = SubscribedTagViewHolder(LayoutInflater.from(this@SubscriptionActivity).inflate(R.layout.subscription_item_layout, parent, false) as LinearLayout).apply {
             layout.setOnClickListener {
-                val sub = subs[adapterPosition]
+                val sub = database.getSubscriptions()[adapterPosition]
                 clickedSub = adapterPosition
                 SubscriptionPreviewActivity.startActivity(this@SubscriptionActivity, sub.tagString)
             }
@@ -88,10 +90,9 @@ class SubscriptionActivity : AppCompatActivity() {
                 builder.setTitle("Delete").setMessage("Delete sub?")
                 builder.setNegativeButton("No") { _, _ -> }
                 builder.setPositiveButton("Yes") { _, _ ->
-                    val sub = subs[adapterPosition]
-                    subs.remove(sub)
-                    adapter.notifyItemChanged(adapterPosition)
+                    val sub = database.getSubscriptions()[adapterPosition]
                     database.removeSubscription(sub.tag.name)
+                    adapter.notifyItemChanged(adapterPosition)
                 }
                 builder.create().show()
                 true
@@ -101,9 +102,10 @@ class SubscriptionActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: SubscribedTagViewHolder, position: Int) {
             val text1 = holder.layout.findViewById<TextView>(android.R.id.text1)
             val text2 = holder.layout.findViewById<TextView>(android.R.id.text2)
-            val sub = subs[position]
+            val sub = database.getSubscriptions()[position]
             text1.text = sub.tag.name
             text1.setColor(sub.tag)
+            text1.underline(sub.tag.isFavorite)
             if (sub.currentID == 0) text2.text = "Number of new pictures: ~"
             else {
                 text2.text = "Number of new pictures: "

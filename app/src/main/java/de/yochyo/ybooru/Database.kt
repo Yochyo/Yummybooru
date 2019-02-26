@@ -38,7 +38,7 @@ abstract class Database(val context: Context) : ManagedSQLiteOpenHelper(context,
     }
 
 
-    fun getTags(): List<Tag> {
+    fun getTags(): ArrayList<Tag> {
         if (tags.isNotEmpty()) return tags
         else return use {
             val t = ArrayList<Tag>()
@@ -92,7 +92,7 @@ abstract class Database(val context: Context) : ManagedSQLiteOpenHelper(context,
         }
     }
 
-    fun getSubscriptions(): List<Subscription> {
+    fun getSubscriptions(): ArrayList<Subscription> {
         if (subs.isNotEmpty()) return subs
         else return use {
             val s = ArrayList<Subscription>()
@@ -172,59 +172,53 @@ abstract class Database(val context: Context) : ManagedSQLiteOpenHelper(context,
                 apply()
             }
         }
-    private var _sortSubsByFavorite: Boolean? = null
-    var sortSubsByFavorite: Boolean
+
+    private var _sortTags: String? = null
+    var sortTags: String
         get() {
-            if (_sortSubsByFavorite == null) _sortSubsByFavorite = prefs.getBoolean("sortSubsByFavorite", false)
-            return _sortSubsByFavorite!!
+            if (_sortTags == null) _sortTags = prefs.getString("sortTags", "00")
+            return _sortTags!!
         }
         set(value) {
-            _sortSubsByFavorite = value
+            _sortTags = value
             with(prefs.edit()) {
-                putBoolean("sortSubsByFavorite", value)
+                putString("sortTags", value)
                 apply()
             }
         }
-    private var _sortSubsByAlphabet: Boolean? = null
-    var sortSubsByAlphabet: Boolean
+    private var _sortSubs: String? = null
+    var sortSubs: String
         get() {
-            if (_sortSubsByAlphabet == null) _sortSubsByAlphabet = prefs.getBoolean("sortSubsByAlphabet", false)
-            return _sortSubsByAlphabet!!
+            if (_sortSubs == null) _sortSubs = prefs.getString("sortSubs", "00")
+            return _sortSubs!!
         }
         set(value) {
-            _sortSubsByAlphabet = value
+            _sortSubs = value
             with(prefs.edit()) {
-                putBoolean("sortSubsByAlphabet", value)
+                putString("sortSubs", value)
                 apply()
             }
         }
-
-
-    private var _sortTagsByFavorite: Boolean? = null
     var sortTagsByFavorite: Boolean
-        get() {
-            if (_sortTagsByFavorite == null) _sortTagsByFavorite = prefs.getBoolean("sortTagsByFavorite", false)
-            return _sortTagsByFavorite!!
+        get() = sortTags.first() == '1'
+        set(v) {
+            sortTags = "${sortTags.first()}$v"
         }
-        set(value) {
-            _sortTagsByFavorite = value
-            with(prefs.edit()) {
-                putBoolean("sortTagsByFavorite", value)
-                apply()
-            }
-        }
-    private var _sortTagsByAlphabet: Boolean? = null
     var sortTagsByAlphabet: Boolean
-        get() {
-            if (_sortTagsByAlphabet == null) _sortTagsByAlphabet = prefs.getBoolean("sortTagsByAlphabet", false)
-            return _sortTagsByAlphabet!!
+        get() = sortTags.last() == '1'
+        set(v) {
+            sortTags = "$v${sortTags.last()}"
         }
-        set(value) {
-            _sortTagsByAlphabet = value
-            with(prefs.edit()) {
-                putBoolean("sortTagsByAlphabet", value)
-                apply()
-            }
+
+    var sortSubsByFavorite: Boolean
+        get() = sortSubs.first() == '1'
+        set(v) {
+            sortSubs = "${sortSubs.first()}$v"
+        }
+    var sortSubsByAlphabet: Boolean
+        get() = sortSubs.last() == '1'
+        set(v) {
+            sortSubs = "$v${sortSubs.last()}"
         }
 
 

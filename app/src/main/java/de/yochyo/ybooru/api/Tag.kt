@@ -52,6 +52,7 @@ class Tag(val context: Context, val name: String, val type: Int = UNKNOWN, var i
                 return 1
         }
         if (context.database.sortTagsByAlphabet) return name.compareTo(other.name)
+        if (creation != null && other.creation != null) return creation.compareTo(other.creation)
         return 0
     }
 }

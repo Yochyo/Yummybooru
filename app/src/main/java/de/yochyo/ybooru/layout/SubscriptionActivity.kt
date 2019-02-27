@@ -28,8 +28,6 @@ class SubscriptionActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        println("sub favorite ${database.sortSubsByFavorite}")
-        println("sub alphabet ${database.sortSubsByAlphabet}")
         Manager.resetAll()
         setContentView(R.layout.activity_subscription)
         setSupportActionBar(toolbar_subs)
@@ -92,7 +90,7 @@ class SubscriptionActivity : AppCompatActivity() {
                 builder.setPositiveButton("Yes") { _, _ ->
                     val sub = database.getSubscriptions()[adapterPosition]
                     database.removeSubscription(sub.tag.name)
-                    adapter.notifyItemChanged(adapterPosition)
+                    adapter.notifyItemRemoved(adapterPosition)
                 }
                 builder.create().show()
                 true

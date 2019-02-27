@@ -170,8 +170,9 @@ class PictureActivity : AppCompatActivity() {
                     }
                     R.id.picture_info_item_subscribe -> {
                         if (database.getSubscription(tag.name) == null) {
+                            database.addTag(tag.name, tag.type, tag.isFavorite)
                             database.addSubscription(tag.name, 0)
-                            Toast.makeText(this@PictureActivity, "Subscribed ${tag.name}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@PictureActivity, "Add subscription${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             database.removeSubscription(tag.name)
                             Toast.makeText(this@PictureActivity, "Unsubscribed ${tag.name}", Toast.LENGTH_SHORT).show()

@@ -178,8 +178,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onResume() {
         super.onResume()
-        println("tag favorite ${database.sortTagsByFavorite}")
-        println("tag alphabet ${database.sortTagsByAlphabet}")
         database.getTags().sort()
         adapter.notifyDataSetChanged()
     }
@@ -228,6 +226,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         override fun getItemCount(): Int = database.getTags().size
         override fun onBindViewHolder(holder: SearchTagViewHolder, position: Int) {
             val tag = database.getTags()[position]
+            val check = holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox)
+            check.isChecked = selectedTags.contains(tag.name)
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
             textView.text = tag.name
             textView.setColor(tag)

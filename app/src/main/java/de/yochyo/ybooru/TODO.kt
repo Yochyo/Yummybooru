@@ -17,3 +17,15 @@ package de.yochyo.ybooru
 //TODO bei downloads, einen kürzeren toast
 
 
+/**
+ * Server:
+ * Database.loadserver(server: String)
+ * Api: holt sich links aus der Datenbank
+ * Für jeden Server eigene Subs/Tags Datenbank
+ *  Bilder laden manchmal nicht ganz und richtig
+ */
+
+//TODO ein sorted liste/set benutzen,
+//TODO subs sollen auf newestTag besetzt werden, nicht auf 0
+//TODO sub seite aktuallisieren
+//TODO subs mit der ID aktualisieren, die beim draufdrücken aktuell war, nicht war verlassen des subs

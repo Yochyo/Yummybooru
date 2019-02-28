@@ -29,6 +29,7 @@ object Api {
     }
 
     suspend fun getTag(context: Context, name: String): Tag? {
+        if (name == "*") return Tag(context, name, Tag.UNKNOWN)
         val url = "https://danbooru.donmai.us/tags.json?search[name_matches]=$name"
         val json = getJson(url)
         if (json != null)

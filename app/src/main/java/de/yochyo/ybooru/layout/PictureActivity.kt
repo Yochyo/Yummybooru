@@ -44,8 +44,8 @@ class PictureActivity : AppCompatActivity() {
         setSupportActionBar(toolbar_picture)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         m = Manager.get(intent.getStringExtra("tags"))
+        supportActionBar?.title = m.currentPost?.id.toString()
         nav_view_picture.bringToFront()
-
         recycleView = nav_view_picture.findViewById(R.id.recycle_view_info)
         recycleView.adapter = InfoAdapter()
         recycleView.layoutManager = LinearLayoutManager(this)
@@ -66,6 +66,7 @@ class PictureActivity : AppCompatActivity() {
 
                         val post = m.currentPost
                         if (post != null) {
+                            supportActionBar?.title = post.id.toString()
                             currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
                             recycleView.adapter?.notifyDataSetChanged()
                         }

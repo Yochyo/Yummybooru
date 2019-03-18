@@ -30,6 +30,7 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.*
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -178,7 +179,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onResume() {
         super.onResume()
-        database.getTags().sort()
         adapter.notifyDataSetChanged()
     }
 
@@ -196,7 +196,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 else selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
             }
             toolbar.setOnMenuItemClickListener {
-                val tag = database.getTags()[adapterPosition]
+                val tag = database.getTags().elementAt(adapterPosition)
                 when (it.itemId) {
                     R.id.main_search_favorite_tag -> {
                         database.changeTag(tag.apply { isFavorite = !isFavorite })
@@ -204,7 +204,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
                     R.id.main_search_subscribe_tag -> {
                         if (database.getSubscription(tag.name) == null) {
-                            database.addSubscription(tag.name, 0)
+                            GlobalScope.launch { database.addSubscription(tag.name, Api.newestID(this@MainActivity)) }
                             Toast.makeText(this@MainActivity, "Subscribed ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             database.removeSubscription(tag.name)
@@ -225,7 +225,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         override fun getItemCount(): Int = database.getTags().size
         override fun onBindViewHolder(holder: SearchTagViewHolder, position: Int) {
-            val tag = database.getTags()[position]
+            val tag = database.getTags().elementAt(position)
             val check = holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox)
             check.isChecked = selectedTags.contains(tag.name)
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)

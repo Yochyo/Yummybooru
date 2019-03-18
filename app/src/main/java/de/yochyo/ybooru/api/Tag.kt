@@ -6,7 +6,7 @@ import de.yochyo.ybooru.database
 import org.json.JSONObject
 import java.util.*
 
-class Tag(val context: Context, val name: String, val type: Int = UNKNOWN, var isFavorite: Boolean = false, val creation: Date? = null) : Comparable<Tag> {
+open class Tag(val context: Context, val name: String, val type: Int = UNKNOWN, var isFavorite: Boolean = false, val creation: Date? = null) : Comparable<Tag> {
     companion object {
         const val GENERAL = 0
         const val CHARACTER = 4

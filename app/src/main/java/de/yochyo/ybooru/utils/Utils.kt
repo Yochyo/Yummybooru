@@ -5,6 +5,7 @@ import android.os.Build
 import android.view.MotionEvent
 import android.widget.TextView
 import de.yochyo.ybooru.api.Tag
+import java.util.*
 
 fun large(id: Int) = "${id}Large"
 fun preview(id: Int) = "${id}Preview"
@@ -16,6 +17,8 @@ fun original(id: String) = "${id}Original"
 fun String.toTagArray(): Array<String> = split(" ").toTypedArray()
 fun Array<String>.toTagString() = joinToString(" ")
 fun List<String>.toTagString() = joinToString(" ")
+
+fun TreeSet<Tag>.get(name: Int) = find { it.name == name.toString() }
 
 fun TextView.setColor(tag: Tag) {
     if (Build.VERSION.SDK_INT > 22) setTextColor(context.getColor(tag.color))

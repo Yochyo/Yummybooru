@@ -16,6 +16,7 @@ import android.widget.Toolbar
 import com.github.chrisbanes.photoview.OnSingleFlingListener
 import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.ybooru.R
+import de.yochyo.ybooru.api.Api
 import de.yochyo.ybooru.api.Tag
 import de.yochyo.ybooru.api.downloadImage
 import de.yochyo.ybooru.database
@@ -172,7 +173,7 @@ class PictureActivity : AppCompatActivity() {
                     R.id.picture_info_item_subscribe -> {
                         if (database.getSubscription(tag.name) == null) {
                             database.addTag(tag.name, tag.type, tag.isFavorite)
-                            database.addSubscription(tag.name, 0)
+                            GlobalScope.launch { database.addSubscription(tag.name, Api.newestID(this@PictureActivity)) }
                             Toast.makeText(this@PictureActivity, "Add subscription${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             database.removeSubscription(tag.name)

@@ -1,6 +1,11 @@
 package de.yochyo.ybooru
 
+/*
+SubPreview entfernt
+Gemacht: Sub erbt von Tag -- testen
+ */
 
+////
 //TODO gifs und videos
 //TODO namen der xml elemente optimieren
 //TODO md5 des bildes benutzen
@@ -25,7 +30,9 @@ package de.yochyo.ybooru
  *  Bilder laden manchmal nicht ganz und richtig
  */
 
-//TODO ein sorted liste/set benutzen,
-//TODO subs sollen auf newestTag besetzt werden, nicht auf 0
-//TODO sub seite aktuallisieren
-//TODO subs mit der ID aktualisieren, die beim draufdrücken aktuell war, nicht war verlassen des subs
+//--------------TODO ein sorted liste/set benutzen,
+//------------TODO subs sollen auf newestTag besetzt werden, nicht auf 0???????????
+//------------TODO sub seite aktuallisieren
+
+//TODO downloads in der sub-seite abbrechen wenn die aktivity verlassen wird
+//-------------------TODO reset subs to last

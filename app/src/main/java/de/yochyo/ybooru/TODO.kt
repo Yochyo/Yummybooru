@@ -21,7 +21,7 @@ Gemacht: Sub erbt von Tag -- testen
 //TODO mehrere server
 //TODO bei downloads, einen kürzeren toast
 
-
+//TODO Downloader pausieren wenn kein bild da ist, und resume wenn die queue gefüllt wird
 /**
  * Server:
  * Database.loadserver(server: String)

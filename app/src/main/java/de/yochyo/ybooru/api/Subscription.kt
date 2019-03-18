@@ -2,20 +2,21 @@ package de.yochyo.ybooru.api
 
 import android.content.Context
 import de.yochyo.ybooru.database
+import java.util.*
 
-class Subscription(val context: Context, val tag: Tag, var lastID: Int, var currentID: Int) : Comparable<Subscription> {
+class Subscription(context: Context, name: String, type: Int, var lastID: Int, var currentID: Int, creation: Date? = null) : Tag(context, name, type, false, creation), Comparable<Tag> {
     val tagString: String
-        get() = "id:>$currentID ${tag.name}"
+        get() = "id:>$currentID $name"
 
-    override fun compareTo(other: Subscription): Int {
+    override fun compareTo(other: Tag): Int {
         if (context.database.sortSubsByFavorite) {
-            if (tag.isFavorite && !other.tag.isFavorite)
+            if (isFavorite && !other.isFavorite)
                 return -1
-            if (!tag.isFavorite && other.tag.isFavorite)
+            if (!isFavorite && other.isFavorite)
                 return 1
         }
-        if (context.database.sortSubsByAlphabet) return tag.name.compareTo(other.tag.name)
-        if (tag.creation != null && other.tag.creation != null) return tag.creation.compareTo(other.tag.creation)
+        if (context.database.sortSubsByAlphabet) return name.compareTo(other.name)
+        if (creation != null && other.creation != null) return creation.compareTo(other.creation)
         return 0
     }
 }

@@ -17,9 +17,10 @@ import com.github.chrisbanes.photoview.OnSingleFlingListener
 import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Api
-import de.yochyo.ybooru.api.Tag
 import de.yochyo.ybooru.api.downloadImage
-import de.yochyo.ybooru.database
+import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.entities.Subscription
+import de.yochyo.ybooru.database.entities.Tag
 import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.*
@@ -102,9 +103,9 @@ class PictureActivity : AppCompatActivity() {
 
     fun loadNextPage(page: Int) {
         GlobalScope.launch {
-            m.downloadPage(this@PictureActivity, page)
+            m.downloadPage(page)
             launch(Dispatchers.Main) {
-                m.getPage(this@PictureActivity, page)
+                m.getPage(page)
                 view_pager.adapter!!.notifyDataSetChanged()
             }
         }
@@ -112,7 +113,7 @@ class PictureActivity : AppCompatActivity() {
 
     fun preloadNextPage(page: Int) {
         GlobalScope.launch {
-            m.downloadPage(this@PictureActivity, page)
+            m.downloadPage(page)
         }
     }
 
@@ -162,21 +163,21 @@ class PictureActivity : AppCompatActivity() {
                 val tag = currentTags[adapterPosition]
                 when (it.itemId) {
                     R.id.picture_info_item_add_history -> {
-                        database.addTag(tag.name, tag.type, false)
+                        database.addTag(Tag(tag.name, tag.type))
                         Toast.makeText(this@PictureActivity, "Add tag ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
                     R.id.picture_info_item_add_favorite -> {
-                        if (database.getTag(tag.name) == null) database.addTag(tag.name, tag.type, true)
+                        if (database.getTag(tag.name) == null) database.addTag(Tag(tag.name, tag.type, true))
                         else database.changeTag(tag.apply { isFavorite = true })
                         Toast.makeText(this@PictureActivity, "Add favorite ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
                     R.id.picture_info_item_subscribe -> {
                         if (database.getSubscription(tag.name) == null) {
-                            database.addTag(tag.name, tag.type, tag.isFavorite)
-                            GlobalScope.launch { database.addSubscription(tag.name, Api.newestID(this@PictureActivity)) }
+                            database.addTag(Tag(tag.name, tag.type, tag.isFavorite))
+                            GlobalScope.launch { val currentID = Api.newestID();database.addSubscription(Subscription(tag.name, tag.type, currentID, currentID)) }
                             Toast.makeText(this@PictureActivity, "Add subscription${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
-                            database.removeSubscription(tag.name)
+                            database.deleteSubscription(tag.name)
                             Toast.makeText(this@PictureActivity, "Unsubscribed ${tag.name}", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -191,8 +192,8 @@ class PictureActivity : AppCompatActivity() {
             val tag = currentTags[position]
             val textView = holder.toolbar.findViewById<TextView>(R.id.info_textview)
             textView.text = tag.name
-            textView.setColor(tag)
-            Menus.initPictureInfoTagMenu(this@PictureActivity, holder.toolbar.menu, tag)
+            textView.setColor(tag.color)
+            Menus.initPictureInfoTagMenu(holder.toolbar.menu, tag)
         }
     }
 

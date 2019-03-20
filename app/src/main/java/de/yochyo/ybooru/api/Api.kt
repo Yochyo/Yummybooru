@@ -1,7 +1,7 @@
 package de.yochyo.ybooru.api
 
-import android.content.Context
-import de.yochyo.ybooru.database
+import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.entities.Tag
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONArray
@@ -14,13 +14,13 @@ import java.net.URL
 object Api {
     private const val searchTagLimit = 10
 
-    suspend fun searchTags(context: Context, beginSequence: String): List<Tag> {
+    suspend fun searchTags(beginSequence: String): List<Tag> {
         val array = ArrayList<Tag>(searchTagLimit)
         val url = "https://danbooru.donmai.us/tags.json?search[name_matches]=$beginSequence*&limit=$searchTagLimit"
         val json = getJson(url)
         if (json != null) {
             for (i in 0 until json.length()) {
-                val tag = Tag.getTagFromJson(context, json.getJSONObject(i))
+                val tag = Tag.getTagFromJson(json.getJSONObject(i))
                 if (tag != null) array.add(tag)
             }
             array.sortBy { it.type }
@@ -28,17 +28,17 @@ object Api {
         return array
     }
 
-    suspend fun getTag(context: Context, name: String): Tag? {
-        if (name == "*") return Tag(context, name, Tag.UNKNOWN)
+    suspend fun getTag(name: String): Tag? {
+        if (name == "*") return Tag(name, Tag.UNKNOWN)
         val url = "https://danbooru.donmai.us/tags.json?search[name_matches]=$name"
         val json = getJson(url)
         if (json != null)
             if (!json.isNull(0))
-                return Tag.getTagFromJson(context, json.getJSONObject(0))
+                return Tag.getTagFromJson(json.getJSONObject(0))
         return null
     }
 
-    suspend fun getPosts(context: Context, page: Int, tags: Array<String>, limit: Int = context.database.limit): List<Post> {
+    suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = database.limit): List<Post> {
         var array: List<Post> = ArrayList(limit)
         var url = "https://danbooru.donmai.us/posts.json?limit=$limit&page=$page"
         if (tags.filter { it != "" }.isNotEmpty()) {
@@ -50,17 +50,17 @@ object Api {
         val json = getJson(url)
         if (json != null) {
             for (i in 0 until json.length()) {
-                val post = Post.getPostFromJson(context, json.getJSONObject(i))
+                val post = Post.getPostFromJson(json.getJSONObject(i))
                 if (post != null)
                     array += post
             }
             array = array.filter { it.extension == "png" || it.extension == "jpg" || it.extension == "jpeg" }
-            if (context.database.r18) return array.filter { it.rating == "s" }
+            if (database.r18) return array.filter { it.rating == "s" }
         }
         return array
     }
 
-    suspend fun newestID(context: Context): Int {
+    suspend fun newestID(): Int {
         val url = "https://danbooru.donmai.us/posts.json?limit=1&page=1"
         val json = getJson(url)
         if (json?.getJSONObject(0) != null) {

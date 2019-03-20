@@ -1,6 +1,5 @@
 package de.yochyo.ybooru.manager
 
-import android.content.Context
 import de.yochyo.ybooru.api.Api
 import de.yochyo.ybooru.api.Post
 import kotlinx.coroutines.Dispatchers
@@ -52,8 +51,8 @@ abstract class Manager(val tags: Array<String>) {
         get() = dataSet[position]
 
 
-    suspend fun getPage(context: Context, page: Int): List<Post> {
-        val p = downloadPage(context, page)
+    suspend fun getPage(page: Int): List<Post> {
+        val p = downloadPage(page)
         if (page > currentPage) {
             _currentPage = page
             withContext(Dispatchers.Main) { dataSet += p }
@@ -61,10 +60,10 @@ abstract class Manager(val tags: Array<String>) {
         return p
     }
 
-    suspend fun downloadPage(context: Context, page: Int): List<Post> {
+    suspend fun downloadPage(page: Int): List<Post> {
         var p = pages[page]
         if (p == null) {
-            val posts = Api.getPosts(context, page, tags)
+            val posts = Api.getPosts(page, tags)
             p = posts
             if (dataSet.isNotEmpty()) {
                 val lastFromLastPage = dataSet.last()

@@ -4,7 +4,7 @@ import android.graphics.Paint
 import android.os.Build
 import android.view.MotionEvent
 import android.widget.TextView
-import de.yochyo.ybooru.api.Tag
+import de.yochyo.ybooru.database.entities.Tag
 import java.util.*
 
 fun large(id: Int) = "${id}Large"
@@ -20,9 +20,9 @@ fun List<String>.toTagString() = joinToString(" ")
 
 fun TreeSet<Tag>.get(name: Int) = find { it.name == name.toString() }
 
-fun TextView.setColor(tag: Tag) {
-    if (Build.VERSION.SDK_INT > 22) setTextColor(context.getColor(tag.color))
-    else setTextColor(context.resources.getColor(tag.color))
+fun TextView.setColor(colorCode: Int) {
+    if (Build.VERSION.SDK_INT > 22) setTextColor(context.getColor(colorCode))
+    else setTextColor(context.resources.getColor(colorCode))
 }
 
 fun TextView.underline(underline: Boolean) {

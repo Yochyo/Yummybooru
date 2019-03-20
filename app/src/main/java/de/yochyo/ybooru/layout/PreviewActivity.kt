@@ -64,13 +64,13 @@ open class PreviewActivity : AppCompatActivity() {
         isLoadingView = true
         GlobalScope.launch {
             val i = m.dataSet.size
-            val posts = m.getPage(this@PreviewActivity, page)
+            val posts = m.getPage(page)
             launch(Dispatchers.Main) {
                 previewAdapter.notifyItemRangeInserted(if (i > 0) i - 1 else 0, posts.size)
                 isLoadingView = false
             }
             launch {
-                m.downloadPage(this@PreviewActivity, m.currentPage + 1)
+                m.downloadPage(m.currentPage + 1)
             }
         }
     }

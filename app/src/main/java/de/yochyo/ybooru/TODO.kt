@@ -9,7 +9,7 @@ Gemacht: Sub erbt von Tag -- testen
 //TODO gifs und videos
 //TODO namen der xml elemente optimieren
 //TODO md5 des bildes benutzen
-//TODO subscription statt startID macht man lastID
+//TODO subscription statt startID macht man last
 //TODO subscriptions ignorieren den r18 mode
 
 //TODO onSingleFling geht nur wenn das bild geladen wurde
@@ -29,10 +29,30 @@ Gemacht: Sub erbt von Tag -- testen
  * Für jeden Server eigene Subs/Tags Datenbank
  *  Bilder laden manchmal nicht ganz und richtig
  */
+//TODO don´t allow to create tags if no internet connection
+//TODO cache beim schließen, nicht beim starten löschen
+//TODO addTag combobox nicht mehr öffnen, wenn etwas geöffnet wurde
 
+//TODO das ist ugly code
+//entstehen crashes z.B. beim bildschirm drehen durch eine null referenz bei context?
 //--------------TODO ein sorted liste/set benutzen,
 //------------TODO subs sollen auf newestTag besetzt werden, nicht auf 0???????????
 //------------TODO sub seite aktuallisieren
 
 //TODO downloads in der sub-seite abbrechen wenn die aktivity verlassen wird
 //-------------------TODO reset subs to last
+
+//TODO
+/** Bei adaptern, um leistung zu sparen
+ * private val mInflater: LayoutInflater
+ * init {
+mInflater = LayoutInflater.from(context)
+}
+ */
+
+//TODO keine Context-referenzen speichern, weil
+/*
+Warning: Never pass context into ViewModel instances. Do not store Activity, Fragment, or View instances or their Context in the ViewModel.
+For example, an Activity can be destroyed and created many times during the lifecycle of a ViewModel as the device is rotated. If you store a reference to the Activity in the ViewModel, you end up with references that point to the destroyed Activity. This is a memory leak.
+If you need the application context, use AndroidViewModel, as shown in this codelab.
+ */

@@ -18,8 +18,10 @@ import android.view.*
 import android.widget.*
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Api
-import de.yochyo.ybooru.api.Tag
-import de.yochyo.ybooru.database
+import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.entities.Subscription
+import de.yochyo.ybooru.database.entities.Tag
+import de.yochyo.ybooru.database.initDatabase
 import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.setColor
@@ -42,6 +44,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        initDatabase
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
@@ -84,7 +87,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     editText.setAdapter(arrayAdapter) //Because of bug, that suggestions aren´t correctly updated
                     val name = s.toString()
                     GlobalScope.launch {
-                        val tags = Api.searchTags(this@MainActivity, name)
+                        val tags = Api.searchTags(name)
                         launch(Dispatchers.Main) {
                             if (!dialogIsDismissed && editText.text.toString() == name) {
                                 arrayAdapter.apply { clear(); addAll(tags); notifyDataSetChanged() }
@@ -107,12 +110,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             builder.setPositiveButton("OK") { _, _ ->
                 if (database.getTag(editText.text.toString()) == null) {
                     GlobalScope.launch {
-                        val tag = Api.getTag(this@MainActivity, editText.text.toString())
+                        val tag = Api.getTag(editText.text.toString())
                         launch(Dispatchers.Main) {
-                            val newTag: Tag
-                            if (tag != null) newTag = database.addTag(tag.name, tag.type, tag.isFavorite)
-                            else newTag = database.addTag(editText.text.toString(), Tag.UNKNOWN, false)
-                            adapter.notifyItemInserted(database.getTags().indexOf(newTag))
+                            val newTag: Tag = if (tag == null) Tag(editText.text.toString(), Tag.UNKNOWN, false) else tag
+                            database.addTag(newTag)
+                            adapter.notifyItemInserted(database.tags.indexOf(newTag))
                         }
                     }
                 }
@@ -196,7 +198,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 else selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
             }
             toolbar.setOnMenuItemClickListener {
-                val tag = database.getTags().elementAt(adapterPosition)
+                val tag = database.tags.elementAt(adapterPosition)
                 when (it.itemId) {
                     R.id.main_search_favorite_tag -> {
                         database.changeTag(tag.apply { isFavorite = !isFavorite })
@@ -204,18 +206,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
                     R.id.main_search_subscribe_tag -> {
                         if (database.getSubscription(tag.name) == null) {
-                            GlobalScope.launch { database.addSubscription(tag.name, Api.newestID(this@MainActivity)) }
+
+                            GlobalScope.launch { val currentID = Api.newestID();database.addSubscription(Subscription(tag.name, tag.type, currentID, currentID)) }
                             Toast.makeText(this@MainActivity, "Subscribed ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
-                            database.removeSubscription(tag.name)
+                            database.deleteSubscription(tag.name)
                             Toast.makeText(this@MainActivity, "Unsubscribed ${tag.name}", Toast.LENGTH_SHORT).show()
                         }
                         adapter.notifyItemChanged(adapterPosition)
                     }
                     R.id.main_search_delete_tag -> {
-                        database.removeTag(tag.name)
+                        database.deleteTag(tag.name)
                         selectedTags.remove(tag.name)
-                        database.removeSubscription(tag.name)
+                        database.deleteSubscription(tag.name)
                         adapter.notifyItemRemoved(adapterPosition)
                     }
                 }
@@ -223,17 +226,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
 
-        override fun getItemCount(): Int = database.getTags().size
+        override fun getItemCount(): Int = database.tags.size
         override fun onBindViewHolder(holder: SearchTagViewHolder, position: Int) {
-            val tag = database.getTags().elementAt(position)
+            val tag = database.tags.elementAt(position)
             val check = holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox)
             check.isChecked = selectedTags.contains(tag.name)
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
             textView.text = tag.name
-            textView.setColor(tag)
+            textView.setColor(tag.color)
             textView.underline(tag.isFavorite)
 
-            Menus.initMainSearchTagMenu(this@MainActivity, holder.toolbar.menu, tag)
+            Menus.initMainSearchTagMenu(holder.toolbar.menu, tag)
         }
     }
 

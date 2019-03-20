@@ -1,12 +1,14 @@
-package de.yochyo.ybooru.api
+package de.yochyo.ybooru.database.entities
 
-import android.content.Context
+import android.arch.persistence.room.*
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.database
+import de.yochyo.ybooru.database.database
 import org.json.JSONObject
 import java.util.*
 
-open class Tag(val context: Context, val name: String, val type: Int = UNKNOWN, var isFavorite: Boolean = false, val creation: Date? = null) : Comparable<Tag> {
+@Entity(tableName = "tags")
+class Tag(@PrimaryKey val name: String, val type: Int, var isFavorite: Boolean = false, val creation: Date = Date()) : Comparable<Tag> {
+
     companion object {
         const val GENERAL = 0
         const val CHARACTER = 4
@@ -15,12 +17,12 @@ open class Tag(val context: Context, val name: String, val type: Int = UNKNOWN, 
         const val META = 5
         const val UNKNOWN = 99
 
-        fun getTagFromJson(context: Context, json: JSONObject): Tag? {
+        fun getTagFromJson(json: JSONObject): Tag? {
             return try {
                 var type = json.getInt("category")
                 if (type !in 0..5)
                     type = UNKNOWN
-                Tag(context, json.getString("name"), type)
+                Tag(json.getString("name"), type)
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
@@ -45,14 +47,28 @@ open class Tag(val context: Context, val name: String, val type: Int = UNKNOWN, 
     }
 
     override fun compareTo(other: Tag): Int {
-        if (context.database.sortTagsByFavorite) {
+        if (database.sortTagsByFavorite) {
             if (isFavorite && !other.isFavorite)
                 return -1
             if (!isFavorite && other.isFavorite)
                 return 1
         }
-        if (context.database.sortTagsByAlphabet) return name.compareTo(other.name)
-        if (creation != null && other.creation != null) return creation.compareTo(other.creation)
-        return 0
+        if (database.sortTagsByAlphabet) return name.compareTo(other.name)
+        return creation.compareTo(other.creation)
     }
+}
+
+@Dao
+interface TagDao {
+    @Insert
+    fun insert(tag: Tag)
+
+    @Query("SELECT * FROM tags")
+    fun getAllTags(): List<Tag>
+
+    @Delete
+    fun delete(tag: Tag)
+
+    @Update
+    fun update(tag: Tag)
 }

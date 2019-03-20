@@ -19,14 +19,8 @@
                 android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-        </activity>
-        <activity
-                android:label=""
-                android:name=".layout.SubscriptionPreviewActivity"
-                android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
                 android:label=""

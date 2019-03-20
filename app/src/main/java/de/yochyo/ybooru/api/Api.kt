@@ -52,7 +52,7 @@ object Api {
             for (i in 0 until json.length()) {
                 val post = Post.getPostFromJson(json.getJSONObject(i))
                 if (post != null)
-                    array += post
+                    (array as ArrayList<Post>) += post
             }
             array = array.filter { it.extension == "png" || it.extension == "jpg" || it.extension == "jpeg" }
             if (database.r18) return array.filter { it.rating == "s" }
@@ -69,6 +69,7 @@ object Api {
         return 0
     }
 
+    @Suppress("BlockingMethodInNonBlockingContext")
     private suspend fun getJson(urlToRead: String): JSONArray? {
         var array: JSONArray? = null
         try {

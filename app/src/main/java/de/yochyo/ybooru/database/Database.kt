@@ -23,12 +23,12 @@ abstract class Database : RoomDatabase() {
     private lateinit var prefs: SharedPreferences
 
     companion object {
-        var _instance: Database? = null
+        var instance: Database? = null
         fun initDatabase(context: Context): Database {
-            if (_instance == null) _instance = Room.databaseBuilder(context.applicationContext,
+            if (instance == null) instance = Room.databaseBuilder(context.applicationContext,
                     Database::class.java, "database").addMigrations(*Migrations.all).build()
-            _instance!!.prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
-            return _instance!!
+            instance!!.prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
+            return instance!!
         }
     }
 
@@ -182,7 +182,7 @@ abstract class Database : RoomDatabase() {
 val Context.initDatabase: Database
     get() = Database.initDatabase(this)
 val database: Database
-    get() = Database._instance!!
+    get() = Database.instance!!
 
 
 object Migrations {

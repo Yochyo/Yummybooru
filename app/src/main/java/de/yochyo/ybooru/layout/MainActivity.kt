@@ -1,6 +1,7 @@
 package de.yochyo.ybooru.layout
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -63,6 +64,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         adapter = SearchTagAdapter().apply { recycleView.adapter = this }
     }
 
+    @SuppressLint("InflateParams")
     private fun initAddTagButton(b: Button) {
         b.setOnClickListener {
             var dialogIsDismissed = false

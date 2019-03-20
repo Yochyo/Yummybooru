@@ -15,10 +15,10 @@ abstract class Downloader(context: Context) {
     private val downloads = LinkedBlockingDeque<Download>()
 
     companion object {
-        private var _instance: Downloader? = null
+        private var instance: Downloader? = null
         fun getInstance(context: Context): Downloader {
-            if (_instance == null) _instance = object : Downloader(context) {}
-            return _instance!!
+            if (instance == null) instance = object : Downloader(context) {}
+            return instance!!
         }
     }
 

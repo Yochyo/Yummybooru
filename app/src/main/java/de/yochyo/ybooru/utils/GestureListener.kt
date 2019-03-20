@@ -1,3 +1,4 @@
+/*
 package de.yochyo.ybooru.utils
 
 import android.view.GestureDetector
@@ -22,17 +23,18 @@ abstract class GestureListener : GestureDetector.SimpleOnGestureListener() {
 
 
     enum class Direction {
-        up, down, left, right;
+        Up, Down, Left, Right;
 
         companion object {
             fun fromAngle(angle: Double): Direction {
-                return if (inRange(angle, 45f, 135f)) up
-                else if (inRange(angle, 0f, 45f) || inRange(angle, 315f, 360f)) right
-                else if (inRange(angle, 225f, 315f)) down
-                else left
+                return if (inRange(angle, 45f, 135f)) Up
+                else if (inRange(angle, 0f, 45f) || inRange(angle, 315f, 360f)) Right
+                else if (inRange(angle, 225f, 315f)) Down
+                else Left
             }
 
             private fun inRange(angle: Double, init: Float, end: Float): Boolean = angle >= init && angle < end
         }
     }
 }
+ */

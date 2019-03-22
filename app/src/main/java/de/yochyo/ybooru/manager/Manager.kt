@@ -2,6 +2,7 @@ package de.yochyo.ybooru.manager
 
 import de.yochyo.ybooru.api.Api
 import de.yochyo.ybooru.api.Post
+import de.yochyo.ybooru.utils.toTagArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -23,11 +24,10 @@ abstract class Manager(val tags: Array<String>) {
         fun initialize(tags: String): Manager {
             val manager = map[tags]
             if (manager == null) {
-                val m = object : Manager(tags.split(" ").toTypedArray()) {}
+                val m = object : Manager(tags.toTagArray()) {}
                 map[tags] = m
                 return m
-            } else
-                return manager
+            } else return manager
         }
 
         fun reset(tags: String) {
@@ -44,9 +44,10 @@ abstract class Manager(val tags: Array<String>) {
     val dataSet = ArrayList<Post>(200)
     private val pages = HashMap<Int, List<Post>>()
     var position = -1
-    private var _currentPage = 0
-    val currentPage: Int
-        get() = _currentPage
+    var currentPage = 0
+        private set(value) {
+            field = value
+        }
     val currentPost: Post?
         get() = dataSet[position]
 
@@ -54,7 +55,7 @@ abstract class Manager(val tags: Array<String>) {
     suspend fun getPage(page: Int): List<Post> {
         val p = downloadPage(page)
         if (page > currentPage) {
-            _currentPage = page
+            currentPage = page
             withContext(Dispatchers.Main) { dataSet += p }
         }
         return p
@@ -65,6 +66,7 @@ abstract class Manager(val tags: Array<String>) {
         if (p == null) {
             val posts = Api.getPosts(page, tags)
             p = posts
+            //avoid doubled posts
             if (dataSet.isNotEmpty()) {
                 val lastFromLastPage = dataSet.last()
                 val samePost = p.find { it.id == lastFromLastPage.id }
@@ -79,7 +81,7 @@ abstract class Manager(val tags: Array<String>) {
     fun reset() {
         dataSet.clear()
         position = -1
-        _currentPage = 0
+        currentPage = 0
         pages.clear()
     }
 }

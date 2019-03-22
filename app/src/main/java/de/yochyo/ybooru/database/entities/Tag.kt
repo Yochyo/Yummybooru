@@ -42,9 +42,7 @@ class Tag(@PrimaryKey val name: String, val type: Int, var isFavorite: Boolean =
             }
         }
 
-    override fun toString(): String {
-        return name
-    }
+    override fun toString(): String = name
 
     override fun compareTo(other: Tag): Int {
         if (database.sortTagsByFavorite) {

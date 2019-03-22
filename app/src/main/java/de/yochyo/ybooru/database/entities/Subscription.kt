@@ -7,17 +7,6 @@ import java.util.*
 
 @Entity(tableName = "subs")
 class Subscription(@PrimaryKey val name: String, val type: Int, var last: Int, var current: Int, val isFavorite: Boolean = false, val creation: Date = Date()) : Comparable<Subscription> {
-    override fun compareTo(other: Subscription): Int {
-        if (database.sortSubsByFavorite) {
-            if (isFavorite && !other.isFavorite)
-                return -1
-            if (!isFavorite && other.isFavorite)
-                return 1
-        }
-        if (database.sortSubsByAlphabet) return name.compareTo(other.name)
-        return creation.compareTo(other.creation)
-    }
-
     val color: Int
         get() {
             when (type) {
@@ -31,6 +20,17 @@ class Subscription(@PrimaryKey val name: String, val type: Int, var last: Int, v
         }
 
     override fun toString() = "id:>$current $name"
+
+    override fun compareTo(other: Subscription): Int {
+        if (database.sortSubsByFavorite) {
+            if (isFavorite && !other.isFavorite)
+                return -1
+            if (!isFavorite && other.isFavorite)
+                return 1
+        }
+        if (database.sortSubsByAlphabet) return name.compareTo(other.name)
+        return creation.compareTo(other.creation)
+    }
 }
 
 @Dao

@@ -29,6 +29,10 @@ Gemacht: Sub erbt von Tag -- testen
  * Für jeden Server eigene Subs/Tags Datenbank
  *  Bilder laden manchmal nicht ganz und richtig
  */
+
+/*
+Add Button in SubscriptionActivity
+ */
 //TODO don´t allow to create tags if no internet connection
 //TODO cache beim schließen, nicht beim starten löschen
 //TODO addTag combobox nicht mehr öffnen, wenn etwas geöffnet wurde
@@ -49,7 +53,7 @@ Gemacht: Sub erbt von Tag -- testen
 mInflater = LayoutInflater.from(context)
 }
  */
-
+//TODO database -> _variablen durch var mit getter und setter ersetzen
 //TODO keine Context-referenzen speichern, weil
 /*
 Warning: Never pass context into ViewModel instances. Do not store Activity, Fragment, or View instances or their Context in the ViewModel.

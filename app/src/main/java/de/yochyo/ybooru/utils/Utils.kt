@@ -22,9 +22,10 @@ fun TextView.setColor(colorCode: Int) {
     else setTextColor(context.resources.getColor(colorCode))
 }
 
+private val p = Paint()
 fun TextView.underline(underline: Boolean) {
-    if (underline) paintFlags = Paint().apply { isUnderlineText = true }.flags
-    else paintFlags = Paint().apply { isUnderlineText = false }.flags
+    if (underline) paintFlags = p.apply { isUnderlineText = true }.flags
+    else paintFlags = p.apply { isUnderlineText = false }.flags
 }
 
 object Fling {

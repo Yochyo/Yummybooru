@@ -220,7 +220,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     R.id.main_search_delete_tag -> {
                         database.deleteTag(tag.name)
                         selectedTags.remove(tag.name)
-                        database.deleteSubscription(tag.name)
                         adapter.notifyItemRemoved(adapterPosition)
                     }
                 }

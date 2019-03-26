@@ -3,19 +3,18 @@ package de.yochyo.ybooru.layout
 import android.Manifest
 import android.arch.lifecycle.Observer
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.app.ActivityCompat
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.text.Editable
-import android.text.TextWatcher
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.ViewGroup
 import android.widget.*
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Api
@@ -23,6 +22,7 @@ import de.yochyo.ybooru.database.Database
 import de.yochyo.ybooru.database.database
 import de.yochyo.ybooru.database.entities.Subscription
 import de.yochyo.ybooru.database.entities.Tag
+import de.yochyo.ybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.setColor
@@ -67,68 +67,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun initAddTagButton(b: Button) {
         b.setOnClickListener {
-            var dialogIsDismissed = false
-            val builder = AlertDialog.Builder(this)
-            val layout = LayoutInflater.from(this).inflate(R.layout.search_item_dialog_view, null) as LinearLayout
-            val editText = layout.findViewById<AutoCompleteTextView>(R.id.add_tag_edittext)
-            val arrayAdapter = object : ArrayAdapter<Tag>(this@MainActivity, android.R.layout.simple_dropdown_item_1line) {
-                override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                    val tag = getItem(position)
-                    val textView = super.getView(position, convertView, parent) as TextView
-                    if (tag != null) {
-                        if (Build.VERSION.SDK_INT > 22) textView.setTextColor(getColor(tag.color))
-                        else textView.setTextColor(resources.getColor(tag.color))
-                    }
-                    return textView
-                }
-            }
-
-            editText.setAdapter(arrayAdapter)
-            editText.addTextChangedListener(object : TextWatcher {
-                override fun afterTextChanged(s: Editable) {
-                    editText.setAdapter(arrayAdapter) //Because of bug, that suggestions aren´t correctly updated
-                    val name = s.toString()
+            AddTagDialog(this) {
+                if (database.getTag(it.text.toString()) == null) {
                     GlobalScope.launch {
-                        val tags = Api.searchTags(name)
+                        val tag = Api.getTag(it.text.toString())
                         launch(Dispatchers.Main) {
-                            if (!dialogIsDismissed && editText.text.toString() == name) {
-                                arrayAdapter.apply { clear(); addAll(tags); notifyDataSetChanged() }
-                                if (tags.size == 1 && tags.first().name == name) editText.dismissDropDown()
-                                else editText.showDropDown()
-                            }
-                        }
-                    }
-                }
-
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                    editText.dismissDropDown()
-                    editText.setAdapter(null)//Because of bug, that suggestions aren´t correctly updated
-                }
-
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-            })
-            builder.setMessage("Add Tag").setView(layout)
-            builder.setPositiveButton("OK") { _, _ ->
-                if (database.getTag(editText.text.toString()) == null) {
-                    GlobalScope.launch {
-                        val tag = Api.getTag(editText.text.toString())
-                        launch(Dispatchers.Main) {
-                            val newTag: Tag = tag ?: Tag(editText.text.toString(), Tag.UNKNOWN, false)
+                            val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN, false)
                             database.addTag(newTag)
                         }
                     }
                 }
-            }
-
-            val dialog = builder.create()
-            dialog.show()
-            editText.requestFocus()
-            dialog.setOnDismissListener { dialogIsDismissed = true }
-            dialog.window?.setGravity(Gravity.TOP)
-            dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-            dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
-
+            }.build()
         }
     }
 
@@ -207,7 +156,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     R.id.main_search_favorite_tag -> database.changeTag(tag.apply { isFavorite = !isFavorite })
                     R.id.main_search_subscribe_tag -> {
                         if (database.getSubscription(tag.name) == null) {
-                            GlobalScope.launch { val currentID = Api.newestID();launch(Dispatchers.Main) { database.addSubscription(Subscription(tag.name, tag.type, currentID, currentID)) } }
+                            GlobalScope.launch { val currentID = Api.newestID();launch(Dispatchers.Main) { database.addSubscription(Subscription(tag.name, tag.type, currentID)) } }
                             Toast.makeText(this@MainActivity, "Subscribed ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             database.deleteSubscription(tag.name)

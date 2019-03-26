@@ -174,7 +174,7 @@ class PictureActivity : AppCompatActivity() {
                     R.id.picture_info_item_subscribe -> {
                         if (database.getSubscription(tag.name) == null) {
                             database.addTag(Tag(tag.name, tag.type, tag.isFavorite))
-                            GlobalScope.launch { val currentID = Api.newestID();database.addSubscription(Subscription(tag.name, tag.type, currentID, currentID)) }
+                            GlobalScope.launch { val currentID = Api.newestID();database.addSubscription(Subscription(tag.name, tag.type, currentID)) }
                             Toast.makeText(this@PictureActivity, "Add subscription${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             database.deleteSubscription(tag.name)

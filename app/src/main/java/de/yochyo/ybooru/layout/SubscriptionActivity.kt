@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -15,6 +16,8 @@ import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Api
 import de.yochyo.ybooru.database.database
 import de.yochyo.ybooru.database.entities.Subscription
+import de.yochyo.ybooru.database.entities.Tag
+import de.yochyo.ybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.addChild
 import de.yochyo.ybooru.utils.setColor
@@ -81,9 +84,27 @@ class SubscriptionActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.subscription_menu, menu)
+        return true
+    }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
+            R.id.add_subscription -> {
+                AddTagDialog(this) {
+                    if (database.getSubscription(it.text.toString()) == null) {
+                        GlobalScope.launch {
+                            val tag = Api.getTag(it.text.toString())
+                            val newest = Api.newestID()
+                            launch(Dispatchers.Main) {
+                                val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN, false)
+                                database.addSubscription(Subscription(newTag.name, newTag.type, newest))
+                            }
+                        }
+                    }
+                }.build()
+            }
         }
         return super.onOptionsItemSelected(item)
     }

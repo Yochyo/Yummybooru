@@ -17,8 +17,7 @@ package de.yochyo.ybooru
 //TODO cache beim schließen, nicht beim starten löschen
 //TODO addTag combobox nicht mehr öffnen, wenn etwas geöffnet wurde
 //TODO reset subs to last
-//TODO downloads in der sub-seite abbrechen wenn die aktivity verlassen wird
-//TODO preselection bei dem settings existiert nicht
+//----TODO downloads in der sub-seite abbrechen wenn die aktivity verlassen wird
 //TODO funktioniert das reloaden in Subscription activity?
 
 /**

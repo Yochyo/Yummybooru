@@ -27,7 +27,6 @@ abstract class Downloader(context: Context) {
 
         for (i in 1..3) {
             GlobalScope.launch(Dispatchers.IO) {
-                val delayTime = i * 50L
                 while (true) {
                     if (downloads.isNotEmpty()) {
                         try {
@@ -45,9 +44,10 @@ abstract class Downloader(context: Context) {
                         }
                         delay(5)
                     } else
-                        delay(delayTime)
+                        delay(50)
                 }
             }
+            val job = GlobalScope.launch { }
         }
     }
 

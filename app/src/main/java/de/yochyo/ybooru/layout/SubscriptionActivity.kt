@@ -1,5 +1,6 @@
 package de.yochyo.ybooru.layout
 
+import android.arch.lifecycle.Observer
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -13,6 +14,7 @@ import android.widget.TextView
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Api
 import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.entities.Subscription
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.addChild
 import de.yochyo.ybooru.utils.setColor
@@ -20,6 +22,7 @@ import de.yochyo.ybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_subscription.*
 import kotlinx.android.synthetic.main.content_subscription.*
 import kotlinx.coroutines.*
+import java.util.*
 
 class SubscriptionActivity : AppCompatActivity() {
     private var root = SupervisorJob()
@@ -29,13 +32,14 @@ class SubscriptionActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Manager.resetAll()
         setContentView(R.layout.activity_subscription)
         setSupportActionBar(toolbar_subs)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        Manager.resetAll()
         val recyclerView = subs_recycler
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
+        database.subs.observe(this, Observer<TreeSet<Subscription>> { t -> if (t != null) adapter.updateSubs(t) })
         subs_swipe_refresh_layout.setOnRefreshListener {
             subs_swipe_refresh_layout.isRefreshing = false
             root.cancelChildren()
@@ -51,12 +55,11 @@ class SubscriptionActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        adapter.notifyDataSetChanged()
         super.onResume()
         if (clickedSub != null) {
             val pos = clickedSub!!
             clickedSub = null
-            val sub = database.subs.elementAt(pos)
+            val sub = database.subs[pos]
             if (Manager.getOrInit(sub.toString()).dataSet.isNotEmpty()) {
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle("Save").setMessage("Update last id?")
@@ -71,7 +74,6 @@ class SubscriptionActivity : AppCompatActivity() {
                             newestIdWhenClicked = null
                         }
                         database.changeSubscription(sub)
-                        GlobalScope.launch(Dispatchers.Main) { adapter.notifyItemChanged(pos) }
                     }
                 }
                 builder.create().show()
@@ -87,13 +89,20 @@ class SubscriptionActivity : AppCompatActivity() {
     }
 
     private inner class SubscribedTagAdapter : RecyclerView.Adapter<SubscribedTagViewHolder>() {
-        override fun getItemCount(): Int = database.subs.size
+        private var subs = TreeSet<Subscription>()
+
+        fun updateSubs(subs: TreeSet<Subscription>) {
+            this.subs = subs
+            notifyDataSetChanged()
+        }
+
+        override fun getItemCount(): Int = subs.size
 
         override fun onCreateViewHolder(parent: ViewGroup, p1: Int): SubscribedTagViewHolder = SubscribedTagViewHolder(LayoutInflater.from(this@SubscriptionActivity).inflate(R.layout.subscription_item_layout, parent, false) as LinearLayout).apply {
             layout.setOnClickListener {
-                val sub = database.subs.elementAt(adapterPosition)
+                val sub = subs.elementAt(adapterPosition)
                 clickedSub = adapterPosition
-                GlobalScope.launch { newestIdWhenClicked = Api.newestID() }
+                GlobalScope.launch { newestIdWhenClicked = Api.newestID() } //TODO was ist, wenn der download erst fertig ist, wenn die activity wieder resumed wurde
                 PreviewActivity.startActivity(this@SubscriptionActivity, sub.toString())
             }
             layout.setOnLongClickListener {
@@ -101,9 +110,8 @@ class SubscriptionActivity : AppCompatActivity() {
                 builder.setTitle("Delete").setMessage("Delete sub?")
                 builder.setNegativeButton("No") { _, _ -> }
                 builder.setPositiveButton("Yes") { _, _ ->
-                    val sub = database.subs.elementAt(adapterPosition)
+                    val sub = subs.elementAt(adapterPosition)
                     database.deleteSubscription(sub.name)
-                    adapter.notifyItemRemoved(adapterPosition)
                 }
                 builder.create().show()
                 true
@@ -113,7 +121,7 @@ class SubscriptionActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: SubscribedTagViewHolder, position: Int) {
             val text1 = holder.layout.findViewById<TextView>(android.R.id.text1)
             val text2 = holder.layout.findViewById<TextView>(android.R.id.text2)
-            val sub = database.subs.elementAt(position)
+            val sub = subs.elementAt(position)
             text1.text = sub.name
             text1.setColor(sub.color)
             text1.underline(sub.isFavorite)
@@ -128,6 +136,8 @@ class SubscriptionActivity : AppCompatActivity() {
                     var posts = 0
                     try {
                         while (oldestID > sub.current && isActive) {
+                            //TODO das hier beschleunigen
+                            //TODO statt postanzahl ~Posts durch Seitenanzahl*Seitengröße
                             val page = m.downloadPage(++currentPage)
                             posts += page.size
                             oldestID = page.last().id

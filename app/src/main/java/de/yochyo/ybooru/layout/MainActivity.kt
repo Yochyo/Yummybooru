@@ -1,7 +1,7 @@
 package de.yochyo.ybooru.layout
 
 import android.Manifest
-import android.annotation.SuppressLint
+import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -19,10 +19,10 @@ import android.view.*
 import android.widget.*
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Api
+import de.yochyo.ybooru.database.Database
 import de.yochyo.ybooru.database.database
 import de.yochyo.ybooru.database.entities.Subscription
 import de.yochyo.ybooru.database.entities.Tag
-import de.yochyo.ybooru.database.initDatabase
 import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.setColor
@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initDatabase
+        Database.initDatabase(this)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
@@ -62,9 +62,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         recycleView = navLayout.findViewById(R.id.recycler_view_search)
         recycleView.layoutManager = LinearLayoutManager(this)
         adapter = SearchTagAdapter().apply { recycleView.adapter = this }
+        database.tags.observe(this, Observer<TreeSet<Tag>> { t -> if (t != null) adapter.updateTags(t) })
     }
 
-    @SuppressLint("InflateParams")
     private fun initAddTagButton(b: Button) {
         b.setOnClickListener {
             var dialogIsDismissed = false
@@ -114,9 +114,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     GlobalScope.launch {
                         val tag = Api.getTag(editText.text.toString())
                         launch(Dispatchers.Main) {
-                            val newTag: Tag = if (tag == null) Tag(editText.text.toString(), Tag.UNKNOWN, false) else tag
+                            val newTag: Tag = tag ?: Tag(editText.text.toString(), Tag.UNKNOWN, false)
                             database.addTag(newTag)
-                            adapter.notifyItemInserted(database.tags.indexOf(newTag))
                         }
                     }
                 }
@@ -132,6 +131,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         }
     }
+
     private fun initSearchButton(b: Button) {
         b.setOnClickListener {
             drawer_layout.closeDrawer(GravityCompat.END)
@@ -181,12 +181,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         else super.onBackPressed()
     }
 
-    override fun onResume() {
-        super.onResume()
-        adapter.notifyDataSetChanged()
-    }
-
     private inner class SearchTagAdapter : RecyclerView.Adapter<SearchTagViewHolder>() {
+        private var tags = TreeSet<Tag>()
+
+        fun updateTags(set: TreeSet<Tag>) {
+            tags = set
+            notifyDataSetChanged()
+        }
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchTagViewHolder = SearchTagViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.search_item_layout, parent, false) as Toolbar)).apply {
             val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
             toolbar.inflateMenu(R.menu.activity_main_search_menu)
@@ -200,36 +202,30 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 else selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
             }
             toolbar.setOnMenuItemClickListener {
-                val tag = database.tags.elementAt(adapterPosition)
+                val tag = tags.elementAt(adapterPosition)
                 when (it.itemId) {
-                    R.id.main_search_favorite_tag -> {
-                        database.changeTag(tag.apply { isFavorite = !isFavorite })
-                        adapter.notifyItemChanged(adapterPosition)
-                    }
+                    R.id.main_search_favorite_tag -> database.changeTag(tag.apply { isFavorite = !isFavorite })
                     R.id.main_search_subscribe_tag -> {
                         if (database.getSubscription(tag.name) == null) {
-
-                            GlobalScope.launch { val currentID = Api.newestID();database.addSubscription(Subscription(tag.name, tag.type, currentID, currentID)) }
+                            GlobalScope.launch { val currentID = Api.newestID();launch(Dispatchers.Main) { database.addSubscription(Subscription(tag.name, tag.type, currentID, currentID)) } }
                             Toast.makeText(this@MainActivity, "Subscribed ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             database.deleteSubscription(tag.name)
                             Toast.makeText(this@MainActivity, "Unsubscribed ${tag.name}", Toast.LENGTH_SHORT).show()
                         }
-                        adapter.notifyItemChanged(adapterPosition)
                     }
                     R.id.main_search_delete_tag -> {
                         database.deleteTag(tag.name)
                         selectedTags.remove(tag.name)
-                        adapter.notifyItemRemoved(adapterPosition)
                     }
                 }
                 true
             }
         }
 
-        override fun getItemCount(): Int = database.tags.size
+        override fun getItemCount(): Int = tags.size
         override fun onBindViewHolder(holder: SearchTagViewHolder, position: Int) {
-            val tag = database.tags.elementAt(position)
+            val tag = tags.elementAt(position)
             val check = holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox)
             check.isChecked = selectedTags.contains(tag.name)
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)

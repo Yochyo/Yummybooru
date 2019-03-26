@@ -18,6 +18,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         super.onCreate(savedInstanceState)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         fragmentManager.beginTransaction().replace(android.R.id.content, GeneralPreferenceFragment()).commit()
+        PreferenceManager.setDefaultValues(baseContext, R.xml.pref_general, false)
     }
 
     companion object {

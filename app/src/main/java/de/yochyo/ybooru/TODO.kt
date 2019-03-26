@@ -1,27 +1,26 @@
 package de.yochyo.ybooru
 
-/*
-SubPreview entfernt
-Gemacht: Sub erbt von Tag -- testen
- */
-
-////
 //TODO gifs und videos
-//TODO namen der xml elemente optimieren
 //TODO md5 des bildes benutzen
-//TODO subscription statt startID macht man last
+//TODO namen der xml elemente optimieren
 //TODO subscriptions ignorieren den r18 mode
 
 //TODO onSingleFling geht nur wenn das bild geladen wurde
-//TODO tags und subs irgendwie verbinden
 //TODO ladebalken beim laden von large image
-//large and original image
-//TODO logo
+//TODO large and original image
+//TODO icon
 //todo speicherpfad
 //TODO mehrere server
 //TODO bei downloads, einen kürzeren toast
+//TODO Add Button in SubscriptionActivity
+//TODO don´t allow to create tags if no internet connection
+//TODO cache beim schließen, nicht beim starten löschen
+//TODO addTag combobox nicht mehr öffnen, wenn etwas geöffnet wurde
+//TODO reset subs to last
+//TODO downloads in der sub-seite abbrechen wenn die aktivity verlassen wird
+//TODO preselection bei dem settings existiert nicht
+//TODO funktioniert das reloaden in Subscription activity?
 
-//TODO Downloader pausieren wenn kein bild da ist, und resume wenn die queue gefüllt wird
 /**
  * Server:
  * Database.loadserver(server: String)
@@ -30,22 +29,6 @@ Gemacht: Sub erbt von Tag -- testen
  *  Bilder laden manchmal nicht ganz und richtig
  */
 
-/*
-Add Button in SubscriptionActivity
- */
-//TODO don´t allow to create tags if no internet connection
-//TODO cache beim schließen, nicht beim starten löschen
-//TODO addTag combobox nicht mehr öffnen, wenn etwas geöffnet wurde
-
-//TODO das ist ugly code
-//entstehen crashes z.B. beim bildschirm drehen durch eine null referenz bei context?
-//--------------TODO ein sorted liste/set benutzen,
-//------------TODO subs sollen auf newestTag besetzt werden, nicht auf 0???????????
-//------------TODO sub seite aktuallisieren
-
-//TODO downloads in der sub-seite abbrechen wenn die aktivity verlassen wird
-//-------------------TODO reset subs to last
-
 //TODO
 /** Bei adaptern, um leistung zu sparen
  * private val mInflater: LayoutInflater
@@ -53,7 +36,7 @@ Add Button in SubscriptionActivity
 mInflater = LayoutInflater.from(context)
 }
  */
-//TODO database -> _variablen durch var mit getter und setter ersetzen
+//TODO entstehen crashes z.B. beim bildschirm drehen durch eine null referenz bei context?
 //TODO keine Context-referenzen speichern, weil
 /*
 Warning: Never pass context into ViewModel instances. Do not store Activity, Fragment, or View instances or their Context in the ViewModel.

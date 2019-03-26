@@ -67,6 +67,6 @@ interface TagDao {
     @Delete
     fun delete(tag: Tag)
 
-    @Update
+    @Update(onConflict = OnConflictStrategy.REPLACE)
     fun update(tag: Tag)
 }

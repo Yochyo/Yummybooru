@@ -12,10 +12,10 @@ import de.yochyo.ybooru.database.entities.Subscription
 import de.yochyo.ybooru.database.entities.SubscriptionDao
 import de.yochyo.ybooru.database.entities.Tag
 import de.yochyo.ybooru.database.entities.TagDao
+import de.yochyo.ybooru.database.liveData.LiveTree
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import java.util.*
 
 @android.arch.persistence.room.Database(entities = [Tag::class, Subscription::class], version = 1)
 @TypeConverters(DateConverter::class)
@@ -28,33 +28,32 @@ abstract class Database : RoomDatabase() {
             if (instance == null) instance = Room.databaseBuilder(context.applicationContext,
                     Database::class.java, "database").addMigrations(*Migrations.all).build()
             instance!!.prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
+            instance!!.initialize()
             return instance!!
+        }
+
+    }
+
+    val tags = LiveTree<Tag>()
+    val subs = LiveTree<Subscription>()
+
+    fun initialize() {
+        GlobalScope.launch {
+            val t = tagDao.getAllTags()
+            val s = subDao.getAllSubscriptions()
+            GlobalScope.launch(Dispatchers.Main) {
+                tags += t
+                subs += s
+            }
         }
     }
 
-    val tags = TreeSet<Tag>()
-        get() {
-            if (field.isEmpty())
-                runBlocking {
-                    val job = GlobalScope.launch { field += tagDao.getAllTags() }
-                    job.join()
-                }
-            return field
-        }
-    val subs = TreeSet<Subscription>()
-        get() {
-            if (field.isEmpty())
-                runBlocking {
-                    val job = GlobalScope.launch { field += subDao.getAllSubscriptions() }
-                    job.join()
-                }
-            return field
-        }
-
     fun getTag(name: String) = tags.find { it.name == name }
     fun addTag(tag: Tag) {
-        tags += tag
-        GlobalScope.launch { tagDao.insert(tag) }
+        if (getTag(tag.name) == null) {
+            tags += tag
+            GlobalScope.launch { tagDao.insert(tag) }
+        }
     }
 
     fun deleteTag(name: String) {
@@ -77,8 +76,10 @@ abstract class Database : RoomDatabase() {
 
     fun getSubscription(name: String) = subs.find { it.name == name }
     fun addSubscription(sub: Subscription) {
-        subs += sub
-        GlobalScope.launch { subDao.insert(sub) }
+        if (getSubscription(sub.name) == null) {
+            subs += sub
+            GlobalScope.launch { subDao.insert(sub) }
+        }
     }
 
     fun deleteSubscription(name: String) {
@@ -179,8 +180,6 @@ abstract class Database : RoomDatabase() {
     abstract val tagDao: TagDao
 }
 
-val Context.initDatabase: Database
-    get() = Database.initDatabase(this)
 val database: Database
     get() = Database.instance!!
 

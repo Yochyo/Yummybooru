@@ -40,7 +40,8 @@ object Api {
 
     suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = database.limit): List<Post> {
         var array: List<Post> = ArrayList(limit)
-        var url = "https://danbooru.donmai.us/posts.json?limit=$limit&page=$page"
+        //&login=Yochyo&api_key=A7lajIGiCBQxSh7ivGRxGcjXvajhCPXq8PtlM-O0D-o
+        var url = "https://danbooru.donmai.us/posts.json?limit=$limit&page=$page&login=Yochyo&api_key=A7lajIGiCBQxSh7ivGRxGcjXvajhCPXq8PtlM-O0D-o"
         if (tags.filter { it != "" }.isNotEmpty()) {
             url += "&tags="
             for (tag in tags)

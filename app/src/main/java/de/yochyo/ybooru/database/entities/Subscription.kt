@@ -44,6 +44,6 @@ interface SubscriptionDao {
     @Delete
     fun delete(sub: Subscription)
 
-    @Update(onConflict = OnConflictStrategy.REPLACE)
+    @Update
     fun update(sub: Subscription)
 }

@@ -12,10 +12,7 @@ package de.yochyo.ybooru
 //todo speicherpfad
 //TODO mehrere server
 //TODO bei downloads, einen kürzeren toast
-//TODO Add Button in SubscriptionActivity
 //TODO don´t allow to create tags if no internet connection
-//TODO cache beim schließen, nicht beim starten löschen
-//TODO addTag combobox nicht mehr öffnen, wenn etwas geöffnet wurde
 //TODO reset subs to last
 //----TODO downloads in der sub-seite abbrechen wenn die aktivity verlassen wird
 //TODO funktioniert das reloaden in Subscription activity?

@@ -18,6 +18,7 @@ import android.view.ViewGroup
 import android.widget.*
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Api
+import de.yochyo.ybooru.api.Downloader
 import de.yochyo.ybooru.database.Database
 import de.yochyo.ybooru.database.database
 import de.yochyo.ybooru.database.entities.Subscription
@@ -67,7 +68,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun initAddTagButton(b: Button) {
         b.setOnClickListener {
-            AddTagDialog(this) {
+            AddTagDialog {
                 if (database.getTag(it.text.toString()) == null) {
                     GlobalScope.launch {
                         val tag = Api.getTag(it.text.toString())
@@ -77,7 +78,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         }
                     }
                 }
-            }.build()
+            }.apply { title = "Add Subscription" }.build(this)
         }
     }
 
@@ -130,6 +131,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         else super.onBackPressed()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        Downloader.getInstance(this).clearCache()
+    }
+
     private inner class SearchTagAdapter : RecyclerView.Adapter<SearchTagViewHolder>() {
         private var tags = TreeSet<Tag>()
 
@@ -162,6 +168,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             database.deleteSubscription(tag.name)
                             Toast.makeText(this@MainActivity, "Unsubscribed ${tag.name}", Toast.LENGTH_SHORT).show()
                         }
+                        notifyItemChanged(adapterPosition)
                     }
                     R.id.main_search_delete_tag -> {
                         database.deleteTag(tag.name)

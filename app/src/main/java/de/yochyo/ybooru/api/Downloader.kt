@@ -23,8 +23,6 @@ abstract class Downloader(context: Context) {
     }
 
     init {
-        clearCache()
-
         for (i in 1..3) {
             GlobalScope.launch(Dispatchers.IO) {
                 while (true) {
@@ -90,7 +88,7 @@ abstract class Downloader(context: Context) {
         }
     }
 
-    private fun clearCache() {
+    fun clearCache() {
         directory.listFiles().forEach {
             if (it.isFile) {
                 try {
@@ -104,7 +102,6 @@ abstract class Downloader(context: Context) {
 
     private fun file(id: String) = File("$path$id")
 }
-
 fun Context.downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(bitmap: Bitmap) -> Unit = {}, downloadNow: Boolean = false, cache: Boolean = true) = Downloader.getInstance(this).downloadImage(url, id, doAfter, downloadNow, cache)
 
 

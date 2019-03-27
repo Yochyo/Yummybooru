@@ -88,11 +88,12 @@ class SubscriptionActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.subscription_menu, menu)
         return true
     }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
             R.id.add_subscription -> {
-                AddTagDialog(this) {
+                AddTagDialog {
                     if (database.getSubscription(it.text.toString()) == null) {
                         GlobalScope.launch {
                             val tag = Api.getTag(it.text.toString())
@@ -103,7 +104,7 @@ class SubscriptionActivity : AppCompatActivity() {
                             }
                         }
                     }
-                }.build()
+                }.apply { title = "Add Subscription" }.build(this)
             }
         }
         return super.onOptionsItemSelected(item)

@@ -13,7 +13,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.api.Api
+import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.database.database
 import de.yochyo.ybooru.database.entities.Subscription
 import de.yochyo.ybooru.database.entities.Tag

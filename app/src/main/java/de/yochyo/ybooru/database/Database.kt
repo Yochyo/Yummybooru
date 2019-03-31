@@ -8,16 +8,15 @@ import android.arch.persistence.room.migration.Migration
 import android.content.Context
 import android.content.SharedPreferences
 import de.yochyo.ybooru.database.converter.DateConverter
-import de.yochyo.ybooru.database.entities.Subscription
-import de.yochyo.ybooru.database.entities.SubscriptionDao
-import de.yochyo.ybooru.database.entities.Tag
-import de.yochyo.ybooru.database.entities.TagDao
+import de.yochyo.ybooru.database.entities.*
 import de.yochyo.ybooru.database.liveData.LiveTree
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.util.*
 
-@android.arch.persistence.room.Database(entities = [Tag::class, Subscription::class], version = 1)
+@android.arch.persistence.room.Database(entities = [Tag::class, Subscription::class, Server::class], version = 2)
 @TypeConverters(DateConverter::class)
 abstract class Database : RoomDatabase() {
     private lateinit var prefs: SharedPreferences
@@ -26,9 +25,18 @@ abstract class Database : RoomDatabase() {
         var instance: Database? = null
         fun initDatabase(context: Context): Database {
             if (instance == null) instance = Room.databaseBuilder(context.applicationContext,
-                    Database::class.java, "database").addMigrations(*Migrations.all).build()
+                    Database::class.java, "database")
+                    .addCallback(object : RoomDatabase.Callback() {
+                        override fun onOpen(db: SupportSQLiteDatabase) {
+                            super.onOpen(db)
+                            if (db.query("SELECT * FROM servers").count == 0)
+                                db.execSQL("INSERT INTO servers (name,api,userName,passwordHash,id,creation) VALUES ('Danbooru', 'danbooru', '', '', 0, '${Date().time}' );")
+                        }
+                    })
+                    .addMigrations(*Migrations.all).build()
             instance!!.prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
             instance!!.initialize()
+
             return instance!!
         }
 
@@ -36,15 +44,21 @@ abstract class Database : RoomDatabase() {
 
     val tags = LiveTree<Tag>()
     val subs = LiveTree<Subscription>()
+    val servers = LiveTree<Server>()
 
     fun initialize() {
-        GlobalScope.launch {
-            val t = tagDao.getAllTags()
-            val s = subDao.getAllSubscriptions()
-            GlobalScope.launch(Dispatchers.Main) {
-                tags += t
-                subs += s
+        runBlocking {
+            val job = GlobalScope.launch {
+                val t = tagDao.getAllTags()
+                val s = subDao.getAllSubscriptions()
+                val se = serverDao.getAllServers()
+                GlobalScope.launch(Dispatchers.Main) {
+                    tags += t
+                    subs += s
+                    servers += se
+                }
             }
+            job.join()
         }
     }
 
@@ -100,6 +114,37 @@ abstract class Database : RoomDatabase() {
         } else false
     }
 
+    var currentServer: Server? = null
+        get() {
+            if (field == null)
+                if (instance!!.currentServerID != -1)
+                    field = getServer(currentServerID)
+            return field
+        }
+
+    fun getServer(id: Int) = servers.find { it.id == id }
+    fun addServer(server: Server) {
+        if (getServer(server.id) == null) {
+            servers += server
+            GlobalScope.launch { serverDao.insert(server) }
+        }
+    }
+
+    fun deleteServer(id: Int) {
+        val s = servers.find { id == it.id }
+        if (s != null) {
+            servers.remove(s)
+            GlobalScope.launch {
+                serverDao.delete(s)
+                if (currentServerID == id) {
+                    currentServerID = -1
+                    currentServer = null
+                }
+            }
+        }
+    }
+
+
     private var _limit: Int? = null
     var limit: Int
         get() {
@@ -124,6 +169,20 @@ abstract class Database : RoomDatabase() {
             _r18 = value
             with(prefs.edit()) {
                 putBoolean("r18", value)
+                apply()
+            }
+        }
+
+    private var _currentServerID: Int? = null
+    var currentServerID: Int
+        get() {
+            if (_currentServerID == null) _currentServerID = prefs.getInt("currentServer", 0)
+            return _currentServerID!!
+        }
+        set(v) {
+            _currentServerID = v
+            with(prefs.edit()) {
+                putInt("currentServer", v)
                 apply()
             }
         }
@@ -178,15 +237,17 @@ abstract class Database : RoomDatabase() {
 
     abstract val subDao: SubscriptionDao
     abstract val tagDao: TagDao
+    abstract val serverDao: ServerDao
 }
 
 val database: Database
     get() = Database.instance!!
 
 
-object Migrations {
+private object Migrations {
     val MIGRATION_1_2 = object : Migration(1, 2) {
-        override fun migrate(database: SupportSQLiteDatabase) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("CREATE TABLE servers (name TEXT NOT NULL, api TEXT NOT NULL, id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, userName TEXT NOT NULL, url TEXT NOT NULL, passwordHash TEXT NOT NULL, creation INTEGER NOT NULL)")
         }
     }
 

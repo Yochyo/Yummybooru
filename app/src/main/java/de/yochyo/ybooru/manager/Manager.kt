@@ -1,7 +1,7 @@
 package de.yochyo.ybooru.manager
 
-import de.yochyo.ybooru.api.Api
 import de.yochyo.ybooru.api.Post
+import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.utils.toTagArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

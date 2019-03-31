@@ -8,7 +8,7 @@ import android.text.TextWatcher
 import android.view.*
 import android.widget.*
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.api.Api
+import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.database.entities.Tag
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

@@ -25,6 +25,11 @@ package de.yochyo.ybooru
  *  Bilder laden manchmal nicht ganz und richtig
  */
 
+/*
+Server:
+Alles ausprobieren, um die Server-Url herauszufinden (danbooru hat posts.json, yande.re hat post.json)
+ */
+
 //TODO
 /** Bei adaptern, um leistung zu sparen
  * private val mInflater: LayoutInflater

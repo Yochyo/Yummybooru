@@ -45,7 +45,6 @@ abstract class Downloader(context: Context) {
                         delay(50)
                 }
             }
-            val job = GlobalScope.launch { }
         }
     }
 

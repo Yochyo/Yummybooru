@@ -16,7 +16,7 @@ import android.widget.Toolbar
 import com.github.chrisbanes.photoview.OnSingleFlingListener
 import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.api.Api
+import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.api.downloadImage
 import de.yochyo.ybooru.database.database
 import de.yochyo.ybooru.database.entities.Subscription

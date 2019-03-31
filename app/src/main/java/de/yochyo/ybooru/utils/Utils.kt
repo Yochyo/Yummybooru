@@ -5,6 +5,7 @@ import android.os.Build
 import android.view.MotionEvent
 import android.widget.TextView
 import de.yochyo.ybooru.database.entities.Tag
+import java.security.MessageDigest
 import java.util.*
 
 fun large(id: Int) = "${id}Large"
@@ -26,6 +27,17 @@ private val p = Paint()
 fun TextView.underline(underline: Boolean) {
     if (underline) paintFlags = p.apply { isUnderlineText = true }.flags
     else paintFlags = p.apply { isUnderlineText = false }.flags
+}
+
+fun passwordToHash(password: String): String {
+    val byteArray = "choujin-steiner--$password--".toByteArray(charset = Charsets.UTF_8)
+    val digest = MessageDigest.getInstance("SHA-1")
+    digest.update(byteArray)
+    val digestBytes = digest.digest()
+    val digestStr = StringBuilder()
+    for (b in digestBytes)
+        digestStr.append(String.format("%02x", b))
+    return digestStr.toString()
 }
 
 object Fling {

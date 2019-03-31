@@ -34,7 +34,3 @@ class LiveTree<E> : MutableLiveData<TreeSet<E>>() {
     operator fun get(position: Int) = tree.elementAt(position)
     operator fun minusAssign(e: E) = remove(e)
 }
-
-fun main() {
-    val t = LiveTree<String>()
-}

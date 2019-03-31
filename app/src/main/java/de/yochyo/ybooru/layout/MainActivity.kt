@@ -17,8 +17,9 @@ import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.*
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.api.Api
 import de.yochyo.ybooru.api.Downloader
+import de.yochyo.ybooru.api.api.Api
+import de.yochyo.ybooru.api.api.DanbooruApi
 import de.yochyo.ybooru.database.Database
 import de.yochyo.ybooru.database.database
 import de.yochyo.ybooru.database.entities.Subscription
@@ -47,6 +48,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Database.initDatabase(this)
+        Api.instance = DanbooruApi()
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 

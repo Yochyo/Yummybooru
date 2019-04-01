@@ -29,8 +29,9 @@ abstract class Database : RoomDatabase() {
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onOpen(db: SupportSQLiteDatabase) {
                             super.onOpen(db)
+                            Server("Danbooru", "danbooru", "https://danbooru.donmai.us")
                             if (db.query("SELECT * FROM servers").count == 0)
-                                db.execSQL("INSERT INTO servers (name,api,userName,passwordHash,id,creation) VALUES ('Danbooru', 'danbooru', '', '', 0, '${Date().time}' );")
+                                db.execSQL("INSERT INTO servers (name,api,url,userName,passwordHash,id,creation) VALUES ('Danbooru', 'danbooru', 'https://danbooru.donmai.us', '', '', 0, '${Date().time}' );")
                         }
                     })
                     .addMigrations(*Migrations.all).build()

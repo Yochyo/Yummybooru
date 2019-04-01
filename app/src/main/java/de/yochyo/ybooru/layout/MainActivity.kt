@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Database.initDatabase(this)
-        Api.instance = DanbooruApi()
+        Api.instance = DanbooruApi(database.currentServer!!.url)//TODO
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 

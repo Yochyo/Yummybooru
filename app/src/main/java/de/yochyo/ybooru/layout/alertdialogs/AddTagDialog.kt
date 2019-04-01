@@ -22,7 +22,7 @@ class AddTagDialog(val runOnPositive: (editText: AutoCompleteTextView) -> Unit) 
         var clickedDropdown = false
 
         val builder = AlertDialog.Builder(context)
-        val layout = LayoutInflater.from(context).inflate(R.layout.search_item_dialog_view, null) as LinearLayout
+        val layout = LayoutInflater.from(context).inflate(R.layout.add_tag_dialog_view, null) as LinearLayout
         val editText = layout.findViewById<AutoCompleteTextView>(R.id.add_tag_edittext)
         val arrayAdapter = object : ArrayAdapter<Tag>(context, android.R.layout.simple_dropdown_item_1line) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {

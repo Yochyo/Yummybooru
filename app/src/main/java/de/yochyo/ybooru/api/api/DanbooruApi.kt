@@ -2,7 +2,8 @@ package de.yochyo.ybooru.api.api
 
 import de.yochyo.ybooru.database.database
 
-class DanbooruApi : Api {
+class DanbooruApi(url: String) : Api(url) {
+
 
     override val name = "danbooru"
     override fun urlGetTag(name: String): String = "https://danbooru.donmai.us/tags.json?search[name_matches]=$name"
@@ -17,5 +18,4 @@ class DanbooruApi : Api {
     }
 
     override fun urlGetNewest(): String = "https://danbooru.donmai.us/posts.json?limit=1&page=1"
-
 }

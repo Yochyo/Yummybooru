@@ -11,7 +11,8 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
-interface Api {
+abstract class Api(val url: String) {
+
     companion object {
 
         const val searchTagLimit = 10
@@ -101,9 +102,9 @@ interface Api {
         }
     }
 
-    val name: String
-    fun urlGetTags(beginSequence: String): String
-    fun urlGetTag(name: String): String
-    fun urlGetPosts(page: Int, tags: Array<String>, limit: Int): String
-    fun urlGetNewest(): String
+    abstract val name: String
+    abstract fun urlGetTags(beginSequence: String): String
+    abstract fun urlGetTag(name: String): String
+    abstract fun urlGetPosts(page: Int, tags: Array<String>, limit: Int): String
+    abstract fun urlGetNewest(): String
 }

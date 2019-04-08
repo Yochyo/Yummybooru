@@ -5,6 +5,10 @@
           android:title="@string/enter_r18"
           android:orderInCategory="100"
           app:showAsAction="never"/>
+    <item android:id="@+id/action_add_server"
+          android:title="Add Server"
+          android:orderInCategory="99"
+          app:showAsAction="never"/>
     <item android:id="@+id/search"
           android:title="Search"
           android:orderInCategory="100"

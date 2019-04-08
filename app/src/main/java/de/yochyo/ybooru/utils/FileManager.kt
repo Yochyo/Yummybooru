@@ -3,7 +3,7 @@ package de.yochyo.ybooru.utils
 import android.graphics.Bitmap
 import android.os.Environment
 import de.yochyo.ybooru.api.Post
-import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.entities.Server
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -31,7 +31,7 @@ object FileManager {
     }
 
     private fun postToFilename(p: Post): String {
-        val s = "${p.id} ${database.currentServer!!.url} ${p.tagsCopyright.joinToString(" ") { it.name }}  ${p.tagsArtist.joinToString(" ") { it.name }}  ${p.tagsCharacter.joinToString(" ") { it.name }}  ${p.tagsGeneral.joinToString(" ") { it.name }}  ${p.tagsMeta.joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '<' && it != '>' }
+        val s = "${Server.currentServer.url} ${p.id} ${p.tagsCopyright.joinToString(" ") { it.name }}  ${p.tagsArtist.joinToString(" ") { it.name }}  ${p.tagsCharacter.joinToString(" ") { it.name }}  ${p.tagsGeneral.joinToString(" ") { it.name }}  ${p.tagsMeta.joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '<' && it != '>' }
         var last = s.lastIndex
         if (last > 123) last = 123
         return "${s.substring(0, last)}.png"

@@ -7,7 +7,7 @@ import org.json.JSONObject
 import java.util.*
 
 @Entity(tableName = "tags")
-class Tag(@PrimaryKey val name: String, val type: Int, var isFavorite: Boolean = false, val creation: Date = Date()) : Comparable<Tag> {
+class Tag(@PrimaryKey val name: String, val type: Int, var isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID) : Comparable<Tag> {
 
     companion object {
         const val GENERAL = 0

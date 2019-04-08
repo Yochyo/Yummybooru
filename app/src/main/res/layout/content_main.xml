@@ -11,14 +11,14 @@
         tools:showIn="@layout/app_bar_main"
         tools:context=".layout.MainActivity">
     <android.support.design.widget.AppBarLayout
-            android:layout_height="wrap_content"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:theme="@style/AppTheme.AppBarOverlay">
     </android.support.design.widget.AppBarLayout>
 
-    <include
-            layout="@layout/server_item_layout"
+    <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="wrap_content"
+            android:id="@+id/server_recycler_view"/>
 
 </LinearLayout>

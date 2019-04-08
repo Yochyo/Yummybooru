@@ -28,6 +28,10 @@ class LiveTree<E> : MutableLiveData<TreeSet<E>>() {
 
     fun indexOf(e: E) = tree.indexOf(e)
     fun find(run: (e: E) -> Boolean) = tree.find(run)
+    fun clear() {
+        tree.clear()
+        value = tree
+    }
 
     operator fun plusAssign(e: E) = add(e)
     operator fun plusAssign(e: Collection<E>) = addAll(e)

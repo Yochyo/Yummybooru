@@ -10,11 +10,9 @@ import android.content.SharedPreferences
 import de.yochyo.ybooru.database.converter.DateConverter
 import de.yochyo.ybooru.database.entities.*
 import de.yochyo.ybooru.database.liveData.LiveTree
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.util.*
 
 @android.arch.persistence.room.Database(entities = [Tag::class, Subscription::class, Server::class], version = 2)
 @TypeConverters(DateConverter::class)
@@ -27,11 +25,10 @@ abstract class Database : RoomDatabase() {
             if (instance == null) instance = Room.databaseBuilder(context.applicationContext,
                     Database::class.java, "database")
                     .addCallback(object : RoomDatabase.Callback() {
-                        override fun onOpen(db: SupportSQLiteDatabase) {
-                            super.onOpen(db)
-                            Server("Danbooru", "danbooru", "https://danbooru.donmai.us")
+                        override fun onCreate(db: SupportSQLiteDatabase) {
+                            super.onCreate(db)
                             if (db.query("SELECT * FROM servers").count == 0)
-                                db.execSQL("INSERT INTO servers (name,api,url,userName,passwordHash,id,creation) VALUES ('Danbooru', 'danbooru', 'https://danbooru.donmai.us', '', '', 0, '${Date().time}' );")
+                                db.execSQL("INSERT INTO servers (name,api,url,userName,password,id) VALUES ('Danbooru', 'danbooru', 'https://danbooru.donmai.us/', '', '', 0);")
                         }
                     })
                     .addMigrations(*Migrations.all).build()
@@ -43,24 +40,31 @@ abstract class Database : RoomDatabase() {
 
     }
 
+    val servers = LiveTree<Server>()
     val tags = LiveTree<Tag>()
     val subs = LiveTree<Subscription>()
-    val servers = LiveTree<Server>()
 
     fun initialize() {
+        var se: List<Server>? = null
         runBlocking {
             val job = GlobalScope.launch {
-                val t = tagDao.getAllTags()
-                val s = subDao.getAllSubscriptions()
-                val se = serverDao.getAllServers()
-                GlobalScope.launch(Dispatchers.Main) {
-                    tags += t
-                    subs += s
-                    servers += se
-                }
+                se = serverDao.getAllServers()
             }
             job.join()
         }
+        servers += se!!
+        Server.currentServer.select()
+    }
+
+    fun getAllTags(serverID: Int): List<Tag> {
+        var t: List<Tag>? = null
+        runBlocking {
+            val job = GlobalScope.launch {
+                t = tagDao.getAllTags().filter { it.serverID == serverID }
+            }
+            job.join()
+        }
+        return t!!
     }
 
     fun getTag(name: String) = tags.find { it.name == name }
@@ -89,6 +93,17 @@ abstract class Database : RoomDatabase() {
         } else false
     }
 
+    fun getAllSubscriptions(serverID: Int): List<Subscription> {
+        var s: List<Subscription>? = null
+        runBlocking {
+            val job = GlobalScope.launch {
+                s = subDao.getAllSubscriptions().filter { it.serverID == serverID }
+            }
+            job.join()
+        }
+        return s!!
+    }
+
     fun getSubscription(name: String) = subs.find { it.name == name }
     fun addSubscription(sub: Subscription) {
         if (getSubscription(sub.name) == null) {
@@ -115,14 +130,6 @@ abstract class Database : RoomDatabase() {
         } else false
     }
 
-    var currentServer: Server? = null
-        get() {
-            if (field == null)
-                if (instance!!.currentServerID != -1)
-                    field = getServer(currentServerID)
-            return field
-        }
-
     fun getServer(id: Int) = servers.find { it.id == id }
     fun addServer(server: Server) {
         if (getServer(server.id) == null) {
@@ -134,16 +141,35 @@ abstract class Database : RoomDatabase() {
     fun deleteServer(id: Int) {
         val s = servers.find { id == it.id }
         if (s != null) {
+            if (currentServerID == id) s.unselect()
             servers.remove(s)
-            GlobalScope.launch {
-                serverDao.delete(s)
-                if (currentServerID == id) {
-                    currentServerID = -1
-                    currentServer = null
-                }
-            }
+            GlobalScope.launch { serverDao.delete(s) }
         }
     }
+
+    fun changeServer(server: Server) {
+        val s = servers.find { it.id == server.id }
+        if (s != null) {
+            servers -= s
+            servers += server
+            GlobalScope.launch { serverDao.update(server) }
+        }
+    }
+
+    private var _nextServerID: Int? = null
+    var nextServerID: Int
+        get() {
+            if (_nextServerID == null)
+                _nextServerID = prefs.getInt("nextServerID", 0)
+            return _nextServerID!!
+        }
+        set(v) {
+            _nextServerID = v
+            with(prefs.edit()) {
+                putInt("nextServerID", v)
+                apply()
+            }
+        }
 
 
     private var _limit: Int? = null
@@ -174,6 +200,7 @@ abstract class Database : RoomDatabase() {
             }
         }
 
+
     private var _currentServerID: Int? = null
     var currentServerID: Int
         get() {
@@ -187,6 +214,7 @@ abstract class Database : RoomDatabase() {
                 apply()
             }
         }
+
 
     private var _sortTags: String? = null
     var sortTags: String
@@ -248,7 +276,6 @@ val database: Database
 private object Migrations {
     val MIGRATION_1_2 = object : Migration(1, 2) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("CREATE TABLE servers (name TEXT NOT NULL, api TEXT NOT NULL, id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, userName TEXT NOT NULL, url TEXT NOT NULL, passwordHash TEXT NOT NULL, creation INTEGER NOT NULL)")
         }
     }
 

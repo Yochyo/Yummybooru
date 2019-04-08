@@ -40,6 +40,16 @@ fun passwordToHash(password: String): String {
     return digestStr.toString()
 }
 
+fun parseURL(url: String): String {
+    val b = StringBuffer()
+    if (!url.startsWith("http"))
+        b.append("https://")
+    b.append(url)
+    if (!url.endsWith("/"))
+        b.append("/")
+    return b.toString()
+}
+
 object Fling {
     fun getDirection(e1: MotionEvent, e2: MotionEvent): Direction {
         val x1 = e1.x

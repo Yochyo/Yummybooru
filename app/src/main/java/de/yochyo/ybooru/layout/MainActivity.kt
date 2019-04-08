@@ -22,8 +22,10 @@ import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.api.api.DanbooruApi
 import de.yochyo.ybooru.database.Database
 import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.entities.Server
 import de.yochyo.ybooru.database.entities.Subscription
 import de.yochyo.ybooru.database.entities.Tag
+import de.yochyo.ybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.ybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.manager.Manager
@@ -42,13 +44,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private val selectedTags = ArrayList<String>()
     private lateinit var menu: Menu
 
-    private lateinit var recycleView: RecyclerView
-    private lateinit var adapter: SearchTagAdapter
+    private lateinit var tagAdapter: SearchTagAdapter
+    private lateinit var serverAdapter: ServerAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Api.addApi(DanbooruApi(""))
         Database.initDatabase(this)
-        Api.instance = DanbooruApi(database.currentServer!!.url)//TODO
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
@@ -62,10 +64,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val navLayout = nav_search.findViewById<LinearLayout>(R.id.nav_search_layout)
         initAddTagButton(navLayout.findViewById(R.id.add_search))
         initSearchButton(navLayout.findViewById(R.id.start_search))
-        recycleView = navLayout.findViewById(R.id.recycler_view_search)
-        recycleView.layoutManager = LinearLayoutManager(this)
-        adapter = SearchTagAdapter().apply { recycleView.adapter = this }
-        database.tags.observe(this, Observer<TreeSet<Tag>> { t -> if (t != null) adapter.updateTags(t) })
+        val tagRecyclerView = navLayout.findViewById<RecyclerView>(R.id.recycler_view_search)
+        tagRecyclerView.layoutManager = LinearLayoutManager(this)
+        tagAdapter = SearchTagAdapter().apply { tagRecyclerView.adapter = this }
+        val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
+        serverRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
+        serverAdapter = ServerAdapter().apply { serverRecyclerView.adapter = this }
+
+        database.tags.observe(this, Observer<TreeSet<Tag>> { t -> if (t != null) tagAdapter.updateTags(t) })
+        database.servers.observe(this, Observer<TreeSet<Server>> { s -> if (s != null) serverAdapter.updateServers(s) })
     }
 
     private fun initAddTagButton(b: Button) {
@@ -75,7 +82,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     GlobalScope.launch {
                         val tag = Api.getTag(it.text.toString())
                         launch(Dispatchers.Main) {
-                            val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN, false)
+                            val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN)
                             database.addTag(newTag)
                         }
                     }
@@ -92,6 +99,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    fun fillServerLayoutFields(layout: LinearLayout, server: Server, isSelected: Boolean = false) {
+        val text1 = layout.findViewById<TextView>(R.id.server_text1)
+        text1.text = server.name
+        if (isSelected) text1.setColor(R.color.dark_red)
+        else text1.setColor(R.color.violet)
+        layout.findViewById<TextView>(R.id.server_text2).text = server.api
+        layout.findViewById<TextView>(R.id.server_text3).text = server.userName
+
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         this.menu = menu
         menuInflater.inflate(R.menu.main_menu, menu)
@@ -106,6 +123,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 setMenuR18Text()
                 Manager.resetAll()
             }
+            R.id.action_add_server -> AddServerDialog { database.addServer(it); Toast.makeText(this, "Add Server", Toast.LENGTH_SHORT).show() }.apply { serverID = database.nextServerID++ }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
         }
         return super.onOptionsItemSelected(item)
@@ -195,5 +213,45 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    private inner class ServerAdapter : RecyclerView.Adapter<ServerViewHolder>() {
+        var servers = TreeSet<Server>()
+        override fun getItemCount(): Int = servers.size
+
+        fun updateServers(servers: TreeSet<Server>) {
+            this.servers = servers
+            notifyDataSetChanged()
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, position: Int): ServerViewHolder {
+            val holder = ServerViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.server_item_layout, parent, false) as LinearLayout))
+            holder.layout.setOnClickListener {
+                val server = servers.elementAt(holder.adapterPosition)
+                server.select()
+                notifyDataSetChanged()
+                Toast.makeText(this@MainActivity, "Select Server", Toast.LENGTH_SHORT).show()
+            }
+            holder.layout.setOnLongClickListener {
+                val server = servers.elementAt(holder.adapterPosition)
+                AddServerDialog { database.changeServer(it) }.apply {
+                    serverID = server.id
+                    nameText = server.name
+                    apiText = server.api
+                    urlText = server.url
+                    userText = server.userName
+                    passwordText = server.password
+                    message = "Edit Server"
+                }.build(this@MainActivity)
+                true
+            }
+            return holder
+        }
+
+        override fun onBindViewHolder(holder: ServerViewHolder, position: Int) {
+            val server = servers.elementAt(position)
+            fillServerLayoutFields(holder.layout, server, server.isSelected)
+        }
+    }
+
+    private inner class ServerViewHolder(val layout: LinearLayout) : RecyclerView.ViewHolder(layout)
     private inner class SearchTagViewHolder(val toolbar: Toolbar) : RecyclerView.ViewHolder(toolbar)
 }

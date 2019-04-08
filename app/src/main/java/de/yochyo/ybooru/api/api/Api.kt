@@ -11,16 +11,30 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
-abstract class Api(val url: String) {
+abstract class Api(var url: String) {
 
     companion object {
+        private val apis = ArrayList<Api>()
+        fun addApi(api: Api) = apis.add(api)
+        fun initApi(name: String, url: String): Api? {
+            println(apis.joinToString { it.name })
+            println(name)
+            val api = apis.find { it.name.equals(name, true) }
+            println(api)
+            if (api != null) api.url = url
+            instance = api
+            return api
+        }
+
 
         const val searchTagLimit = 10
-        lateinit var instance: Api
+        var instance: Api? = null
+        val name: String
+            get() = instance!!.name
 
         suspend fun searchTags(beginSequence: String): List<Tag> {
             val array = ArrayList<Tag>(searchTagLimit)
-            val json = getJson(instance.urlGetTags(beginSequence))
+            val json = getJson(instance!!.urlGetTags(beginSequence))
             if (json != null) {
                 for (i in 0 until json.length()) {
                     val tag = Tag.getTagFromJson(json.getJSONObject(i))
@@ -33,7 +47,7 @@ abstract class Api(val url: String) {
 
         suspend fun getTag(name: String): Tag? {
             if (name == "*") return Tag(name, Tag.UNKNOWN)
-            val json = getJson(instance.urlGetTag(name))
+            val json = getJson(instance!!.urlGetTag(name))
             if (json != null)
                 if (!json.isNull(0))
                     return Tag.getTagFromJson(json.getJSONObject(0))
@@ -42,7 +56,7 @@ abstract class Api(val url: String) {
 
         suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = database.limit): List<Post> {
             var array: List<Post> = ArrayList(limit)
-            var url = instance.urlGetPosts(page, tags, limit)
+            var url = instance!!.urlGetPosts(page, tags, limit)
 
             if (tags.filter { it != "" }.isNotEmpty()) {
                 url += "&tags="
@@ -64,7 +78,7 @@ abstract class Api(val url: String) {
         }
 
         suspend fun newestID(): Int {
-            val json = getJson(instance.urlGetNewest())
+            val json = getJson(instance!!.urlGetNewest())
             if (json?.getJSONObject(0) != null) {
                 return json.getJSONObject(0).getInt("id")
             }

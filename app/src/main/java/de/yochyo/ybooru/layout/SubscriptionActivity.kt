@@ -99,7 +99,7 @@ class SubscriptionActivity : AppCompatActivity() {
                             val tag = Api.getTag(it.text.toString())
                             val newest = Api.newestID()
                             launch(Dispatchers.Main) {
-                                val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN, false)
+                                val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN)
                                 database.addSubscription(Subscription(newTag.name, newTag.type, newest))
                             }
                         }

@@ -1,5 +1,11 @@
 package de.yochyo.ybooru
 
+//TODO kann man auf mehreren servern die gleichen tags haben?
+
+
+
+
+
 //TODO gifs und videos
 //TODO md5 des bildes benutzen
 //TODO namen der xml elemente optimieren

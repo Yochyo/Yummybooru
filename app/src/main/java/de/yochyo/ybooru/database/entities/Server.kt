@@ -61,6 +61,10 @@ class Server(var name: String, var api: String, var url: String, var userName: S
         database.subs.clear()
     }
 
+    fun deleteServer() {
+        database.deleteServer(id)
+    }
+
     override fun toString() = name
 }
 

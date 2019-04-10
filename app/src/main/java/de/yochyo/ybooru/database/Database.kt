@@ -160,7 +160,7 @@ abstract class Database : RoomDatabase() {
     var nextServerID: Int
         get() {
             if (_nextServerID == null)
-                _nextServerID = prefs.getInt("nextServerID", 0)
+                _nextServerID = prefs.getInt("nextServerID", 1)
             return _nextServerID!!
         }
         set(v) {

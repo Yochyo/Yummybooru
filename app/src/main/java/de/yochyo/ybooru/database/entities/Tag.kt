@@ -3,7 +3,6 @@ package de.yochyo.ybooru.database.entities
 import android.arch.persistence.room.*
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.database.database
-import org.json.JSONObject
 import java.util.*
 
 @Entity(tableName = "tags", primaryKeys = ["name", "serverID"])
@@ -16,18 +15,6 @@ class Tag(val name: String, val type: Int, var isFavorite: Boolean = false, val 
         const val ARTIST = 1
         const val META = 5
         const val UNKNOWN = 99
-
-        fun getTagFromJson(json: JSONObject): Tag? {
-            return try {
-                var type = json.getInt("category")
-                if (type !in 0..5)
-                    type = UNKNOWN
-                Tag(json.getString("name"), type)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
-        }
     }
 
     val color: Int

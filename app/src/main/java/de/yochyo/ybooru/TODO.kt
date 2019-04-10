@@ -1,11 +1,5 @@
 package de.yochyo.ybooru
 
-//TODO kann man auf mehreren servern die gleichen tags haben?
-
-
-
-
-
 //TODO gifs und videos
 //TODO md5 des bildes benutzen
 //TODO namen der xml elemente optimieren
@@ -20,24 +14,14 @@ package de.yochyo.ybooru
 //TODO don´t allow to create tags if no internet connection
 //TODO reset subs to last
 //TODO reloaden in Subscriptionacitivty eine funktion geben, wie reloaden falls es kein internet gab?
-/**
- * eine server.selectserver(s: Server) funktion, die id, currentServer, die geladenen tags/subs und die api ändert
- */
-/**
- * Server:
- * Database.loadserver(server: String)
- * Api: holt sich links aus der Datenbank
- * Für jeden Server eigene Subs/Tags Datenbank
- *  Bilder laden manchmal nicht ganz und richtig
- */
+
 //TODO Subs nicht nur mit :id>X filtern, sondern auch per hand
-//TODO URL in richtige URL umwandeln?
 /*
 Server:
 Alles ausprobieren, um die Server-Url herauszufinden (danbooru hat posts.json, yande.re hat post.json)
  */
-
-//TODO
+//TODO farben von mbooru klauen
+//TODO server name bei der datei verzürzen
 /** Bei adaptern, um leistung zu sparen
  * private val mInflater: LayoutInflater
  * init {

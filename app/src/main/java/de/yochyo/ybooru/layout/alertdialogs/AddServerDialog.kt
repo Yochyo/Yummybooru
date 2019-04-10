@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import de.yochyo.ybooru.R
+import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.database.entities.Server
 import de.yochyo.ybooru.utils.parseURL
 
@@ -26,7 +27,7 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
         builder.setView(layout)
         val spinner = layout.findViewById<Spinner>(R.id.add_server_api)
         val adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1)
-        adapter.addAll("Danbooru", "Gelbooru", "Moebooru")
+        adapter.addAll(Api.apis.map { it.name })
         spinner.adapter = adapter
         builder.setMessage("Change Server")
 

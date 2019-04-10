@@ -6,6 +6,7 @@ import de.yochyo.ybooru.database.entities.Tag
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONArray
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
@@ -14,13 +15,10 @@ import java.net.URL
 abstract class Api(var url: String) {
 
     companion object {
-        private val apis = ArrayList<Api>()
+        val apis = ArrayList<Api>()
         fun addApi(api: Api) = apis.add(api)
         fun initApi(name: String, url: String): Api? {
-            println(apis.joinToString { it.name })
-            println(name)
             val api = apis.find { it.name.equals(name, true) }
-            println(api)
             if (api != null) api.url = url
             instance = api
             return api
@@ -37,7 +35,7 @@ abstract class Api(var url: String) {
             val json = getJson(instance!!.urlGetTags(beginSequence))
             if (json != null) {
                 for (i in 0 until json.length()) {
-                    val tag = Tag.getTagFromJson(json.getJSONObject(i))
+                    val tag = Api.instance!!.getTagFromJson(json.getJSONObject(i))
                     if (tag != null) array.add(tag)
                 }
                 array.sortBy { it.type }
@@ -50,7 +48,7 @@ abstract class Api(var url: String) {
             val json = getJson(instance!!.urlGetTag(name))
             if (json != null)
                 if (!json.isNull(0))
-                    return Tag.getTagFromJson(json.getJSONObject(0))
+                    return Api.instance!!.getTagFromJson(json.getJSONObject(0))
             return null
         }
 
@@ -67,7 +65,7 @@ abstract class Api(var url: String) {
             val json = getJson(url)
             if (json != null) {
                 for (i in 0 until json.length()) {
-                    val post = Post.getPostFromJson(json.getJSONObject(i))
+                    val post = Api.instance!!.getPostFromJson(json.getJSONObject(i))
                     if (post != null)
                         (array as ArrayList<Post>) += post
                 }
@@ -105,6 +103,7 @@ abstract class Api(var url: String) {
                         rd.close()
                         array = JSONArray(result.toString())
                     } catch (e: Exception) {
+                        println("URL: $urlToRead")
                         e.printStackTrace()
                     }
                 }
@@ -121,4 +120,7 @@ abstract class Api(var url: String) {
     abstract fun urlGetTag(name: String): String
     abstract fun urlGetPosts(page: Int, tags: Array<String>, limit: Int): String
     abstract fun urlGetNewest(): String
+
+    abstract fun getTagFromJson(json: JSONObject): Tag?
+    abstract fun getPostFromJson(json: JSONObject): Post?
 }

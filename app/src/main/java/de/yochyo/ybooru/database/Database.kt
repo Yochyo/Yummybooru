@@ -27,8 +27,8 @@ abstract class Database : RoomDatabase() {
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
-                            if (db.query("SELECT * FROM servers").count == 0)
-                                db.execSQL("INSERT INTO servers (name,api,url,userName,password,id) VALUES ('Danbooru', 'danbooru', 'https://danbooru.donmai.us/', '', '', 0);")
+                            for (s in DefaultServerExeq.all)
+                                db.execSQL(s)
                         }
                     })
                     .addMigrations(*Migrations.all).build()
@@ -160,7 +160,7 @@ abstract class Database : RoomDatabase() {
     var nextServerID: Int
         get() {
             if (_nextServerID == null)
-                _nextServerID = prefs.getInt("nextServerID", 1)
+                _nextServerID = prefs.getInt("nextServerID", DefaultServerExeq.all.size)
             return _nextServerID!!
         }
         set(v) {
@@ -281,4 +281,14 @@ private object Migrations {
 
 
     val all = arrayOf(MIGRATION_1_2)
+}
+
+object DefaultServerExeq {
+    val all = ArrayList<String>()
+
+    init {
+        all += "INSERT INTO servers (name,api,url,userName,password,id) VALUES ('Danbooru', 'danbooru', 'https://danbooru.donmai.us/', '', '', 0);"
+        all += "INSERT INTO servers (name,api,url,userName,password,id) VALUES ('Konachan', 'moebooru', 'https://konachan.com/', '', '', 1);"
+        all += "INSERT INTO servers (name,api,url,userName,password,id) VALUES ('Yande.re', 'moebooru', 'https://yande.re/', '', '', 2);"
+    }
 }

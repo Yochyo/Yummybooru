@@ -3,6 +3,7 @@ package de.yochyo.ybooru.database.entities
 import android.arch.persistence.room.*
 import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.passwordToHash
 
 @Entity(tableName = "servers")
@@ -51,6 +52,7 @@ class Server(var name: String, var api: String, var url: String, var userName: S
         database.tags += database.getAllTags(this.id)
         database.subs.clear()
         database.subs += database.getAllSubscriptions(this.id)
+        Manager.resetAll()
     }
 
     fun unselect() {

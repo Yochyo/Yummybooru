@@ -20,6 +20,7 @@ import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Downloader
 import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.api.api.DanbooruApi
+import de.yochyo.ybooru.api.api.MoebooruApi
 import de.yochyo.ybooru.database.Database
 import de.yochyo.ybooru.database.database
 import de.yochyo.ybooru.database.entities.Server
@@ -50,6 +51,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Api.addApi(DanbooruApi(""))
+        Api.addApi(MoebooruApi(""))
         Database.initDatabase(this)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
@@ -228,6 +230,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val server = servers.elementAt(holder.adapterPosition)
                 server.select()
                 notifyDataSetChanged()
+                selectedTags.clear()
                 Toast.makeText(this@MainActivity, "Select Server", Toast.LENGTH_SHORT).show()
             }
             holder.layout.setOnLongClickListener {

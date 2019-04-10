@@ -19,7 +19,7 @@ import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.downloadImage
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.FileManager
-import de.yochyo.ybooru.utils.large
+import de.yochyo.ybooru.utils.original
 import de.yochyo.ybooru.utils.preview
 import de.yochyo.ybooru.utils.toTagString
 import kotlinx.android.synthetic.main.activity_preview.*
@@ -107,7 +107,7 @@ open class PreviewActivity : AppCompatActivity() {
                     dialog.dismiss()
                     Toast.makeText(this@PreviewActivity, "Download All visible pictures", Toast.LENGTH_SHORT).show()
                     for (p in m.dataSet)
-                        downloadImage(p.fileLargeURL, large(p.id), {
+                        downloadImage(p.fileURL, original(p.id), {
                             FileManager.writeFile(p, it)
                             //TODO notification
                         }, false)

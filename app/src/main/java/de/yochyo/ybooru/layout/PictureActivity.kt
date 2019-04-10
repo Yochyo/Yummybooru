@@ -90,7 +90,7 @@ class PictureActivity : AppCompatActivity() {
             R.id.save -> {
                 val p = m.currentPost
                 if (p != null)
-                    downloadImage(p.fileLargeURL, large(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
+                    downloadImage(p.fileURL, original(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
             }
         }
         return super.onOptionsItemSelected(item)
@@ -132,7 +132,7 @@ class PictureActivity : AppCompatActivity() {
                         Fling.Direction.down -> finish()
                         Fling.Direction.up -> {
                             val p = m.dataSet[position]
-                            downloadImage(p.fileLargeURL, large(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
+                            downloadImage(p.fileURL, original(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
                         }
                         else -> return false
                     }
@@ -142,7 +142,7 @@ class PictureActivity : AppCompatActivity() {
             val p = m.dataSet[position]
             downloadImage(p.filePreviewURL, preview(p.id), {
                 imageView.setImageBitmap(it)
-                downloadImage(p.fileLargeURL, large(p.id), { imageView.setImageBitmap(it);imageView.setZoomable(true) }, true)
+                downloadImage(p.fileSampleURL, sample(p.id), { imageView.setImageBitmap(it);imageView.setZoomable(true) }, true)
             }, true)
 
             container.addView(imageView)

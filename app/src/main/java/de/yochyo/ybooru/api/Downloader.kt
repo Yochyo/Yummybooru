@@ -31,7 +31,9 @@ abstract class Downloader(context: Context) {
                             val download = downloads.takeLast()
                             var bitmap = getCachedBitmap(download.id)
                             if (bitmap == null) {
-                                val stream = URL(download.url).openStream()
+                                val conn = URL(download.url).openConnection()
+                                conn.addRequestProperty("User-Agent", "Mozilla/5.00")
+                                val stream = conn.getInputStream()
                                 bitmap = BitmapFactory.decodeStream(stream)
                                 stream.close()
                             }
@@ -101,6 +103,7 @@ abstract class Downloader(context: Context) {
 
     private fun file(id: String) = File("$path$id")
 }
+
 fun Context.downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(bitmap: Bitmap) -> Unit = {}, downloadNow: Boolean = false, cache: Boolean = true) = Downloader.getInstance(this).downloadImage(url, id, doAfter, downloadNow, cache)
 
 

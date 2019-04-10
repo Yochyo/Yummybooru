@@ -10,7 +10,7 @@ interface Post {
     val rating: String
     val fileSize: Int
     val fileURL: String
-    val fileLargeURL: String
+    val fileSampleURL: String
     val filePreviewURL: String
 
     val tagsGeneral: List<Tag>

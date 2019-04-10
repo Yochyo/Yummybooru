@@ -6,8 +6,8 @@ package de.yochyo.ybooru
 //Satt R18 mode, server mit r18 und ohne machen
 
 //TODO onSingleFling geht nur wenn das bild geladen wurde
-//TODO ladebalken beim laden von large image
-//TODO large and original image
+//TODO ladebalken beim laden von sample image
+//TODO sample and original image
 //TODO icon
 //todo speicherpfad
 //TODO bei downloads, einen kürzeren toast
@@ -28,6 +28,8 @@ Alles ausprobieren, um die Server-Url herauszufinden (danbooru hat posts.json, y
 mInflater = LayoutInflater.from(context)
 }
 //TODO verschiedene server -> ordnername
+//TODO add pixiv support
+//TODO add nhentai support?
  */
 //TODO entstehen crashes z.B. beim bildschirm drehen durch eine null referenz bei context?
 //TODO keine Context-referenzen speichern, weil

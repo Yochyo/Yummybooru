@@ -8,8 +8,8 @@ import de.yochyo.ybooru.database.entities.Tag
 import java.security.MessageDigest
 import java.util.*
 
-fun large(id: Int) = "${id}Large"
 fun preview(id: Int) = "${id}Preview"
+fun sample(id: Int) = "${id}Sample"
 fun original(id: Int) = "${id}Original"
 
 fun String.toTagArray(): Array<String> = split(" ").toTypedArray()

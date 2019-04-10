@@ -29,7 +29,7 @@ class MoebooruApi(url: String) : Api(url) {
                 override val rating = json.getString("rating")
                 override val fileSize = json.getInt("file_size")
                 override val fileURL = fileURL
-                override val fileLargeURL = json.getString("sample_url")
+                override val fileSampleURL = json.getString("sample_url")
                 override val filePreviewURL = json.getString("preview_url")
                 override val tagsGeneral = json.getString("tags").split(" ").map { Tag(it, Tag.UNKNOWN) }.filter { it.name != "" }
                 override val tagsCharacter = ArrayList<Tag>()
@@ -37,7 +37,7 @@ class MoebooruApi(url: String) : Api(url) {
                 override val tagsArtist = ArrayList<Tag>()
                 override val tagsMeta = ArrayList<Tag>()
                 override fun toString(): String {
-                    return "[$id] [${width}x$height]\nTags: $tagsGeneral\nTagsCharacters: $tagsCharacter\nTagsCopyright: $tagsCopyright\nTagsArtists: $tagsArtist\nTagsMeta: $tagsMeta\n$fileURL\n$fileLargeURL\n$filePreviewURL"
+                    return "[$id] [${width}x$height]\nTags: $tagsGeneral\nTagsCharacters: $tagsCharacter\nTagsCopyright: $tagsCopyright\nTagsArtists: $tagsArtist\nTagsMeta: $tagsMeta\n$fileURL\n$fileSampleURL\n$filePreviewURL"
                 }
             }
         } catch (e: Exception) {

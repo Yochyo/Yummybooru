@@ -53,7 +53,7 @@ abstract class Api(var url: String) {
         }
 
         suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = database.limit): List<Post> {
-            var array: List<Post> = ArrayList(limit)
+            var array = arrayOfNulls<Post>(limit)
             var url = instance!!.urlGetPosts(page, tags, limit)
 
             if (tags.filter { it != "" }.isNotEmpty()) {
@@ -65,14 +65,14 @@ abstract class Api(var url: String) {
             val json = getJson(url)
             if (json != null) {
                 for (i in 0 until json.length()) {
+                    val pos = i
                     val post = Api.instance!!.getPostFromJson(json.getJSONObject(i))
-                    if (post != null)
-                        (array as ArrayList<Post>) += post
+                    array[pos] = post
                 }
-                array = array.filter { it.extension == "png" || it.extension == "jpg" || it.extension == "jpeg" }
-                if (database.r18) return array.filter { it.rating == "s" }
+                val filter = array.filter { (it != null && (it.extension == "png" || it.extension == "jpg")) } as List<Post>
+                if (database.r18) return filter.filter { it.rating == "s" }
             }
-            return array
+            return array.filter { it != null } as List<Post>
         }
 
         suspend fun newestID(): Int {

@@ -57,7 +57,7 @@ class PictureActivity : AppCompatActivity() {
             currentItem = m.position
             val p = m.currentPost
             if (p != null) {
-                currentTags.apply { clear();addAll(p.tagsCopyright);addAll(p.tagsArtist); addAll(p.tagsCharacter); addAll(p.tagsGeneral); addAll(p.tagsMeta) }
+                currentTags = p.tags as ArrayList<Tag>
                 recycleView.adapter?.notifyDataSetChanged()
             }
 
@@ -69,7 +69,7 @@ class PictureActivity : AppCompatActivity() {
                         val post = m.currentPost
                         if (post != null) {
                             supportActionBar?.title = post.id.toString()
-                            currentTags.apply { clear();addAll(post.tagsCopyright);addAll(post.tagsArtist); addAll(post.tagsCharacter); addAll(post.tagsGeneral); addAll(post.tagsMeta) }
+                            currentTags = post.tags as ArrayList<Tag>
                             recycleView.adapter?.notifyDataSetChanged()
                         }
                     }

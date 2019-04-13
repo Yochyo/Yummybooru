@@ -31,13 +31,9 @@ class MoebooruApi(url: String) : Api(url) {
                 override val fileURL = fileURL
                 override val fileSampleURL = json.getString("sample_url")
                 override val filePreviewURL = json.getString("preview_url")
-                override val tagsGeneral = json.getString("tags").split(" ").map { Tag(it, Tag.UNKNOWN) }.filter { it.name != "" }
-                override val tagsCharacter = ArrayList<Tag>()
-                override val tagsCopyright = ArrayList<Tag>()
-                override val tagsArtist = ArrayList<Tag>()
-                override val tagsMeta = ArrayList<Tag>()
+                override val tags = json.getString("tags").split(" ").map { Tag(it, Tag.UNKNOWN) }.filter { it.name != "" }
                 override fun toString(): String {
-                    return "[$id] [${width}x$height]\nTags: $tagsGeneral\nTagsCharacters: $tagsCharacter\nTagsCopyright: $tagsCopyright\nTagsArtists: $tagsArtist\nTagsMeta: $tagsMeta\n$fileURL\n$fileSampleURL\n$filePreviewURL"
+                    return "[$id] [${width}x$height]\nTags: $tags \n$fileURL\n$fileSampleURL\n$filePreviewURL"
                 }
             }
         } catch (e: Exception) {

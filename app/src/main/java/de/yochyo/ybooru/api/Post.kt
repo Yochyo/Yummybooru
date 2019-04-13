@@ -13,9 +13,5 @@ interface Post {
     val fileSampleURL: String
     val filePreviewURL: String
 
-    val tagsGeneral: List<Tag>
-    val tagsCharacter: List<Tag>
-    val tagsCopyright: List<Tag>
-    val tagsArtist: List<Tag>
-    val tagsMeta: List<Tag>
+    val tags: List<Tag>
 }

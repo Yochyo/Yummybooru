@@ -235,7 +235,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             holder.layout.setOnLongClickListener {
                 val server = servers.elementAt(holder.adapterPosition)
-                AddServerDialog { database.changeServer(it) }.apply {
+                AddServerDialog { database.changeServer(it);it.select() }.apply {
                     serverID = server.id
                     nameText = server.name
                     apiText = server.api

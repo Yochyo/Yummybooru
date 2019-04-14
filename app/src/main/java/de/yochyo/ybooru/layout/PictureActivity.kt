@@ -57,8 +57,17 @@ class PictureActivity : AppCompatActivity() {
             currentItem = m.position
             val p = m.currentPost
             if (p != null) {
-                currentTags = p.tags as ArrayList<Tag>
-                recycleView.adapter?.notifyDataSetChanged()
+                val pos = m.position
+                GlobalScope.launch {
+                    val tags = p.tags.value as ArrayList<Tag>
+                    launch(Dispatchers.Main){
+                        if(pos == m.position){
+                            currentTags = tags
+                            recycleView.adapter?.notifyDataSetChanged()
+                        }
+                    }
+                }
+
             }
 
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
@@ -69,8 +78,15 @@ class PictureActivity : AppCompatActivity() {
                         val post = m.currentPost
                         if (post != null) {
                             supportActionBar?.title = post.id.toString()
-                            currentTags = post.tags as ArrayList<Tag>
-                            recycleView.adapter?.notifyDataSetChanged()
+                            GlobalScope.launch {
+                                val tags = post.tags.value as ArrayList<Tag>
+                                launch(Dispatchers.Main){
+                                    if(position == m.position){
+                                        currentTags = tags
+                                        recycleView.adapter?.notifyDataSetChanged()
+                                    }
+                                }
+                            }
                         }
                     }
                 }

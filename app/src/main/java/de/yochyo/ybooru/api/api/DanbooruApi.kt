@@ -43,7 +43,7 @@ class DanbooruApi(url: String) : Api(url) {
                 override val fileURL = json.getString("file_url")
                 override val fileSampleURL = json.getString("large_file_url")
                 override val filePreviewURL = json.getString("preview_file_url")
-                override val tags = tags
+                override val tags = lazy{tags}
                 override fun toString(): String {
                     return "[$id] [${width}x$height]\nTags: $tags \n$fileURL\n$fileSampleURL\n$filePreviewURL"
                 }

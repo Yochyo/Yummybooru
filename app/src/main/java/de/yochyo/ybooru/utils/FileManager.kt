@@ -31,7 +31,7 @@ object FileManager {
     }
 
     private fun postToFilename(p: Post): String {
-        val s = "${Server.currentServer.url} ${p.id} ${p.tags.joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '<' && it != '>' }
+        val s = "${Server.currentServer.url} ${p.id} ${p.tags.value.joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '<' && it != '>' }
         var last = s.lastIndex
         if (last > 123) last = 123
         return "${s.substring(0, last)}.png"

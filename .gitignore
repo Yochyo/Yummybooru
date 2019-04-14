@@ -1,11 +1,14 @@
+/.gradle/
+/.idea/
+build/
+gradle/
+in app/
 *.iml
-.gradle
-/local.properties
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-
+local.properties
+gradlew.bat
+gradlew
+gradle.properties
+/build/
+libs/
+proguard-rules.pro
+TODO.kt

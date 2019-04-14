@@ -20,7 +20,7 @@ class DanbooruApi(url: String) : Api(url) {
 
     override fun urlGetNewest(): String = "${url}posts.json?limit=1&page=1"
 
-    override fun getPostFromJson(json: JSONObject): Post? {
+    override suspend fun getPostFromJson(json: JSONObject): Post? {
         try {
             val tagsGeneral = json.getString("tag_string_general").split(" ").map { Tag(it, Tag.GENERAL) }.filter { it.name != "" }
             val tagsCharacter = json.getString("tag_string_character").split(" ").map { Tag(it, Tag.CHARACTER) }.filter { it.name != "" }
@@ -54,7 +54,7 @@ class DanbooruApi(url: String) : Api(url) {
         }
     }
 
-    override fun getTagFromJson(json: JSONObject): Tag? {
+    override suspend fun getTagFromJson(json: JSONObject): Tag? {
         return try {
             var type = json.getInt("category")
             if (type !in 0..5)

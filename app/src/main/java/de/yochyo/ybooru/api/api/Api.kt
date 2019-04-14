@@ -11,6 +11,13 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.collections.ArrayList
+import kotlin.collections.List
+import kotlin.collections.filter
+import kotlin.collections.find
+import kotlin.collections.isNotEmpty
+import kotlin.collections.plusAssign
+import kotlin.collections.sortBy
 
 abstract class Api(var url: String) {
 
@@ -63,12 +70,18 @@ abstract class Api(var url: String) {
                 url = url.substring(0, url.length - 1)
             }
             val json = getJson(url)
+
             if (json != null) {
-                for (i in 0 until json.length()) {
-                    val pos = i
-                    val post = Api.instance!!.getPostFromJson(json.getJSONObject(i))
-                    array[pos] = post
+                val root = GlobalScope.launch {
+                    for (i in 0 until json.length()) {
+                        val pos = i
+                        launch {
+                            val post = Api.instance!!.getPostFromJson(json.getJSONObject(i))
+                            array[pos] = post
+                        }
+                    }
                 }
+                root.join()
                 val filter = array.filter { (it != null && (it.extension == "png" || it.extension == "jpg")) } as List<Post>
                 if (database.r18) return filter.filter { it.rating == "s" }
             }
@@ -115,12 +128,29 @@ abstract class Api(var url: String) {
         }
     }
 
+    protected fun getURLSourceLines(url: String): ArrayList<String> {
+        val urlObject = URL(url)
+        val urlConnection = urlObject.openConnection() as HttpURLConnection
+        urlConnection.addRequestProperty("User-Agent", "Mozilla/5.00")
+        val inputStream = urlConnection.inputStream
+        BufferedReader(InputStreamReader(inputStream, "UTF-8")).use { bufferedReader ->
+            var inputLine: String? = bufferedReader.readLine()
+            val array = ArrayList<String>()
+            while (inputLine != null) {
+                array += inputLine
+                inputLine = bufferedReader.readLine()
+            }
+            inputStream.close()
+            return array
+        }
+    }
+
     abstract val name: String
     abstract fun urlGetTags(beginSequence: String): String
     abstract fun urlGetTag(name: String): String
     abstract fun urlGetPosts(page: Int, tags: Array<String>, limit: Int): String
     abstract fun urlGetNewest(): String
 
-    abstract fun getTagFromJson(json: JSONObject): Tag?
-    abstract fun getPostFromJson(json: JSONObject): Post?
+    abstract suspend fun getTagFromJson(json: JSONObject): Tag?
+    abstract suspend fun getPostFromJson(json: JSONObject): Post?
 }

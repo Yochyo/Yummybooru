@@ -4,7 +4,7 @@ package de.yochyo.ybooru
 //TODO md5 des bildes benutzen
 //TODO namen der xml elemente optimieren
 //Satt R18 mode, server mit r18 und ohne machen
-
+//TODO Bug cache id muss die server id enthalten
 //TODO onSingleFling geht nur wenn das bild geladen wurde
 //TODO ladebalken beim laden von sample image
 //TODO sample and original image
@@ -38,3 +38,5 @@ Warning: Never pass context into ViewModel instances. Do not store Activity, Fra
 For example, an Activity can be destroyed and created many times during the lifecycle of a ViewModel as the device is rotated. If you store a reference to the Activity in the ViewModel, you end Up with references that point to the destroyed Activity. This is a memory leak.
 If you need the application context, use AndroidViewModel, as shown in this codelab.
  */
+
+//TODO bei startup/closeup buggt es manchmal

@@ -98,6 +98,7 @@ abstract class Api(var url: String) {
 
         @Suppress("BlockingMethodInNonBlockingContext")
         private suspend fun getJson(urlToRead: String): JSONArray? {
+            println("Download JSON: $urlToRead")
             var array: JSONArray? = null
             try {
                 val job = GlobalScope.launch {
@@ -129,6 +130,7 @@ abstract class Api(var url: String) {
     }
 
     protected fun getURLSourceLines(url: String): ArrayList<String> {
+        println("get html: $url")
         val urlObject = URL(url)
         val urlConnection = urlObject.openConnection() as HttpURLConnection
         urlConnection.addRequestProperty("User-Agent", "Mozilla/5.00")

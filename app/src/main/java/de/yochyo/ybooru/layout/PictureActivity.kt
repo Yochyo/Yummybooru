@@ -78,6 +78,8 @@ class PictureActivity : AppCompatActivity() {
                         val post = m.currentPost
                         if (post != null) {
                             supportActionBar?.title = post.id.toString()
+                            currentTags.clear()
+                            recycleView.adapter?.notifyDataSetChanged()
                             GlobalScope.launch {
                                 val tags = post.tags.value as ArrayList<Tag>
                                 launch(Dispatchers.Main){

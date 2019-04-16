@@ -2,7 +2,7 @@ package de.yochyo.ybooru.database.entities
 
 import android.arch.persistence.room.*
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.db
 import java.util.*
 
 @Entity(tableName = "tags", primaryKeys = ["name", "serverID"])
@@ -32,13 +32,13 @@ class Tag(val name: String, val type: Int, var isFavorite: Boolean = false, val 
     override fun toString(): String = name
 
     override fun compareTo(other: Tag): Int {
-        if (database.sortTagsByFavorite) {
+        if (db.sortTagsByFavorite) {
             if (isFavorite && !other.isFavorite)
                 return -1
             if (!isFavorite && other.isFavorite)
                 return 1
         }
-        if (database.sortTagsByAlphabet) return name.compareTo(other.name)
+        if (db.sortTagsByAlphabet) return name.compareTo(other.name)
         return creation.compareTo(other.creation)
     }
 }

@@ -9,7 +9,7 @@ import android.preference.PreferenceFragment
 import android.preference.PreferenceManager
 import android.view.MenuItem
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.manager.Manager
 
 class SettingsActivity : AppCompatPreferenceActivity() {
@@ -23,7 +23,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
 
     companion object {
         private val sBindPreferenceSummaryToValueListener = Preference.OnPreferenceChangeListener { preference, value ->
-            val database = database
+            val database = db
             when (preference.key) {
                 "limit" -> {
                     database.limit = value.toString().toInt()

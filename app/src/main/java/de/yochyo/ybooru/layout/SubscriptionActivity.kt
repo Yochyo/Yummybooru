@@ -14,7 +14,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.api.Api
-import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.database.entities.Subscription
 import de.yochyo.ybooru.database.entities.Tag
 import de.yochyo.ybooru.layout.alertdialogs.AddTagDialog
@@ -42,7 +42,7 @@ class SubscriptionActivity : AppCompatActivity() {
         val recyclerView = subs_recycler
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
-        database.subs.observe(this, Observer<TreeSet<Subscription>> { t -> if (t != null) adapter.updateSubs(t) })
+        db.subs.observe(this, Observer<TreeSet<Subscription>> { t -> if (t != null) adapter.updateSubs(t) })
         subs_swipe_refresh_layout.setOnRefreshListener {
             subs_swipe_refresh_layout.isRefreshing = false
             root.cancelChildren()
@@ -62,7 +62,7 @@ class SubscriptionActivity : AppCompatActivity() {
         if (clickedSub != null) {
             val pos = clickedSub!!
             clickedSub = null
-            val sub = database.subs[pos]
+            val sub = db.subs[pos]
             if (Manager.getOrInit(sub.toString()).dataSet.isNotEmpty()) {
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle("Save").setMessage("Update last id?")
@@ -76,7 +76,7 @@ class SubscriptionActivity : AppCompatActivity() {
                             sub.current = newestIdWhenClicked!!
                             newestIdWhenClicked = null
                         }
-                        database.changeSubscription(sub)
+                        db.changeSubscription(sub)
                     }
                 }
                 builder.create().show()
@@ -94,13 +94,13 @@ class SubscriptionActivity : AppCompatActivity() {
             android.R.id.home -> finish()
             R.id.add_subscription -> {
                 AddTagDialog {
-                    if (database.getSubscription(it.text.toString()) == null) {
+                    if (db.getSubscription(it.text.toString()) == null) {
                         GlobalScope.launch {
                             val tag = Api.getTag(it.text.toString())
                             val newest = Api.newestID()
                             launch(Dispatchers.Main) {
                                 val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN)
-                                database.addSubscription(Subscription(newTag.name, newTag.type, newest))
+                                db.addSubscription(Subscription(newTag.name, newTag.type, newest))
                             }
                         }
                     }
@@ -133,7 +133,7 @@ class SubscriptionActivity : AppCompatActivity() {
                 builder.setNegativeButton("No") { _, _ -> }
                 builder.setPositiveButton("Yes") { _, _ ->
                     val sub = subs.elementAt(adapterPosition)
-                    database.deleteSubscription(sub.name)
+                    db.deleteSubscription(sub.name)
                 }
                 builder.create().show()
                 true

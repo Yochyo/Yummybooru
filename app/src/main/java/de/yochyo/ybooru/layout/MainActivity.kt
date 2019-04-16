@@ -22,7 +22,7 @@ import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.api.api.DanbooruApi
 import de.yochyo.ybooru.api.api.MoebooruApi
 import de.yochyo.ybooru.database.Database
-import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.database.entities.Server
 import de.yochyo.ybooru.database.entities.Subscription
 import de.yochyo.ybooru.database.entities.Tag
@@ -73,19 +73,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         serverRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
         serverAdapter = ServerAdapter().apply { serverRecyclerView.adapter = this }
 
-        database.tags.observe(this, Observer<TreeSet<Tag>> { t -> if (t != null) tagAdapter.updateTags(t) })
-        database.servers.observe(this, Observer<TreeSet<Server>> { s -> if (s != null) serverAdapter.updateServers(s) })
+        db.tags.observe(this, Observer<TreeSet<Tag>> { t -> if (t != null) tagAdapter.updateTags(t) })
+        db.servers.observe(this, Observer<TreeSet<Server>> { s -> if (s != null) serverAdapter.updateServers(s) })
     }
 
     private fun initAddTagButton(b: Button) {
         b.setOnClickListener {
             AddTagDialog {
-                if (database.getTag(it.text.toString()) == null) {
+                if (db.getTag(it.text.toString()) == null) {
                     GlobalScope.launch {
                         val tag = Api.getTag(it.text.toString())
                         launch(Dispatchers.Main) {
                             val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN)
-                            database.addTag(newTag)
+                            db.addTag(newTag)
                         }
                     }
                 }
@@ -121,11 +121,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_r18 -> {
-                database.r18 = !database.r18
+                db.r18 = !db.r18
                 setMenuR18Text()
                 Manager.resetAll()
             }
-            R.id.action_add_server -> AddServerDialog { database.addServer(it); Toast.makeText(this, "Add Server", Toast.LENGTH_SHORT).show() }.apply { serverID = database.nextServerID++ }.build(this)
+            R.id.action_add_server -> AddServerDialog { db.addServer(it); Toast.makeText(this, "Add Server", Toast.LENGTH_SHORT).show() }.apply { serverID = db.nextServerID++ }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
         }
         return super.onOptionsItemSelected(item)
@@ -143,7 +143,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun setMenuR18Text() {
-        if (database.r18) menu.findItem(R.id.action_r18).title = getString(R.string.enter_r18)
+        if (db.r18) menu.findItem(R.id.action_r18).title = getString(R.string.enter_r18)
         else menu.findItem(R.id.action_r18).title = getString(R.string.leave_r18)
     }
 
@@ -181,19 +181,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             toolbar.setOnMenuItemClickListener {
                 val tag = tags.elementAt(adapterPosition)
                 when (it.itemId) {
-                    R.id.main_search_favorite_tag -> database.changeTag(tag.apply { isFavorite = !isFavorite })
+                    R.id.main_search_favorite_tag -> db.changeTag(tag.apply { isFavorite = !isFavorite })
                     R.id.main_search_subscribe_tag -> {
-                        if (database.getSubscription(tag.name) == null) {
-                            GlobalScope.launch { val currentID = Api.newestID();launch(Dispatchers.Main) { database.addSubscription(Subscription(tag.name, tag.type, currentID)) } }
+                        if (db.getSubscription(tag.name) == null) {
+                            GlobalScope.launch { val currentID = Api.newestID();launch(Dispatchers.Main) { db.addSubscription(Subscription(tag.name, tag.type, currentID)) } }
                             Toast.makeText(this@MainActivity, "Subscribed ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
-                            database.deleteSubscription(tag.name)
+                            db.deleteSubscription(tag.name)
                             Toast.makeText(this@MainActivity, "Unsubscribed ${tag.name}", Toast.LENGTH_SHORT).show()
                         }
                         notifyItemChanged(adapterPosition)
                     }
                     R.id.main_search_delete_tag -> {
-                        database.deleteTag(tag.name)
+                        db.deleteTag(tag.name)
                         selectedTags.remove(tag.name)
                     }
                 }
@@ -235,7 +235,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             holder.layout.setOnLongClickListener {
                 val server = servers.elementAt(holder.adapterPosition)
-                AddServerDialog { database.changeServer(it);it.select() }.apply {
+                AddServerDialog { db.changeServer(it);it.select() }.apply {
                     serverID = server.id
                     nameText = server.name
                     apiText = server.api

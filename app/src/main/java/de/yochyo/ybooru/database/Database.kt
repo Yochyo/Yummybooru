@@ -23,7 +23,7 @@ abstract class Database : RoomDatabase() {
         var instance: Database? = null
         fun initDatabase(context: Context): Database {
             if (instance == null) instance = Room.databaseBuilder(context.applicationContext,
-                    Database::class.java, "database")
+                    Database::class.java, "db")
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
@@ -269,7 +269,7 @@ abstract class Database : RoomDatabase() {
     abstract val serverDao: ServerDao
 }
 
-val database: Database
+val db: Database
     get() = Database.instance!!
 
 

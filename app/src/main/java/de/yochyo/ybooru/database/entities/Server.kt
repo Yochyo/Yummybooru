@@ -2,7 +2,7 @@ package de.yochyo.ybooru.database.entities
 
 import android.arch.persistence.room.*
 import de.yochyo.ybooru.api.api.Api
-import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.passwordToHash
 
@@ -12,8 +12,8 @@ class Server(var name: String, var api: String, var url: String, var userName: S
         private var _currentServer: Server? = null
         val currentServer: Server
             get() {
-                if (_currentServer == null || _currentServer!!.id != database.currentServerID)
-                    _currentServer = database.getServer(database.currentServerID)
+                if (_currentServer == null || _currentServer!!.id != db.currentServerID)
+                    _currentServer = db.getServer(db.currentServerID)
                 return _currentServer!!
             }
         val currentID: Int
@@ -45,26 +45,26 @@ class Server(var name: String, var api: String, var url: String, var userName: S
         get() = Server.currentServer.id == id
 
     fun select() {
-        database.currentServerID = this.id
+        db.currentServerID = this.id
         Server._currentServer = this
         val api = Api.initApi(this.api, this.url)
-        database.tags.clear()
-        database.tags += database.getAllTags(this.id)
-        database.subs.clear()
-        database.subs += database.getAllSubscriptions(this.id)
+        db.tags.clear()
+        db.tags += db.getAllTags(this.id)
+        db.subs.clear()
+        db.subs += db.getAllSubscriptions(this.id)
         Manager.resetAll()
     }
 
     fun unselect() {
-        database.currentServerID = -1
+        db.currentServerID = -1
         Server._currentServer = null
         Api.instance = null
-        database.tags.clear()
-        database.subs.clear()
+        db.tags.clear()
+        db.subs.clear()
     }
 
     fun deleteServer() {
-        database.deleteServer(id)
+        db.deleteServer(id)
     }
 
     override fun toString() = name

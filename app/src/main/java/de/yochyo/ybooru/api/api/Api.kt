@@ -1,7 +1,7 @@
 package de.yochyo.ybooru.api.api
 
 import de.yochyo.ybooru.api.Post
-import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.database.entities.Tag
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -59,7 +59,7 @@ abstract class Api(var url: String) {
             return null
         }
 
-        suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = database.limit): List<Post> {
+        suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = db.limit): List<Post> {
             var array = arrayOfNulls<Post>(limit)
             var url = instance!!.urlGetPosts(page, tags, limit)
 
@@ -83,7 +83,7 @@ abstract class Api(var url: String) {
                 }
                 root.join()
                 val filter = array.filter { (it != null && (it.extension == "png" || it.extension == "jpg")) } as List<Post>
-                if (database.r18) return filter.filter { it.rating == "s" }
+                if (db.r18) return filter.filter { it.rating == "s" }
             }
             return array.filter { it != null } as List<Post>
         }

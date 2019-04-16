@@ -18,7 +18,7 @@ import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.api.downloadImage
-import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.database.entities.Subscription
 import de.yochyo.ybooru.database.entities.Tag
 import de.yochyo.ybooru.layout.res.Menus
@@ -181,21 +181,21 @@ class PictureActivity : AppCompatActivity() {
                 val tag = currentTags[adapterPosition]
                 when (it.itemId) {
                     R.id.picture_info_item_add_history -> {
-                        database.addTag(Tag(tag.name, tag.type))
+                        db.addTag(Tag(tag.name, tag.type))
                         Toast.makeText(this@PictureActivity, "Add tag ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
                     R.id.picture_info_item_add_favorite -> {
-                        if (database.getTag(tag.name) == null) database.addTag(Tag(tag.name, tag.type, true))
-                        else database.changeTag(tag.apply { isFavorite = true })
+                        if (db.getTag(tag.name) == null) db.addTag(Tag(tag.name, tag.type, true))
+                        else db.changeTag(tag.apply { isFavorite = true })
                         Toast.makeText(this@PictureActivity, "Add favorite ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
                     R.id.picture_info_item_subscribe -> {
-                        if (database.getSubscription(tag.name) == null) {
-                            database.addTag(Tag(tag.name, tag.type, tag.isFavorite))
-                            GlobalScope.launch { val currentID = Api.newestID();database.addSubscription(Subscription(tag.name, tag.type, currentID)) }
+                        if (db.getSubscription(tag.name) == null) {
+                            db.addTag(Tag(tag.name, tag.type, tag.isFavorite))
+                            GlobalScope.launch { val currentID = Api.newestID();db.addSubscription(Subscription(tag.name, tag.type, currentID)) }
                             Toast.makeText(this@PictureActivity, "Add subscription${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
-                            database.deleteSubscription(tag.name)
+                            db.deleteSubscription(tag.name)
                             Toast.makeText(this@PictureActivity, "Unsubscribed ${tag.name}", Toast.LENGTH_SHORT).show()
                         }
                     }

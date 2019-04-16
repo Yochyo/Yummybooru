@@ -2,7 +2,7 @@ package de.yochyo.ybooru.layout.res
 
 import android.view.Menu
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.database.entities.Tag
 
 object Menus {
@@ -12,7 +12,7 @@ object Menus {
             else title = "Favorite"
         }
         with(menu.findItem(R.id.main_search_subscribe_tag)) {
-            if (database.getSubscription(tag.name) == null) title = "Subscribe"
+            if (db.getSubscription(tag.name) == null) title = "Subscribe"
             else title = "Unsubscribe"
         }
         with(menu.findItem(R.id.main_search_delete_tag)) {
@@ -29,7 +29,7 @@ object Menus {
             else title = "Favorite"
         }
         with(menu.findItem(R.id.picture_info_item_subscribe)) {
-            if (database.getSubscription(tag.name) == null) title = "Subscribe"
+            if (db.getSubscription(tag.name) == null) title = "Subscribe"
             else title = "Unsubscribe"
         }
     }

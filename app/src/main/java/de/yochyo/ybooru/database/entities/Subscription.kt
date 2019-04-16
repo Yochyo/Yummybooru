@@ -2,7 +2,7 @@ package de.yochyo.ybooru.database.entities
 
 import android.arch.persistence.room.*
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.database.database
+import de.yochyo.ybooru.database.db
 import java.util.*
 
 @Entity(tableName = "subs", primaryKeys = ["name", "serverID"])
@@ -22,13 +22,13 @@ class Subscription(val name: String, val type: Int, var last: Int, var current: 
     override fun toString() = "id:>$current $name"
 
     override fun compareTo(other: Subscription): Int {
-        if (database.sortSubsByFavorite) {
+        if (db.sortSubsByFavorite) {
             if (isFavorite && !other.isFavorite)
                 return -1
             if (!isFavorite && other.isFavorite)
                 return 1
         }
-        if (database.sortSubsByAlphabet) return name.compareTo(other.name)
+        if (db.sortSubsByAlphabet) return name.compareTo(other.name)
         return creation.compareTo(other.creation)
     }
 }

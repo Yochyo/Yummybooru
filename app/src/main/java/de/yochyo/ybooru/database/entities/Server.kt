@@ -7,7 +7,7 @@ import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.passwordToHash
 
 @Entity(tableName = "servers")
-class Server(var name: String, var api: String, var url: String, var userName: String = "", var password: String = "", @PrimaryKey(autoGenerate = true) val id: Int = -1) : Comparable<Server> {
+class Server(var name: String, var api: String, var url: String, var userName: String = "", var password: String = "", var enableR18Filter: Boolean = false, @PrimaryKey(autoGenerate = true) val id: Int = -1) : Comparable<Server> {
     companion object {
         private var _currentServer: Server? = null
         val currentServer: Server

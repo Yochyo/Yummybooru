@@ -2,6 +2,7 @@ package de.yochyo.ybooru.api.api
 
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.database.db
+import de.yochyo.ybooru.database.entities.Server
 import de.yochyo.ybooru.database.entities.Tag
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -83,7 +84,7 @@ abstract class Api(var url: String) {
                 }
                 root.join()
                 val filter = array.filter { (it != null && (it.extension == "png" || it.extension == "jpg")) } as List<Post>
-                if (db.r18) return filter.filter { it.rating == "s" }
+                if (Server.currentServer.enableR18Filter) return filter.filter { it.rating == "s" }
             }
             return array.filter { it != null } as List<Post>
         }

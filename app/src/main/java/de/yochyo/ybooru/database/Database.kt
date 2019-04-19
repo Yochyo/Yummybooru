@@ -186,21 +186,6 @@ abstract class Database : RoomDatabase() {
             }
         }
 
-    private var _r18: Boolean? = null
-    var r18: Boolean
-        get() {
-            if (_r18 == null) _r18 = prefs.getBoolean("r18", false)
-            return _r18!!
-        }
-        set(value) {
-            _r18 = value
-            with(prefs.edit()) {
-                putBoolean("r18", value)
-                apply()
-            }
-        }
-
-
     private var _currentServerID: Int? = null
     var currentServerID: Int
         get() {
@@ -287,8 +272,8 @@ object DefaultServerExeq {
     val all = ArrayList<String>()
 
     init {
-        all += "INSERT INTO servers (name,api,url,userName,password,id) VALUES ('Danbooru', 'danbooru', 'https://danbooru.donmai.us/', '', '', 0);"
-        all += "INSERT INTO servers (name,api,url,userName,password,id) VALUES ('Konachan', 'moebooru', 'https://konachan.com/', '', '', 1);"
-        all += "INSERT INTO servers (name,api,url,userName,password,id) VALUES ('Yande.re', 'moebooru', 'https://yande.re/', '', '', 2);"
+        all += "INSERT INTO servers (name,api,url,userName,password,enableR18Filter,id) VALUES ('Danbooru', 'danbooru', 'https://danbooru.donmai.us/', '', '', 1, 0);"
+        all += "INSERT INTO servers (name,api,url,userName,password,enableR18Filter,id) VALUES ('Konachan', 'moebooru', 'https://konachan.com/', '', '', 1, 1);"
+        all += "INSERT INTO servers (name,api,url,userName,password,enableR18Filter,id) VALUES ('Yande.re', 'moebooru', 'https://yande.re/', '', '', 1, 2);"
     }
 }

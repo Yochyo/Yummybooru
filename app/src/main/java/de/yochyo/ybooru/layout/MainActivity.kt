@@ -111,20 +111,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        this.menu = menu
-        menuInflater.inflate(R.menu.main_menu, menu)
-        setMenuR18Text()
-        return true
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_r18 -> {
-                db.r18 = !db.r18
-                setMenuR18Text()
-                Manager.resetAll()
-            }
             R.id.action_add_server -> AddServerDialog { db.addServer(it); Toast.makeText(this, "Add Server", Toast.LENGTH_SHORT).show() }.apply { serverID = db.nextServerID++ }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
         }
@@ -140,11 +128,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
         drawer_layout.closeDrawer(GravityCompat.START)
         return super.onOptionsItemSelected(item)
-    }
-
-    private fun setMenuR18Text() {
-        if (db.r18) menu.findItem(R.id.action_r18).title = getString(R.string.enter_r18)
-        else menu.findItem(R.id.action_r18).title = getString(R.string.leave_r18)
     }
 
     override fun onBackPressed() {
@@ -243,6 +226,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     userText = server.userName
                     passwordText = server.password
                     message = "Edit Server"
+                    enableR18 = server.enableR18Filter
                 }.build(this@MainActivity)
                 true
             }

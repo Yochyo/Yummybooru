@@ -68,10 +68,8 @@ open class PreviewActivity : AppCompatActivity() {
             launch(Dispatchers.Main) {
                 previewAdapter.notifyItemRangeInserted(if (i > 0) i - 1 else 0, posts.size)
                 isLoadingView = false
-            }
-            launch {
-                m.downloadPage(m.currentPage + 1)
-            }
+            }.join()
+            launch { m.downloadPage(m.currentPage + 1) }
         }
     }
 
@@ -88,6 +86,7 @@ open class PreviewActivity : AppCompatActivity() {
             }
         })
     }
+
     fun reloadView() {
         m.reset()
         previewAdapter.notifyDataSetChanged()
@@ -126,6 +125,7 @@ open class PreviewActivity : AppCompatActivity() {
         }
         return super.onOptionsItemSelected(item)
     }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.preview_menu, menu)
         return true

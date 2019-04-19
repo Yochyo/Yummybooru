@@ -4,13 +4,14 @@ import android.graphics.Paint
 import android.os.Build
 import android.view.MotionEvent
 import android.widget.TextView
+import de.yochyo.ybooru.database.entities.Server
 import de.yochyo.ybooru.database.entities.Tag
 import java.security.MessageDigest
 import java.util.*
 
-fun preview(id: Int) = "${id}Preview"
-fun sample(id: Int) = "${id}Sample"
-fun original(id: Int) = "${id}Original"
+fun preview(id: Int) = "${id}Preview${Server.currentID}"
+fun sample(id: Int) = "${id}Sample${Server.currentID}"
+fun original(id: Int) = "${id}Original${Server.currentID}"
 
 fun String.toTagArray(): Array<String> = split(" ").toTypedArray()
 fun Array<String>.toTagString() = joinToString(" ")

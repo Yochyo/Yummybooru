@@ -1,13 +1,16 @@
 package de.yochyo.ybooru.utils
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.os.Environment
 import de.yochyo.ybooru.api.Post
+import de.yochyo.ybooru.api.downloadImage
+import de.yochyo.ybooru.api.downloader
 import de.yochyo.ybooru.database.entities.Server
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-object FileManager {
+object FileUtils {
     private val saveDirectory: String = "${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_PICTURES}/yBooru"
     private val files = ArrayList<Int>()
 
@@ -22,12 +25,26 @@ object FileManager {
                 }
     }
 
-    fun writeFile(post: Post, bitmap: Bitmap) {
+    suspend fun writeOrDownloadFile(context: Context, post: Post, id: String, url: String) {
+        val f = context.downloader.getCachedFile(id)
+        if (f != null)
+            writeFile(post, f)
+        else
+            context.downloadImage(url, id, { FileUtils.writeFile(post, it) }, cache = false)
+    }
+
+    suspend fun writeFile(post: Post, bitmap: Bitmap) {
         val stream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
         val file = File("$saveDirectory/${postToFilename(post)}")
         file.createNewFile()
         file.writeBytes(stream.toByteArray())
+    }
+
+    suspend fun writeFile(post: Post, bitmap: File) {
+        val file = File("$saveDirectory/${postToFilename(post)}")
+        file.createNewFile()
+        file.writeBytes(file.readBytes())
     }
 
     private fun postToFilename(p: Post): String {

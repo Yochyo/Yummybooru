@@ -16,6 +16,7 @@ import android.widget.Toolbar
 import com.github.chrisbanes.photoview.OnSingleFlingListener
 import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.ybooru.R
+import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.api.downloadImage
 import de.yochyo.ybooru.database.db
@@ -60,8 +61,8 @@ class PictureActivity : AppCompatActivity() {
                 val pos = m.position
                 GlobalScope.launch {
                     val tags = p.tags.value as ArrayList<Tag>
-                    launch(Dispatchers.Main){
-                        if(pos == m.position){
+                    launch(Dispatchers.Main) {
+                        if (pos == m.position) {
                             currentTags = tags
                             recycleView.adapter?.notifyDataSetChanged()
                         }
@@ -82,8 +83,8 @@ class PictureActivity : AppCompatActivity() {
                             recycleView.adapter?.notifyDataSetChanged()
                             GlobalScope.launch {
                                 val tags = post.tags.value as ArrayList<Tag>
-                                launch(Dispatchers.Main){
-                                    if(position == m.position){
+                                launch(Dispatchers.Main) {
+                                    if (position == m.position) {
                                         currentTags = tags
                                         recycleView.adapter?.notifyDataSetChanged()
                                     }
@@ -106,9 +107,7 @@ class PictureActivity : AppCompatActivity() {
             android.R.id.home -> finish()
             R.id.show_info -> drawer_picture.openDrawer(GravityCompat.END)
             R.id.save -> {
-                val p = m.currentPost
-                if (p != null)
-                    downloadImage(p.fileURL, original(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
+                val p = m.currentPost?.apply { downloadOriginalPicture(this) }
             }
         }
         return super.onOptionsItemSelected(item)
@@ -134,6 +133,16 @@ class PictureActivity : AppCompatActivity() {
             m.downloadPage(page)
         }
     }
+    private fun downloadOriginalPicture(p: Post){
+        GlobalScope.launch {
+            launch(Dispatchers.IO){
+                FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL)
+            }.join()
+            launch(Dispatchers.Main){
+                Toast.makeText(this@PictureActivity, "Downloaded ${p.id}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     private inner class PageAdapter : PagerAdapter() {
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
@@ -150,7 +159,7 @@ class PictureActivity : AppCompatActivity() {
                         Fling.Direction.down -> finish()
                         Fling.Direction.up -> {
                             val p = m.dataSet[position]
-                            downloadImage(p.fileURL, original(p.id), { launch(Dispatchers.IO) { FileManager.writeFile(p, it); GlobalScope.launch(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Download finished", Toast.LENGTH_SHORT).show() } } }, true)
+                            downloadOriginalPicture(p)
                         }
                         else -> return false
                     }

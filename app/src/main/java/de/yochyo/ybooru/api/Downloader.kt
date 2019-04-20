@@ -56,15 +56,20 @@ abstract class Downloader(context: Context) {
         else downloads.putFirst(download)
     }
 
-    private fun getCachedBitmap(id: String): Bitmap? {
-        with(file(id)) {
-            if (exists()) {
-                val stream = inputStream()
-                val bitmap = BitmapFactory.decodeStream(stream)
-                stream.close()
-                return bitmap
-            } else return null
+    fun getCachedFile(id: String): File? {
+        val f = File(id)
+        if (f.exists()) return f
+        return null
+    }
+
+    fun getCachedBitmap(id: String): Bitmap? {
+        val f = getCachedFile(id)?.apply {
+            val stream = inputStream()
+            val bitmap = BitmapFactory.decodeStream(stream)
+            stream.close()
+            return bitmap
         }
+        return null
     }
 
     private fun cacheBitmap(id: String, bitmap: Bitmap) {
@@ -104,6 +109,7 @@ abstract class Downloader(context: Context) {
     private fun file(id: String) = File("$path$id")
 }
 
+val Context.downloader: Downloader get() = Downloader.getInstance(this)
 fun Context.downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(bitmap: Bitmap) -> Unit = {}, downloadNow: Boolean = false, cache: Boolean = true) = Downloader.getInstance(this).downloadImage(url, id, doAfter, downloadNow, cache)
 
 

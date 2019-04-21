@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        GlobalScope.launch { Downloader.getInstance(this@MainActivity).clearCache() }
         Api.addApi(DanbooruApi(""))
         Api.addApi(MoebooruApi(""))
         Database.initDatabase(this)
@@ -136,19 +137,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
     override fun onBackPressed() {
         if (drawer_layout.isDrawerOpen(GravityCompat.START)) drawer_layout.closeDrawer(GravityCompat.START)
         else if (drawer_layout.isDrawerOpen(GravityCompat.END)) drawer_layout.closeDrawer(GravityCompat.END)
         else super.onBackPressed()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        runBlocking {
-            GlobalScope.launch {
-                Downloader.getInstance(this@MainActivity).clearCache()
-            }.join()
-        }
     }
 
     private inner class SearchTagAdapter : RecyclerView.Adapter<SearchTagViewHolder>() {

@@ -80,14 +80,12 @@ abstract class Downloader(context: Context) {
         withContext(Dispatchers.IO) {
             try {
                 val f = file(id)
-                println(id)
                 if (!f.exists()) {
-                    println("exists")
                     f.createNewFile()
                     val output = ByteArrayOutputStream().apply { bitmap.compress(Bitmap.CompressFormat.PNG, 100, this) }
                     f.writeBytes(output.toByteArray())
                     output.close()
-                }else println("not")
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }

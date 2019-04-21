@@ -15,24 +15,26 @@ object FileUtils {
     private val saveDirectory: String = "${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_PICTURES}/yBooru/"
 
     suspend fun writeOrDownloadFile(context: Context, post: Post, id: String, url: String, doAfter: suspend CoroutineScope.() -> Unit = {}) {
-        withContext(Dispatchers.IO){
+        withContext(Dispatchers.IO) {
             val f = context.downloader.getCachedFile(id)
-            if (f != null) writeFile(post, f)
-            else context.downloadImage(url, id, { writeFile(post, it) }, cache = false)
+            if (f != null) {
+                writeFile(post, f)
+                launch(Dispatchers.Main) { doAfter() }
+            } else context.downloadImage(url, id, { writeFile(post, it);doAfter() }, cache = false, downloadNow = true)
+
         }
-        GlobalScope.launch(Dispatchers.Main) { doAfter() }
     }
 
     suspend fun writeFile(post: Post, bitmap: Bitmap) {
-        withContext(Dispatchers.IO){
+        withContext(Dispatchers.IO) {
             val stream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
             createFileToWrite(post).writeBytes(stream.toByteArray())
         }
     }
 
-    suspend fun writeFile(post: Post, bitmap: File){
-        withContext(Dispatchers.IO){
+    suspend fun writeFile(post: Post, bitmap: File) {
+        withContext(Dispatchers.IO) {
             createFileToWrite(post).writeBytes(bitmap.readBytes())
         }
     }

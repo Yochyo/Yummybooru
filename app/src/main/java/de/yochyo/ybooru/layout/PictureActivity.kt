@@ -126,11 +126,8 @@ class PictureActivity : AppCompatActivity() {
     }
 
     private fun downloadOriginalPicture(p: Post) {
-        GlobalScope.launch {
-            launch(Dispatchers.IO) {
-                FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL)
-            }.join()
-            launch(Dispatchers.Main) {
+        GlobalScope.launch(Dispatchers.IO) {
+            FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL) {
                 Toast.makeText(this@PictureActivity, "Downloaded ${p.id}", Toast.LENGTH_SHORT).show()
             }
         }
@@ -143,7 +140,6 @@ class PictureActivity : AppCompatActivity() {
             if (position + 3 >= m.dataSet.lastIndex) GlobalScope.launch { m.downloadPage(m.currentPage + 1) }
             if (position == m.dataSet.lastIndex) loadNextPage(m.currentPage + 1)
             val imageView = LayoutInflater.from(this@PictureActivity).inflate(R.layout.picture_item_view, container, false) as PhotoView
-            imageView.setZoomable(false)
             imageView.setAllowParentInterceptOnEdge(true)
             imageView.setOnSingleFlingListener(object : OnSingleFlingListener {
                 override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
@@ -161,7 +157,7 @@ class PictureActivity : AppCompatActivity() {
             val p = m.dataSet[position]
             downloadImage(p.filePreviewURL, preview(p.id), {
                 imageView.setImageBitmap(it)
-                downloadImage(p.fileURL, original(p.id), { imageView.setImageBitmap(it);imageView.setZoomable(true) }, true)
+                downloadImage(p.fileURL, original(p.id), { imageView.setImageBitmap(it) }, true)
             }, false)
 
             container.addView(imageView)

@@ -25,7 +25,7 @@ abstract class Downloader(context: Context) {
     init {
         directory.mkdirs()
 
-        for (i in 1..3) {
+        for (i in 1..5) {
             GlobalScope.launch(Dispatchers.IO) {
                 while (true) {
                     if (downloads.isNotEmpty()) {

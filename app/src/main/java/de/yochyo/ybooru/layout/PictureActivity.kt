@@ -60,7 +60,7 @@ class PictureActivity : AppCompatActivity() {
             if (p != null) {
                 val pos = m.position
                 GlobalScope.launch {
-                    val tags = p.tags.value as ArrayList<Tag>
+                    val tags = p.tags as ArrayList<Tag>
                     launch(Dispatchers.Main) {
                         if (pos == m.position) {
                             currentTags = tags
@@ -82,7 +82,7 @@ class PictureActivity : AppCompatActivity() {
                             currentTags.clear()
                             recycleView.adapter?.notifyDataSetChanged()
                             GlobalScope.launch {
-                                val tags = post.tags.value as ArrayList<Tag>
+                                val tags = post.tags as ArrayList<Tag>
                                 launch(Dispatchers.Main) {
                                     if (position == m.position) {
                                         currentTags = tags

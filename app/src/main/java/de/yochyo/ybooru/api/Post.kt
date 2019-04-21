@@ -13,5 +13,5 @@ interface Post {
     val fileSampleURL: String
     val filePreviewURL: String
 
-    val tags: Lazy<List<Tag>>
+    val tags: List<Tag>
 }

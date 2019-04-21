@@ -34,7 +34,7 @@ class MoebooruApi(url: String) : Api(url) {
                 override val fileURL = fileURL
                 override val fileSampleURL = json.getString("sample_url")
                 override val filePreviewURL = json.getString("preview_url")
-                override val tags = lazy{getTagsfromURL(getURLSourceLines("${Server.currentServer.url}post/show/$id"))}
+                override val tags: List<Tag> by lazy { getTagsfromURL(getURLSourceLines("${Server.currentServer.url}post/show/$id")) }
                 override fun toString(): String {
                     return "[$id] [${width}x$height]\nTags: $tags \n$fileURL\n$fileSampleURL\n$filePreviewURL"
                 }

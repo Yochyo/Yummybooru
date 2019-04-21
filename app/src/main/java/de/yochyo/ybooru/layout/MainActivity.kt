@@ -3,6 +3,7 @@ package de.yochyo.ybooru.layout
 import android.Manifest
 import android.arch.lifecycle.Observer
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.app.ActivityCompat
@@ -124,8 +125,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             R.id.nav_subs -> startActivity(Intent(this, SubscriptionActivity::class.java))
             R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
-            R.id.community -> Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show()
-            R.id.nav_help -> Toast.makeText(this, "Ask me some questions", Toast.LENGTH_SHORT).show()
+            R.id.community -> {
+                val i = Intent(Intent.ACTION_VIEW)
+                i.data = Uri.parse("https://discord.gg/tbGCHpF")
+                startActivity(i)
+            }
+            R.id.nav_help -> Toast.makeText(this, "Join Discord", Toast.LENGTH_SHORT).show()
         }
         drawer_layout.closeDrawer(GravityCompat.START)
         return super.onOptionsItemSelected(item)

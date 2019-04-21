@@ -68,7 +68,6 @@ class PictureActivity : AppCompatActivity() {
                         }
                     }
                 }
-
             }
 
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
@@ -106,9 +105,7 @@ class PictureActivity : AppCompatActivity() {
         when (item.itemId) {
             android.R.id.home -> finish()
             R.id.show_info -> drawer_picture.openDrawer(GravityCompat.END)
-            R.id.save -> {
-                val p = m.currentPost?.apply { downloadOriginalPicture(this) }
-            }
+            R.id.save -> m.currentPost?.apply { downloadOriginalPicture(this) }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -122,23 +119,18 @@ class PictureActivity : AppCompatActivity() {
         GlobalScope.launch {
             m.downloadPage(page)
             launch(Dispatchers.Main) {
-                m.getPage(page)
+                m.loadPage(page)
                 view_pager.adapter!!.notifyDataSetChanged()
             }
         }
     }
 
-    fun preloadNextPage(page: Int) {
+    private fun downloadOriginalPicture(p: Post) {
         GlobalScope.launch {
-            m.downloadPage(page)
-        }
-    }
-    private fun downloadOriginalPicture(p: Post){
-        GlobalScope.launch {
-            launch(Dispatchers.IO){
+            launch(Dispatchers.IO) {
                 FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL)
             }.join()
-            launch(Dispatchers.Main){
+            launch(Dispatchers.Main) {
                 Toast.makeText(this@PictureActivity, "Downloaded ${p.id}", Toast.LENGTH_SHORT).show()
             }
         }
@@ -148,7 +140,7 @@ class PictureActivity : AppCompatActivity() {
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
         override fun getCount(): Int = m.dataSet.size
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
-            if (position + 3 >= m.dataSet.lastIndex) preloadNextPage(m.currentPage + 1)
+            if (position + 3 >= m.dataSet.lastIndex) GlobalScope.launch { m.downloadPage(m.currentPage + 1) }
             if (position == m.dataSet.lastIndex) loadNextPage(m.currentPage + 1)
             val imageView = LayoutInflater.from(this@PictureActivity).inflate(R.layout.picture_item_view, container, false) as PhotoView
             imageView.setZoomable(false)
@@ -169,8 +161,8 @@ class PictureActivity : AppCompatActivity() {
             val p = m.dataSet[position]
             downloadImage(p.filePreviewURL, preview(p.id), {
                 imageView.setImageBitmap(it)
-                downloadImage(p.fileSampleURL, sample(p.id), { imageView.setImageBitmap(it);imageView.setZoomable(true) }, true)
-            }, true)
+                downloadImage(p.fileURL, original(p.id), { imageView.setImageBitmap(it);imageView.setZoomable(true) }, true)
+            }, false)
 
             container.addView(imageView)
             return imageView

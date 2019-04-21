@@ -52,7 +52,7 @@ abstract class Manager(val tags: Array<String>) {
         get() = dataSet[position]
 
 
-    suspend fun getPage(page: Int): List<Post> {
+    suspend fun loadPage(page: Int): List<Post> {
         val p = downloadPage(page)
         if (page > currentPage) {
             currentPage = page

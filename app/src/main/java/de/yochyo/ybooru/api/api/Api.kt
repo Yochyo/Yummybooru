@@ -4,8 +4,10 @@ import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.database.entities.Server
 import de.yochyo.ybooru.database.entities.Tag
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -61,10 +63,10 @@ abstract class Api(var url: String) {
         }
 
         suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = db.limit): List<Post> {
-            var array = arrayOfNulls<Post>(limit)
+            val array = ArrayList<Post>(limit)
             var url = instance!!.urlGetPosts(page, tags, limit)
 
-            if (tags.filter { it != "" }.isNotEmpty()) {
+            if (tags.isNotEmpty()) {
                 url += "&tags="
                 for (tag in tags)
                     url += "$tag "
@@ -73,78 +75,73 @@ abstract class Api(var url: String) {
             val json = getJson(url)
 
             if (json != null) {
-                val root = GlobalScope.launch {
-                    for (i in 0 until json.length()) {
-                        val pos = i
-                        launch {
-                            val post = Api.instance!!.getPostFromJson(json.getJSONObject(i))
-                            array[pos] = post
-                        }
-                    }
+                for (i in 0 until json.length()) {
+                    val post = instance!!.getPostFromJson(json.getJSONObject(i))
+                    if (post != null) array += post
                 }
-                root.join()
-                val filter = array.filter { (it != null && (it.extension == "png" || it.extension == "jpg")) } as List<Post>
+                val filter = array.filter { it.extension == "png" || it.extension == "jpg" }
                 if (Server.currentServer.enableR18Filter) return filter.filter { it.rating == "s" }
             }
-            return array.filter { it != null } as List<Post>
+            return array
         }
 
         suspend fun newestID(): Int {
             val json = getJson(instance!!.urlGetNewest())
-            if (json?.getJSONObject(0) != null) {
-                return json.getJSONObject(0).getInt("id")
-            }
+            if (json?.length() != 0) //TODO geht das?
+                return json!!.getJSONObject(0).getInt("id")
             return 0
         }
 
-        @Suppress("BlockingMethodInNonBlockingContext")
         private suspend fun getJson(urlToRead: String): JSONArray? {
-            println("Download JSON: $urlToRead")
             var array: JSONArray? = null
-            try {
-                val job = GlobalScope.launch {
-                    try {
-                        val result = StringBuilder()
-                        val url = URL(urlToRead)
-                        val conn = url.openConnection() as HttpURLConnection
-                        conn.addRequestProperty("User-Agent", "Mozilla/5.00")
-                        conn.requestMethod = "GET"
-                        val rd = BufferedReader(InputStreamReader(conn.inputStream))
-                        var line: String? = rd.readLine()
-                        while (line != null) {
-                            result.append(line)
-                            line = rd.readLine()
+            withContext(Dispatchers.IO) {
+                try {
+                    val job = GlobalScope.launch {
+                        try {
+                            val result = StringBuilder()
+                            val url = URL(urlToRead)
+                            val conn = url.openConnection() as HttpURLConnection
+                            conn.addRequestProperty("User-Agent", "Mozilla/5.00")
+                            conn.requestMethod = "GET"
+                            val rd = BufferedReader(InputStreamReader(conn.inputStream))
+                            var line: String? = rd.readLine()
+                            while (line != null) {
+                                result.append(line)
+                                line = rd.readLine()
+                            }
+                            rd.close()
+                            array = JSONArray(result.toString())
+                        } catch (e: Exception) {
+                            println("URL: $urlToRead")
+                            e.printStackTrace()
                         }
-                        rd.close()
-                        array = JSONArray(result.toString())
-                    } catch (e: Exception) {
-                        println("URL: $urlToRead")
-                        e.printStackTrace()
                     }
+                    job.join()
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
-                job.join()
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
             return array
         }
     }
 
-    protected fun getURLSourceLines(url: String): ArrayList<String> {
-        println("get html: $url")
-        val urlObject = URL(url)
-        val urlConnection = urlObject.openConnection() as HttpURLConnection
-        urlConnection.addRequestProperty("User-Agent", "Mozilla/5.00")
-        val inputStream = urlConnection.inputStream
-        BufferedReader(InputStreamReader(inputStream, "UTF-8")).use { bufferedReader ->
-            var inputLine: String? = bufferedReader.readLine()
-            val array = ArrayList<String>()
-            while (inputLine != null) {
-                array += inputLine
-                inputLine = bufferedReader.readLine()
+    protected suspend fun getURLSourceLines(url: String): ArrayList<String> {
+        return withContext(Dispatchers.IO) {
+            val urlObject = URL(url)
+            val urlConnection = urlObject.openConnection() as HttpURLConnection
+            urlConnection.addRequestProperty("User-Agent", "Mozilla/5.00")
+            val inputStream = urlConnection.inputStream
+            BufferedReader(InputStreamReader(inputStream, "UTF-8")).use { bufferedReader ->
+                var inputLine: String? = bufferedReader.readLine()
+                val array = ArrayList<String>()
+                while (inputLine != null) {
+                    array += inputLine
+                    inputLine = bufferedReader.readLine()
+                }
+                inputStream.close()
+
+                array
             }
-            inputStream.close()
-            return array
         }
     }
 
@@ -154,6 +151,6 @@ abstract class Api(var url: String) {
     abstract fun urlGetPosts(page: Int, tags: Array<String>, limit: Int): String
     abstract fun urlGetNewest(): String
 
-    abstract suspend fun getTagFromJson(json: JSONObject): Tag?
-    abstract suspend fun getPostFromJson(json: JSONObject): Post?
+    abstract fun getTagFromJson(json: JSONObject): Tag?
+    abstract fun getPostFromJson(json: JSONObject): Post?
 }

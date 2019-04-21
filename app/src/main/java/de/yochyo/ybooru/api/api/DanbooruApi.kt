@@ -3,6 +3,8 @@ package de.yochyo.ybooru.api.api
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.database.entities.Server
 import de.yochyo.ybooru.database.entities.Tag
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 class DanbooruApi(url: String) : Api(url) {
@@ -20,7 +22,7 @@ class DanbooruApi(url: String) : Api(url) {
 
     override fun urlGetNewest(): String = "${url}posts.json?limit=1&page=1"
 
-    override suspend fun getPostFromJson(json: JSONObject): Post? {
+    override fun getPostFromJson(json: JSONObject): Post? {
         try {
             val tagsGeneral = json.getString("tag_string_general").split(" ").map { Tag(it, Tag.GENERAL) }.filter { it.name != "" }
             val tagsCharacter = json.getString("tag_string_character").split(" ").map { Tag(it, Tag.CHARACTER) }.filter { it.name != "" }
@@ -54,15 +56,15 @@ class DanbooruApi(url: String) : Api(url) {
         }
     }
 
-    override suspend fun getTagFromJson(json: JSONObject): Tag? {
-        return try {
-            var type = json.getInt("category")
-            if (type !in 0..5)
-                type = Tag.UNKNOWN
-            Tag(json.getString("name"), type)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+    override fun getTagFromJson(json: JSONObject): Tag? {
+            try {
+                var type = json.getInt("category")
+                if (type !in 0..5)
+                    type = Tag.UNKNOWN
+                return Tag(json.getString("name"), type)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return null
+            }
     }
 }

@@ -7,25 +7,35 @@ import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.api.downloadImage
 import de.yochyo.ybooru.api.downloader
 import de.yochyo.ybooru.database.entities.Server
+import kotlinx.coroutines.*
 import java.io.ByteArrayOutputStream
 import java.io.File
 
 object FileUtils {
     private val saveDirectory: String = "${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_PICTURES}/yBooru/"
 
-    suspend fun writeOrDownloadFile(context: Context, post: Post, id: String, url: String) {
-        val f = context.downloader.getCachedFile(id)
-        if (f != null) writeFile(post, f)
-        else context.downloadImage(url, id, { FileUtils.writeFile(post, it) }, cache = false)
+    suspend fun writeOrDownloadFile(context: Context, post: Post, id: String, url: String, doAfter: suspend CoroutineScope.() -> Unit = {}) {
+        withContext(Dispatchers.IO){
+            val f = context.downloader.getCachedFile(id)
+            if (f != null) writeFile(post, f)
+            else context.downloadImage(url, id, { writeFile(post, it) }, cache = false)
+        }
+        GlobalScope.launch(Dispatchers.Main) { doAfter() }
     }
 
     suspend fun writeFile(post: Post, bitmap: Bitmap) {
-        val stream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-        createFileToWrite(post).writeBytes(stream.toByteArray())
+        withContext(Dispatchers.IO){
+            val stream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+            createFileToWrite(post).writeBytes(stream.toByteArray())
+        }
     }
 
-    suspend fun writeFile(post: Post, bitmap: File) = createFileToWrite(post).writeBytes(bitmap.readBytes())
+    suspend fun writeFile(post: Post, bitmap: File){
+        withContext(Dispatchers.IO){
+            createFileToWrite(post).writeBytes(bitmap.readBytes())
+        }
+    }
 
     private fun createFileToWrite(post: Post): File {
         val folder = File("$saveDirectory${Server.currentServer.urlHost}/")

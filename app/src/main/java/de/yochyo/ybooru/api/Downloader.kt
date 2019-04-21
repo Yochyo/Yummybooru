@@ -23,6 +23,8 @@ abstract class Downloader(context: Context) {
     }
 
     init {
+        directory.mkdirs()
+
         for (i in 1..3) {
             GlobalScope.launch(Dispatchers.IO) {
                 while (true) {
@@ -36,8 +38,8 @@ abstract class Downloader(context: Context) {
                                 val stream = conn.getInputStream()
                                 bitmap = BitmapFactory.decodeStream(stream)
                                 stream.close()
+                                if (download.cache) GlobalScope.launch { cacheBitmap(download.id, bitmap!!) }
                             }
-                            if (download.cache) launch(Dispatchers.IO) { cacheBitmap(download.id, bitmap!!) }
                             launch(Dispatchers.Main) { download.doAfter.invoke(this, bitmap!!) }
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -57,32 +59,38 @@ abstract class Downloader(context: Context) {
     }
 
     fun getCachedFile(id: String): File? {
-        val f = File(id)
+        val f = file(id)
         if (f.exists()) return f
         return null
     }
 
-    fun getCachedBitmap(id: String): Bitmap? {
-        val f = getCachedFile(id)?.apply {
-            val stream = inputStream()
-            val bitmap = BitmapFactory.decodeStream(stream)
-            stream.close()
-            return bitmap
+    suspend fun getCachedBitmap(id: String): Bitmap? {
+        return withContext(Dispatchers.IO) {
+            val f = getCachedFile(id)?.apply {
+                val stream = inputStream()
+                val bitmap = BitmapFactory.decodeStream(stream)
+                stream.close()
+                return@withContext bitmap
+            }
+            null
         }
-        return null
     }
 
-    private fun cacheBitmap(id: String, bitmap: Bitmap) {
-        val f = file(id)
-        try {
-            if (!f.exists()) {
-                f.createNewFile()
-                val output = ByteArrayOutputStream().apply { bitmap.compress(Bitmap.CompressFormat.PNG, 100, this) }
-                f.writeBytes(output.toByteArray())
-                output.close()
+    private suspend fun cacheBitmap(id: String, bitmap: Bitmap) {
+        withContext(Dispatchers.IO) {
+            try {
+                val f = file(id)
+                println(id)
+                if (!f.exists()) {
+                    println("exists")
+                    f.createNewFile()
+                    val output = ByteArrayOutputStream().apply { bitmap.compress(Bitmap.CompressFormat.PNG, 100, this) }
+                    f.writeBytes(output.toByteArray())
+                    output.close()
+                }else println("not")
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 
@@ -94,13 +102,15 @@ abstract class Downloader(context: Context) {
         }
     }
 
-    fun clearCache() {
-        directory.listFiles().forEach {
-            if (it.isFile) {
-                try {
-                    it.delete()
-                } catch (e: Exception) {
-                    e.printStackTrace()
+    suspend fun clearCache() {
+        withContext(Dispatchers.IO) {
+            directory.listFiles().forEach {
+                if (it.isFile) {
+                    try {
+                        it.delete()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }
         }

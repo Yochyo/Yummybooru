@@ -38,6 +38,7 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.*
 
 
@@ -81,7 +82,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         b.setOnClickListener {
             AddTagDialog {
                 if (db.getTag(it.text.toString()) == null) {
-                    GlobalScope.launch {
+                    GlobalScope.launch(Dispatchers.IO) {
                         val tag = Api.getTag(it.text.toString())
                         launch(Dispatchers.Main) {
                             val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN)
@@ -138,7 +139,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onDestroy() {
         super.onDestroy()
-        Downloader.getInstance(this).clearCache()
+        runBlocking {
+            GlobalScope.launch {
+                Downloader.getInstance(this@MainActivity).clearCache()
+            }.join()
+        }
     }
 
     private inner class SearchTagAdapter : RecyclerView.Adapter<SearchTagViewHolder>() {
@@ -214,11 +219,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 server.select()
                 notifyDataSetChanged()
                 selectedTags.clear()
-                Toast.makeText(this@MainActivity, "Select Server", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Selected Server", Toast.LENGTH_SHORT).show()
             }
             holder.layout.setOnLongClickListener {
                 val server = servers.elementAt(holder.adapterPosition)
-                AddServerDialog { db.changeServer(it);it.select() }.apply {
+                AddServerDialog { db.changeServer(it);(if (Server.currentServer == it) it.select()) }.apply {
                     serverID = server.id
                     nameText = server.name
                     apiText = server.api

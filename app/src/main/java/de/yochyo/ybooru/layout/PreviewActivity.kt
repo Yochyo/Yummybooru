@@ -3,7 +3,6 @@ package de.yochyo.ybooru.layout
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -11,15 +10,10 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.Toast
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.downloadImage
 import de.yochyo.ybooru.manager.Manager
-import de.yochyo.ybooru.utils.FileUtils
-import de.yochyo.ybooru.utils.original
 import de.yochyo.ybooru.utils.preview
 import de.yochyo.ybooru.utils.toTagString
 import kotlinx.android.synthetic.main.activity_preview.*
@@ -64,11 +58,11 @@ open class PreviewActivity : AppCompatActivity() {
         isLoadingView = true
         GlobalScope.launch {
             val i = m.dataSet.size
-            val posts = m.getPage(page)
+            val posts = m.loadPage(page)
             launch(Dispatchers.Main) {
-                previewAdapter.notifyItemRangeInserted(if (i > 0) i - 1 else 0, posts.size)
+                previewAdapter.notifyItemRangeInserted(if (i > 0) i - 1 else 0, posts.size) //TODO bug?
                 isLoadingView = false
-            }.join()
+            }
             launch { m.downloadPage(m.currentPage + 1) }
         }
     }
@@ -96,32 +90,7 @@ open class PreviewActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
-            R.id.download_all -> {
-                val builder = AlertDialog.Builder(this)
-                val layout = LayoutInflater.from(this).inflate(R.layout.download_pictures_dialog_view, null) as LinearLayout
-                builder.setView(layout)
-                val dialog = builder.create()
-                dialog.show()
-                layout.findViewById<Button>(R.id.download_all_visible).setOnClickListener {
-                    dialog.dismiss()
-                    Toast.makeText(this@PreviewActivity, "Download All visible pictures", Toast.LENGTH_SHORT).show()
-                    for (p in m.dataSet)
-                        downloadImage(p.fileURL, original(p.id), {
-                            FileUtils.writeFile(p, it)
-                            //TODO notification
-                        }, false)
-                }
-                layout.findViewById<Button>(R.id.download_all_from_tags).setOnClickListener {
-                    dialog.dismiss()
-                    val b = AlertDialog.Builder(this@PreviewActivity)
-                    b.setTitle("Download")
-                    b.setMessage("Do you want to download everything that could be on this page?\n(You should not use this when using no tags or tags with many pictures)")//TODO einfach alle posts laden, bis die gesamtdateilänge mehr als der freie speicher ist oder alle posts da sind
-                    b.setPositiveButton("Yes") { _, _ -> TODO() }//download all
-                    b.setNegativeButton("No") { _, _ -> }
-                    val d = b.create()
-                    d.show()
-                }
-            }
+            R.id.download_all -> finish()//TODO
         }
         return super.onOptionsItemSelected(item)
     }
@@ -146,16 +115,17 @@ open class PreviewActivity : AppCompatActivity() {
 
         override fun getItemCount(): Int = m.dataSet.size
         override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) {
-
+            holder.imageView.setImageBitmap(null) //TODO könnte das hier bugs erschaffen? wenn ja löschen und onViewDetached wiederherstellen
         }
 
         override fun onViewDetachedFromWindow(holder: PreviewViewHolder) {
             super.onViewDetachedFromWindow(holder)
-            holder.imageView.setImageBitmap(null)
+          //  holder.imageView.setImageBitmap(null)
         }
 
         override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
             val pos = holder.adapterPosition
+            //TODO hier könnte es diesen einen absturz geben
             if (pos != -1) {
                 val p = m.dataSet[holder.adapterPosition]
                 downloadImage(p.filePreviewURL, preview(p.id), {

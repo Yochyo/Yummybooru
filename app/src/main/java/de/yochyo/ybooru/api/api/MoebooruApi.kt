@@ -3,6 +3,10 @@ package de.yochyo.ybooru.api.api
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.database.entities.Server
 import de.yochyo.ybooru.database.entities.Tag
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 
 class MoebooruApi(url: String) : Api(url) {
@@ -19,7 +23,7 @@ class MoebooruApi(url: String) : Api(url) {
 
     override fun urlGetNewest(): String = "${url}post.json?limit=1&page=1"
 
-    override suspend fun getPostFromJson(json: JSONObject): Post? {
+    override fun getPostFromJson(json: JSONObject): Post? {
         try {
             val fileURL = json.getString("file_url")
             val id = json.getInt("id")
@@ -34,7 +38,14 @@ class MoebooruApi(url: String) : Api(url) {
                 override val fileURL = fileURL
                 override val fileSampleURL = json.getString("sample_url")
                 override val filePreviewURL = json.getString("preview_url")
-                override val tags: List<Tag> by lazy { getTagsfromURL(getURLSourceLines("${Server.currentServer.url}post/show/$id")) }
+                override val tags: List<Tag> by lazy {
+                    var result : List<Tag> = emptyList()
+                    runBlocking {
+                        GlobalScope.async { result = getTagsfromURL(getURLSourceLines("${Server.currentServer.url}post/show/$id")) }.await()
+                    }
+                    result
+                } //TODO
+
                 override fun toString(): String {
                     return "[$id] [${width}x$height]\nTags: $tags \n$fileURL\n$fileSampleURL\n$filePreviewURL"
                 }
@@ -97,7 +108,7 @@ class MoebooruApi(url: String) : Api(url) {
         return tags
     }
 
-    override suspend fun getTagFromJson(json: JSONObject): Tag? {
+    override fun getTagFromJson(json: JSONObject): Tag? {
         return try {
             var type = json.getInt("type")
             if (type !in 0..5)

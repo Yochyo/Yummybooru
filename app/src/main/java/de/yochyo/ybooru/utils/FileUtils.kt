@@ -20,7 +20,7 @@ object FileUtils {
             if (f != null) {
                 writeFile(post, f)
                 launch(Dispatchers.Main) { doAfter() }
-            } else context.downloadImage(url, id, { writeFile(post, it);doAfter() }, cache = false, downloadNow = true)
+            } else context.downloadImage(url, id, { writeFile(post, it);doAfter() }, cache = false)
 
         }
     }

@@ -157,7 +157,7 @@ class PictureActivity : AppCompatActivity() {
             val p = m.dataSet[position]
             downloadImage(p.filePreviewURL, preview(p.id), {
                 imageView.setImageBitmap(it)
-                downloadImage(p.fileURL, original(p.id), { imageView.setImageBitmap(it) }, true)
+                downloadImage(p.fileURL, original(p.id), { imageView.setImageBitmap(it) })
             }, false)
 
             container.addView(imageView)

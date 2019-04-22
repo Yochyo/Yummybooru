@@ -9,6 +9,7 @@ import android.support.design.widget.NavigationView
 import android.support.v4.app.ActivityCompat
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -214,6 +215,48 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             notifyDataSetChanged()
         }
 
+        private fun longClickDialog(server: Server) {
+            val builder = AlertDialog.Builder(this@MainActivity)
+            builder.setItems(arrayOf("Edit Server", "Delete Server")) { dialog, i ->
+                dialog.cancel()
+                println(i)
+                when (i) {
+                    0 -> editServerDialog(server)
+                    1 -> {
+                        if (!server.isSelected) {
+                            deleteServerDialog(server)
+                        } else Toast.makeText(this@MainActivity, "Cannot delete selected server", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            builder.show()
+        }
+
+        private fun editServerDialog(server: Server) {
+            AddServerDialog { db.changeServer(it);(if (Server.currentServer == it) it.select()) }.apply {
+                serverID = server.id
+                nameText = server.name
+                apiText = server.api
+                urlText = server.url
+                userText = server.userName
+                passwordText = server.password
+                message = "Edit Server"
+                enableR18 = server.enableR18Filter
+            }.build(this@MainActivity)
+        }
+
+        private fun deleteServerDialog(server: Server) {
+            val b = AlertDialog.Builder(this@MainActivity)
+            b.setTitle("Delete")
+            b.setMessage("Do you want to delete the server <${server.name}>")
+            b.setNegativeButton("No") { _, _ -> }
+            b.setPositiveButton("Yes") { _, _ ->
+                server.deleteServer()
+                Toast.makeText(this@MainActivity, "Deleted <${server.name}>", Toast.LENGTH_SHORT).show()
+            }
+            b.show()
+        }
+
         override fun onCreateViewHolder(parent: ViewGroup, position: Int): ServerViewHolder {
             val holder = ServerViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.server_item_layout, parent, false) as LinearLayout))
             holder.layout.setOnClickListener {
@@ -225,16 +268,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             holder.layout.setOnLongClickListener {
                 val server = servers.elementAt(holder.adapterPosition)
-                AddServerDialog { db.changeServer(it);(if (Server.currentServer == it) it.select()) }.apply {
-                    serverID = server.id
-                    nameText = server.name
-                    apiText = server.api
-                    urlText = server.url
-                    userText = server.userName
-                    passwordText = server.password
-                    message = "Edit Server"
-                    enableR18 = server.enableR18Filter
-                }.build(this@MainActivity)
+                longClickDialog(server)
                 true
             }
             return holder

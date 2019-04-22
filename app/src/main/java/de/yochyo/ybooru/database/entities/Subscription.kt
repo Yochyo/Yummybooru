@@ -6,7 +6,7 @@ import de.yochyo.ybooru.database.db
 import java.util.*
 
 @Entity(tableName = "subs", primaryKeys = ["name", "serverID"])
-class Subscription(val name: String, val type: Int, var last: Int, var current: Int = last, val isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID) : Comparable<Subscription> {
+data class Subscription(val name: String, var type: Int, var last: Int, var current: Int = last, var isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID) : Comparable<Subscription> {
     val color: Int
         get() {
             when (type) {

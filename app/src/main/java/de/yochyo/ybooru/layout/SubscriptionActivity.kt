@@ -12,6 +12,7 @@ import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.database.db
@@ -115,7 +116,38 @@ class SubscriptionActivity : AppCompatActivity() {
 
         fun updateSubs(subs: TreeSet<Subscription>) {
             this.subs = subs
+            println(subs.joinToString { it.name })
             notifyDataSetChanged()
+        }
+
+        private fun longClickDialog(sub: Subscription) {
+            val builder = AlertDialog.Builder(this@SubscriptionActivity)
+            val array: Array<String>
+            if (sub.isFavorite) array = arrayOf("Unfavorite", "Delete")
+            else array = arrayOf("Set Favorite", "Delete")
+            builder.setItems(array) { dialog, i ->
+                dialog.cancel()
+                when (i) {
+                    0 -> {
+                        db.changeSubscription(sub.copy(isFavorite = !sub.isFavorite))
+                        Toast.makeText(this@SubscriptionActivity, "${if (sub.isFavorite) "Favorite" else "Unfavorite"} <${sub.name}>", Toast.LENGTH_SHORT).show()
+                    }
+                    1 -> { deleteSubDialog(sub) }
+                }
+
+            }
+            builder.show()
+        }
+
+        private fun deleteSubDialog(sub: Subscription) {
+            val b = AlertDialog.Builder(this@SubscriptionActivity)
+            b.setTitle("Delete")
+            b.setMessage("Delete Subscription ${sub.name}?")
+            b.setNegativeButton("No"){_,_->}
+            b.setPositiveButton("Yes"){_,_->
+                db.deleteSubscription(sub.name)
+                Toast.makeText(this@SubscriptionActivity, "Deleted <${sub.name}>", Toast.LENGTH_SHORT).show()}
+            b.show()
         }
 
         override fun getItemCount(): Int = subs.size
@@ -128,14 +160,8 @@ class SubscriptionActivity : AppCompatActivity() {
                 PreviewActivity.startActivity(this@SubscriptionActivity, sub.toString())
             }
             layout.setOnLongClickListener {
-                val builder = AlertDialog.Builder(this@SubscriptionActivity)
-                builder.setTitle("Delete").setMessage("Delete sub?")
-                builder.setNegativeButton("No") { _, _ -> }
-                builder.setPositiveButton("Yes") { _, _ ->
-                    val sub = subs.elementAt(adapterPosition)
-                    db.deleteSubscription(sub.name)
-                }
-                builder.create().show()
+                val sub = subs.elementAt(adapterPosition)
+                longClickDialog(sub)
                 true
             }
         }

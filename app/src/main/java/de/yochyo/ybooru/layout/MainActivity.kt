@@ -157,7 +157,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             notifyDataSetChanged()
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchTagViewHolder = SearchTagViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.search_item_layout, parent, false) as Toolbar)).apply {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchTagViewHolder = SearchTagViewHolder((layoutInflater.inflate(R.layout.search_item_layout, parent, false) as Toolbar)).apply {
             val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
             toolbar.inflateMenu(R.menu.activity_main_search_menu)
             toolbar.setOnClickListener {
@@ -257,7 +257,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, position: Int): ServerViewHolder {
-            val holder = ServerViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.server_item_layout, parent, false) as LinearLayout))
+            val holder = ServerViewHolder((layoutInflater.inflate(R.layout.server_item_layout, parent, false) as LinearLayout))
             holder.layout.setOnClickListener {
                 val server = servers.elementAt(holder.adapterPosition)
                 server.select()

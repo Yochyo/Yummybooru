@@ -152,7 +152,7 @@ class SubscriptionActivity : AppCompatActivity() {
 
         override fun getItemCount(): Int = subs.size
 
-        override fun onCreateViewHolder(parent: ViewGroup, p1: Int): SubscribedTagViewHolder = SubscribedTagViewHolder(LayoutInflater.from(this@SubscriptionActivity).inflate(R.layout.subscription_item_layout, parent, false) as LinearLayout).apply {
+        override fun onCreateViewHolder(parent: ViewGroup, p1: Int): SubscribedTagViewHolder = SubscribedTagViewHolder(layoutInflater.inflate(R.layout.subscription_item_layout, parent, false) as LinearLayout).apply {
             layout.setOnClickListener {
                 val sub = subs.elementAt(adapterPosition)
                 clickedSub = adapterPosition

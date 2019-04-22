@@ -106,7 +106,7 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     protected inner class PreviewAdapter : RecyclerView.Adapter<PreviewViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((LayoutInflater.from(parent.context).inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
             imageView.setOnClickListener {
                 m.position = layoutPosition
                 PictureActivity.startActivity(this@PreviewActivity, m.tags.toTagString())

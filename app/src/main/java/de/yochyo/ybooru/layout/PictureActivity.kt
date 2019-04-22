@@ -139,7 +139,7 @@ class PictureActivity : AppCompatActivity() {
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
             if (position + 3 >= m.dataSet.lastIndex) GlobalScope.launch { m.downloadPage(m.currentPage + 1) }
             if (position == m.dataSet.lastIndex) loadNextPage(m.currentPage + 1)
-            val imageView = LayoutInflater.from(this@PictureActivity).inflate(R.layout.picture_item_view, container, false) as PhotoView
+            val imageView = layoutInflater.inflate(R.layout.picture_item_view, container, false) as PhotoView
             imageView.setAllowParentInterceptOnEdge(true)
             imageView.setOnSingleFlingListener(object : OnSingleFlingListener {
                 override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
@@ -168,7 +168,7 @@ class PictureActivity : AppCompatActivity() {
     }
 
     private inner class InfoAdapter : RecyclerView.Adapter<InfoButtonHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InfoButtonHolder = InfoButtonHolder(LayoutInflater.from(parent.context).inflate(R.layout.info_item_button, parent, false) as Toolbar).apply {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InfoButtonHolder = InfoButtonHolder(layoutInflater.inflate(R.layout.info_item_button, parent, false) as Toolbar).apply {
             toolbar.inflateMenu(R.menu.picture_info_menu)
             toolbar.setOnClickListener {
                 PreviewActivity.startActivity(this@PictureActivity, toolbar.findViewById<TextView>(R.id.info_textview).text.toString())

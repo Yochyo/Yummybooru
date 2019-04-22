@@ -77,7 +77,7 @@ class SubscriptionActivity : AppCompatActivity() {
                             sub.current = newestIdWhenClicked!!
                             newestIdWhenClicked = null
                         }
-                        db.changeSubscription(sub)
+                        launch(Dispatchers.Main) { db.changeSubscription(sub) }
                     }
                 }
                 builder.create().show()

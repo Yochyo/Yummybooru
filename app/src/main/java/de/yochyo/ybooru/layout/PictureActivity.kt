@@ -163,7 +163,7 @@ class PictureActivity : AppCompatActivity() {
             GlobalScope.launch {
                 val preview = cache.getCachedBitmap(preview(p.id))
                 if (preview != null) launch(Dispatchers.Main) { imageView.setImageBitmap(preview) }
-                downloadImage(p.fileURL, original(p.id), { imageView.setImageBitmap(it) })
+                downloadImage(p.fileSampleURL, sample(p.id), { imageView.setImageBitmap(it) })
             }
 
 

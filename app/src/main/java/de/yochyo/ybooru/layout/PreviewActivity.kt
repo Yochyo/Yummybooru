@@ -54,7 +54,7 @@ open class PreviewActivity : AppCompatActivity() {
         loadPage(1)
     }
 
-    open fun loadPage(page: Int) {
+    fun loadPage(page: Int) {
         isLoadingView = true
         GlobalScope.launch {
             val i = m.dataSet.size
@@ -65,7 +65,7 @@ open class PreviewActivity : AppCompatActivity() {
                     previewAdapter.notifyItemRangeInserted(i, posts.size)
                 isLoadingView = false
             }
-            launch { m.downloadPage(m.currentPage + 1) }
+            launch { m.downloadPage(page + 1) }
         }
     }
 

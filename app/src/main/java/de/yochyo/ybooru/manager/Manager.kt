@@ -66,8 +66,7 @@ abstract class Manager(val tags: Array<String>) {
     suspend fun downloadPage(page: Int): List<Post> {
         var p = pages[page]
         if (p == null) {
-            val posts = Api.getPosts(page, tags)
-            p = posts
+            p = Api.getPosts(page, tags)
             //avoid doubled posts
             if (dataSet.isNotEmpty()) {
                 val lastFromLastPage = dataSet.last()

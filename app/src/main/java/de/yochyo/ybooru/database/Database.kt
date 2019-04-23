@@ -254,8 +254,7 @@ abstract class Database : RoomDatabase() {
     abstract val serverDao: ServerDao
 }
 
-val db: Database
-    get() = Database.instance!!
+val db: Database get() = Database.instance!!
 
 
 private object Migrations {

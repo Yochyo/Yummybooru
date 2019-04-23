@@ -4,10 +4,13 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.os.Environment
 import de.yochyo.ybooru.api.Post
+import de.yochyo.ybooru.api.cache
 import de.yochyo.ybooru.api.downloadImage
-import de.yochyo.ybooru.api.downloader
 import de.yochyo.ybooru.database.entities.Server
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -16,7 +19,7 @@ object FileUtils {
 
     suspend fun writeOrDownloadFile(context: Context, post: Post, id: String, url: String, doAfter: suspend CoroutineScope.() -> Unit = {}) {
         withContext(Dispatchers.IO) {
-            val f = context.downloader.getCachedFile(id)
+            val f = context.cache.getCachedBitmap(id)
             if (f != null) {
                 writeFile(post, f)
                 launch(Dispatchers.Main) { doAfter() }
@@ -30,12 +33,7 @@ object FileUtils {
             val stream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
             createFileToWrite(post).writeBytes(stream.toByteArray())
-        }
-    }
-
-    suspend fun writeFile(post: Post, bitmap: File) {
-        withContext(Dispatchers.IO) {
-            createFileToWrite(post).writeBytes(bitmap.readBytes())
+            stream.close()
         }
     }
 
@@ -49,7 +47,7 @@ object FileUtils {
 
     private fun postToFilename(p: Post): String {
         val s = "${Server.currentServer.urlHost} ${p.id} ${p.tags.joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '<' && it != '>' }
-        var last = s.lastIndex
+        var last = s.length
         if (last > 123) last = 123
         return "${s.substring(0, last)}.png"
     }

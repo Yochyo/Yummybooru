@@ -18,8 +18,8 @@ import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.api.api.Api
+import de.yochyo.ybooru.api.cache
 import de.yochyo.ybooru.api.downloadImage
-import de.yochyo.ybooru.api.downloader
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.database.entities.Subscription
 import de.yochyo.ybooru.database.entities.Tag
@@ -127,9 +127,13 @@ class PictureActivity : AppCompatActivity() {
     }
 
     private fun downloadOriginalPicture(p: Post) {
-        GlobalScope.launch(Dispatchers.IO) {
-            FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL) {
-                Toast.makeText(this@PictureActivity, "Downloaded ${p.id}", Toast.LENGTH_SHORT).show()
+        GlobalScope.launch {
+            try {
+                FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL) {
+                    Toast.makeText(this@PictureActivity, "Downloaded ${p.id}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -157,7 +161,7 @@ class PictureActivity : AppCompatActivity() {
             })
             val p = m.dataSet[position]
             GlobalScope.launch {
-                val preview = downloader.getCachedBitmap(preview(p.id))
+                val preview = cache.getCachedBitmap(preview(p.id))
                 if (preview != null) launch(Dispatchers.Main) { imageView.setImageBitmap(preview) }
                 downloadImage(p.fileURL, original(p.id), { imageView.setImageBitmap(it) })
             }

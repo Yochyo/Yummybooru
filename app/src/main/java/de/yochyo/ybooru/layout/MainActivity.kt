@@ -23,6 +23,7 @@ import de.yochyo.ybooru.api.Downloader
 import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.api.api.DanbooruApi
 import de.yochyo.ybooru.api.api.MoebooruApi
+import de.yochyo.ybooru.api.cache
 import de.yochyo.ybooru.database.Database
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.database.entities.Server
@@ -53,7 +54,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        GlobalScope.launch { Downloader.getInstance(this@MainActivity).clearCache() }
+        GlobalScope.launch { cache.clearCache() }
         Api.addApi(DanbooruApi(""))
         Api.addApi(MoebooruApi(""))
         Database.initDatabase(this)

@@ -101,7 +101,6 @@ class MoebooruApi(url: String) : Api(url) {
                     tags += Tag(name, type)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
             }
         }
 

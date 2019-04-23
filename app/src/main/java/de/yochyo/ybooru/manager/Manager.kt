@@ -52,13 +52,15 @@ abstract class Manager(val tags: Array<String>) {
         get() = dataSet[position]
 
 
-    suspend fun loadPage(page: Int): List<Post> {
-        val p = downloadPage(page)
-        if (page > currentPage) {
-            currentPage = page
-            withContext(Dispatchers.Main) { dataSet += p }
-        }
-        return p
+    fun loadPage(page: Int): List<Post>? {
+        val p = pages[page]
+        if (p != null) {
+            if (page > currentPage) {
+                currentPage = page
+                dataSet += p
+            }
+            return p
+        } else return null
     }
 
     suspend fun downloadPage(page: Int): List<Post> {

@@ -56,9 +56,8 @@ abstract class Api(var url: String) {
         suspend fun getTag(name: String): Tag? {
             if (name == "*") return Tag(name, Tag.UNKNOWN)
             val json = getJson(instance!!.urlGetTag(name))
-            if (json != null)
-                if (!json.isNull(0))
-                    return Api.instance!!.getTagFromJson(json.getJSONObject(0))
+            if (json != null && json.length() > 0)
+                return instance!!.getTagFromJson(json.getJSONObject(0))
             return null
         }
 
@@ -96,28 +95,21 @@ abstract class Api(var url: String) {
             var array: JSONArray? = null
             withContext(Dispatchers.IO) {
                 try {
-                    val job = GlobalScope.launch {
-                        try {
-                            val result = StringBuilder()
-                            val url = URL(urlToRead)
-                            val conn = url.openConnection() as HttpURLConnection
-                            conn.addRequestProperty("User-Agent", "Mozilla/5.00")
-                            conn.requestMethod = "GET"
-                            val rd = BufferedReader(InputStreamReader(conn.inputStream))
-                            var line: String? = rd.readLine()
-                            while (line != null) {
-                                result.append(line)
-                                line = rd.readLine()
-                            }
-                            rd.close()
-                            array = JSONArray(result.toString())
-                        } catch (e: Exception) {
-                            println("URL: $urlToRead")
-                            e.printStackTrace()
-                        }
+                    val result = StringBuilder()
+                    val url = URL(urlToRead)
+                    val conn = url.openConnection() as HttpURLConnection
+                    conn.addRequestProperty("User-Agent", "Mozilla/5.00")
+                    conn.requestMethod = "GET"
+                    val rd = BufferedReader(InputStreamReader(conn.inputStream))
+                    var line: String? = rd.readLine()
+                    while (line != null) {
+                        result.append(line)
+                        line = rd.readLine()
                     }
-                    job.join()
+                    rd.close()
+                    array = JSONArray(result.toString())
                 } catch (e: Exception) {
+                    println("URL: $urlToRead")
                     e.printStackTrace()
                 }
             }

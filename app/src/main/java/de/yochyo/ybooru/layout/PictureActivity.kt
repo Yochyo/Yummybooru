@@ -19,6 +19,7 @@ import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.api.downloadImage
+import de.yochyo.ybooru.api.downloader
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.database.entities.Subscription
 import de.yochyo.ybooru.database.entities.Tag
@@ -155,10 +156,12 @@ class PictureActivity : AppCompatActivity() {
                 }
             })
             val p = m.dataSet[position]
-            downloadImage(p.filePreviewURL, preview(p.id), {
-                imageView.setImageBitmap(it)
+            GlobalScope.launch {
+                val preview = downloader.getCachedBitmap(preview(p.id))
+                if (preview != null) launch(Dispatchers.Main) { imageView.setImageBitmap(preview) }
                 downloadImage(p.fileURL, original(p.id), { imageView.setImageBitmap(it) })
-            }, false)
+            }
+
 
             container.addView(imageView)
             return imageView
@@ -189,7 +192,7 @@ class PictureActivity : AppCompatActivity() {
                     R.id.picture_info_item_subscribe -> {
                         if (db.getSubscription(tag.name) == null) {
                             db.addTag(Tag(tag.name, tag.type, tag.isFavorite))
-                            GlobalScope.launch { val currentID = Api.newestID();db.addSubscription(Subscription(tag.name, tag.type, currentID)) }
+                            GlobalScope.launch { val currentID = Api.newestID();db.addSubscription(Subscription(tag.name, tag.type, currentID, tag.count)) }
                             Toast.makeText(this@PictureActivity, "Add subscription${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             db.deleteSubscription(tag.name)

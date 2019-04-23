@@ -31,7 +31,7 @@ import java.util.*
 class SubscriptionActivity : AppCompatActivity() {
     private var root = SupervisorJob()
     private var clickedSub: Int? = null
-    private var newestIdWhenClicked: Int? = null
+    private var whenClicked: Pair<Int, Int>? = null //ID, count
     private lateinit var adapter: SubscribedTagAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,12 +70,13 @@ class SubscriptionActivity : AppCompatActivity() {
                 builder.setNegativeButton("No") { _, _ -> }
                 builder.setPositiveButton("Yes") { _, _ ->
                     GlobalScope.launch {
-                        sub.last = sub.current
-                        if (newestIdWhenClicked == null)
-                            sub.current = Api.newestID()
-                        else {
-                            sub.current = newestIdWhenClicked!!
-                            newestIdWhenClicked = null
+                        if (whenClicked == null) {
+                            sub.lastID = Api.newestID()
+                            sub.lastCount = Api.getTag(sub.name)?.count ?: 0
+                        } else {
+                            sub.lastID = whenClicked!!.first
+                            sub.lastCount = whenClicked!!.second
+                            whenClicked == null
                         }
                         launch(Dispatchers.Main) { db.changeSubscription(sub) }
                     }
@@ -101,7 +102,7 @@ class SubscriptionActivity : AppCompatActivity() {
                             val newest = Api.newestID()
                             launch(Dispatchers.Main) {
                                 val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN)
-                                db.addSubscription(Subscription(newTag.name, newTag.type, newest))
+                                db.addSubscription(Subscription(newTag.name, newTag.type, newest, newTag.count))
                             }
                         }
                     }
@@ -132,7 +133,9 @@ class SubscriptionActivity : AppCompatActivity() {
                         db.changeSubscription(sub.copy(isFavorite = !sub.isFavorite))
                         Toast.makeText(this@SubscriptionActivity, "${if (sub.isFavorite) "Favorite" else "Unfavorite"} <${sub.name}>", Toast.LENGTH_SHORT).show()
                     }
-                    1 -> { deleteSubDialog(sub) }
+                    1 -> {
+                        deleteSubDialog(sub)
+                    }
                 }
 
             }
@@ -143,10 +146,11 @@ class SubscriptionActivity : AppCompatActivity() {
             val b = AlertDialog.Builder(this@SubscriptionActivity)
             b.setTitle("Delete")
             b.setMessage("Delete Subscription ${sub.name}?")
-            b.setNegativeButton("No"){_,_->}
-            b.setPositiveButton("Yes"){_,_->
+            b.setNegativeButton("No") { _, _ -> }
+            b.setPositiveButton("Yes") { _, _ ->
                 db.deleteSubscription(sub.name)
-                Toast.makeText(this@SubscriptionActivity, "Deleted <${sub.name}>", Toast.LENGTH_SHORT).show()}
+                Toast.makeText(this@SubscriptionActivity, "Deleted <${sub.name}>", Toast.LENGTH_SHORT).show()
+            }
             b.show()
         }
 
@@ -156,7 +160,9 @@ class SubscriptionActivity : AppCompatActivity() {
             layout.setOnClickListener {
                 val sub = subs.elementAt(adapterPosition)
                 clickedSub = adapterPosition
-                GlobalScope.launch { newestIdWhenClicked = Api.newestID() } //TODO was ist, wenn der download erst fertig ist, wenn die activity wieder resumed wurde
+                GlobalScope.launch {
+                    whenClicked = Pair(Api.getTag(sub.name)?.count ?: 0, Api.newestID())
+                } //TODO was ist, wenn der download erst fertig ist, wenn die activity wieder resumed wurde
                 PreviewActivity.startActivity(this@SubscriptionActivity, sub.toString())
             }
             layout.setOnLongClickListener {
@@ -173,26 +179,13 @@ class SubscriptionActivity : AppCompatActivity() {
             text1.text = sub.name
             text1.setColor(sub.color)
             text1.underline(sub.isFavorite)
-            if (sub.current == 0) text2.text = "Number of new pictures: ~"
-            else {
-                text2.text = "Number of new pictures: "
-                addChild(root) {
-                    val pos = holder.adapterPosition
-                    val m = Manager.getOrInit(sub.toString())
-                    var oldestID = Int.MAX_VALUE
-                    var currentPage = 0
-                    var posts = 0
-                    try {
-                        while (oldestID > sub.current && isActive) {
-                            //TODO das hier beschleunigen
-                            //TODO statt postanzahl ~Posts durch Seitenanzahl*Seitengröße
-                            val page = m.downloadPage(++currentPage)
-                            posts += page.size
-                            oldestID = page.last().id
-                        }
-                    } catch (e: Exception) {
-                    }
-                    if (holder.adapterPosition == pos) launch(Dispatchers.Main) { text2.text = "Number of new pictures: $posts" }
+            text2.text = "Number of new pictures: "
+            GlobalScope.launch {
+                var tag = Api.getTag(sub.name)
+                if (tag == null) tag = Tag(sub.name, sub.type)
+                val countDifference = tag.count - sub.lastCount
+                launch(Dispatchers.Main) {
+                    text2.text = "Number of new pictures: $countDifference"
                 }
             }
         }

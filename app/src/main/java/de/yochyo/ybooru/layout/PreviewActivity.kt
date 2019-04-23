@@ -58,9 +58,11 @@ open class PreviewActivity : AppCompatActivity() {
         isLoadingView = true
         GlobalScope.launch {
             val i = m.dataSet.size
-            val posts = m.loadPage(page)
+            m.downloadPage(page)
             launch(Dispatchers.Main) {
-                previewAdapter.notifyItemRangeInserted(if (i > 0) i - 1 else 0, posts.size) //TODO bug?
+                val posts = m.loadPage(page)
+                if (posts != null)
+                    previewAdapter.notifyItemRangeInserted(i, posts.size)
                 isLoadingView = false
             }
             launch { m.downloadPage(m.currentPage + 1) }
@@ -120,7 +122,7 @@ open class PreviewActivity : AppCompatActivity() {
 
         override fun onViewDetachedFromWindow(holder: PreviewViewHolder) {
             super.onViewDetachedFromWindow(holder)
-          //  holder.imageView.setImageBitmap(null)
+            //  holder.imageView.setImageBitmap(null)
         }
 
         override fun onViewAttachedToWindow(holder: PreviewViewHolder) {

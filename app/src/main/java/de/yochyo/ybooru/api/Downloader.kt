@@ -31,6 +31,7 @@ abstract class Downloader(context: Context) {
                     if (downloads.isNotEmpty()) {
                         try {
                             val download = downloads.takeLast()
+                            println(download.id)
                             var bitmap = getCachedBitmap(download.id)
                             if (bitmap == null) {
                                 val conn = URL(download.url).openConnection()
@@ -66,7 +67,7 @@ abstract class Downloader(context: Context) {
 
     suspend fun getCachedBitmap(id: String): Bitmap? {
         return withContext(Dispatchers.IO) {
-            val f = getCachedFile(id)?.apply {
+            getCachedFile(id)?.apply {
                 val stream = inputStream()
                 val bitmap = BitmapFactory.decodeStream(stream)
                 stream.close()

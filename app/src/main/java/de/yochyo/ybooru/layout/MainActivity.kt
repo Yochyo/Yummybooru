@@ -175,7 +175,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     R.id.main_search_favorite_tag -> db.changeTag(tag.copy(isFavorite = !tag.isFavorite))
                     R.id.main_search_subscribe_tag -> {
                         if (db.getSubscription(tag.name) == null) {
-                            GlobalScope.launch { val currentID = Api.newestID();launch(Dispatchers.Main) { db.addSubscription(Subscription(tag.name, tag.type, currentID)) } }
+                            GlobalScope.launch { val currentID = Api.newestID();launch(Dispatchers.Main) { db.addSubscription(Subscription(tag.name, tag.type, currentID, tag.count)) } }
                             Toast.makeText(this@MainActivity, "Subscribed ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             db.deleteSubscription(tag.name)
@@ -232,7 +232,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         private fun editServerDialog(server: Server) {
-            AddServerDialog { db.changeServer(it);(if (Server.currentServer == it) it.select()); Toast.makeText(this@MainActivity, "Edited <${it.name}>", Toast.LENGTH_SHORT).show() }.apply {
+            AddServerDialog {
+                db.changeServer(it)
+                if (Server.currentServer == it){
+                    it.select()
+                    Manager.resetAll()
+                }
+                Toast.makeText(this@MainActivity, "Edited <${it.name}>", Toast.LENGTH_SHORT).show()
+            }.apply {
                 serverID = server.id
                 nameText = server.name
                 apiText = server.api

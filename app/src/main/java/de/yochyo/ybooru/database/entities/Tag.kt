@@ -3,10 +3,11 @@ package de.yochyo.ybooru.database.entities
 import android.arch.persistence.room.*
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.database.db
+import org.json.JSONObject
 import java.util.*
 
 @Entity(tableName = "tags", primaryKeys = ["name", "serverID"])
-data class Tag(val name: String, var type: Int, var isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID) : Comparable<Tag> {
+data class Tag(val name: String, val type: Int, var isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID, val count: Int = 0) : Comparable<Tag> {
 
     companion object {
         const val GENERAL = 0

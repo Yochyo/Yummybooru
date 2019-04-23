@@ -12,7 +12,7 @@ import org.json.JSONObject
 class MoebooruApi(url: String) : Api(url) {
 
     override val name: String = "moebooru"
-    override fun urlGetTag(name: String): String = "${url}tag.json?name=*$name" //TODO funktioniert das?
+    override fun urlGetTag(name: String): String = "${url}tag.json?name=*$name"
     override fun urlGetTags(beginSequence: String): String {
         return "${url}tag.json?name=$beginSequence*&limit=${Api.searchTagLimit}"
     }
@@ -113,7 +113,7 @@ class MoebooruApi(url: String) : Api(url) {
             var type = json.getInt("type")
             if (type !in 0..5)
                 type = Tag.UNKNOWN
-            Tag(json.getString("name"), type)
+            Tag(json.getString("name"), type, count = json.getInt("count"))
         } catch (e: Exception) {
             e.printStackTrace()
             null

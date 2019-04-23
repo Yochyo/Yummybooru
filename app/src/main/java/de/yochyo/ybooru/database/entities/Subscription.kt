@@ -2,11 +2,14 @@ package de.yochyo.ybooru.database.entities
 
 import android.arch.persistence.room.*
 import de.yochyo.ybooru.R
+import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.database.db
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.*
 
 @Entity(tableName = "subs", primaryKeys = ["name", "serverID"])
-data class Subscription(val name: String, var type: Int, var last: Int, var current: Int = last, var isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID) : Comparable<Subscription> {
+data class Subscription(val name: String, var type: Int, var lastID: Int, var lastCount: Int, var isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID) : Comparable<Subscription> {
     val color: Int
         get() {
             when (type) {
@@ -19,7 +22,7 @@ data class Subscription(val name: String, var type: Int, var last: Int, var curr
             }
         }
 
-    override fun toString() = "id:>$current $name"
+    override fun toString() = "id:>$lastID $name"
 
     override fun compareTo(other: Subscription): Int {
         if (db.sortSubsByFavorite) {

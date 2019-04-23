@@ -29,7 +29,6 @@ import kotlinx.coroutines.*
 import java.util.*
 
 class SubscriptionActivity : AppCompatActivity() {
-    private var root = SupervisorJob()
     private var clickedSub: Int? = null
     private var whenClicked: Pair<Int, Int>? = null //ID, count
     private lateinit var adapter: SubscribedTagAdapter
@@ -46,16 +45,18 @@ class SubscriptionActivity : AppCompatActivity() {
         db.subs.observe(this, Observer<TreeSet<Subscription>> { t -> if (t != null) adapter.updateSubs(t) })
         subs_swipe_refresh_layout.setOnRefreshListener {
             subs_swipe_refresh_layout.isRefreshing = false
-            root.cancelChildren()
-            root = SupervisorJob()
             adapter.notifyDataSetChanged()
+            clear()
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Manager.resetAll()
-        root.cancelChildren()
+    }
+    private fun clear(){
+        whenClicked = null
+        clickedSub = null
     }
 
     override fun onResume() {

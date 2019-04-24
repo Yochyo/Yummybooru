@@ -3,10 +3,7 @@ package de.yochyo.ybooru.api.api
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.database.entities.Server
 import de.yochyo.ybooru.database.entities.Tag
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.json.JSONObject
 
 class MoebooruApi(url: String) : Api(url) {
@@ -28,7 +25,7 @@ class MoebooruApi(url: String) : Api(url) {
             val fileURL = json.getString("file_url")
             val id = json.getInt("id")
 
-            return object : Post {
+            return object : Post() {
                 override val id = id
                 override val width = json.getInt("jpeg_width")
                 override val height = json.getInt("jpeg_height")
@@ -38,13 +35,12 @@ class MoebooruApi(url: String) : Api(url) {
                 override val fileURL = fileURL
                 override val fileSampleURL = json.getString("sample_url")
                 override val filePreviewURL = json.getString("preview_url")
-                override val tags: List<Tag> by lazy {
-                    var result : List<Tag> = emptyList()
-                    runBlocking {
-                        GlobalScope.async { result = getTagsfromURL(getURLSourceLines("${Server.currentServer.url}post/show/$id")) }.await()
-                    }
-                    result
-                } //TODO
+                private var tags: List<Tag>? = null
+                override suspend fun getTags(): List<Tag> {
+                    if (tags == null)
+                        tags = getTagsfromURL(getURLSourceLines("${Server.currentServer.url}post/show/$id"))
+                    return tags!!
+                }
 
                 override fun toString(): String {
                     return "[$id] [${width}x$height]\nTags: $tags \n$fileURL\n$fileSampleURL\n$filePreviewURL"

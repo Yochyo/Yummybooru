@@ -61,10 +61,10 @@ class PictureActivity : AppCompatActivity() {
             if (p != null) {
                 val pos = m.position
                 GlobalScope.launch {
-                    val tags = p.tags as ArrayList<Tag>
+                    val tags = p.getTags()
                     launch(Dispatchers.Main) {
                         if (pos == m.position) {
-                            currentTags = tags
+                            currentTags = tags as ArrayList<Tag>
                             recycleView.adapter?.notifyDataSetChanged()
                         }
                     }
@@ -82,7 +82,7 @@ class PictureActivity : AppCompatActivity() {
                             currentTags.clear()
                             recycleView.adapter?.notifyDataSetChanged()
                             GlobalScope.launch {
-                                val tags = post.tags as ArrayList<Tag>
+                                val tags = post.getTags() as ArrayList<Tag>
                                 launch(Dispatchers.Main) {
                                     if (position == m.position) {
                                         currentTags = tags
@@ -100,7 +100,6 @@ class PictureActivity : AppCompatActivity() {
 
         }
     }
-
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {

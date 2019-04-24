@@ -35,7 +35,7 @@ class DanbooruApi(url: String) : Api(url) {
             tags += tagsCharacter
             tags += tagsGeneral
             tags += tagsMeta
-            return object : Post {
+            return object : Post() {
                 override val id = json.getInt("id")
                 override val width = json.getInt("image_width")
                 override val height = json.getInt("image_height")
@@ -45,7 +45,7 @@ class DanbooruApi(url: String) : Api(url) {
                 override val fileURL = json.getString("file_url")
                 override val fileSampleURL = json.getString("large_file_url")
                 override val filePreviewURL = json.getString("preview_file_url")
-                override val tags = tags
+                override suspend fun getTags() = tags
                 override fun toString(): String {
                     return "[$id] [${width}x$height]\nTags: $tags \n$fileURL\n$fileSampleURL\n$filePreviewURL"
                 }

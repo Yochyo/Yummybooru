@@ -37,16 +37,18 @@ object FileUtils {
         }
     }
 
-    private fun createFileToWrite(post: Post): File {
-        val folder = File("$saveDirectory${Server.currentServer.urlHost}/")
-        folder.mkdirs()
-        val f = File("${folder.absolutePath}/${postToFilename(post)}")
-        f.createNewFile()
-        return f
+    private suspend fun createFileToWrite(post: Post): File {
+        return withContext(Dispatchers.IO) {
+            val folder = File("$saveDirectory${Server.currentServer.urlHost}/")
+            folder.mkdirs()
+            val f = File("${folder.absolutePath}/${postToFilename(post)}")
+            f.createNewFile()
+            f
+        }
     }
 
-    private fun postToFilename(p: Post): String {
-        val s = "${Server.currentServer.urlHost} ${p.id} ${p.tags.joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '<' && it != '>' }
+    private suspend fun postToFilename(p: Post): String {
+        val s = "${Server.currentServer.urlHost} ${p.id} ${p.getTags().joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '<' && it != '>' }
         var last = s.length
         if (last > 123) last = 123
         return "${s.substring(0, last)}.png"

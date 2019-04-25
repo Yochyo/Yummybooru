@@ -3,6 +3,7 @@ package de.yochyo.ybooru.layout
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v4.view.GravityCompat
 import android.support.v4.view.PagerAdapter
 import android.support.v4.view.ViewPager
@@ -28,9 +29,7 @@ import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.*
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 
 class PictureActivity : AppCompatActivity() {
@@ -152,6 +151,12 @@ class PictureActivity : AppCompatActivity() {
                         Fling.Direction.up -> {
                             val p = m.dataSet[position]
                             downloadOriginalPicture(p)
+                            val snack = Snackbar.make(view_pager, "Download", Snackbar.LENGTH_SHORT)
+                            snack.show()
+                            GlobalScope.launch {
+                                delay(150)
+                                withContext(Dispatchers.Main){snack.dismiss()}
+                            }
                         }
                         else -> return false
                     }

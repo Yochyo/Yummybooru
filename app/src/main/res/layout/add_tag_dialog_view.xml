@@ -4,7 +4,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
     <AutoCompleteTextView
-            android:hint="Tag"
+            android:hint="@string/tag"
             android:id="@+id/add_tag_edittext"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

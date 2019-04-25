@@ -15,11 +15,12 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
     var apiText = ""
     var urlText = ""
     var userText = ""
-    var message = "Add Server"
+    var message = ""
     var passwordText = ""
     var enableR18 = false
 
     fun build(context: Context) {
+        if(message == "") message = context.getString(R.string.add_server)
         val builder = AlertDialog.Builder(context)
         val layout = LayoutInflater.from(context).inflate(R.layout.add_server_dialog_view, null) as LinearLayout
         builder.setView(layout)
@@ -27,7 +28,7 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
         val adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1)
         adapter.addAll(Api.apis.map { it.name })
         spinner.adapter = adapter
-        builder.setMessage("Change Server")
+        builder.setMessage(context.getString(R.string.add_server))
 
         val name = layout.findViewById<TextView>(R.id.add_server_name).apply { text = nameText }
         val api = layout.findViewById<Spinner>(R.id.add_server_api).apply {
@@ -44,7 +45,7 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
 
 
 
-        builder.setPositiveButton("OK") { _, _ ->
+        builder.setPositiveButton(context.getString(R.string.ok)) { _, _ ->
             val s = Server(name.text.toString(), api.selectedItem.toString(), parseURL(url.text.toString()), username.text.toString(),
                     password.text.toString(), id = serverID, enableR18Filter = r18.isChecked)
             runOnPositive(s)

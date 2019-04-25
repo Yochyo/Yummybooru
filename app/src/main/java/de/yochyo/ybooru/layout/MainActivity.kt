@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         }
                     }
                 }
-            }.apply { title = "Add Subscription" }.build(this)
+            }.apply { title = getString(R.string.add_tag) }.build(this)
         }
     }
 
@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_add_server -> AddServerDialog { db.addServer(it); Toast.makeText(this, "Add Server", Toast.LENGTH_SHORT).show() }.apply { serverID = db.nextServerID++ }.build(this)
+            R.id.action_add_server -> AddServerDialog { db.addServer(it); Toast.makeText(this, getString(R.string.add_server), Toast.LENGTH_SHORT).show() }.apply { serverID = db.nextServerID++ }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
         }
         return super.onOptionsItemSelected(item)
@@ -133,7 +133,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 i.data = Uri.parse("https://discord.gg/tbGCHpF")
                 startActivity(i)
             }
-            R.id.nav_help -> Toast.makeText(this, "Join Discord", Toast.LENGTH_SHORT).show()
+            R.id.nav_help -> Toast.makeText(this, getString(R.string.join_discord), Toast.LENGTH_SHORT).show()
         }
         drawer_layout.closeDrawer(GravityCompat.START)
         return super.onOptionsItemSelected(item)
@@ -177,10 +177,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     R.id.main_search_subscribe_tag -> {
                         if (db.getSubscription(tag.name) == null) {
                             GlobalScope.launch { val currentID = Api.newestID();launch(Dispatchers.Main) { db.addSubscription(Subscription(tag.name, tag.type, currentID, tag.count)) } }
-                            Toast.makeText(this@MainActivity, "Subscribed ${tag.name}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@MainActivity, "${getString(R.string.subscripted)} ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             db.deleteSubscription(tag.name)
-                            Toast.makeText(this@MainActivity, "Unsubscribed ${tag.name}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@MainActivity, "${getString(R.string.unsubscribed)} ${tag.name}", Toast.LENGTH_SHORT).show()
                         }
                         notifyItemChanged(adapterPosition)
                     }
@@ -218,14 +218,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         private fun longClickDialog(server: Server) {
             val builder = AlertDialog.Builder(this@MainActivity)
-            builder.setItems(arrayOf("Edit Server", "Delete Server")) { dialog, i ->
+            builder.setItems(arrayOf(getString(R.string.edit_server), getString(R.string.delete_server))) { dialog, i ->
                 dialog.cancel()
                 when (i) {
                     0 -> editServerDialog(server)
                     1 -> {
                         if (!server.isSelected) {
                             deleteServerDialog(server)
-                        } else Toast.makeText(this@MainActivity, "Cannot delete selected server", Toast.LENGTH_SHORT).show()
+                        } else Toast.makeText(this@MainActivity, getString(R.string.cannot_delete_server), Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     it.select()
                     Manager.resetAll()
                 }
-                Toast.makeText(this@MainActivity, "Edited <${it.name}>", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "${getString(R.string.edited)} [${it.name}]", Toast.LENGTH_SHORT).show()
             }.apply {
                 serverID = server.id
                 nameText = server.name
@@ -247,19 +247,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 urlText = server.url
                 userText = server.userName
                 passwordText = server.password
-                message = "Edit Server"
+                message = getString(R.string.edit_server)
                 enableR18 = server.enableR18Filter
             }.build(this@MainActivity)
         }
 
         private fun deleteServerDialog(server: Server) {
             val b = AlertDialog.Builder(this@MainActivity)
-            b.setTitle("Delete")
-            b.setMessage("Do you want to delete the server <${server.name}>")
-            b.setNegativeButton("No") { _, _ -> }
-            b.setPositiveButton("Yes") { _, _ ->
+            b.setTitle(R.string.delete)
+            b.setMessage("${getString(R.string.do_you_want_to_delete_the_server)} [${server.name}]")
+            b.setNegativeButton(getString(R.string.no)) { _, _ -> }
+            b.setPositiveButton(getString(R.string.yes)) { _, _ ->
                 server.deleteServer()
-                Toast.makeText(this@MainActivity, "Deleted <${server.name}>", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "${getString(R.string.deleted)} [${server.name}]", Toast.LENGTH_SHORT).show()
             }
             b.show()
         }
@@ -271,7 +271,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 server.select()
                 notifyDataSetChanged()
                 selectedTags.clear()
-                Toast.makeText(this@MainActivity, "Selected Server", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, getString(R.string.selected_server), Toast.LENGTH_SHORT).show()
             }
             holder.layout.setOnLongClickListener {
                 val server = servers.elementAt(holder.adapterPosition)

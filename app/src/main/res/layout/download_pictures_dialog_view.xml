@@ -8,12 +8,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/transparent"
-            android:text="Download all visible pictures"/>
+            android:text="@string/download_all_visible"/>
 
     <Button android:id="@+id/download_all_from_tags"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/transparent"
-            android:text="Download all pictures"/>
+            android:text="@string/download_all_pictures"/>
 
 </LinearLayout>

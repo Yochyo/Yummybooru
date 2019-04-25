@@ -48,7 +48,7 @@
                 <Button
                         android:id="@+id/add_search"
                         android:layout_width="0dp"
-                        android:text="Add"
+                        android:text="@string/add"
                         android:background="@color/transparent"
                         android:textColor="@color/white"
                         android:layout_height="wrap_content"
@@ -57,7 +57,7 @@
                         android:id="@+id/start_search"
                         android:layout_width="0dp"
                         android:background="@color/transparent"
-                        android:text="Search"
+                        android:text="@string/search"
                         android:textColor="@color/white"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"/>

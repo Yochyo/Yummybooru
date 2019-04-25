@@ -128,7 +128,7 @@ class PictureActivity : AppCompatActivity() {
         GlobalScope.launch {
             try {
                 FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL) {
-                    Toast.makeText(this@PictureActivity, "Downloaded ${p.id}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@PictureActivity, "${getString(R.string.downloaded)}: ${p.id}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -151,7 +151,7 @@ class PictureActivity : AppCompatActivity() {
                         Fling.Direction.up -> {
                             val p = m.dataSet[position]
                             downloadOriginalPicture(p)
-                            val snack = Snackbar.make(view_pager, "Download", Snackbar.LENGTH_SHORT)
+                            val snack = Snackbar.make(view_pager, getString(R.string.download), Snackbar.LENGTH_SHORT)
                             snack.show()
                             GlobalScope.launch {
                                 delay(150)
@@ -190,21 +190,21 @@ class PictureActivity : AppCompatActivity() {
                 when (it.itemId) {
                     R.id.picture_info_item_add_history -> {
                         db.addTag(Tag(tag.name, tag.type))
-                        Toast.makeText(this@PictureActivity, "Add tag ${tag.name}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@PictureActivity, "${getString(R.string.add_tag)} ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
                     R.id.picture_info_item_add_favorite -> {
                         if (db.getTag(tag.name) == null) db.addTag(Tag(tag.name, tag.type, true))
                         else db.changeTag(tag.apply { isFavorite = true })
-                        Toast.makeText(this@PictureActivity, "Add favorite ${tag.name}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@PictureActivity, "${getString(R.string.add_favorite)} ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
                     R.id.picture_info_item_subscribe -> {
                         if (db.getSubscription(tag.name) == null) {
                             db.addTag(Tag(tag.name, tag.type, tag.isFavorite))
                             GlobalScope.launch { val currentID = Api.newestID();db.addSubscription(Subscription(tag.name, tag.type, currentID, tag.count)) }
-                            Toast.makeText(this@PictureActivity, "Add subscription${tag.name}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@PictureActivity, "${getString(R.string.add_subscription)} ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             db.deleteSubscription(tag.name)
-                            Toast.makeText(this@PictureActivity, "Unsubscribed ${tag.name}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@PictureActivity, "${getString(R.string.unsubscribed)} ${tag.name}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }

@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/download_all"
-          android:title="Download All"
+          android:title="@string/download_all"
           android:icon="@drawable/search"
           app:showAsAction="never"/>
 </menu>

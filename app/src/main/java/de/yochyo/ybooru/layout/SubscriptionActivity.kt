@@ -67,9 +67,9 @@ class SubscriptionActivity : AppCompatActivity() {
             val sub = db.subs[pos]
             if (Manager.getOrInit(sub.toString()).dataSet.isNotEmpty()) {
                 val builder = AlertDialog.Builder(this)
-                builder.setTitle("Save").setMessage("Update last id?")
-                builder.setNegativeButton("No") { _, _ -> }
-                builder.setPositiveButton("Yes") { _, _ ->
+                builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
+                builder.setNegativeButton(R.string.no) { _, _ -> }
+                builder.setPositiveButton(R.string.yes) { _, _ ->
                     GlobalScope.launch {
                         if (whenClicked == null) {
                             sub.lastID = Api.newestID()
@@ -107,7 +107,7 @@ class SubscriptionActivity : AppCompatActivity() {
                             }
                         }
                     }
-                }.apply { title = "Add Subscription" }.build(this)
+                }.apply { title = getString(R.string.add_subscription) }.build(this)
             }
         }
         return super.onOptionsItemSelected(item)
@@ -125,14 +125,14 @@ class SubscriptionActivity : AppCompatActivity() {
         private fun longClickDialog(sub: Subscription) {
             val builder = AlertDialog.Builder(this@SubscriptionActivity)
             val array: Array<String>
-            if (sub.isFavorite) array = arrayOf("Unfavorite", "Delete")
-            else array = arrayOf("Set Favorite", "Delete")
+            if (sub.isFavorite) array = arrayOf(getString(R.string.unfavorite), getString(R.string.delete))
+            else array = arrayOf(getString(R.string.set_favorite), getString(R.string.delete))
             builder.setItems(array) { dialog, i ->
                 dialog.cancel()
                 when (i) {
                     0 -> {
                         db.changeSubscription(sub.copy(isFavorite = !sub.isFavorite))
-                        Toast.makeText(this@SubscriptionActivity, "${if (sub.isFavorite) "Favorite" else "Unfavorite"} <${sub.name}>", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@SubscriptionActivity, "${if (sub.isFavorite) getString(R.string.favorite) else getString(R.string.unfavorite)} <${sub.name}>", Toast.LENGTH_SHORT).show()
                     }
                     1 -> {
                         deleteSubDialog(sub)
@@ -145,12 +145,12 @@ class SubscriptionActivity : AppCompatActivity() {
 
         private fun deleteSubDialog(sub: Subscription) {
             val b = AlertDialog.Builder(this@SubscriptionActivity)
-            b.setTitle("Delete")
-            b.setMessage("Delete Subscription ${sub.name}?")
-            b.setNegativeButton("No") { _, _ -> }
-            b.setPositiveButton("Yes") { _, _ ->
+            b.setTitle(R.string.delete)
+            b.setMessage("${getString(R.string.delete)} ${getString(R.string.subscription)} ${sub.name}?")
+            b.setNegativeButton(R.string.no) { _, _ -> }
+            b.setPositiveButton(R.string.yes) { _, _ ->
                 db.deleteSubscription(sub.name)
-                Toast.makeText(this@SubscriptionActivity, "Deleted <${sub.name}>", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@SubscriptionActivity, "${getString(R.string.deleted)} [${sub.name}]", Toast.LENGTH_SHORT).show()
             }
             b.show()
         }
@@ -180,13 +180,13 @@ class SubscriptionActivity : AppCompatActivity() {
             text1.text = sub.name
             text1.setColor(sub.color)
             text1.underline(sub.isFavorite)
-            text2.text = "Number of new pictures: "
+            text2.text = getString(R.string.number_of_new_pictures)
             GlobalScope.launch {
                 var tag = Api.getTag(sub.name)
                 if (tag == null) tag = Tag(sub.name, sub.type)
                 val countDifference = tag.count - sub.lastCount
                 launch(Dispatchers.Main) {
-                    text2.text = "Number of new pictures: $countDifference"
+                    text2.text = "${getString(R.string.number_of_new_pictures)}$countDifference"
                 }
             }
         }

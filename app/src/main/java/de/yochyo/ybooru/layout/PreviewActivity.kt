@@ -11,6 +11,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.downloadImage
 import de.yochyo.ybooru.manager.Manager
@@ -92,7 +93,7 @@ open class PreviewActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
-            R.id.download_all -> finish()//TODO
+            R.id.download_all -> Toast.makeText(this, getString(R.string.not_inplemented), Toast.LENGTH_SHORT).show()
         }
         return super.onOptionsItemSelected(item)
     }
@@ -117,7 +118,7 @@ open class PreviewActivity : AppCompatActivity() {
 
         override fun getItemCount(): Int = m.dataSet.size
         override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) {
-            holder.imageView.setImageBitmap(null) //TODO könnte das hier bugs erschaffen? wenn ja löschen und onViewDetached wiederherstellen
+            holder.imageView.setImageBitmap(null)
         }
 
         override fun onViewDetachedFromWindow(holder: PreviewViewHolder) {
@@ -127,7 +128,7 @@ open class PreviewActivity : AppCompatActivity() {
 
         override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
             val pos = holder.adapterPosition
-            //TODO hier könnte es diesen einen absturz geben
+            //hier könnte es diesen einen absturz geben
             if (pos != -1) {
                 val p = m.dataSet[holder.adapterPosition]
                 downloadImage(p.filePreviewURL, preview(p.id), {

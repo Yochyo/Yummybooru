@@ -1,10 +1,7 @@
 <resources>
     <string name="app_name">yBooru</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
-    <string name="nav_header_desc">Navigation header</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="enter_r18">Enter R-18 mode</string>
     <string name="leave_r18">Leave R-18 mode</string>
     <string name="title_activity_preview">PreviewActivity</string>
@@ -17,7 +14,6 @@
     <!-- Example General settings -->
     <string name="pref_header_general">General</string>
 
-    <string name="pref_title_social_recommendations">Enable social recommendations</string>
     <string name="pref_description_social_recommendations">Recommendations for people to contact based on your message
         history
     </string>
@@ -59,52 +55,50 @@
         <item>01</item>
         <item>00</item>
     </string-array>
+    <string name="save">Save</string>
+    <string name="update_last_id">Update last id?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="add_subscription">Add Subscription</string>
+    <string name="unfavorite">Unfavorite</string>
+    <string name="set_favorite">Set favorite</string>
+    <string name="favorite">Favorite</string>
+    <string name="delete">Delete</string>
+    <string name="subscription">Subscription</string>
+    <string name="subscripted">Subscripted</string>
+    <string name="deleted">Deleted</string>
+    <string name="number_of_new_pictures">Number of new pictures: </string>
+    <string name="not_inplemented">Not yet implemented</string>
+    <string name="add_tag">Add Tag</string>
+    <string name="add_favorite">Add Favorite</string>
+    <string name="unsubscribed">Unsubscribed</string>
+    <string name="download">Download</string>
+    <string name="downloaded">Downloaded</string>
+    <string name="add_server">Add Server</string>
+    <string name="join_discord">Join Discord</string>
+    <string name="edit_server">Edit Server</string>
+    <string name="delete_server">Delete Server</string>
+    <string name="cannot_delete_server">Cannot delete selected server</string>
+    <string name="edited">Edited</string>
+    <string name="do_you_want_to_delete_the_server">Do you want to delete the server</string>
+    <string name="selected_server">Selected Server</string>
+    <string name="change_server">Change Server</string>
+    <string name="ok">OK</string>
+    <string name="download_all">Download all</string>
+    <string name="show_info">Show info</string>
+    <string name="search">Search</string>
+    <string name="subscriptions">Subscriptions</string>
+    <string name="settings">Settings</string>
+    <string name="community">Community</string>
+    <string name="help">Help</string>
+    <string name="add">Add</string>
+    <string name="name">Name</string>
+    <string name="enable_safe_filter">Enable safe filter</string>
+    <string name="url">Url</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="tag">Tag</string>
+    <string name="download_all_pictures">Download all pictures</string>
+    <string name="download_all_visible">Download all visible pictures</string>
 
-
-    <!-- Example settings for Data & Sync -->
-    <string name="pref_header_data_sync">Data &amp; sync</string>
-
-    <string name="pref_title_sync_frequency">Sync frequency</string>
-    <string-array name="pref_sync_frequency_titles">
-        <item>15 minutes</item>
-        <item>30 minutes</item>
-        <item>1 hour</item>
-        <item>3 hours</item>
-        <item>6 hours</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_sync_frequency_values">
-        <item>15</item>
-        <item>30</item>
-        <item>60</item>
-        <item>180</item>
-        <item>360</item>
-        <item>-1</item>
-    </string-array>
-
-    <string-array name="list_preference_entries">
-        <item>Entry 1</item>
-        <item>Entry 2</item>
-        <item>Entry 3</item>
-    </string-array>
-
-    <string-array name="list_preference_entry_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
-    <string-array name="multi_select_list_preference_default_value"/>
-
-    <string name="pref_title_system_sync_settings">System sync settings</string>
-
-    <!-- Example settings for Notifications -->
-    <string name="pref_header_notifications">Notifications</string>
-
-    <string name="pref_title_new_message_notifications">New message notifications</string>
-
-    <string name="pref_title_ringtone">Ringtone</string>
-    <string name="pref_ringtone_silent">Silent</string>
-
-    <string name="pref_title_vibrate">Vibrate</string>
 </resources>

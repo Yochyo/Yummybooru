@@ -8,8 +8,6 @@ val pos = holder.adapterPosition
                 var posts = 0
                 try {
                     while (oldestID > sub.current && isActive) {
-                        //TODO das hier beschleunigen
-                        //TODO statt postanzahl ~Posts durch Seitenanzahl*Seitengröße
                         val page = m.downloadPage(++currentPage)
                         posts += page.size
                         oldestID = page.last().id

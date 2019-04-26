@@ -227,6 +227,20 @@ abstract class Database : RoomDatabase() {
                 apply()
             }
         }
+    var _downloadOriginal: Boolean? = null
+    var downloadOriginal: Boolean
+        get() {
+            if (_downloadOriginal == null) _downloadOriginal = prefs.getBoolean("downloadOriginal", true)
+            return _downloadOriginal!!
+        }
+        set(v) {
+            _downloadOriginal = v
+            with(prefs.edit()) {
+                putBoolean("downloadOriginal", v)
+                apply()
+            }
+        }
+
     var sortTagsByFavorite: Boolean
         get() = sortTags.first() == '1'
         set(v) {

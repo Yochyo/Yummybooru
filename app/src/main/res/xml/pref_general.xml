@@ -1,29 +1,28 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+            android:key="downloadOriginal"
+            android:title="Download extra large picture"
+            android:summary="Large pictures take longer to download"
+            android:defaultValue="true"/>
     <ListPreference
             android:key="limit"
             android:title="Post per page"
             android:summary="More posts can cause longer loading times."
             android:defaultValue="30"
             android:entries="@array/post_limit"
-            android:entryValues="@array/post_limit"
-            android:negativeButtonText="@null"
-            android:positiveButtonText="@null"/>
+            android:entryValues="@array/post_limit"/>
     <ListPreference
             android:key="sortTags"
             android:title="Sort tags by"
             android:summary="Sort tags in Subscription Activity."
             android:defaultValue="11"
             android:entries="@array/tags_sort_entries"
-            android:entryValues="@array/tags_sort_values"
-            android:negativeButtonText="@null"
-            android:positiveButtonText="@null"/>
+            android:entryValues="@array/tags_sort_values"/>
     <ListPreference
             android:key="sortSubs"
             android:title="Sort subs by"
             android:summary="Sort subs in Subscription Activity."
             android:defaultValue="11"
             android:entries="@array/subs_sort_entries"
-            android:entryValues="@array/subs_sort_values"
-            android:negativeButtonText="@null"
-            android:positiveButtonText="@null"/>
+            android:entryValues="@array/subs_sort_values"/>
 </PreferenceScreen>

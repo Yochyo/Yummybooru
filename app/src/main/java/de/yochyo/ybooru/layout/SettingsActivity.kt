@@ -31,6 +31,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
                 }
                 "sortSubs" -> database.sortSubs = value.toString()
                 "sortTags" -> database.sortTags = value.toString()
+                "downloadOriginal" -> database.downloadOriginal = value.toString().toBoolean()
                 //Add here
             }
             true
@@ -42,8 +43,10 @@ class SettingsActivity : AppCompatPreferenceActivity() {
 
         private fun bindPreferenceSummaryToValue(preference: Preference) {
             preference.onPreferenceChangeListener = sBindPreferenceSummaryToValueListener
-            sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-                    PreferenceManager.getDefaultSharedPreferences(preference.context).getString(preference.key, ""))
+            if (preference.key == "downloadOriginal")
+                sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, PreferenceManager.getDefaultSharedPreferences(preference.context).getBoolean(preference.key, true))
+            else
+                sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, PreferenceManager.getDefaultSharedPreferences(preference.context).getString(preference.key, ""))
         }
     }
 
@@ -56,6 +59,8 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             bindPreferenceSummaryToValue(findPreference("limit"))
             bindPreferenceSummaryToValue(findPreference("sortSubs"))
             bindPreferenceSummaryToValue(findPreference("sortTags"))
+            bindPreferenceSummaryToValue(findPreference("downloadOriginal"))
+            //hier einfügen
         }
 
         override fun onOptionsItemSelected(item: MenuItem): Boolean {

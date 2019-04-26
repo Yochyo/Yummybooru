@@ -126,12 +126,14 @@ class PictureActivity : AppCompatActivity() {
 
     private fun downloadOriginalPicture(p: Post) {
         GlobalScope.launch {
-            try {
+            if(db.downloadOriginal){
                 FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL) {
                     Toast.makeText(this@PictureActivity, "${getString(R.string.downloaded)}: ${p.id}", Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            }else{
+                FileUtils.writeOrDownloadFile(this@PictureActivity, p, sample(p.id), p.fileSampleURL) {
+                    Toast.makeText(this@PictureActivity, "${getString(R.string.downloaded)}: ${p.id}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -155,7 +157,7 @@ class PictureActivity : AppCompatActivity() {
                             snack.show()
                             GlobalScope.launch {
                                 delay(150)
-                                withContext(Dispatchers.Main){snack.dismiss()}
+                                withContext(Dispatchers.Main) { snack.dismiss() }
                             }
                         }
                         else -> return false

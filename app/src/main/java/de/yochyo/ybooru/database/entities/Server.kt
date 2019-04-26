@@ -71,6 +71,11 @@ class Server(var name: String, var api: String, var url: String, var userName: S
     }
 
     override fun toString() = name
+    override fun equals(other: Any?): Boolean {
+        if (other is Server)
+            return other.id == id
+        return false
+    }
 }
 
 @Dao

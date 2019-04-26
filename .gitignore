@@ -11,4 +11,4 @@ gradle.properties
 /build/
 libs/
 proguard-rules.pro
-TODO.kt
+release/

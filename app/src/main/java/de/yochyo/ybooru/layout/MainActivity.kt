@@ -236,8 +236,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             AddServerDialog {
                 db.changeServer(it)
                 if (Server.currentServer == it){
-                    it.select()
                     Manager.resetAll()
+                    it.select()
                 }
                 Toast.makeText(this@MainActivity, "${getString(R.string.edited)} [${it.name}]", Toast.LENGTH_SHORT).show()
             }.apply {

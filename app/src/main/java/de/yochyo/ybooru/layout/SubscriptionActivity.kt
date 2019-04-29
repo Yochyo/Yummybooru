@@ -29,6 +29,7 @@ import kotlinx.coroutines.*
 import java.util.*
 
 class SubscriptionActivity : AppCompatActivity() {
+    private val observer = Observer<TreeSet<Subscription>> { t -> if (t != null) adapter.updateSubs(t) }
     private var clickedSub: Int? = null
     private var whenClicked: Pair<Int, Int>? = null //ID, count
     private lateinit var adapter: SubscribedTagAdapter
@@ -42,7 +43,7 @@ class SubscriptionActivity : AppCompatActivity() {
         val recyclerView = subs_recycler
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
-        db.subs.observe(this, Observer<TreeSet<Subscription>> { t -> if (t != null) adapter.updateSubs(t) })
+        db.subs.observe(this, observer)
         subs_swipe_refresh_layout.setOnRefreshListener {
             subs_swipe_refresh_layout.isRefreshing = false
             adapter.notifyDataSetChanged()
@@ -53,6 +54,7 @@ class SubscriptionActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         Manager.resetAll()
+        db.subs.removeObserver(observer)
     }
     private fun clear(){
         whenClicked = null

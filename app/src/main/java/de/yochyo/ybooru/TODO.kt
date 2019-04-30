@@ -17,6 +17,8 @@ package de.yochyo.ybooru
 //TODO folder in taglist einfügen
 //TODO zeigen falls die logindaten falsch sind
 //Bugs
+//TODO subscription geht nicht richtig
+//TODO vampir tag auf yande.re geht nicht
 //TODO bei startup/closeup buggt es manchmal
 //TODO Schauen, warum lolibooru/touhoubooru noch so langsam sind, sind yande/konachan auch langsam?
 //TODO statt if(position == m.position) und so einen syncrhonised block //TODO if downloading dann warten

@@ -13,13 +13,11 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.*
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.api.Downloader
 import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.api.api.DanbooruApi
 import de.yochyo.ybooru.api.api.MoebooruApi
@@ -33,6 +31,7 @@ import de.yochyo.ybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.ybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.manager.Manager
+import de.yochyo.ybooru.utils.Logger
 import de.yochyo.ybooru.utils.setColor
 import de.yochyo.ybooru.utils.toTagString
 import de.yochyo.ybooru.utils.underline
@@ -41,7 +40,6 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.util.*
 
 
@@ -54,6 +52,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Logger.initLogger()
         GlobalScope.launch { cache.clearCache() }
         Api.addApi(DanbooruApi(""))
         Api.addApi(MoebooruApi(""))

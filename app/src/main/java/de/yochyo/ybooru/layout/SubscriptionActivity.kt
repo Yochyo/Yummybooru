@@ -46,8 +46,8 @@ class SubscriptionActivity : AppCompatActivity() {
         db.subs.observe(this, observer)
         subs_swipe_refresh_layout.setOnRefreshListener {
             subs_swipe_refresh_layout.isRefreshing = false
-            adapter.notifyDataSetChanged()
             clear()
+            adapter.notifyDataSetChanged()
         }
     }
 
@@ -56,7 +56,8 @@ class SubscriptionActivity : AppCompatActivity() {
         Manager.resetAll()
         db.subs.removeObserver(observer)
     }
-    private fun clear(){
+
+    private fun clear() {
         whenClicked = null
         clickedSub = null
     }
@@ -164,7 +165,7 @@ class SubscriptionActivity : AppCompatActivity() {
                 val sub = subs.elementAt(adapterPosition)
                 clickedSub = adapterPosition
                 GlobalScope.launch {
-                    whenClicked = Pair(Api.getTag(sub.name)?.count ?: 0, Api.newestID())
+                    whenClicked = Pair(Api.newestID(), Api.getTag(sub.name)?.count ?: 0)
                 } //TODO was ist, wenn der download erst fertig ist, wenn die activity wieder resumed wurde
                 PreviewActivity.startActivity(this@SubscriptionActivity, sub.toString())
             }

@@ -9,7 +9,7 @@ import org.json.JSONObject
 class MoebooruApi(url: String) : Api(url) {
 
     override val name: String = "moebooru"
-    override fun urlGetTag(name: String): String = "${url}tag.json?name=*$name"
+    override fun urlGetTag(name: String): String = "${url}tag.json?name=$name*"
     override fun urlGetTags(beginSequence: String): String {
         return "${url}tag.json?name=$beginSequence*&limit=${Api.searchTagLimit}"
     }

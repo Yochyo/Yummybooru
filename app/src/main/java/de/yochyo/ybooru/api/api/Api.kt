@@ -56,6 +56,7 @@ abstract class Api(var url: String) {
         suspend fun getTag(name: String): Tag? {
             if (name == "*") return Tag(name, Tag.UNKNOWN, count = newestID())
             val json = getJson(instance!!.urlGetTag(name))
+            println(json!!.getJSONObject(0).getString("name"))
             if (json != null && json.length() > 0)
                 return instance!!.getTagFromJson(json.getJSONObject(0))
             return null

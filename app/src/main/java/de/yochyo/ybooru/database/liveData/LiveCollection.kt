@@ -5,10 +5,10 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class LiveArrayList<T>: LiveCollection<ArrayList<T>, T>(ArrayList())
+class LiveArrayList<T> : LiveCollection<ArrayList<T>, T>(ArrayList())
 class LiveTree<E> : LiveCollection<TreeSet<E>, E>(TreeSet())
 abstract class LiveCollection<C : MutableCollection<T>, T>(collection: C) : LiveData<C>() {
-    protected val v: C = collection
+    private val v: C = collection
 
     init {
         notifyChange()
@@ -17,11 +17,11 @@ abstract class LiveCollection<C : MutableCollection<T>, T>(collection: C) : Live
     val isEmpty = v.isEmpty()
 
     fun add(e: T) {
-        if(v.add(e)) notifyChange()
+        if (v.add(e)) notifyChange()
     }
 
     fun addAll(e: Collection<T>) {
-        if(v.addAll(e)) notifyChange()
+        if (v.addAll(e)) notifyChange()
     }
 
     fun remove(e: T) {
@@ -34,7 +34,7 @@ abstract class LiveCollection<C : MutableCollection<T>, T>(collection: C) : Live
     }
 
     fun find(run: (e: T) -> Boolean) = v.find(run)
-
+    val size: Int get() = v.size
     operator fun plusAssign(e: T) = add(e)
     operator fun plusAssign(e: Collection<T>) = addAll(e)
     operator fun get(position: Int) = v.elementAt(position)

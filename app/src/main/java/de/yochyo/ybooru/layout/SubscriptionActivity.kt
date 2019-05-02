@@ -6,7 +6,6 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
@@ -20,7 +19,6 @@ import de.yochyo.ybooru.database.entities.Subscription
 import de.yochyo.ybooru.database.entities.Tag
 import de.yochyo.ybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.ybooru.manager.Manager
-import de.yochyo.ybooru.utils.addChild
 import de.yochyo.ybooru.utils.setColor
 import de.yochyo.ybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_subscription.*
@@ -68,7 +66,7 @@ class SubscriptionActivity : AppCompatActivity() {
             val pos = clickedSub!!
             clickedSub = null
             val sub = db.subs[pos]
-            if (Manager.getOrInit(sub.toString()).dataSet.isNotEmpty()) {
+            if (!Manager.getOrInit(sub.toString()).posts.isEmpty) {
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
                 builder.setNegativeButton(R.string.no) { _, _ -> }

@@ -16,6 +16,7 @@ package de.yochyo.ybooru
 //TODO irgendwie der managerklasse mehr wichtigskeit geben, sodass man nicht immer resetAll() machen muss. Server mit Manager verbinden :3
 //TODO folder in taglist einfügen
 //TODO zeigen falls die logindaten falsch sind
+//TODO Manager.resetAll optimieren, anwendungszeit verbessern
 //Bugs
 //TODO subscription geht nicht richtig
 //TODO vampir tag auf yande.re geht nicht

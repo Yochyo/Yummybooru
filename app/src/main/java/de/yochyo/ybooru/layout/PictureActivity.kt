@@ -1,5 +1,6 @@
 package de.yochyo.ybooru.layout
 
+import android.arch.lifecycle.Observer
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -30,6 +31,7 @@ import de.yochyo.ybooru.utils.*
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.*
+import kotlin.collections.ArrayList
 
 
 class PictureActivity : AppCompatActivity() {
@@ -37,7 +39,9 @@ class PictureActivity : AppCompatActivity() {
         fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PictureActivity::class.java).apply { putExtra("tags", tags) })
     }
 
-    private lateinit var recycleView: RecyclerView
+    private val observer = Observer<ArrayList<Post>> { if (it != null) adapter.updatePosts(it) }
+    private lateinit var tagRecyclerView: RecyclerView
+    private lateinit var adapter: PageAdapter
     private var currentTags = ArrayList<Tag>()
     lateinit var m: Manager
 
@@ -49,13 +53,14 @@ class PictureActivity : AppCompatActivity() {
         m = Manager.get(intent.getStringExtra("tags"))
         supportActionBar?.title = m.currentPost?.id.toString()
         nav_view_picture.bringToFront()
-        recycleView = nav_view_picture.findViewById(R.id.recycle_view_info)
-        recycleView.adapter = InfoAdapter()
-        recycleView.layoutManager = LinearLayoutManager(this)
+        tagRecyclerView = nav_view_picture.findViewById(R.id.recycle_view_info)
+        tagRecyclerView.adapter = InfoAdapter()
+        tagRecyclerView.layoutManager = LinearLayoutManager(this)
 
         with(view_pager) {
-            adapter = PageAdapter()
-            currentItem = m.position
+            this@PictureActivity.adapter = PageAdapter()
+            adapter = this@PictureActivity.adapter
+            m.posts.observe(this@PictureActivity, observer)
             val p = m.currentPost
             if (p != null) {
                 val pos = m.position
@@ -64,7 +69,7 @@ class PictureActivity : AppCompatActivity() {
                     launch(Dispatchers.Main) {
                         if (pos == m.position) {
                             currentTags = tags as ArrayList<Tag>
-                            recycleView.adapter?.notifyDataSetChanged()
+                            tagRecyclerView.adapter?.notifyDataSetChanged()
                         }
                     }
                 }
@@ -79,13 +84,13 @@ class PictureActivity : AppCompatActivity() {
                         if (post != null) {
                             supportActionBar?.title = post.id.toString()
                             currentTags.clear()
-                            recycleView.adapter?.notifyDataSetChanged()
+                            tagRecyclerView.adapter?.notifyDataSetChanged()
                             GlobalScope.launch {
                                 val tags = post.getTags() as ArrayList<Tag>
                                 launch(Dispatchers.Main) {
                                     if (position == m.position) {
                                         currentTags = tags
-                                        recycleView.adapter?.notifyDataSetChanged()
+                                        tagRecyclerView.adapter?.notifyDataSetChanged()
                                     }
                                 }
                             }
@@ -114,6 +119,11 @@ class PictureActivity : AppCompatActivity() {
         return true
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        m.posts.removeObserver(observer)
+    }
+
     fun loadNextPage(page: Int) {
         GlobalScope.launch {
             m.downloadPage(page)
@@ -126,11 +136,11 @@ class PictureActivity : AppCompatActivity() {
 
     private fun downloadOriginalPicture(p: Post) {
         GlobalScope.launch {
-            if(db.downloadOriginal){
+            if (db.downloadOriginal) {
                 FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL) {
                     Toast.makeText(this@PictureActivity, "${getString(R.string.downloaded)}: ${p.id}", Toast.LENGTH_SHORT).show()
                 }
-            }else{
+            } else {
                 FileUtils.writeOrDownloadFile(this@PictureActivity, p, sample(p.id), p.fileSampleURL) {
                     Toast.makeText(this@PictureActivity, "${getString(R.string.downloaded)}: ${p.id}", Toast.LENGTH_SHORT).show()
                 }
@@ -139,11 +149,20 @@ class PictureActivity : AppCompatActivity() {
     }
 
     private inner class PageAdapter : PagerAdapter() {
+        var posts = ArrayList<Post>()
+
+        fun updatePosts(array: ArrayList<Post>) {
+            posts = array
+            notifyDataSetChanged()
+            view_pager.currentItem = m.position
+            println("->>>>>>>>>>>>>>>${array.size}")
+        }
+
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
-        override fun getCount(): Int = m.dataSet.size
+        override fun getCount(): Int = posts.size
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
-            if (position + 3 >= m.dataSet.lastIndex) GlobalScope.launch { m.downloadPage(m.currentPage + 1) }
-            if (position == m.dataSet.lastIndex) loadNextPage(m.currentPage + 1)
+            if (position + 3 >= posts.lastIndex) GlobalScope.launch { m.downloadPage(m.currentPage + 1) }
+            if (position == posts.lastIndex) loadNextPage(m.currentPage + 1)
             val imageView = layoutInflater.inflate(R.layout.picture_item_view, container, false) as PhotoView
             imageView.setAllowParentInterceptOnEdge(true)
             imageView.setOnSingleFlingListener(object : OnSingleFlingListener {
@@ -151,7 +170,7 @@ class PictureActivity : AppCompatActivity() {
                     when (Fling.getDirection(e1, e2)) {
                         Fling.Direction.down -> finish()
                         Fling.Direction.up -> {
-                            val p = m.dataSet[position]
+                            val p = posts[position]
                             downloadOriginalPicture(p)
                             val snack = Snackbar.make(view_pager, getString(R.string.download), Snackbar.LENGTH_SHORT)
                             snack.show()
@@ -165,7 +184,7 @@ class PictureActivity : AppCompatActivity() {
                     return true
                 }
             })
-            val p = m.dataSet[position]
+            val p = posts[position]
             GlobalScope.launch {
                 val preview = cache.getCachedBitmap(preview(p.id))
                 if (preview != null) launch(Dispatchers.Main) { imageView.setImageBitmap(preview) }

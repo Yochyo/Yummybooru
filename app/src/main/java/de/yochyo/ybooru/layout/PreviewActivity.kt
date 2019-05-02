@@ -1,18 +1,19 @@
 package de.yochyo.ybooru.layout
 
+import android.arch.lifecycle.Observer
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
 import de.yochyo.ybooru.R
+import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.api.downloadImage
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.preview
@@ -27,6 +28,8 @@ open class PreviewActivity : AppCompatActivity() {
     companion object {
         fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PreviewActivity::class.java).apply { putExtra("tags", tags) })
     }
+
+    private val observer = Observer<ArrayList<Post>> { if(it != null) previewAdapter.updatePosts(it) }
 
     protected var isLoadingView = false
     protected var isScrolling = false
@@ -53,17 +56,15 @@ open class PreviewActivity : AppCompatActivity() {
 
         initScrollView()
         loadPage(1)
+        m.posts.observe(this, observer)
     }
 
     fun loadPage(page: Int) {
         isLoadingView = true
         GlobalScope.launch {
-            val i = m.dataSet.size
             m.downloadPage(page)
             launch(Dispatchers.Main) {
-                val posts = m.loadPage(page)
-                if (posts != null)
-                    previewAdapter.notifyItemRangeInserted(i, posts.size)
+                m.loadPage(page)
                 isLoadingView = false
             }
             launch { m.downloadPage(page + 1) }
@@ -78,7 +79,7 @@ open class PreviewActivity : AppCompatActivity() {
                     RecyclerView.SCROLL_STATE_DRAGGING -> isScrolling = true
                 }
                 if (!isLoadingView)
-                    if (layoutManager.findLastVisibleItemPosition() + 1 >= m.dataSet.size) loadPage(m.currentPage + 1)
+                    if (layoutManager.findLastVisibleItemPosition() + 1 >= previewAdapter.posts.size) loadPage(m.currentPage + 1)
                 return super.onScrollStateChanged(recyclerView, newState)
             }
         })
@@ -86,7 +87,6 @@ open class PreviewActivity : AppCompatActivity() {
 
     fun reloadView() {
         m.reset()
-        previewAdapter.notifyDataSetChanged()
         loadPage(1)
     }
 
@@ -108,7 +108,21 @@ open class PreviewActivity : AppCompatActivity() {
         layoutManager.scrollToPosition(m.position)
     }
 
+    override fun onDestroy() {
+        m.posts.removeObserver(observer)
+        super.onDestroy()
+    }
+
     protected inner class PreviewAdapter : RecyclerView.Adapter<PreviewViewHolder>() {
+        private var oldSize = 0
+        var posts = ArrayList<Post>()
+
+        fun updatePosts(array: ArrayList<Post>) {
+            posts = array
+            notifyItemRangeInserted(oldSize, array.size - oldSize)
+            oldSize = array.size
+        }
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
             imageView.setOnClickListener {
                 m.position = layoutPosition
@@ -116,21 +130,17 @@ open class PreviewActivity : AppCompatActivity() {
             }
         }
 
-        override fun getItemCount(): Int = m.dataSet.size
+        override fun getItemCount(): Int = posts.size
         override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) {
             holder.imageView.setImageBitmap(null)
         }
 
-        override fun onViewDetachedFromWindow(holder: PreviewViewHolder) {
-            super.onViewDetachedFromWindow(holder)
-            //  holder.imageView.setImageBitmap(null)
-        }
 
         override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
             val pos = holder.adapterPosition
             //hier könnte es diesen einen absturz geben
             if (pos != -1) {
-                val p = m.dataSet[holder.adapterPosition]
+                val p = m.posts[holder.adapterPosition]
                 downloadImage(p.filePreviewURL, preview(p.id), {
                     if (pos == holder.adapterPosition)
                         holder.imageView.setImageBitmap(it)

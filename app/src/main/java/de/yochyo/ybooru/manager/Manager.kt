@@ -2,9 +2,9 @@ package de.yochyo.ybooru.manager
 
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.api.api.Api
+import de.yochyo.ybooru.database.liveData.LiveArrayList
 import de.yochyo.ybooru.utils.toTagArray
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import java.lang.Exception
 
 abstract class Manager(val tags: Array<String>) {
     companion object {
@@ -41,7 +41,7 @@ abstract class Manager(val tags: Array<String>) {
         }
     }
 
-    val dataSet = ArrayList<Post>(200)
+    val posts = LiveArrayList<Post>()
     private val pages = HashMap<Int, List<Post>>()
     var position = -1
     var currentPage = 0
@@ -49,7 +49,7 @@ abstract class Manager(val tags: Array<String>) {
             field = value
         }
     val currentPost: Post?
-        get() = dataSet[position]
+        get() = posts[position]
 
 
     fun loadPage(page: Int): List<Post>? {
@@ -57,7 +57,7 @@ abstract class Manager(val tags: Array<String>) {
         if (p != null) {
             if (page > currentPage) {
                 currentPage = page
-                dataSet += p
+                posts += p
             }
             return p
         } else return null
@@ -68,8 +68,8 @@ abstract class Manager(val tags: Array<String>) {
         if (p == null) {
             p = Api.getPosts(page, tags)
             //avoid doubled posts
-            if (dataSet.isNotEmpty()) {
-                val lastFromLastPage = dataSet.last()
+            if (!posts.isEmpty) {
+                val lastFromLastPage = posts.value!!.last()
                 val samePost = p.find { it.id == lastFromLastPage.id }
                 if (samePost != null)
                     p.takeWhile { it.id != samePost.id }
@@ -80,7 +80,7 @@ abstract class Manager(val tags: Array<String>) {
     }
 
     fun reset() {
-        dataSet.clear()
+        posts.clear()
         position = -1
         currentPage = 0
         pages.clear()

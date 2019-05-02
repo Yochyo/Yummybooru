@@ -18,6 +18,7 @@ package de.yochyo.ybooru
 //TODO zeigen falls die logindaten falsch sind
 //TODO Manager.resetAll optimieren, anwendungszeit verbessern
 //Bugs
+//TODO reihenfolge der tags ist in moebooru und danbooru nicht gleich
 //TODO subscription geht nicht richtig
 //TODO vampir tag auf yande.re geht nicht
 //TODO bei startup/closeup buggt es manchmal

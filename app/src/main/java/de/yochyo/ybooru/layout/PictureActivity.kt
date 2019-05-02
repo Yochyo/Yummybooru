@@ -51,8 +51,8 @@ class PictureActivity : AppCompatActivity() {
         setSupportActionBar(toolbar_picture)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         m = Manager.get(intent.getStringExtra("tags"))
-        supportActionBar?.title = m.currentPost?.id.toString()
         nav_view_picture.bringToFront()
+
         tagRecyclerView = nav_view_picture.findViewById(R.id.recycle_view_info)
         tagRecyclerView.adapter = InfoAdapter()
         tagRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -61,47 +61,19 @@ class PictureActivity : AppCompatActivity() {
             this@PictureActivity.adapter = PageAdapter()
             adapter = this@PictureActivity.adapter
             m.posts.observe(this@PictureActivity, observer)
-            val p = m.currentPost
-            if (p != null) {
-                val pos = m.position
-                GlobalScope.launch {
-                    val tags = p.getTags()
-                    launch(Dispatchers.Main) {
-                        if (pos == m.position) {
-                            currentTags = tags as ArrayList<Tag>
-                            tagRecyclerView.adapter?.notifyDataSetChanged()
-                        }
-                    }
-                }
-            }
+            m.currentPost?.updateCurrentTags(m.position)
+
 
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                 override fun onPageScrolled(position: Int, offset: Float, p2: Int) {
                     if (offset == 0.0F && m.position != position) {
                         m.position = position
-
-                        val post = m.currentPost
-                        if (post != null) {
-                            supportActionBar?.title = post.id.toString()
-                            currentTags.clear()
-                            tagRecyclerView.adapter?.notifyDataSetChanged()
-                            GlobalScope.launch {
-                                val tags = post.getTags() as ArrayList<Tag>
-                                launch(Dispatchers.Main) {
-                                    if (position == m.position) {
-                                        currentTags = tags
-                                        tagRecyclerView.adapter?.notifyDataSetChanged()
-                                    }
-                                }
-                            }
-                        }
+                        m.currentPost?.updateCurrentTags(position)
                     }
                 }
-
                 override fun onPageScrollStateChanged(p0: Int) {}
                 override fun onPageSelected(position: Int) {}
             })
-
         }
     }
 
@@ -129,7 +101,22 @@ class PictureActivity : AppCompatActivity() {
             m.downloadPage(page)
             launch(Dispatchers.Main) {
                 m.loadPage(page)
-                view_pager.adapter!!.notifyDataSetChanged()
+            }
+        }
+    }
+
+    private fun Post.updateCurrentTags(wasCurrentPosition: Int) {
+        supportActionBar?.title = id.toString()
+
+        currentTags.clear()
+        tagRecyclerView.adapter?.notifyDataSetChanged()
+        GlobalScope.launch {
+            val tags = getTags() as ArrayList<Tag>
+            launch(Dispatchers.Main) {
+                if (wasCurrentPosition == m.position) {
+                    currentTags = tags
+                    tagRecyclerView.adapter?.notifyDataSetChanged()
+                }
             }
         }
     }
@@ -155,7 +142,6 @@ class PictureActivity : AppCompatActivity() {
             posts = array
             notifyDataSetChanged()
             view_pager.currentItem = m.position
-            println("->>>>>>>>>>>>>>>${array.size}")
         }
 
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
@@ -174,9 +160,9 @@ class PictureActivity : AppCompatActivity() {
                             downloadOriginalPicture(p)
                             val snack = Snackbar.make(view_pager, getString(R.string.download), Snackbar.LENGTH_SHORT)
                             snack.show()
-                            GlobalScope.launch {
+                            GlobalScope.launch(Dispatchers.Main) {
                                 delay(150)
-                                withContext(Dispatchers.Main) { snack.dismiss() }
+                                snack.dismiss()
                             }
                         }
                         else -> return false

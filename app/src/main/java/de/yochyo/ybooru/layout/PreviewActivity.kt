@@ -29,7 +29,7 @@ open class PreviewActivity : AppCompatActivity() {
         fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PreviewActivity::class.java).apply { putExtra("tags", tags) })
     }
 
-    private val observer = Observer<ArrayList<Post>> { if(it != null) previewAdapter.updatePosts(it) }
+    private val observer = Observer<ArrayList<Post>> { if (it != null) previewAdapter.updatePosts(it);println("change to ${it!!.size}") }
 
     protected var isLoadingView = false
     protected var isScrolling = false
@@ -85,7 +85,7 @@ open class PreviewActivity : AppCompatActivity() {
         })
     }
 
-    fun reloadView() {
+    private fun reloadView() {
         m.reset()
         loadPage(1)
     }
@@ -119,7 +119,8 @@ open class PreviewActivity : AppCompatActivity() {
 
         fun updatePosts(array: ArrayList<Post>) {
             posts = array
-            notifyItemRangeInserted(oldSize, array.size - oldSize)
+            if (array.size > oldSize) notifyItemRangeInserted(oldSize, array.size - oldSize)
+            else notifyDataSetChanged()
             oldSize = array.size
         }
 
@@ -131,21 +132,15 @@ open class PreviewActivity : AppCompatActivity() {
         }
 
         override fun getItemCount(): Int = posts.size
-        override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) {
-            holder.imageView.setImageBitmap(null)
-        }
-
+        override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) = holder.imageView.setImageBitmap(null)
 
         override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
             val pos = holder.adapterPosition
-            //hier könnte es diesen einen absturz geben
-            if (pos != -1) {
-                val p = m.posts[holder.adapterPosition]
-                downloadImage(p.filePreviewURL, preview(p.id), {
-                    if (pos == holder.adapterPosition)
-                        holder.imageView.setImageBitmap(it)
-                }, isScrolling)
-            }
+            val p = m.posts[holder.adapterPosition]
+            downloadImage(p.filePreviewURL, preview(p.id), {
+                if (pos == holder.adapterPosition)
+                    holder.imageView.setImageBitmap(it)
+            }, isScrolling)
         }
     }
 

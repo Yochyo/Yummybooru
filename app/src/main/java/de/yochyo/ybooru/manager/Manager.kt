@@ -80,9 +80,10 @@ abstract class Manager(val tags: Array<String>) {
     }
 
     fun reset() {
-        posts.clear()
+        pages.clear()
         position = -1
         currentPage = 0
-        pages.clear()
+        posts.clear()
+        println("|||||||||||||${posts.size}")
     }
 }

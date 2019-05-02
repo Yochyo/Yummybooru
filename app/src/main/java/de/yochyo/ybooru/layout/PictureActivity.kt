@@ -57,8 +57,8 @@ class PictureActivity : AppCompatActivity() {
         tagRecyclerView.adapter = InfoAdapter()
         tagRecyclerView.layoutManager = LinearLayoutManager(this)
 
+        adapter = PageAdapter()
         with(view_pager) {
-            this@PictureActivity.adapter = PageAdapter()
             adapter = this@PictureActivity.adapter
             m.posts.observe(this@PictureActivity, observer)
             m.currentPost?.updateCurrentTags(m.position)
@@ -92,8 +92,8 @@ class PictureActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         m.posts.removeObserver(observer)
+        super.onDestroy()
     }
 
     fun loadNextPage(page: Int) {

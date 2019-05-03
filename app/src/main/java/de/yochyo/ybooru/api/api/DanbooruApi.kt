@@ -30,8 +30,8 @@ class DanbooruApi(url: String) : Api(url) {
             val tagsArtist = json.getString("tag_string_artist").split(" ").map { Tag(it, Tag.ARTIST) }.filter { it.name != "" }
             val tagsMeta = json.getString("tag_string_meta").split(" ").map { Tag(it, Tag.META) }.filter { it.name != "" }
             val tags = ArrayList<Tag>(tagsGeneral.size + tagsCharacter.size + tagsCopyright.size + tagsArtist.size + tagsMeta.size)
-            tags += tagsCopyright
             tags += tagsArtist
+            tags += tagsCopyright
             tags += tagsCharacter
             tags += tagsGeneral
             tags += tagsMeta

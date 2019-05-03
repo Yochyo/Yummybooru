@@ -29,7 +29,7 @@ open class PreviewActivity : AppCompatActivity() {
         fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PreviewActivity::class.java).apply { putExtra("tags", tags) })
     }
 
-    private val observer = Observer<ArrayList<Post>> { if (it != null) previewAdapter.updatePosts(it);println("change to ${it!!.size}") }
+    private val observer = Observer<ArrayList<Post>> { if (it != null) previewAdapter.updatePosts(it) }
 
     protected var isLoadingView = false
     protected var isScrolling = false

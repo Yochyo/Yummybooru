@@ -84,6 +84,5 @@ abstract class Manager(val tags: Array<String>) {
         position = -1
         currentPage = 0
         posts.clear()
-        println("|||||||||||||${posts.size}")
     }
 }

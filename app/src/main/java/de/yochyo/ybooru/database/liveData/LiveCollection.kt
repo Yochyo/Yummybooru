@@ -14,7 +14,7 @@ abstract class LiveCollection<C : MutableCollection<T>, T>(collection: C) : Live
         notifyChange()
     }
 
-    val isEmpty = v.isEmpty()
+    val isEmpty: Boolean get() = v.isEmpty()
 
     fun add(e: T) {
         if (v.add(e)) notifyChange()

@@ -14,10 +14,9 @@ package de.yochyo.ybooru
 //TODO don´t allow to create tags if no internet connection -> Fix them when you have internet
 //TODO Subs nicht nur mit :id>X filtern, sondern auch per hand
 //TODO folder in taglist einfügen
-//TODO zeigen falls die logindaten falsch sind
 //TODO Manager.resetAll optimieren, anwendungszeit verbessern
 //Bugs
-//TODO reihenfolge der tags ist in moebooru und danbooru nicht gleich
+//TODO getNewest muss authentifixieren
 //TODO subscription geht nicht richtig
 //TODO bei startup/closeup buggt es manchmal
 //TODO job.join in database durch async-loaden ersetzen

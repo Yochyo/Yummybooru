@@ -85,7 +85,7 @@ abstract class Api(var url: String) {
         }
 
         suspend fun newestID(): Int {
-            val json = getJson(instance!!.urlGetNewest())
+            val json = getJson(instance!!.urlGetPosts(1, arrayOf("*"), 1))
             if (json?.length() != 0) //TODO geht das?
                 return json!!.getJSONObject(0).getInt("id")
             return 0
@@ -141,8 +141,9 @@ abstract class Api(var url: String) {
     abstract fun urlGetTags(beginSequence: String): String
     abstract fun urlGetTag(name: String): String
     abstract fun urlGetPosts(page: Int, tags: Array<String>, limit: Int): String
-    abstract fun urlGetNewest(): String
 
     abstract fun getTagFromJson(json: JSONObject): Tag?
     abstract fun getPostFromJson(json: JSONObject): Post?
 }
+
+val api: Api get() = Api.instance!!

@@ -20,8 +20,6 @@ class DanbooruApi(url: String) : Api(url) {
         return "${url}posts.json?limit=$limit&page=$page&login=${Server.currentServer.userName}&password_hash=${Server.currentServer.passwordHash}"
     }
 
-    override fun urlGetNewest(): String = "${url}posts.json?limit=1&page=1"
-
     override fun getPostFromJson(json: JSONObject): Post? {
         try {
             val tagsGeneral = json.getString("tag_string_general").split(" ").map { Tag(it, Tag.GENERAL) }.filter { it.name != "" }

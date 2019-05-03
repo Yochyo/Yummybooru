@@ -18,8 +18,6 @@ class MoebooruApi(url: String) : Api(url) {
         return "${url}post.json?limit=$limit&page=$page&login=${Server.currentServer.userName}&password_hash=${Server.currentServer.passwordHash}"
     }
 
-    override fun urlGetNewest(): String = "${url}post.json?limit=1&page=1"
-
     override fun getPostFromJson(json: JSONObject): Post? {
         try {
             val fileURL = json.getString("file_url")

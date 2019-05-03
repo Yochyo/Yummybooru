@@ -28,8 +28,7 @@ import java.util.*
 
 class SubscriptionActivity : AppCompatActivity() {
     private val observer = Observer<TreeSet<Subscription>> { t -> if (t != null) adapter.updateSubs(t) }
-    private var clickedSub: Int? = null
-    private var whenClicked: Pair<Int, Int>? = null //ID, count
+    private var onClickedData: SubData? = null
     private lateinit var adapter: SubscribedTagAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,34 +55,26 @@ class SubscriptionActivity : AppCompatActivity() {
     }
 
     private fun clear() {
-        whenClicked = null
-        clickedSub = null
+        onClickedData = null
     }
 
     override fun onResume() {
         super.onResume()
-        if (clickedSub != null) {
-            val pos = clickedSub!!
-            clickedSub = null
-            val sub = db.subs[pos]
+        if (onClickedData != null) {
+            val sub = db.subs[onClickedData!!.clickedSub]
             if (!Manager.getOrInit(sub.toString()).posts.isEmpty) {
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
                 builder.setNegativeButton(R.string.no) { _, _ -> }
                 builder.setPositiveButton(R.string.yes) { _, _ ->
                     GlobalScope.launch {
-                        if (whenClicked == null) {
-                            sub.lastID = Api.newestID()
-                            sub.lastCount = Api.getTag(sub.name)?.count ?: 0
-                        } else {
-                            sub.lastID = whenClicked!!.first
-                            sub.lastCount = whenClicked!!.second
-                            whenClicked == null
-                        }
+                        sub.lastID = onClickedData!!.idWhenClicked
+                        sub.lastCount = onClickedData!!.countWhenClicked
+                        onClickedData = null
                         launch(Dispatchers.Main) { db.changeSubscription(sub) }
                     }
                 }
-                builder.create().show()
+                builder.show()
             }
         }
     }
@@ -161,10 +152,9 @@ class SubscriptionActivity : AppCompatActivity() {
         override fun onCreateViewHolder(parent: ViewGroup, p1: Int): SubscribedTagViewHolder = SubscribedTagViewHolder(layoutInflater.inflate(R.layout.subscription_item_layout, parent, false) as LinearLayout).apply {
             layout.setOnClickListener {
                 val sub = subs.elementAt(adapterPosition)
-                clickedSub = adapterPosition
                 GlobalScope.launch {
-                    whenClicked = Pair(Api.newestID(), Api.getTag(sub.name)?.count ?: 0)
-                } //TODO was ist, wenn der download erst fertig ist, wenn die activity wieder resumed wurde
+                    onClickedData = SubData(adapterPosition, Api.newestID(), Api.getTag(sub.name)?.count ?: 0)
+                }
                 PreviewActivity.startActivity(this@SubscriptionActivity, sub.toString())
             }
             layout.setOnLongClickListener {
@@ -195,3 +185,5 @@ class SubscriptionActivity : AppCompatActivity() {
 
     private inner class SubscribedTagViewHolder(val layout: LinearLayout) : RecyclerView.ViewHolder(layout)
 }
+
+private class SubData(val clickedSub: Int,val idWhenClicked: Int,val countWhenClicked: Int)

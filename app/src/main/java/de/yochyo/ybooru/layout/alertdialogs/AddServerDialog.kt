@@ -60,7 +60,6 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
                 val u = URL(Api.instance!!.urlGetPosts(1, arrayOf("*"), 1))
                 val conn = u.openConnection() as HttpURLConnection
                 conn.addRequestProperty("User-Agent", "Mozilla/5.00");conn.requestMethod = "GET"
-                println(conn.responseCode)
                 if (conn.responseCode == ResponseCodes.Unauthorized)
                     withContext(Dispatchers.Main) { Toast.makeText(context, "Probably bad login", Toast.LENGTH_SHORT).show() }
             }

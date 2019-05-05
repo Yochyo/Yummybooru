@@ -110,7 +110,6 @@ class SubscriptionActivity : AppCompatActivity() {
 
         fun updateSubs(subs: TreeSet<Subscription>) {
             this.subs = subs
-            println(subs.joinToString { it.name })
             notifyDataSetChanged()
         }
 

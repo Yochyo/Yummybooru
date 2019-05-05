@@ -42,7 +42,7 @@ class PictureActivity : AppCompatActivity() {
     private val observer = Observer<ArrayList<Post>> { if (it != null) adapter.updatePosts(it) }
     private lateinit var tagRecyclerView: RecyclerView
     private lateinit var adapter: PageAdapter
-    private var currentTags = ArrayList<Tag>()
+    private val currentTags = ArrayList<Tag>()
     lateinit var m: Manager
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,7 +114,7 @@ class PictureActivity : AppCompatActivity() {
             val tags = getTags() as ArrayList<Tag>
             launch(Dispatchers.Main) {
                 if (wasCurrentPosition == m.position) {
-                    currentTags = tags
+                    currentTags += tags
                     tagRecyclerView.adapter?.notifyDataSetChanged()
                 }
             }

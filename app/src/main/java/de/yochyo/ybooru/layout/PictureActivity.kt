@@ -71,6 +71,7 @@ class PictureActivity : AppCompatActivity() {
                         m.currentPost?.updateCurrentTags(position)
                     }
                 }
+
                 override fun onPageScrollStateChanged(p0: Int) {}
                 override fun onPageSelected(position: Int) {}
             })
@@ -98,7 +99,7 @@ class PictureActivity : AppCompatActivity() {
 
     fun loadNextPage(page: Int) {
         GlobalScope.launch {
-            m.downloadPage(page)
+            val postList = m.downloadPage(page)
             launch(Dispatchers.Main) {
                 m.loadPage(page)
             }
@@ -147,7 +148,11 @@ class PictureActivity : AppCompatActivity() {
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
         override fun getCount(): Int = posts.size
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
-            if (position + 3 >= posts.lastIndex) GlobalScope.launch { m.downloadPage(m.currentPage + 1) }
+            if (position + 3 >= posts.lastIndex) GlobalScope.launch {
+                val postList = m.downloadPage(m.currentPage + 1)
+                for (p in postList)
+                    downloadImage(p.filePreviewURL, preview(p.id), {}, downloadNow = false)
+            }
             if (position == posts.lastIndex) loadNextPage(m.currentPage + 1)
             val imageView = layoutInflater.inflate(R.layout.picture_item_view, container, false) as PhotoView
             imageView.setAllowParentInterceptOnEdge(true)

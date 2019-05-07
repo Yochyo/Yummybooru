@@ -5,8 +5,6 @@ import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.database.entities.Server
 import de.yochyo.ybooru.database.entities.Tag
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
@@ -86,9 +84,7 @@ abstract class Api(var url: String) {
 
         suspend fun newestID(): Int {
             val json = getJson(instance!!.urlGetPosts(1, arrayOf("*"), 1))
-            if (json?.length() != 0) //TODO geht das?
-                return json!!.getJSONObject(0).getInt("id")
-            return 0
+            return json?.getJSONObject(0)?.getInt("id") ?: 0
         }
 
         private suspend fun getJson(urlToRead: String): JSONArray? {

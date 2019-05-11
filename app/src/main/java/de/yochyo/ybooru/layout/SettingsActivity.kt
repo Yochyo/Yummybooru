@@ -3,22 +3,36 @@ package de.yochyo.ybooru.layout
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
 import android.preference.Preference
 import android.preference.PreferenceFragment
 import android.preference.PreferenceManager
+import android.support.v4.provider.DocumentFile
 import android.view.MenuItem
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.manager.Manager
 
 class SettingsActivity : AppCompatPreferenceActivity() {
-
+    private val savePathCode = 2143421
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        fragmentManager.beginTransaction().replace(android.R.id.content, GeneralPreferenceFragment()).commit()
         PreferenceManager.setDefaultValues(baseContext, R.xml.pref_general, false)
+        addPreferencesFromResource(R.xml.pref_general)
+        setSavePathSummary()
+        findPreference("savePath").setOnPreferenceClickListener {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+            startActivityForResult(intent, savePathCode)
+            true
+        }
+
+        bindPreferenceSummaryToValue(findPreference("limit"))
+        bindPreferenceSummaryToValue(findPreference("sortSubs"))
+        bindPreferenceSummaryToValue(findPreference("sortTags"))
+        bindPreferenceSummaryToValue(findPreference("downloadOriginal"))
+        bindPreferenceSummaryToValue(findPreference("savePath"))
     }
 
     companion object {
@@ -50,33 +64,36 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         }
     }
 
-    class GeneralPreferenceFragment : PreferenceFragment() {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            addPreferencesFromResource(R.xml.pref_general)
-            setHasOptionsMenu(true)
-
-            bindPreferenceSummaryToValue(findPreference("limit"))
-            bindPreferenceSummaryToValue(findPreference("sortSubs"))
-            bindPreferenceSummaryToValue(findPreference("sortTags"))
-            bindPreferenceSummaryToValue(findPreference("downloadOriginal"))
-            //hier einfügen
-        }
-
-        override fun onOptionsItemSelected(item: MenuItem): Boolean {
-            val id = item.itemId
-            if (id == android.R.id.home) {
-                startActivity(Intent(activity, SettingsActivity::class.java))
-                return true
-            }
-            return super.onOptionsItemSelected(item)
-        }
-    }
-
     override fun isValidFragment(fragmentName: String): Boolean {
         return PreferenceFragment::class.java.name == fragmentName
-                || GeneralPreferenceFragment::class.java.name == fragmentName
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.home -> finish()
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onIsMultiPane() = isXLargeTablet(this)
+    //Set savePath
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK) {
+            if (requestCode == savePathCode) {
+                if (data?.dataString != null){
+                    val file = DocumentFile.fromTreeUri(this, data.data)
+                    db.setSavePath(file!!.uri.toString())
+                }
+
+                setSavePathSummary()
+            }
+        }
+    }
+
+    private fun setSavePathSummary() {
+        val pref = findPreference("savePath")
+        val file = DocumentFile.fromTreeUri(this, Uri.parse(db.getSavePath(this)))
+        pref.summary = file!!.name
+    }
 }

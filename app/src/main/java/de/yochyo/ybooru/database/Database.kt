@@ -10,6 +10,7 @@ import android.content.SharedPreferences
 import de.yochyo.ybooru.database.converter.DateConverter
 import de.yochyo.ybooru.database.entities.*
 import de.yochyo.ybooru.database.liveData.LiveTree
+import de.yochyo.ybooru.utils.createDefaultSavePath
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -227,7 +228,7 @@ abstract class Database : RoomDatabase() {
                 apply()
             }
         }
-    var _downloadOriginal: Boolean? = null
+    private var _downloadOriginal: Boolean? = null
     var downloadOriginal: Boolean
         get() {
             if (_downloadOriginal == null) _downloadOriginal = prefs.getBoolean("downloadOriginal", true)
@@ -240,6 +241,20 @@ abstract class Database : RoomDatabase() {
                 apply()
             }
         }
+
+    private var _savePath: String? = null
+    fun getSavePath(context: Context): String {
+        if (_savePath == null) _savePath = prefs.getString("savePath", createDefaultSavePath(context))
+        return _savePath!!
+    }
+    fun setSavePath(value: String) {
+        _savePath = value
+        println("new savepath = $value")
+        with(prefs.edit()) {
+            putString("savePath", value)
+            apply()
+        }
+    }
 
     var sortTagsByFavorite: Boolean
         get() = sortTags.first() == '1'

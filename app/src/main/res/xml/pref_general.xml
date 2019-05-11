@@ -1,4 +1,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+    android:key="savePath"
+    android:title="Save path"
+    android:enabled="true"/>
     <SwitchPreference
             android:key="downloadOriginal"
             android:title="Download extra large picture"

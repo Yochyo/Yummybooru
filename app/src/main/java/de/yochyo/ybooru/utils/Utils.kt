@@ -1,11 +1,16 @@
 package de.yochyo.ybooru.utils
 
+import android.content.Context
 import android.graphics.Paint
 import android.os.Build
+import android.os.Environment
+import android.support.v4.content.FileProvider
+import android.support.v4.provider.DocumentFile
 import android.view.MotionEvent
 import android.widget.TextView
 import de.yochyo.ybooru.database.entities.Server
 import de.yochyo.ybooru.database.entities.Tag
+import java.io.File
 import java.security.MessageDigest
 import java.util.*
 
@@ -49,6 +54,14 @@ fun parseURL(url: String): String {
     if (!url.endsWith("/"))
         b.append("/")
     return b.toString()
+}
+
+fun createDefaultSavePath(context: Context): String{
+    val f = File("${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_PICTURES}/yBooru/")
+    f.mkdirs()
+    val uri = FileProvider.getUriForFile(context,  "${context.applicationContext.packageName}.provider", f)
+    val file = DocumentFile.fromSingleUri(context, uri)
+    return file!!.uri.toString()
 }
 
 object Fling {

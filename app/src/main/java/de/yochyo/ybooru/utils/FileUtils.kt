@@ -16,6 +16,21 @@ import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 
 object FileUtils {
+    private var oldSavePath: String? = null
+    private var parentFolder: DocumentFile? = null
+    fun getParentFolder(context: Context): DocumentFile {
+        if (oldSavePath == null) {
+            oldSavePath = db.getSavePath(context)
+            println(oldSavePath)
+            parentFolder = DocumentFile.fromTreeUri(context, Uri.parse(oldSavePath))
+        }
+        if (parentFolder == null || !parentFolder!!.exists()) {
+            oldSavePath = createDefaultSavePath(context)
+            db.setSavePath(oldSavePath!!)
+            parentFolder = DocumentFile.fromTreeUri(context, Uri.parse(oldSavePath))
+        }
+        return parentFolder!!
+    }
 
     suspend fun writeOrDownloadFile(context: Context, post: Post, id: String, url: String, doAfter: suspend CoroutineScope.() -> Unit = {}) {
         withContext(Dispatchers.IO) {
@@ -30,33 +45,33 @@ object FileUtils {
 
     suspend fun writeFile(context: Context, post: Post, bitmap: Bitmap) {
         withContext(Dispatchers.IO) {
-            val stream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
             val file = createFileToWrite(context, post)
-            context.contentResolver.openOutputStream(file.uri).write(stream.toByteArray())
-            stream.close()
+            if (file != null) {
+                val stream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                context.contentResolver.openOutputStream(file.uri).write(stream.toByteArray())
+                stream.close()
+            }
         }
     }
 
-    private suspend fun createFileToWrite(context: Context, post: Post): DocumentFile {
+    private suspend fun createFileToWrite(context: Context, post: Post): DocumentFile? {
         return withContext(Dispatchers.IO) {
-            val parentFolder = DocumentFile.fromTreeUri(context, Uri.parse(db.getSavePath(context)))
-            if(parentFolder != null){
-                val folder = parentFolder.createDirectory(Server.currentServer.urlHost)
-                if(folder != null){
-                    val file = folder.createFile("png", postToFilename(post))
-                    if(file != null)
-                        return@withContext file!!
-                }
-            }
-        throw Exception("error when creating file")
+            var folder = getParentFolder(context).findFile(Server.currentServer.urlHost)
+            if (folder == null)
+                folder = getParentFolder(context).createDirectory(Server.currentServer.urlHost)!!
+            val fileName = postToFilename(post)
+            val file = folder.findFile(fileName)
+            if(file == null) return@withContext folder.createFile("png", fileName)
+            return@withContext null
         }
+
     }
 
     private suspend fun postToFilename(p: Post): String {
         val s = "${Server.currentServer.urlHost} ${p.id} ${p.getTags().joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '[' && it != ']' }
         var last = s.length
         if (last > 123) last = 123
-        return s.substring(0, last)
+        return s.substring(0, last) + ".png"
     }
 }

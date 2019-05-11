@@ -201,20 +201,22 @@ class PictureActivity : AppCompatActivity() {
                 val tag = currentTags[adapterPosition]
                 when (it.itemId) {
                     R.id.picture_info_item_add_history -> {
-                        db.addTag(Tag(tag.name, tag.type))
+                        GlobalScope.launch { db.addTag(Tag(tag.name, tag.type)) }
                         Toast.makeText(this@PictureActivity, "${getString(R.string.add_tag)} ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
                     R.id.picture_info_item_add_favorite -> {
-                        if (db.getTag(tag.name) == null) db.addTag(Tag(tag.name, tag.type, true))
-                        else db.changeTag(tag.apply { isFavorite = true })
+                        if (db.getTag(tag.name) == null) GlobalScope.launch { db.addTag(Tag(tag.name, tag.type, true)) }
+                        else GlobalScope.launch { db.changeTag(tag.apply { isFavorite = true }) }
                         Toast.makeText(this@PictureActivity, "${getString(R.string.add_favorite)} ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
                     R.id.picture_info_item_subscribe -> {
                         if (db.getSubscription(tag.name) == null) {
-                            GlobalScope.launch { val currentID = Api.newestID();db.addSubscription(Subscription(tag.name, tag.type, currentID, tag.count)) }
+                            GlobalScope.launch {
+                                val currentID = Api.newestID()
+                                db.addSubscription(Subscription(tag.name, tag.type, currentID, tag.count)) }
                             Toast.makeText(this@PictureActivity, "${getString(R.string.add_subscription)} ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
-                            db.deleteSubscription(tag.name)
+                            GlobalScope.launch { db.deleteSubscription(tag.name) }
                             Toast.makeText(this@PictureActivity, "${getString(R.string.unsubscribed)} ${tag.name}", Toast.LENGTH_SHORT).show()
                         }
                     }

@@ -122,8 +122,8 @@ class SubscriptionActivity : AppCompatActivity() {
                 dialog.cancel()
                 when (i) {
                     0 -> {
-                        db.changeSubscription(sub.copy(isFavorite = !sub.isFavorite))
-                        Toast.makeText(this@SubscriptionActivity, "${if (sub.isFavorite) getString(R.string.favorite) else getString(R.string.unfavorite)} <${sub.name}>", Toast.LENGTH_SHORT).show()
+                        GlobalScope.launch { db.changeSubscription(sub.copy(isFavorite = !sub.isFavorite)) }
+                        Toast.makeText(this@SubscriptionActivity, "${if (sub.isFavorite) getString(R.string.favorite) else getString(R.string.unfavorite)} [${sub.name}]", Toast.LENGTH_SHORT).show()
                     }
                     1 -> {
                         deleteSubDialog(sub)
@@ -140,7 +140,7 @@ class SubscriptionActivity : AppCompatActivity() {
             b.setMessage("${getString(R.string.delete)} ${getString(R.string.subscription)} ${sub.name}?")
             b.setNegativeButton(R.string.no) { _, _ -> }
             b.setPositiveButton(R.string.yes) { _, _ ->
-                db.deleteSubscription(sub.name)
+                GlobalScope.launch { db.deleteSubscription(sub.name) }
                 Toast.makeText(this@SubscriptionActivity, "${getString(R.string.deleted)} [${sub.name}]", Toast.LENGTH_SHORT).show()
             }
             b.show()

@@ -11,9 +11,7 @@ import de.yochyo.ybooru.database.converter.DateConverter
 import de.yochyo.ybooru.database.entities.*
 import de.yochyo.ybooru.database.liveData.LiveTree
 import de.yochyo.ybooru.utils.createDefaultSavePath
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 
 @android.arch.persistence.room.Database(entities = [Tag::class, Subscription::class, Server::class], version = 2)
 @TypeConverters(DateConverter::class)
@@ -67,33 +65,6 @@ abstract class Database : RoomDatabase() {
         }
         return t!!
     }
-
-    fun getTag(name: String) = tags.find { it.name == name }
-    fun addTag(tag: Tag) {
-        if (getTag(tag.name) == null) {
-            tags += tag
-            GlobalScope.launch { tagDao.insert(tag) }
-        }
-    }
-
-    fun deleteTag(name: String) {
-        val tag = tags.find { it.name == name }
-        if (tag != null) {
-            tags.remove(tag)
-            GlobalScope.launch { tagDao.delete(tag) }
-        }
-    }
-
-    fun changeTag(changedTag: Tag): Boolean {
-        val tag = tags.find { it.name == changedTag.name }
-        return if (tag != null) {
-            tags.remove(tag)
-            tags.add(changedTag)
-            GlobalScope.launch { tagDao.update(changedTag) }
-            true
-        } else false
-    }
-
     fun getAllSubscriptions(serverID: Int): List<Subscription> {
         var s: List<Subscription>? = null
         runBlocking {
@@ -105,57 +76,95 @@ abstract class Database : RoomDatabase() {
         return s!!
     }
 
+
+    fun getTag(name: String) = tags.find { it.name == name }
+    suspend fun addTag(tag: Tag) {
+        withContext(Dispatchers.Main){
+            if (getTag(tag.name) == null) {
+                tags += tag
+                withContext(Dispatchers.Default){tagDao.insert(tag)}
+            }
+        }
+    }
+    suspend fun deleteTag(name: String) {
+        withContext(Dispatchers.Main){
+            val tag = tags.find { it.name == name }
+            if (tag != null) {
+                tags.remove(tag)
+                withContext(Dispatchers.Default){tagDao.delete(tag)}
+            }
+        }
+    }
+    suspend fun changeTag(changedTag: Tag) {
+        withContext(Dispatchers.Main){
+            val tag = tags.find { it.name == changedTag.name }
+            if (tag != null) {
+                tags.remove(tag)
+                tags.add(changedTag)
+                withContext(Dispatchers.Default){tagDao.update(changedTag)}
+            }
+        }
+    }
+
     fun getSubscription(name: String) = subs.find { it.name == name }
-    fun addSubscription(sub: Subscription) {
-        if (getSubscription(sub.name) == null) {
-            subs += sub
-            GlobalScope.launch { subDao.insert(sub) }
+    suspend fun addSubscription(sub: Subscription) {
+        withContext(Dispatchers.Main) {
+            if (getSubscription(sub.name) == null) {
+                subs += sub
+                withContext(Dispatchers.Default) { subDao.insert(sub) }
+            }
         }
     }
-
-    fun deleteSubscription(name: String) {
-        val sub = subs.find { it.name == name }
-        if (sub != null) {
-            subs.remove(sub)
-            GlobalScope.launch { subDao.delete(sub) }
+    suspend fun deleteSubscription(name: String) {
+        withContext(Dispatchers.Main) {
+            val sub = subs.find { it.name == name }
+            if (sub != null) {
+                subs.remove(sub)
+                withContext(Dispatchers.Default) { subDao.delete(sub) }
+            }
         }
     }
-
-    fun changeSubscription(changedSub: Subscription): Boolean {
-        val sub = subs.find { it.name == changedSub.name }
-        return if (sub != null) {
-            subs.remove(sub)
-            subs.add(changedSub)
-            GlobalScope.launch { subDao.update(changedSub) }
-            true
-        } else false
+    suspend fun changeSubscription(changedSub: Subscription) {
+        withContext(Dispatchers.Main){
+            val sub = subs.find { it.name == changedSub.name }
+            if (sub != null) {
+                subs.remove(sub)
+                subs.add(changedSub)
+                withContext(Dispatchers.Default){subDao.update(changedSub)}
+            }
+        }
     }
 
     fun getServer(id: Int) = servers.find { it.id == id }
-    fun addServer(server: Server) {
-        if (getServer(server.id) == null) {
-            servers += server
-            GlobalScope.launch { serverDao.insert(server) }
+    suspend fun addServer(server: Server) {
+        withContext(Dispatchers.Main){
+            if (getServer(server.id) == null) {
+                servers += server
+                withContext(Dispatchers.Default){serverDao.insert(server)}
+            }
+        }
+    }
+    suspend fun deleteServer(id: Int) {
+        withContext(Dispatchers.Main){
+            val s = servers.find { id == it.id }
+            if (s != null) {
+                if (currentServerID == id) s.unselect()
+                servers.remove(s)
+                withContext(Dispatchers.Default){serverDao.delete(s)}
+            }
+        }
+    }
+    suspend fun changeServer(server: Server) {
+        withContext(Dispatchers.Main){
+            val s = servers.find { it.id == server.id }
+            if (s != null) {
+                servers -= s
+                servers += server
+                withContext(Dispatchers.Default){serverDao.update(server)}
+            }
         }
     }
 
-    fun deleteServer(id: Int) {
-        val s = servers.find { id == it.id }
-        if (s != null) {
-            if (currentServerID == id) s.unselect()
-            servers.remove(s)
-            GlobalScope.launch { serverDao.delete(s) }
-        }
-    }
-
-    fun changeServer(server: Server) {
-        val s = servers.find { it.id == server.id }
-        if (s != null) {
-            servers -= s
-            servers += server
-            GlobalScope.launch { serverDao.update(server) }
-        }
-    }
 
     private var _nextServerID: Int? = null
     var nextServerID: Int
@@ -171,7 +180,6 @@ abstract class Database : RoomDatabase() {
                 apply()
             }
         }
-
 
     private var _limit: Int? = null
     var limit: Int
@@ -247,6 +255,7 @@ abstract class Database : RoomDatabase() {
         if (_savePath == null) _savePath = prefs.getString("savePath", createDefaultSavePath(context))
         return _savePath!!
     }
+
     fun setSavePath(value: String) {
         _savePath = value
         println("new savepath = $value")

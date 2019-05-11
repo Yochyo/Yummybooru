@@ -117,7 +117,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_add_server -> AddServerDialog { db.addServer(it); Toast.makeText(this, getString(R.string.add_server), Toast.LENGTH_SHORT).show() }.apply { serverID = db.nextServerID++ }.build(this)
+            R.id.action_add_server -> AddServerDialog {
+                GlobalScope.launch { db.addServer(it) }
+                Toast.makeText(this, getString(R.string.add_server), Toast.LENGTH_SHORT).show()
+            }.apply { serverID = db.nextServerID++ }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
         }
         return super.onOptionsItemSelected(item)
@@ -172,19 +175,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             toolbar.setOnMenuItemClickListener {
                 val tag = tags.elementAt(adapterPosition)
                 when (it.itemId) {
-                    R.id.main_search_favorite_tag -> db.changeTag(tag.copy(isFavorite = !tag.isFavorite))
+                    R.id.main_search_favorite_tag -> GlobalScope.launch { db.changeTag(tag.copy(isFavorite = !tag.isFavorite)) }
                     R.id.main_search_subscribe_tag -> {
                         if (db.getSubscription(tag.name) == null) {
                             GlobalScope.launch { val currentID = Api.newestID();launch(Dispatchers.Main) { db.addSubscription(Subscription(tag.name, tag.type, currentID, tag.count)) } }
                             Toast.makeText(this@MainActivity, "${getString(R.string.subscripted)} ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
-                            db.deleteSubscription(tag.name)
+                            GlobalScope.launch { db.deleteSubscription(tag.name) }
                             Toast.makeText(this@MainActivity, "${getString(R.string.unsubscribed)} ${tag.name}", Toast.LENGTH_SHORT).show()
                         }
                         notifyItemChanged(adapterPosition)
                     }
                     R.id.main_search_delete_tag -> {
-                        db.deleteTag(tag.name)
+                        GlobalScope.launch { db.deleteTag(tag.name) }
                         selectedTags.remove(tag.name)
                     }
                 }
@@ -233,10 +236,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         private fun editServerDialog(server: Server) {
             AddServerDialog {
-                db.changeServer(it)
-                if (Server.currentServer == it){
-                    Manager.resetAll()
-                    it.select()
+                GlobalScope.launch {
+                    db.changeServer(it)
+                    if (Server.currentServer == it) {
+                        Manager.resetAll()
+                        it.select()
+                    }
                 }
                 Toast.makeText(this@MainActivity, "${getString(R.string.edited)} [${it.name}]", Toast.LENGTH_SHORT).show()
             }.apply {

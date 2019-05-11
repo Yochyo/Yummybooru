@@ -5,6 +5,8 @@ import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.passwordToHash
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.net.URL
 
 @Entity(tableName = "servers")
@@ -67,7 +69,7 @@ class Server(var name: String, var api: String, var url: String, var userName: S
     }
 
     fun deleteServer() {
-        db.deleteServer(id)
+        GlobalScope.launch { db.deleteServer(id) }
     }
 
     override fun toString() = name

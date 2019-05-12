@@ -6,20 +6,12 @@ import java.io.File
 import java.io.IOException
 
 
-abstract class Logger(directory: String) {
-    companion object{
-        private var _instance : Logger?= null
-                fun initLogger(){
-                    if(_instance == null){
-                        _instance = object: Logger("${Environment.getExternalStorageDirectory().absolutePath}/.yBooru/logs/"){}
-                        _instance!!.start()
-                    }
-                }
-    }
+object Logger{
+    private val directory = "${Environment.getExternalStorageDirectory().absolutePath}/.yBooru/logs/"
     private val logDirectory = File(directory)
     private val logFile = File("$directory/logcat" + System.currentTimeMillis() + ".txt")
 
-    fun start() {
+    fun initLogger() {
         if (isExternalStorageWritable()) {
             logDirectory.mkdirs()
             logFile.createNewFile()

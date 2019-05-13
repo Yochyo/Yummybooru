@@ -20,19 +20,17 @@ object FileUtils {
     private var parentFolder: DocumentFile? = null
     fun getParentFolder(context: Context): DocumentFile {
         if (oldSavePath == null) { //Initialisieren beim ersten mal
-            oldSavePath = db.getSavePath(context)
-            println(oldSavePath)
-            parentFolder = DocumentFile.fromTreeUri(context, Uri.parse(oldSavePath))
+            oldSavePath = db.savePath
+            parentFolder = documentFile(context, oldSavePath!!)
         } //Falls der Speicherpfad geändert wird
-        if(oldSavePath != db.getSavePath(context)){
-            oldSavePath = db.getSavePath(context)
-            println(oldSavePath)
-            parentFolder = DocumentFile.fromTreeUri(context, Uri.parse(oldSavePath))
+        if(oldSavePath != db.savePath){
+            oldSavePath = db.savePath
+            parentFolder = documentFile(context, oldSavePath!!)
         } //Falls der Pfad nicht mehr existiert
         if (parentFolder == null || !parentFolder!!.exists()) {
-            oldSavePath = createDefaultSavePath(context)
-            db.setSavePath(oldSavePath!!)
-            parentFolder = DocumentFile.fromTreeUri(context, Uri.parse(oldSavePath))
+            oldSavePath = createDefaultSavePath()
+            db.savePath = oldSavePath!!
+            parentFolder = documentFile(context, oldSavePath!!)
         }
         return parentFolder!!
     }

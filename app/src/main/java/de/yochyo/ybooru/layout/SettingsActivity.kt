@@ -15,6 +15,7 @@ import de.yochyo.ybooru.R
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.backup.BackupUtils
+import de.yochyo.ybooru.utils.documentFile
 import java.io.File
 
 class SettingsActivity : AppCompatPreferenceActivity() {
@@ -96,7 +97,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             if (requestCode == savePathCode) {
                 if (data?.dataString != null){
                     val file = DocumentFile.fromTreeUri(this, data.data)
-                    db.setSavePath(file!!.uri.toString())
+                    db.savePath = file!!.uri.toString()
                 }
 
                 setSavePathSummary()
@@ -106,7 +107,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
 
     private fun setSavePathSummary() {
         val pref = findPreference("savePath")
-        val file = DocumentFile.fromTreeUri(this, Uri.parse(db.getSavePath(this)))
+        val file = documentFile(this, db.savePath)
         pref.summary = file!!.name
     }
 }

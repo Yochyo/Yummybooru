@@ -2,18 +2,15 @@ package de.yochyo.ybooru.utils
 
 import android.content.Context
 import android.graphics.Paint
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.support.v4.content.FileProvider
 import android.support.v4.provider.DocumentFile
 import android.view.MotionEvent
 import android.widget.TextView
 import de.yochyo.ybooru.database.entities.Server
-import de.yochyo.ybooru.database.entities.Tag
 import java.io.File
 import java.security.MessageDigest
-import java.util.*
-import kotlin.collections.ArrayList
 
 fun preview(id: Int) = "${id}P${Server.currentID}"
 fun sample(id: Int) = "${id}S${Server.currentID}"
@@ -57,12 +54,15 @@ fun parseURL(url: String): String {
     return b.toString()
 }
 
-fun createDefaultSavePath(context: Context): String{
+fun createDefaultSavePath(): String {
     val f = File("${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_PICTURES}/yBooru/")
     f.mkdirs()
-    val uri = FileProvider.getUriForFile(context,  "${context.applicationContext.packageName}.provider", f)
-    val file = DocumentFile.fromSingleUri(context, uri)
-    return file!!.uri.toString()
+    return f.absolutePath
+}
+
+fun documentFile(context: Context, path: String): DocumentFile? {
+    return if (path.startsWith("content")) DocumentFile.fromTreeUri(context, Uri.parse(path))
+    else DocumentFile.fromFile(File(path))
 }
 
 object Fling {

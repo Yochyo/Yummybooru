@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
         Logger.initLogger()
         GlobalScope.launch { cache.clearCache() }
         Api.addApi(DanbooruApi(""))
@@ -64,8 +65,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         nav_view.setNavigationItemSelectedListener(this)
-
-        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
 
         val navLayout = nav_search.findViewById<LinearLayout>(R.id.nav_search_layout)
         initAddTagButton(navLayout.findViewById(R.id.add_search))

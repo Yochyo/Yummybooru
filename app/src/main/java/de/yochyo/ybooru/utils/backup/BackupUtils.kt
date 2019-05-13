@@ -49,7 +49,8 @@ object BackupUtils {
                 else -> throw Exception("type [$type] does not exist")
             }
         }
-        deleteAll()
+        GlobalScope.launch { db.deleteEverything() }
+
         val s = String(file.readBytes())
         val lines = s.split("\n")
         var currentType = "-1"
@@ -58,21 +59,10 @@ object BackupUtils {
                 currentType = line.substring(2, line.length - 2)
                 continue
             }
-            restore(currentType, line)
+            println(line)
+            if (line != "")
+                restore(currentType, line)
         }
-    }
-
-    private fun deleteAll() {
-        val job = GlobalScope.launch {
-            for (tag in db.tags.value!!.toList())
-                db.deleteTag(tag.name)
-            for(sub in db.subs.value!!.toList())
-                db.deleteSubscription(sub.name)
-            for(server in db.servers.value!!.toList())
-                db.deleteServer(server.id)
-        }
-        while(job.isActive)
-            Thread.sleep(30)
     }
 
     private fun createBackupFile(): File {

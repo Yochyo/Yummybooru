@@ -165,7 +165,6 @@ abstract class Database : RoomDatabase() {
         }
     }
 
-
     private var _nextServerID: Int? = null
     var nextServerID: Int
         get() {
@@ -251,16 +250,15 @@ abstract class Database : RoomDatabase() {
         }
 
     private var _savePath: String? = null
-    fun getSavePath(context: Context): String {
-        if (_savePath == null) _savePath = prefs.getString("savePath", createDefaultSavePath(context))
+    var savePath: String
+    get(){
+        if(_savePath == null) _savePath = prefs.getString("savePath", createDefaultSavePath())
         return _savePath!!
     }
-
-    fun setSavePath(value: String) {
-        _savePath = value
-        println("new savepath = $value")
-        with(prefs.edit()) {
-            putString("savePath", value)
+    set(v){
+        _savePath = v
+        with(prefs.edit()){
+            putString("savePath", v)
             apply()
         }
     }
@@ -286,6 +284,15 @@ abstract class Database : RoomDatabase() {
         set(v) {
             sortSubs = "$v${sortSubs.last()}"
         }
+
+    suspend fun deleteEverything(){
+        withContext(Dispatchers.Main){
+            servers.clear()
+            tags.clear()
+            subs.clear()
+            withContext(Dispatchers.Default){clearAllTables()}
+        }
+    }
 
     abstract val subDao: SubscriptionDao
     abstract val tagDao: TagDao

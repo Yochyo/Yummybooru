@@ -5,7 +5,7 @@ import de.yochyo.ybooru.database.db
 
 object PreferencesBackup : BackupableEntity<String>{
     override fun toString(e: String, context: Context): String {
-        return "${db.nextServerID};${db.limit};${db.currentServerID};${db.sortTags};${db.sortSubs};${db.downloadOriginal};${db.getSavePath(context)}"
+        return "${db.nextServerID};${db.limit};${db.currentServerID};${db.sortTags};${db.sortSubs};${db.downloadOriginal};${db.savePath}"
     }
     override fun toEntity(s: String, context: Context) {
         val split = s.split(";")
@@ -16,6 +16,6 @@ object PreferencesBackup : BackupableEntity<String>{
         db.sortTags = iter.next()
         db.sortSubs = iter.next()
         db.downloadOriginal = iter.next().toBoolean()
-        db.setSavePath(iter.next())
+        db.savePath = iter.next()
     }
 }

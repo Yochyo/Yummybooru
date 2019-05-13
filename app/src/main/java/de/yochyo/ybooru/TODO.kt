@@ -15,6 +15,7 @@ package de.yochyo.ybooru
 //TODO Subs nicht nur mit :id>X filtern, sondern auch per hand
 //TODO folder in taglist einfügen
 //TODO Manager.resetAll optimieren, anwendungszeit verbessern
+//TODO bei backup restore datei auswählen
 //Bugs
 //TODO funktioniert das speichern auf jeder Android Version, testen
 //TODO was mach ich wenn der SPeicherPfad gelöscht wird -- vllt jedes mal nachschauen und sonst savePath auf default setzen
@@ -23,6 +24,10 @@ package de.yochyo.ybooru
 //TODO subscription geht nicht richtig
 //TODO bei startup/closeup buggt es manchmal
 //TODO job.join in database durch async-loaden ersetzen
+
+//TODO host gibt MalfunctionURL zurück
+//TODO currentServer id funktioniert nicht richtig
+//TODO logger fängt selten an bevor die Schreibrechte existieren
 //Nettes zeug für irgendwann
 //TODO farben von mbooru klauen
 //TODO write logcats

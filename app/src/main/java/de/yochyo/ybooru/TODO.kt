@@ -2,9 +2,6 @@ package de.yochyo.ybooru
 
 //Features
 //TODO gifs und videos
-//TODO sample and original image in settings
-//TODO icon
-//todo speicherpfad
 //TODO add pixiv support
 //TODO add nhentai support?
 //Optimizations
@@ -23,7 +20,6 @@ package de.yochyo.ybooru
 //TODO was mach ich wenn der SPeicherPfad gelöscht wird -- vllt jedes mal nachschauen und sonst savePath auf default setzen
 //TODO bitmap = BitmapFactory.decodeStream(stream)!! in downloader schlägt selten fehl
 //TODO bei startup/closeup buggt es manchmal
-//TODO logger fängt selten an bevor die Schreibrechte existieren
 //TODO settings backpress geht nicht in emulierten handys
 //Nettes zeug für irgendwann
 //TODO farben von mbooru klauen

@@ -5,7 +5,7 @@ import java.io.File
 import java.io.IOException
 
 
-object Logger{
+object Logger {
     private val directory = "$configPath/logs/"
     private val logDirectory = File(directory)
     private val logFile = File("$directory/logcat" + System.currentTimeMillis() + ".txt")
@@ -14,8 +14,8 @@ object Logger{
         if (isExternalStorageWritable()) {
             logDirectory.mkdirs()
             val files = logDirectory.listFiles().sorted()
-            if(files.size>100) //Damit sich nie mehr als 50 Dateien anordnen
-                for(i in 0..logDirectory.listFiles().size/2)
+            if (files.size > 100) //Damit sich nie mehr als 50 Dateien anordnen
+                for (i in 0..logDirectory.listFiles().size / 2)
                     files[i].delete()
 
             logFile.createNewFile()

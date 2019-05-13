@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.widget.*
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.api.Api
-import de.yochyo.ybooru.database.entities.Server
+import de.yochyo.ybooru.api.entities.Server
 import de.yochyo.ybooru.utils.ResponseCodes
 import de.yochyo.ybooru.utils.parseURL
 import kotlinx.coroutines.Dispatchers

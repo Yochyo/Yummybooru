@@ -16,6 +16,8 @@ package de.yochyo.ybooru
 //TODO folder in taglist einfügen
 //TODO Manager.resetAll optimieren, anwendungszeit verbessern
 //TODO bei backup restore datei auswählen
+//TODO sort classes
+//TODO setContentView dauert ewig
 //Bugs
 //TODO funktioniert das speichern auf jeder Android Version, testen
 //TODO was mach ich wenn der SPeicherPfad gelöscht wird -- vllt jedes mal nachschauen und sonst savePath auf default setzen

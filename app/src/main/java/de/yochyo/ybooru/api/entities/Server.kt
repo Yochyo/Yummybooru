@@ -1,9 +1,9 @@
-package de.yochyo.ybooru.database.entities
+package de.yochyo.ybooru.api.entities
 
 import android.arch.persistence.room.*
 import de.yochyo.ybooru.api.api.Api
+import de.yochyo.ybooru.api.managers.Manager
 import de.yochyo.ybooru.database.db
-import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.passwordToHash
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -49,7 +49,7 @@ data class Server(var name: String, var api: String, var url: String, var userNa
     }
 
     val isSelected: Boolean
-        get() = Server.currentServer.id == id
+        get() = currentServer.id == id
 
     suspend fun select() {
         db.currentServerID = this.id

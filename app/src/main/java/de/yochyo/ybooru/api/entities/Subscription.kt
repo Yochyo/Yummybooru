@@ -1,4 +1,4 @@
-package de.yochyo.ybooru.database.entities
+package de.yochyo.ybooru.api.entities
 
 import android.arch.persistence.room.*
 import de.yochyo.ybooru.R

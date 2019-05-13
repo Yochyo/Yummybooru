@@ -1,8 +1,8 @@
-package de.yochyo.ybooru.utils.backup
+package de.yochyo.ybooru.backup
 
 import android.content.Context
+import de.yochyo.ybooru.api.entities.Server
 import de.yochyo.ybooru.database.db
-import de.yochyo.ybooru.database.entities.Server
 import de.yochyo.ybooru.utils.parseURL
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

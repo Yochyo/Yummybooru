@@ -1,4 +1,4 @@
-package de.yochyo.ybooru.database.liveData
+package de.yochyo.ybooru.utils.liveData
 
 import android.arch.lifecycle.LiveData
 import java.util.*

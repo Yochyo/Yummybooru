@@ -14,11 +14,11 @@ import android.widget.TextView
 import android.widget.Toast
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.api.Api
+import de.yochyo.ybooru.api.entities.Subscription
+import de.yochyo.ybooru.api.entities.Tag
+import de.yochyo.ybooru.api.managers.Manager
 import de.yochyo.ybooru.database.db
-import de.yochyo.ybooru.database.entities.Subscription
-import de.yochyo.ybooru.database.entities.Tag
 import de.yochyo.ybooru.layout.alertdialogs.AddTagDialog
-import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.setColor
 import de.yochyo.ybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_subscription.*
@@ -187,4 +187,4 @@ class SubscriptionActivity : AppCompatActivity() {
     private inner class SubscribedTagViewHolder(val layout: LinearLayout) : RecyclerView.ViewHolder(layout)
 }
 
-private class SubData(val clickedSub: Int,val idWhenClicked: Int,val countWhenClicked: Int)
+private class SubData(val clickedSub: Int, val idWhenClicked: Int, val countWhenClicked: Int)

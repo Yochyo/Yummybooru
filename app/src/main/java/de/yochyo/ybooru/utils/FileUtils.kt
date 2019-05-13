@@ -4,10 +4,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.support.v4.provider.DocumentFile
 import de.yochyo.ybooru.api.Post
-import de.yochyo.ybooru.api.cache
-import de.yochyo.ybooru.api.downloadImage
+import de.yochyo.ybooru.api.entities.Server
+import de.yochyo.ybooru.api.managers.cache
+import de.yochyo.ybooru.api.managers.downloadImage
 import de.yochyo.ybooru.database.db
-import de.yochyo.ybooru.database.entities.Server
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,7 +22,7 @@ object FileUtils {
             oldSavePath = db.savePath
             parentFolder = documentFile(context, oldSavePath!!)
         } //Falls der Speicherpfad geändert wird
-        if(oldSavePath != db.savePath){
+        if (oldSavePath != db.savePath) {
             oldSavePath = db.savePath
             parentFolder = documentFile(context, oldSavePath!!)
         } //Falls der Pfad nicht mehr existiert
@@ -74,7 +74,7 @@ object FileUtils {
 
     private fun createFileOrNull(parent: DocumentFile, name: String, mimeType: String): DocumentFile? {
         val file = parent.findFile(name)
-        return if(file != null) null
+        return if (file != null) null
         else return parent.createFile(mimeType, name)!!
     }
 

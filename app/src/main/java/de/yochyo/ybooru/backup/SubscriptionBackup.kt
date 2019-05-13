@@ -1,13 +1,13 @@
-package de.yochyo.ybooru.utils.backup
+package de.yochyo.ybooru.backup
 
 import android.content.Context
+import de.yochyo.ybooru.api.entities.Subscription
 import de.yochyo.ybooru.database.db
-import de.yochyo.ybooru.database.entities.Subscription
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.*
 
-object SubscriptionBackup : BackupableEntity<Subscription>{
+object SubscriptionBackup : BackupableEntity<Subscription> {
     override fun toString(e: Subscription, context: Context): String {
         return "${e.name};${e.type};${e.lastID};${e.lastCount};${e.isFavorite};${e.creation.time};${e.serverID}"
     }

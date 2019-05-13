@@ -1,13 +1,13 @@
-package de.yochyo.ybooru.utils.backup
+package de.yochyo.ybooru.backup
 
 import android.content.Context
+import de.yochyo.ybooru.api.entities.Tag
 import de.yochyo.ybooru.database.db
-import de.yochyo.ybooru.database.entities.Tag
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.*
 
-object TagBackup: BackupableEntity<Tag>{
+object TagBackup : BackupableEntity<Tag> {
     override fun toString(e: Tag, context: Context): String {
         return "${e.name};${e.type};${e.isFavorite};${e.creation.time};${e.serverID};${e.count}"
     }

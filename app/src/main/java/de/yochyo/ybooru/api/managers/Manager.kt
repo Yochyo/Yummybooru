@@ -1,8 +1,8 @@
-package de.yochyo.ybooru.manager
+package de.yochyo.ybooru.api.managers
 
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.api.api.Api
-import de.yochyo.ybooru.database.liveData.LiveArrayList
+import de.yochyo.ybooru.utils.liveData.LiveArrayList
 import de.yochyo.ybooru.utils.toTagArray
 
 abstract class Manager(val tags: Array<String>) {

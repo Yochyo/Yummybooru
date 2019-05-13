@@ -1,4 +1,4 @@
-package de.yochyo.ybooru.utils.backup
+package de.yochyo.ybooru.backup
 
 import android.content.Context
 import de.yochyo.ybooru.database.db

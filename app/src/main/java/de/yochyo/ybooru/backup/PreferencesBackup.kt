@@ -1,12 +1,13 @@
-package de.yochyo.ybooru.utils.backup
+package de.yochyo.ybooru.backup
 
 import android.content.Context
 import de.yochyo.ybooru.database.db
 
-object PreferencesBackup : BackupableEntity<String>{
+object PreferencesBackup : BackupableEntity<String> {
     override fun toString(e: String, context: Context): String {
         return "${db.nextServerID};${db.limit};${db.currentServerID};${db.sortTags};${db.sortSubs};${db.downloadOriginal};${db.savePath}"
     }
+
     override fun toEntity(s: String, context: Context) {
         val split = s.split(";")
         val iter = split.iterator()

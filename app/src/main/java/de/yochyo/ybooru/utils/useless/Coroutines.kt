@@ -1,4 +1,4 @@
-package de.yochyo.ybooru.utils
+package de.yochyo.ybooru.utils.useless
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job

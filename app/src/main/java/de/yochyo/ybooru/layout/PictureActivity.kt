@@ -20,13 +20,13 @@ import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.api.api.Api
-import de.yochyo.ybooru.api.cache
-import de.yochyo.ybooru.api.downloadImage
+import de.yochyo.ybooru.api.entities.Subscription
+import de.yochyo.ybooru.api.entities.Tag
+import de.yochyo.ybooru.api.managers.Manager
+import de.yochyo.ybooru.api.managers.cache
+import de.yochyo.ybooru.api.managers.downloadImage
 import de.yochyo.ybooru.database.db
-import de.yochyo.ybooru.database.entities.Subscription
-import de.yochyo.ybooru.database.entities.Tag
 import de.yochyo.ybooru.layout.res.Menus
-import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.*
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
@@ -215,7 +215,8 @@ class PictureActivity : AppCompatActivity() {
                         if (db.getSubscription(tag.name) == null) {
                             GlobalScope.launch {
                                 val currentID = Api.newestID()
-                                db.addSubscription(Subscription(tag.name, tag.type, currentID, tag.count)) }
+                                db.addSubscription(Subscription(tag.name, tag.type, currentID, tag.count))
+                            }
                             Toast.makeText(this@PictureActivity, "${getString(R.string.add_subscription)} ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             GlobalScope.launch { db.deleteSubscription(tag.name) }

@@ -7,10 +7,10 @@ import android.arch.persistence.room.TypeConverters
 import android.arch.persistence.room.migration.Migration
 import android.content.Context
 import android.content.SharedPreferences
+import de.yochyo.ybooru.api.entities.*
 import de.yochyo.ybooru.database.converter.DateConverter
-import de.yochyo.ybooru.database.entities.*
-import de.yochyo.ybooru.database.liveData.LiveTree
 import de.yochyo.ybooru.utils.createDefaultSavePath
+import de.yochyo.ybooru.utils.liveData.LiveTree
 import kotlinx.coroutines.*
 
 
@@ -51,11 +51,6 @@ abstract class Database : RoomDatabase() {
             withContext(Dispatchers.Main) {
                 servers += se
                 Server.currentServer.select()
-                println("-- ${nextServerID}")
-                for (s in servers.value!!) {
-                    println("${s.id} -- ${s.name}")
-                }
-                println("--")
             }
         }
     }

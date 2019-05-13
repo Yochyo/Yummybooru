@@ -1,8 +1,8 @@
 package de.yochyo.ybooru.api.api
 
 import de.yochyo.ybooru.api.Post
-import de.yochyo.ybooru.database.entities.Server
-import de.yochyo.ybooru.database.entities.Tag
+import de.yochyo.ybooru.api.entities.Server
+import de.yochyo.ybooru.api.entities.Tag
 import org.json.JSONObject
 
 class DanbooruApi(url: String) : Api(url) {
@@ -53,14 +53,14 @@ class DanbooruApi(url: String) : Api(url) {
     }
 
     override fun getTagFromJson(json: JSONObject): Tag? {
-            try {
-                var type = json.getInt("category")
-                if (type !in 0..5)
-                    type = Tag.UNKNOWN
-                return Tag(json.getString("name"), type, count = json.getInt("post_count"))
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return null
-            }
+        try {
+            var type = json.getInt("category")
+            if (type !in 0..5)
+                type = Tag.UNKNOWN
+            return Tag(json.getString("name"), type, count = json.getInt("post_count"))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
     }
 }

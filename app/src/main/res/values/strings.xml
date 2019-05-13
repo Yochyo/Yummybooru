@@ -67,7 +67,7 @@
     <string name="subscription">Subscription</string>
     <string name="subscripted">Subscripted</string>
     <string name="deleted">Deleted</string>
-    <string name="number_of_new_pictures">Number of new pictures: </string>
+    <string name="number_of_new_pictures">Number of new pictures:</string>
     <string name="not_inplemented">Not yet implemented</string>
     <string name="add_tag">Add Tag</string>
     <string name="add_favorite">Add Favorite</string>

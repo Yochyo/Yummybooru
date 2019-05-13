@@ -1,6 +1,6 @@
 package de.yochyo.ybooru.api
 
-import de.yochyo.ybooru.database.entities.Tag
+import de.yochyo.ybooru.api.entities.Tag
 
 abstract class Post {
     abstract val id: Int

@@ -23,16 +23,16 @@ import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.api.api.DanbooruApi
 import de.yochyo.ybooru.api.api.MoebooruApi
-import de.yochyo.ybooru.api.cache
+import de.yochyo.ybooru.api.entities.Server
+import de.yochyo.ybooru.api.entities.Subscription
+import de.yochyo.ybooru.api.entities.Tag
+import de.yochyo.ybooru.api.managers.Manager
+import de.yochyo.ybooru.api.managers.cache
 import de.yochyo.ybooru.database.Database
 import de.yochyo.ybooru.database.db
-import de.yochyo.ybooru.database.entities.Server
-import de.yochyo.ybooru.database.entities.Subscription
-import de.yochyo.ybooru.database.entities.Tag
 import de.yochyo.ybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.ybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.ybooru.layout.res.Menus
-import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.Logger
 import de.yochyo.ybooru.utils.setColor
 import de.yochyo.ybooru.utils.toTagString
@@ -47,26 +47,15 @@ import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private val selectedTags = ArrayList<String>()
-    private lateinit var menu: Menu
 
     private lateinit var tagAdapter: SearchTagAdapter
     private lateinit var serverAdapter: ServerAdapter
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 122)
-            Thread.sleep(200) //sonst stürzt die Activity möglicherweise ab wenn noch keine Schreibrechte da sind
-        }
-
-        Logger.initLogger()
-        GlobalScope.launch { cache.clearCache() }
-        Api.addApi(DanbooruApi(""))
-        Api.addApi(MoebooruApi(""))
-        Database.initDatabase(this)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-
         val toggle = ActionBarDrawerToggle(this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
@@ -81,6 +70,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
         serverRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
         serverAdapter = ServerAdapter().apply { serverRecyclerView.adapter = this }
+        initData()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (grantResults.none { it != PackageManager.PERMISSION_GRANTED })
+            initData()
+    }
+
+    fun initData() {
+        Logger.initLogger()
+        GlobalScope.launch { cache.clearCache() }
+        Api.addApi(DanbooruApi(""))
+        Api.addApi(MoebooruApi(""))
+        Database.initDatabase(this)
 
         db.tags.observe(this, Observer<TreeSet<Tag>> { t -> if (t != null) tagAdapter.updateTags(t) })
         db.servers.observe(this, Observer<TreeSet<Server>> { s -> if (s != null) serverAdapter.updateServers(s) })

@@ -13,6 +13,11 @@ object Logger{
     fun initLogger() {
         if (isExternalStorageWritable()) {
             logDirectory.mkdirs()
+            val files = logDirectory.listFiles().sorted()
+            if(files.size>100) //Damit sich nie mehr als 50 Dateien anordnen
+                for(i in 0..logDirectory.listFiles().size/2)
+                    files[i].delete()
+
             logFile.createNewFile()
 
             try {

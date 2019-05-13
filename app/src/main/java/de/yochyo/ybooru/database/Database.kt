@@ -13,10 +13,11 @@ import de.yochyo.ybooru.database.liveData.LiveTree
 import de.yochyo.ybooru.utils.createDefaultSavePath
 import kotlinx.coroutines.*
 
+
 @android.arch.persistence.room.Database(entities = [Tag::class, Subscription::class, Server::class], version = 2)
 @TypeConverters(DateConverter::class)
 abstract class Database : RoomDatabase() {
-    private lateinit var prefs: SharedPreferences
+    lateinit var prefs: SharedPreferences
 
     companion object {
         var instance: Database? = null
@@ -44,15 +45,19 @@ abstract class Database : RoomDatabase() {
     val subs = LiveTree<Subscription>()
 
     fun initialize() {
-        var se: List<Server>? = null
-        runBlocking {
-            val job = GlobalScope.launch {
-                se = serverDao.getAllServers()
+        GlobalScope.launch {
+            var se: List<Server>? = null
+            se = serverDao.getAllServers()
+            withContext(Dispatchers.Main) {
+                servers += se
+                Server.currentServer.select()
+                println("-- ${nextServerID}")
+                for (s in servers.value!!) {
+                    println("${s.id} -- ${s.name}")
+                }
+                println("--")
             }
-            job.join()
         }
-        servers += se!!
-        Server.currentServer.select()
     }
 
     fun getAllTags(serverID: Int): List<Tag> {
@@ -65,6 +70,7 @@ abstract class Database : RoomDatabase() {
         }
         return t!!
     }
+
     fun getAllSubscriptions(serverID: Int): List<Subscription> {
         var s: List<Subscription>? = null
         runBlocking {
@@ -79,29 +85,31 @@ abstract class Database : RoomDatabase() {
 
     fun getTag(name: String) = tags.find { it.name == name }
     suspend fun addTag(tag: Tag) {
-        withContext(Dispatchers.Main){
+        withContext(Dispatchers.Main) {
             if (getTag(tag.name) == null) {
                 tags += tag
-                withContext(Dispatchers.Default){tagDao.insert(tag)}
+                withContext(Dispatchers.Default) { tagDao.insert(tag) }
             }
         }
     }
+
     suspend fun deleteTag(name: String) {
-        withContext(Dispatchers.Main){
+        withContext(Dispatchers.Main) {
             val tag = tags.find { it.name == name }
             if (tag != null) {
                 tags.remove(tag)
-                withContext(Dispatchers.Default){tagDao.delete(tag)}
+                withContext(Dispatchers.Default) { tagDao.delete(tag) }
             }
         }
     }
+
     suspend fun changeTag(changedTag: Tag) {
-        withContext(Dispatchers.Main){
+        withContext(Dispatchers.Main) {
             val tag = tags.find { it.name == changedTag.name }
             if (tag != null) {
                 tags.remove(tag)
                 tags.add(changedTag)
-                withContext(Dispatchers.Default){tagDao.update(changedTag)}
+                withContext(Dispatchers.Default) { tagDao.update(changedTag) }
             }
         }
     }
@@ -115,6 +123,7 @@ abstract class Database : RoomDatabase() {
             }
         }
     }
+
     suspend fun deleteSubscription(name: String) {
         withContext(Dispatchers.Main) {
             val sub = subs.find { it.name == name }
@@ -124,43 +133,47 @@ abstract class Database : RoomDatabase() {
             }
         }
     }
+
     suspend fun changeSubscription(changedSub: Subscription) {
-        withContext(Dispatchers.Main){
+        withContext(Dispatchers.Main) {
             val sub = subs.find { it.name == changedSub.name }
             if (sub != null) {
                 subs.remove(sub)
                 subs.add(changedSub)
-                withContext(Dispatchers.Default){subDao.update(changedSub)}
+                withContext(Dispatchers.Default) { subDao.update(changedSub) }
             }
         }
     }
 
     fun getServer(id: Int) = servers.find { it.id == id }
-    suspend fun addServer(server: Server) {
-        withContext(Dispatchers.Main){
-            if (getServer(server.id) == null) {
-                servers += server
-                withContext(Dispatchers.Default){serverDao.insert(server)}
+    suspend fun addServer(server: Server, id: Int = nextServerID++) {
+        withContext(Dispatchers.Main) {
+            val s = getServer(server.id)
+            if (s == null) {
+                servers += server.copy(id = id)
+                withContext(Dispatchers.Default) { serverDao.insert(server) }
             }
         }
     }
+
     suspend fun deleteServer(id: Int) {
-        withContext(Dispatchers.Main){
+        withContext(Dispatchers.Main) {
             val s = servers.find { id == it.id }
             if (s != null) {
                 if (currentServerID == id) s.unselect()
                 servers.remove(s)
-                withContext(Dispatchers.Default){serverDao.delete(s)}
+                withContext(Dispatchers.Default) { serverDao.delete(s) }
             }
         }
     }
+
     suspend fun changeServer(server: Server) {
-        withContext(Dispatchers.Main){
+        withContext(Dispatchers.Main) {
             val s = servers.find { it.id == server.id }
             if (s != null) {
                 servers -= s
                 servers += server
-                withContext(Dispatchers.Default){serverDao.update(server)}
+                withContext(Dispatchers.Default) { serverDao.update(server) }
             }
         }
     }
@@ -251,17 +264,17 @@ abstract class Database : RoomDatabase() {
 
     private var _savePath: String? = null
     var savePath: String
-    get(){
-        if(_savePath == null) _savePath = prefs.getString("savePath", createDefaultSavePath())
-        return _savePath!!
-    }
-    set(v){
-        _savePath = v
-        with(prefs.edit()){
-            putString("savePath", v)
-            apply()
+        get() {
+            if (_savePath == null) _savePath = prefs.getString("savePath", createDefaultSavePath())
+            return _savePath!!
         }
-    }
+        set(v) {
+            _savePath = v
+            with(prefs.edit()) {
+                putString("savePath", v)
+                apply()
+            }
+        }
 
     var sortTagsByFavorite: Boolean
         get() = sortTags.first() == '1'
@@ -285,12 +298,19 @@ abstract class Database : RoomDatabase() {
             sortSubs = "$v${sortSubs.last()}"
         }
 
-    suspend fun deleteEverything(){
-        withContext(Dispatchers.Main){
-            servers.clear()
-            tags.clear()
-            subs.clear()
-            withContext(Dispatchers.Default){clearAllTables()}
+    suspend fun deleteEverything() {
+        withContext(Dispatchers.Default) {
+            clearAllTables()
+            withContext(Dispatchers.Main) {
+                servers.clear()
+                tags.clear()
+                subs.clear()
+            }
+        }
+        val p = prefs.all
+        with(prefs.edit()) {
+            for (prefToReset in p.entries)
+                remove(prefToReset.key).apply()
         }
     }
 

@@ -3,7 +3,6 @@ package de.yochyo.ybooru.layout
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.net.Uri
 import android.os.Bundle
 import android.preference.Preference
 import android.preference.PreferenceFragment
@@ -16,6 +15,10 @@ import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.backup.BackupUtils
 import de.yochyo.ybooru.utils.documentFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class SettingsActivity : AppCompatPreferenceActivity() {
@@ -37,8 +40,14 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             true
         }
         findPreference("restore_backup").setOnPreferenceClickListener {
-            BackupUtils.restoreBackup(File(BackupUtils.directory).listFiles().first(), this)
-            Toast.makeText(this, "Restored backup", Toast.LENGTH_LONG).show()//TODO
+            GlobalScope.launch {
+                BackupUtils.restoreBackup(File(BackupUtils.directory).listFiles().first(), this@SettingsActivity)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@SettingsActivity, "Restored backup", Toast.LENGTH_LONG).show()
+                    db.initialize()
+                }
+            }
+
             true
         }
 
@@ -95,7 +104,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {
             if (requestCode == savePathCode) {
-                if (data?.dataString != null){
+                if (data?.dataString != null) {
                     val file = DocumentFile.fromTreeUri(this, data.data)
                     db.savePath = file!!.uri.toString()
                 }

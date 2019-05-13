@@ -40,7 +40,7 @@ abstract class LiveCollection<C : MutableCollection<T>, T>(collection: C) : Live
     operator fun get(position: Int) = v.elementAt(position)
     operator fun minusAssign(e: T) = remove(e)
 
-    protected fun notifyChange() {
+    fun notifyChange() {
         value = v
     }
 }

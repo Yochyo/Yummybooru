@@ -15,7 +15,8 @@ object ServerBackup : BackupableEntity<Server> {
     override fun toEntity(s: String, context: Context) {
         val split = s.split(";")
         val iter = split.iterator()
-        GlobalScope.launch { db.addServer(Server(iter.next(), iter.next(), parseURL(iter.next()), iter.next(), iter.next(), iter.next().toBoolean(), iter.next().toInt())) }
+        val server = Server(iter.next(), iter.next(), parseURL(iter.next()), iter.next(), iter.next(), iter.next().toBoolean(), iter.next().toInt())
+        GlobalScope.launch { db.addServer(server, server.id) }
     }
 
 }

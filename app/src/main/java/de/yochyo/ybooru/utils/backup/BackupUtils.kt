@@ -1,17 +1,9 @@
 package de.yochyo.ybooru.utils.backup
 
 import android.content.Context
-import android.os.Environment
-import android.support.v4.provider.DocumentFile
 import de.yochyo.ybooru.database.db
-import de.yochyo.ybooru.utils.Logger
 import de.yochyo.ybooru.utils.configPath
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.io.File
-import java.io.IOException
-import java.lang.Exception
-import java.lang.StringBuilder
 
 object BackupUtils {
     val directory = "$configPath/backup"
@@ -39,7 +31,7 @@ object BackupUtils {
         f.writeBytes(builder.toString().toByteArray())
     }
 
-    fun restoreBackup(file: File, context: Context) {
+    suspend fun restoreBackup(file: File, context: Context) {
         fun restore(type: String, line: String) {
             when (type) {
                 "Tag" -> TagBackup.toEntity(line, context)
@@ -49,8 +41,7 @@ object BackupUtils {
                 else -> throw Exception("type [$type] does not exist")
             }
         }
-        GlobalScope.launch { db.deleteEverything() }
-
+        db.deleteEverything()
         val s = String(file.readBytes())
         val lines = s.split("\n")
         var currentType = "-1"
@@ -59,21 +50,15 @@ object BackupUtils {
                 currentType = line.substring(2, line.length - 2)
                 continue
             }
-            println(line)
             if (line != "")
                 restore(currentType, line)
         }
+
     }
 
     private fun createBackupFile(): File {
         val file = File("$directory/backup" + System.currentTimeMillis() + ".yBooru")
         file.createNewFile()
         return file
-    }
-
-
-    private fun isExternalStorageWritable(): Boolean {
-        val state = Environment.getExternalStorageState()
-        return Environment.MEDIA_MOUNTED == state
     }
 }

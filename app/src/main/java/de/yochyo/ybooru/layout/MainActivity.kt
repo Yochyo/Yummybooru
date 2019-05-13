@@ -3,10 +3,12 @@ package de.yochyo.ybooru.layout
 import android.Manifest
 import android.arch.lifecycle.Observer
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AlertDialog
@@ -52,7 +54,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 122)
+            Thread.sleep(200) //sonst stürzt die Activity möglicherweise ab wenn noch keine Schreibrechte da sind
+        }
+
         Logger.initLogger()
         GlobalScope.launch { cache.clearCache() }
         Api.addApi(DanbooruApi(""))
@@ -119,7 +125,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.action_add_server -> AddServerDialog {
                 GlobalScope.launch { db.addServer(it) }
                 Toast.makeText(this, getString(R.string.add_server), Toast.LENGTH_SHORT).show()
-            }.apply { serverID = db.nextServerID++ }.build(this)
+            }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
         }
         return super.onOptionsItemSelected(item)
@@ -271,10 +277,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val holder = ServerViewHolder((layoutInflater.inflate(R.layout.server_item_layout, parent, false) as LinearLayout))
             holder.layout.setOnClickListener {
                 val server = servers.elementAt(holder.adapterPosition)
-                server.select()
-                notifyDataSetChanged()
-                selectedTags.clear()
-                Toast.makeText(this@MainActivity, getString(R.string.selected_server), Toast.LENGTH_SHORT).show()
+                GlobalScope.launch(Dispatchers.Main) {
+                    server.select()
+                    selectedTags.clear()
+                    Toast.makeText(this@MainActivity, getString(R.string.selected_server), Toast.LENGTH_SHORT).show()
+                }
             }
             holder.layout.setOnLongClickListener {
                 val server = servers.elementAt(holder.adapterPosition)

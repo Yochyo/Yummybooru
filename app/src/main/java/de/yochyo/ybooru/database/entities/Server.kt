@@ -5,12 +5,14 @@ import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.passwordToHash
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.URL
 
 @Entity(tableName = "servers")
-class Server(var name: String, var api: String, var url: String, var userName: String = "", var password: String = "", var enableR18Filter: Boolean = false, @PrimaryKey(autoGenerate = true) val id: Int = -1) : Comparable<Server> {
+data class Server(var name: String, var api: String, var url: String, var userName: String = "", var password: String = "", var enableR18Filter: Boolean = false, @PrimaryKey val id: Int = -1) : Comparable<Server> {
     companion object {
         private var _currentServer: Server? = null
         val currentServer: Server
@@ -49,20 +51,23 @@ class Server(var name: String, var api: String, var url: String, var userName: S
     val isSelected: Boolean
         get() = Server.currentServer.id == id
 
-    fun select() {
+    suspend fun select() {
         db.currentServerID = this.id
-        Server._currentServer = this
+        _currentServer = this
         val api = Api.initApi(this.api, this.url)
-        db.tags.clear()
-        db.tags += db.getAllTags(this.id)
-        db.subs.clear()
-        db.subs += db.getAllSubscriptions(this.id)
-        Manager.resetAll()
+        withContext(Dispatchers.Main) {
+            db.tags.clear()
+            db.subs.clear()
+            db.tags += db.getAllTags(id)
+            db.subs += db.getAllSubscriptions(id)
+            Manager.resetAll()
+            db.servers.notifyChange()
+        }
     }
 
     fun unselect() {
         db.currentServerID = -1
-        Server._currentServer = null
+        _currentServer = null
         Api.instance = null
         db.tags.clear()
         db.subs.clear()

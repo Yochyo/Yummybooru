@@ -1,6 +1,5 @@
 package de.yochyo.ybooru.utils
 
-import android.content.Context
 import android.os.Environment
 import java.io.File
 import java.io.IOException

@@ -4,7 +4,6 @@ import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.database.liveData.LiveArrayList
 import de.yochyo.ybooru.utils.toTagArray
-import java.lang.Exception
 
 abstract class Manager(val tags: Array<String>) {
     companion object {

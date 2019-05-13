@@ -23,7 +23,9 @@ import de.yochyo.ybooru.utils.setColor
 import de.yochyo.ybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_subscription.*
 import kotlinx.android.synthetic.main.content_subscription.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 
 class SubscriptionActivity : AppCompatActivity() {

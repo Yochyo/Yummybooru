@@ -2,7 +2,6 @@ package de.yochyo.ybooru.utils
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.net.Uri
 import android.support.v4.provider.DocumentFile
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.api.cache

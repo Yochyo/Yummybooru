@@ -30,8 +30,10 @@ import de.yochyo.ybooru.manager.Manager
 import de.yochyo.ybooru.utils.*
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
-import kotlinx.coroutines.*
-import kotlin.collections.ArrayList
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class PictureActivity : AppCompatActivity() {

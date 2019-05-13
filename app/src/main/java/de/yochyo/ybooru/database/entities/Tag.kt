@@ -3,7 +3,6 @@ package de.yochyo.ybooru.database.entities
 import android.arch.persistence.room.*
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.database.db
-import org.json.JSONObject
 import java.util.*
 
 @Entity(tableName = "tags", primaryKeys = ["name", "serverID"])

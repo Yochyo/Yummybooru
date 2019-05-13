@@ -2,10 +2,7 @@ package de.yochyo.ybooru.database.entities
 
 import android.arch.persistence.room.*
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.database.db
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.util.*
 
 @Entity(tableName = "subs", primaryKeys = ["name", "serverID"])

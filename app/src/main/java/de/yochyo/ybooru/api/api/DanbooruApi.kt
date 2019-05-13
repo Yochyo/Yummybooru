@@ -3,8 +3,6 @@ package de.yochyo.ybooru.api.api
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.database.entities.Server
 import de.yochyo.ybooru.database.entities.Tag
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 class DanbooruApi(url: String) : Api(url) {

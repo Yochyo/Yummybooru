@@ -8,7 +8,6 @@ import android.os.Environment
 import android.support.v4.provider.DocumentFile
 import android.view.MotionEvent
 import android.widget.TextView
-import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.database.entities.Server
 import java.io.File
 import java.security.MessageDigest

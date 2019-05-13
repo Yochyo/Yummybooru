@@ -13,6 +13,7 @@ import de.yochyo.ybooru.database.entities.Tag
 import java.io.File
 import java.security.MessageDigest
 import java.util.*
+import kotlin.collections.ArrayList
 
 fun preview(id: Int) = "${id}P${Server.currentID}"
 fun sample(id: Int) = "${id}S${Server.currentID}"
@@ -22,7 +23,7 @@ fun String.toTagArray(): Array<String> = split(" ").toTypedArray()
 fun Array<String>.toTagString() = joinToString(" ")
 fun List<String>.toTagString() = joinToString(" ")
 
-fun TreeSet<Tag>.get(name: Int) = find { it.name == name.toString() }
+val configPath = "${Environment.getExternalStorageDirectory().absolutePath}/.yBooru"
 
 fun TextView.setColor(colorCode: Int) {
     if (Build.VERSION.SDK_INT > 22) setTextColor(context.getColor(colorCode))

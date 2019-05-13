@@ -1,8 +1,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <Preference
-    android:key="savePath"
-    android:title="Save path"
-    android:enabled="true"/>
+            android:key="savePath"
+            android:title="Save path"
+            android:enabled="true"/>
     <SwitchPreference
             android:key="downloadOriginal"
             android:title="Download extra large picture"
@@ -29,4 +29,12 @@
             android:defaultValue="11"
             android:entries="@array/subs_sort_entries"
             android:entryValues="@array/subs_sort_values"/>
+    <Preference
+            android:key="create_backup"
+            android:title="Create Backup"
+            android:enabled="true"/>
+    <Preference
+            android:key="restore_backup"
+            android:title="Restore Backup"
+            android:enabled="true"/>
 </PreferenceScreen>

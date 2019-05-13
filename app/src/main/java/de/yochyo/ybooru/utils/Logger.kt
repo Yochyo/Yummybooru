@@ -7,7 +7,7 @@ import java.io.IOException
 
 
 object Logger{
-    private val directory = "${Environment.getExternalStorageDirectory().absolutePath}/.yBooru/logs/"
+    private val directory = "$configPath/logs/"
     private val logDirectory = File(directory)
     private val logFile = File("$directory/logcat" + System.currentTimeMillis() + ".txt")
 

@@ -10,9 +10,12 @@ import android.preference.PreferenceFragment
 import android.preference.PreferenceManager
 import android.support.v4.provider.DocumentFile
 import android.view.MenuItem
+import android.widget.Toast
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.manager.Manager
+import de.yochyo.ybooru.utils.backup.BackupUtils
+import java.io.File
 
 class SettingsActivity : AppCompatPreferenceActivity() {
     private val savePathCode = 2143421
@@ -25,6 +28,16 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         findPreference("savePath").setOnPreferenceClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
             startActivityForResult(intent, savePathCode)
+            true
+        }
+        findPreference("create_backup").setOnPreferenceClickListener {
+            BackupUtils.createBackup(this)
+            Toast.makeText(this, "New backup in [${BackupUtils.directory}]", Toast.LENGTH_LONG).show()
+            true
+        }
+        findPreference("restore_backup").setOnPreferenceClickListener {
+            BackupUtils.restoreBackup(File(BackupUtils.directory).listFiles().first(), this)
+            Toast.makeText(this, "Restored backup", Toast.LENGTH_LONG).show()//TODO
             true
         }
 

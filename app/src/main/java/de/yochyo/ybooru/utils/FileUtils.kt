@@ -19,11 +19,16 @@ object FileUtils {
     private var oldSavePath: String? = null
     private var parentFolder: DocumentFile? = null
     fun getParentFolder(context: Context): DocumentFile {
-        if (oldSavePath == null) {
+        if (oldSavePath == null) { //Initialisieren beim ersten mal
             oldSavePath = db.getSavePath(context)
             println(oldSavePath)
             parentFolder = DocumentFile.fromTreeUri(context, Uri.parse(oldSavePath))
-        }
+        } //Falls der Speicherpfad geändert wird
+        if(oldSavePath != db.getSavePath(context)){
+            oldSavePath = db.getSavePath(context)
+            println(oldSavePath)
+            parentFolder = DocumentFile.fromTreeUri(context, Uri.parse(oldSavePath))
+        } //Falls der Pfad nicht mehr existiert
         if (parentFolder == null || !parentFolder!!.exists()) {
             oldSavePath = createDefaultSavePath(context)
             db.setSavePath(oldSavePath!!)
@@ -57,13 +62,8 @@ object FileUtils {
 
     private suspend fun createFileToWrite(context: Context, post: Post): DocumentFile? {
         return withContext(Dispatchers.IO) {
-            var folder = getParentFolder(context).findFile(Server.currentServer.urlHost)
-            if (folder == null)
-                folder = getParentFolder(context).createDirectory(Server.currentServer.urlHost)!!
-            val fileName = postToFilename(post)
-            val file = folder.findFile(fileName)
-            if(file == null) return@withContext folder.createFile("png", fileName)
-            return@withContext null
+            val folder = getOrCreateFolder(getParentFolder(context), Server.currentServer.urlHost)
+            createFileOrNull(folder, postToFilename(post), "png")
         }
 
     }
@@ -73,5 +73,17 @@ object FileUtils {
         var last = s.length
         if (last > 123) last = 123
         return s.substring(0, last) + ".png"
+    }
+
+    private fun createFileOrNull(parent: DocumentFile, name: String, mimeType: String): DocumentFile? {
+        val file = parent.findFile(name)
+        return if(file != null) null
+        else return parent.createFile(mimeType, name)!!
+    }
+
+    private fun getOrCreateFolder(parent: DocumentFile, name: String): DocumentFile {
+        val file = parent.findFile(name)
+        return if (file != null) file
+        else parent.createDirectory(name)!!
     }
 }

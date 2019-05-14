@@ -19,10 +19,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 
 class SettingsActivity : AppCompatPreferenceActivity() {
     private val savePathCode = 2143421
+    private val restoreDataCode = 12344
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -31,6 +31,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         setSavePathSummary()
         findPreference("savePath").setOnPreferenceClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+            intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
             startActivityForResult(intent, savePathCode)
             true
         }
@@ -40,14 +41,10 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             true
         }
         findPreference("restore_backup").setOnPreferenceClickListener {
-            GlobalScope.launch {
-                BackupUtils.restoreBackup(File(BackupUtils.directory).listFiles().first(), this@SettingsActivity)
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@SettingsActivity, "Restored backup", Toast.LENGTH_LONG).show()
-                    db.initialize()
-                }
-            }
-
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+            intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
+            intent.type = "*/*"
+            startActivityForResult(intent, restoreDataCode)
             true
         }
 
@@ -102,14 +99,23 @@ class SettingsActivity : AppCompatPreferenceActivity() {
     //Set savePath
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK) {
-            if (requestCode == savePathCode) {
-                if (data?.dataString != null) {
-                    val file = DocumentFile.fromTreeUri(this, data.data)
-                    db.savePath = file!!.uri.toString()
-                }
-
+        if (resultCode == RESULT_OK && data != null) {
+            if (requestCode == savePathCode) { //Speicherpfad ändern
+                val file = DocumentFile.fromTreeUri(this, data.data)
+                db.savePath = file!!.uri.toString()
                 setSavePathSummary()
+            }
+            if (requestCode == restoreDataCode) { //Daten wiederherstellen
+                    val stream = contentResolver.openInputStream(data.data)
+                    GlobalScope.launch(Dispatchers.IO) {
+                        val bytes = stream.readBytes()
+                        stream.close()
+                        BackupUtils.restoreBackup(bytes, this@SettingsActivity)
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@SettingsActivity, "Restored backup", Toast.LENGTH_LONG).show()
+                            db.initialize()
+                        }
+                    }
             }
         }
     }

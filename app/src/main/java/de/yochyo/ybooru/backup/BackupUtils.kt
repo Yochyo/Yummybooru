@@ -31,7 +31,7 @@ object BackupUtils {
         f.writeBytes(builder.toString().toByteArray())
     }
 
-    suspend fun restoreBackup(file: File, context: Context) {
+    suspend fun restoreBackup(byteArray: ByteArray, context: Context) {
         fun restore(type: String, line: String) {
             when (type) {
                 "Tag" -> TagBackup.toEntity(line, context)
@@ -41,19 +41,30 @@ object BackupUtils {
                 else -> throw Exception("type [$type] does not exist")
             }
         }
-        db.deleteEverything()
-        val s = String(file.readBytes())
-        val lines = s.split("\n")
-        var currentType = "-1"
-        for (line in lines) {
-            if (line.startsWith("--") && line.endsWith("--")) {
-                currentType = line.substring(2, line.length - 2)
-                continue
+        try {
+            val map = HashMap<String, ArrayList<String>>()//type, lines
+            val s = String(byteArray)
+            val lines = s.split("\n")
+            var currentType = "-1"
+            for (line in lines) {
+                if (line.startsWith("--") && line.endsWith("--")) {
+                    currentType = line.substring(2, line.length - 2)
+                    continue
+                }
+                if (line != "") {
+                    if (map[currentType] == null)
+                        map[currentType] = ArrayList(50)
+                    map[currentType]!!.add(line)
+                }
             }
-            if (line != "")
-                restore(currentType, line)
+            //Wenn es keine Fehler gibt, wiederherstellen
+            db.deleteEverything()
+            for (entry in map) {
+                for (v in entry.value)
+                    restore(entry.key, v)
+            }
+        } catch (e: Exception) {
         }
-
     }
 
     private fun createBackupFile(): File {

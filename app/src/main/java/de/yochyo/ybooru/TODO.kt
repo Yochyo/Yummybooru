@@ -12,8 +12,6 @@ package de.yochyo.ybooru
 //TODO Subs nicht nur mit :id>X filtern, sondern auch per hand
 //TODO folder in taglist einfügen
 //TODO Manager.resetAll optimieren, anwendungszeit verbessern
-//TODO bei backup restore datei auswählen
-//TODO sort classes
 //TODO setContentView dauert ewig
 //Bugs
 //TODO funktioniert das speichern auf jeder Android Version, testen
@@ -22,11 +20,4 @@ package de.yochyo.ybooru
 //TODO bei startup/closeup buggt es manchmal
 //TODO settings backpress geht nicht in emulierten handys
 //Nettes zeug für irgendwann
-//TODO farben von mbooru klauen
-//TODO write logcats
 //TODO Auto mode bei server hinzufügen
-
-
-
-
-

@@ -15,7 +15,7 @@ object TagBackup : BackupableEntity<Tag> {
     override fun toEntity(s: String, context: Context) {
         val split = s.split(";")
         val iter = split.iterator()
-        GlobalScope.launch { db.addTag(Tag(iter.next(), iter.next().toInt(), iter.next().toBoolean(), Date(iter.next().toLong()), iter.next().toInt(), iter.next().toInt())) }
+        GlobalScope.launch { db.tagDao.insert(Tag(iter.next(), iter.next().toInt(), iter.next().toBoolean(), Date(iter.next().toLong()), iter.next().toInt(), iter.next().toInt())) }
     }
 
 }

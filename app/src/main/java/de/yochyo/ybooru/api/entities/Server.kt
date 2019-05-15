@@ -56,11 +56,11 @@ data class Server(var name: String, var api: String, var url: String, var userNa
         _currentServer = this
         val api = Api.initApi(this.api, this.url)
         withContext(Dispatchers.Main) {
+            Manager.resetAll()
             db.tags.clear()
             db.subs.clear()
             db.tags += db.getAllTags(id)
             db.subs += db.getAllSubscriptions(id)
-            Manager.resetAll()
             db.servers.notifyChange()
         }
     }

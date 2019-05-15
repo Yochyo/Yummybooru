@@ -3,6 +3,9 @@ package de.yochyo.ybooru.backup
 import android.content.Context
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.utils.configPath
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 
 object BackupUtils {
@@ -15,20 +18,22 @@ object BackupUtils {
     }
 
     fun createBackup(context: Context) {
-        val f = createBackupFile()
-        val builder = StringBuilder()
-        builder.append("--Tag--\n")
-        for (tag in db.tags.value!!)
-            builder.append(TagBackup.toString(tag, context) + "\n")
-        builder.append("--Sub--\n")
-        for (sub in db.subs.value!!)
-            builder.append(SubscriptionBackup.toString(sub, context) + "\n")
-        builder.append("--Server--\n")
-        for (server in db.servers.value!!)
-            builder.append(ServerBackup.toString(server, context) + "\n")
-        builder.append("--Preferences--\n")
-        builder.append(PreferencesBackup.toString("", context) + "\n")
-        f.writeBytes(builder.toString().toByteArray())
+        GlobalScope.launch(Dispatchers.IO) {
+            val f = createBackupFile()
+            val builder = StringBuilder()
+            builder.append("--Tag--\n")
+            for (tag in db.tagDao.getAllTags())
+                builder.append(TagBackup.toString(tag, context) + "\n")
+            builder.append("--Sub--\n")
+            for (sub in db.subDao.getAllSubscriptions())
+                builder.append(SubscriptionBackup.toString(sub, context) + "\n")
+            builder.append("--Server--\n")
+            for (server in db.serverDao.getAllServers())
+                builder.append(ServerBackup.toString(server, context) + "\n")
+            builder.append("--Preferences--\n")
+            builder.append(PreferencesBackup.toString("", context) + "\n")
+            f.writeBytes(builder.toString().toByteArray())
+        }
     }
 
     suspend fun restoreBackup(byteArray: ByteArray, context: Context) {

@@ -15,6 +15,6 @@ object SubscriptionBackup : BackupableEntity<Subscription> {
     override fun toEntity(s: String, context: Context) {
         val split = s.split(";")
         val iter = split.iterator()
-        GlobalScope.launch { db.addSubscription(Subscription(iter.next(), iter.next().toInt(), iter.next().toInt(), iter.next().toInt(), iter.next().toBoolean(), Date(iter.next().toLong()), iter.next().toInt())) }
+        GlobalScope.launch { db.subDao.insert(Subscription(iter.next(), iter.next().toInt(), iter.next().toInt(), iter.next().toInt(), iter.next().toBoolean(), Date(iter.next().toLong()), iter.next().toInt())) }
     }
 }

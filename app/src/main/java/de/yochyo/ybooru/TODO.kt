@@ -13,6 +13,8 @@ package de.yochyo.ybooru
 //TODO folder in taglist einfügen
 //TODO Manager.resetAll optimieren, anwendungszeit verbessern
 //TODO setContentView dauert ewig
+//TODO getallTags + Subs haben einen runBlcoking block
+//TODO subs und Tags sollen beim geladen werden geupdated werden
 //Bugs
 //TODO funktioniert das speichern auf jeder Android Version, testen
 //TODO was mach ich wenn der SPeicherPfad gelöscht wird -- vllt jedes mal nachschauen und sonst savePath auf default setzen

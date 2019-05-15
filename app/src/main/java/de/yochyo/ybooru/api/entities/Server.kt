@@ -54,13 +54,11 @@ data class Server(var name: String, var api: String, var url: String, var userNa
     suspend fun select() {
         db.currentServerID = this.id
         _currentServer = this
-        val api = Api.initApi(this.api, this.url)
+        Api.initApi(this.api, this.url)
         withContext(Dispatchers.Main) {
             Manager.resetAll()
-            db.tags.clear()
-            db.subs.clear()
-            db.tags += db.getAllTags(id)
-            db.subs += db.getAllSubscriptions(id)
+            db.initTags(id)
+            db.initSubscriptions(id)
             db.servers.notifyChange()
         }
     }

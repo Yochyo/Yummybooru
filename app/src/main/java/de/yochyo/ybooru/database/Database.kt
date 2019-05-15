@@ -11,7 +11,10 @@ import de.yochyo.ybooru.api.entities.*
 import de.yochyo.ybooru.database.converter.DateConverter
 import de.yochyo.ybooru.utils.createDefaultSavePath
 import de.yochyo.ybooru.utils.liveData.LiveTree
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 @android.arch.persistence.room.Database(entities = [Tag::class, Subscription::class, Server::class], version = 2)
@@ -33,7 +36,7 @@ abstract class Database : RoomDatabase() {
                     })
                     .addMigrations(*Migrations.all).build()
             instance!!.prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
-            instance!!.initialize()
+            instance!!.initServer()
 
             return instance!!
         }
@@ -44,39 +47,36 @@ abstract class Database : RoomDatabase() {
     val tags = LiveTree<Tag>()
     val subs = LiveTree<Subscription>()
 
-    fun initialize() {
+    fun initServer() {
         GlobalScope.launch {
-            var se: List<Server>? = null
-            se = serverDao.getAllServers()
+            val se: List<Server> = serverDao.getAllServers()
             withContext(Dispatchers.Main) {
+                servers.clear()
                 servers += se
                 Server.currentServer.select()
             }
         }
     }
 
-    fun getAllTags(serverID: Int): List<Tag> {
-        var t: List<Tag>? = null
-        runBlocking {
-            val job = GlobalScope.launch {
-                t = tagDao.getAllTags().filter { it.serverID == serverID }
+    fun initTags(serverID: Int) {
+        GlobalScope.launch {
+            val t = tagDao.getAllTags().filter { it.serverID == serverID }
+            withContext(Dispatchers.Main) {
+                tags.clear()
+                tags += t
             }
-            job.join()
         }
-        return t!!
     }
 
-    fun getAllSubscriptions(serverID: Int): List<Subscription> {
-        var s: List<Subscription>? = null
-        runBlocking {
-            val job = GlobalScope.launch {
-                s = subDao.getAllSubscriptions().filter { it.serverID == serverID }
+    fun initSubscriptions(serverID: Int) {
+        GlobalScope.launch {
+            val s = subDao.getAllSubscriptions().filter { it.serverID == serverID }
+            withContext(Dispatchers.Main) {
+                subs.clear()
+                subs += s
             }
-            job.join()
         }
-        return s!!
     }
-
 
     fun getTag(name: String) = tags.find { it.name == name }
     suspend fun addTag(tag: Tag) {

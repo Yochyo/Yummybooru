@@ -6,7 +6,7 @@ import de.yochyo.ybooru.database.db
 import java.util.*
 
 @Entity(tableName = "tags", primaryKeys = ["name", "serverID"])
-data class Tag(val name: String, val type: Int, var isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID, val count: Int = 0) : Comparable<Tag> {
+data class Tag(val name: String, val type: Int, val isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID, val count: Int = 0) : Comparable<Tag> {
 
     companion object {
         const val GENERAL = 0

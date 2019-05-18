@@ -9,11 +9,11 @@ package de.yochyo.ybooru
 //TODO strings vol pref_general in string.xml
 //TODO md5 des bildes benutzen
 //TODO namen der xml elemente optimieren
-//TODO don´t allow to create tags if no internet connection -> Fix them when you have internet
 //TODO Manager.resetAll optimieren, anwendungszeit verbessern
 //TODO setContentView dauert ewig -- vllt programmatically schreiben?
 //Previewactivity, padding kleiner
 //Bugs
+//TODO wenn man einen Tag/Sub löscht und schnell server wechselt, wird der tag nicht gelöscht / geadded
 //TODO was mach ich wenn der SPeicherPfad gelöscht wird -- vllt jedes mal nachschauen und sonst savePath auf default setzen
 //TODO bitmap = BitmapFactory.decodeStream(stream)!! in downloader schlägt selten fehl
 //TODO settings backpress geht nicht in emulierten handys

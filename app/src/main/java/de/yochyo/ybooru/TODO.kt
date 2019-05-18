@@ -11,11 +11,11 @@ package de.yochyo.ybooru
 //TODO namen der xml elemente optimieren
 //TODO don´t allow to create tags if no internet connection -> Fix them when you have internet
 //TODO Manager.resetAll optimieren, anwendungszeit verbessern
-//TODO setContentView dauert ewig
+//TODO setContentView dauert ewig -- vllt programmatically schreiben?
+//Previewactivity, padding kleiner
 //Bugs
 //TODO was mach ich wenn der SPeicherPfad gelöscht wird -- vllt jedes mal nachschauen und sonst savePath auf default setzen
 //TODO bitmap = BitmapFactory.decodeStream(stream)!! in downloader schlägt selten fehl
-//TODO bei startup/closeup buggt es manchmal
 //TODO settings backpress geht nicht in emulierten handys
 //Nettes zeug für irgendwann
 //TODO Subs nicht nur mit :id>X filtern, sondern auch per hand

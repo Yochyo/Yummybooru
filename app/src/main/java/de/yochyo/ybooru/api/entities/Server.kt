@@ -62,6 +62,41 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             db.servers.notifyChange()
         }
     }
+    fun updateMissingTypeTags(){
+        GlobalScope.launch {
+            val newTags = ArrayList<Tag>()
+            for (tag in db.tags.value!!) { //Tags updaten
+                if (tag.type == Tag.UNKNOWN) {
+                    val t = Api.getTag(tag.name)
+                    if (t != null){
+                        newTags += t.copy(creation = tag.creation)
+                    }
+                }
+            }
+            for(tag in newTags){ //Tags ersetzen
+                db.deleteTag(tag.name)
+                db.addTag(tag)
+            }
+        }
+    }
+    fun updateMissingTypeSubs(){
+        GlobalScope.launch {
+            val newSubs = ArrayList<Subscription>()
+            for (sub in db.subs.value!!) { //Tags updaten
+                if (sub.type == Tag.UNKNOWN) {
+                    val t = Api.getTag(sub.name)
+                    if (t != null){
+                        val t = t.copy(creation = sub.creation)
+                        newSubs += Subscription.fromTag(t)
+                    }
+                }
+            }
+            for(sub in newSubs){ //Tags ersetzen
+                db.deleteSubscription(sub.name)
+                db.addSubscription(sub)
+            }
+        }
+    }
 
     fun unselect() {
         db.currentServerID = -1

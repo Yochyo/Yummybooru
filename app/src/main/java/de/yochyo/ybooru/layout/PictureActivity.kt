@@ -213,10 +213,7 @@ class PictureActivity : AppCompatActivity() {
                     }
                     R.id.picture_info_item_subscribe -> {
                         if (db.getSubscription(tag.name) == null) {
-                            GlobalScope.launch {
-                                val currentID = Api.newestID()
-                                db.addSubscription(Subscription(tag.name, tag.type, currentID, tag.count))
-                            }
+                            GlobalScope.launch { db.addSubscription(Subscription.fromTag(tag)) }
                             Toast.makeText(this@PictureActivity, "${getString(R.string.add_subscription)} ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             GlobalScope.launch { db.deleteSubscription(tag.name) }

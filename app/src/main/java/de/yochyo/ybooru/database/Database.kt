@@ -64,6 +64,7 @@ abstract class Database : RoomDatabase() {
             withContext(Dispatchers.Main) {
                 tags.clear()
                 tags += t
+                Server.currentServer.updateMissingTypeTags()
             }
         }
     }
@@ -74,6 +75,7 @@ abstract class Database : RoomDatabase() {
             withContext(Dispatchers.Main) {
                 subs.clear()
                 subs += s
+                Server.currentServer.updateMissingTypeSubs()
             }
         }
     }

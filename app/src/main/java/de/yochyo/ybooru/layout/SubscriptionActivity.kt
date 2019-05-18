@@ -94,10 +94,9 @@ class SubscriptionActivity : AppCompatActivity() {
                     if (db.getSubscription(it.text.toString()) == null) {
                         GlobalScope.launch {
                             val tag = Api.getTag(it.text.toString())
-                            val newest = Api.newestID()
                             launch(Dispatchers.Main) {
                                 val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN)
-                                db.addSubscription(Subscription(newTag.name, newTag.type, newest, newTag.count))
+                                db.addSubscription(Subscription.fromTag(newTag))
                             }
                         }
                     }

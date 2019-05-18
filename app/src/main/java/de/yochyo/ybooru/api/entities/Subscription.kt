@@ -2,11 +2,16 @@ package de.yochyo.ybooru.api.entities
 
 import android.arch.persistence.room.*
 import de.yochyo.ybooru.R
+import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.database.db
 import java.util.*
 
 @Entity(tableName = "subs", primaryKeys = ["name", "serverID"])
 data class Subscription(val name: String, var type: Int, var lastID: Int, var lastCount: Int, var isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID) : Comparable<Subscription> {
+    companion object{
+        suspend fun fromTag(tag: Tag): Subscription = Subscription(tag.name, tag.type, Api.newestID(), tag.count, false, tag.creation, tag.serverID)
+    }
+
     val color: Int
         get() {
             when (type) {

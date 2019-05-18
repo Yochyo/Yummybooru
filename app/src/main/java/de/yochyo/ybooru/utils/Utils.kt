@@ -2,6 +2,7 @@ package de.yochyo.ybooru.utils
 
 import android.content.Context
 import android.graphics.Paint
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -52,6 +53,11 @@ fun parseURL(url: String): String {
     if (!url.endsWith("/"))
         b.append("/")
     return b.toString()
+}
+fun Context.isNetworkAvailable(): Boolean {
+    val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val activeNetworkInfo = connectivityManager.activeNetworkInfo
+    return activeNetworkInfo != null && activeNetworkInfo.isConnected
 }
 
 fun createDefaultSavePath(): String {

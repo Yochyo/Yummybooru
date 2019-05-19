@@ -11,7 +11,7 @@ import android.support.v4.provider.DocumentFile
 import android.view.MenuItem
 import android.widget.Toast
 import de.yochyo.ybooru.R
-import de.yochyo.ybooru.api.managers.Manager
+import de.yochyo.ybooru.api.downloads.Manager
 import de.yochyo.ybooru.backup.BackupUtils
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.utils.documentFile

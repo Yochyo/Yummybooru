@@ -16,7 +16,7 @@ import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.api.entities.Subscription
 import de.yochyo.ybooru.api.entities.Tag
-import de.yochyo.ybooru.api.managers.Manager
+import de.yochyo.ybooru.api.downloads.Manager
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.ybooru.utils.setColor

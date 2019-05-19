@@ -19,12 +19,11 @@ import com.github.chrisbanes.photoview.OnSingleFlingListener
 import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Post
-import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.api.entities.Subscription
 import de.yochyo.ybooru.api.entities.Tag
-import de.yochyo.ybooru.api.managers.Manager
-import de.yochyo.ybooru.api.managers.cache
-import de.yochyo.ybooru.api.managers.downloadImage
+import de.yochyo.ybooru.api.downloads.Manager
+import de.yochyo.ybooru.api.downloads.cache
+import de.yochyo.ybooru.api.downloads.downloadImage
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.utils.*

@@ -26,8 +26,8 @@ import de.yochyo.ybooru.api.api.MoebooruApi
 import de.yochyo.ybooru.api.entities.Server
 import de.yochyo.ybooru.api.entities.Subscription
 import de.yochyo.ybooru.api.entities.Tag
-import de.yochyo.ybooru.api.managers.Manager
-import de.yochyo.ybooru.api.managers.cache
+import de.yochyo.ybooru.api.downloads.Manager
+import de.yochyo.ybooru.api.downloads.cache
 import de.yochyo.ybooru.database.Database
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.layout.alertdialogs.AddServerDialog

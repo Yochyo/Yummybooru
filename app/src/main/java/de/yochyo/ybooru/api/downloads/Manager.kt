@@ -1,4 +1,4 @@
-package de.yochyo.ybooru.api.managers
+package de.yochyo.ybooru.api.downloads
 
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.api.api.Api

@@ -5,8 +5,8 @@ import android.graphics.Bitmap
 import android.support.v4.provider.DocumentFile
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.api.entities.Server
-import de.yochyo.ybooru.api.managers.cache
-import de.yochyo.ybooru.api.managers.downloadImage
+import de.yochyo.ybooru.api.downloads.cache
+import de.yochyo.ybooru.api.downloads.downloadImage
 import de.yochyo.ybooru.database.db
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

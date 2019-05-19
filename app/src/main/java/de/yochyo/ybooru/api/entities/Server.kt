@@ -2,7 +2,7 @@ package de.yochyo.ybooru.api.entities
 
 import android.arch.persistence.room.*
 import de.yochyo.ybooru.api.api.Api
-import de.yochyo.ybooru.api.managers.Manager
+import de.yochyo.ybooru.api.downloads.Manager
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.utils.passwordToHash
 import kotlinx.coroutines.Dispatchers

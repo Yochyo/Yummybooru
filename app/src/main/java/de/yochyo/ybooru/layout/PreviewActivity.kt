@@ -14,8 +14,8 @@ import android.widget.ImageView
 import android.widget.Toast
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Post
-import de.yochyo.ybooru.api.managers.Manager
-import de.yochyo.ybooru.api.managers.downloadImage
+import de.yochyo.ybooru.api.downloads.Manager
+import de.yochyo.ybooru.api.downloads.downloadImage
 import de.yochyo.ybooru.utils.preview
 import de.yochyo.ybooru.utils.toTagString
 import kotlinx.android.synthetic.main.activity_preview.*

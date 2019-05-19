@@ -11,7 +11,7 @@ package de.yochyo.ybooru
 //TODO namen der xml elemente optimieren
 //TODO Manager.resetAll optimieren, anwendungszeit verbessern
 //TODO setContentView dauert ewig -- vllt programmatically schreiben?
-//Previewactivity, padding kleiner
+//TODO Previewactivity, padding kleiner
 //Bugs
 //TODO wenn man einen Tag/Sub löscht und schnell server wechselt, wird der tag nicht gelöscht / geadded
 //TODO was mach ich wenn der SPeicherPfad gelöscht wird -- vllt jedes mal nachschauen und sonst savePath auf default setzen

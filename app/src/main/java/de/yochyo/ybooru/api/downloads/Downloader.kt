@@ -1,4 +1,4 @@
-package de.yochyo.ybooru.api.managers
+package de.yochyo.ybooru.api.downloads
 
 import android.content.Context
 import android.graphics.Bitmap

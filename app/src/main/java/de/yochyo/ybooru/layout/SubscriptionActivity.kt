@@ -70,10 +70,9 @@ class SubscriptionActivity : AppCompatActivity() {
                 builder.setNegativeButton(R.string.no) { _, _ -> }
                 builder.setPositiveButton(R.string.yes) { _, _ ->
                     GlobalScope.launch {
-                        sub.lastID = onClickedData!!.idWhenClicked
-                        sub.lastCount = onClickedData!!.countWhenClicked
+                        val s = sub.copy(lastID = onClickedData!!.idWhenClicked,lastCount = onClickedData!!.countWhenClicked)
                         onClickedData = null
-                        launch(Dispatchers.Main) { db.changeSubscription(sub) }
+                        launch(Dispatchers.Main) { db.changeSubscription(s) }
                     }
                 }
                 builder.show()

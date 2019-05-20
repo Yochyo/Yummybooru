@@ -207,7 +207,7 @@ class PictureActivity : AppCompatActivity() {
                     }
                     R.id.picture_info_item_add_favorite -> {
                         if (db.getTag(tag.name) == null) GlobalScope.launch { db.addTag(Tag(tag.name, tag.type, true)) }
-                        else GlobalScope.launch { db.changeTag(tag.apply { isFavorite = true }) }
+                        else GlobalScope.launch { db.changeTag(tag.copy( isFavorite = true)) }
                         Toast.makeText(this@PictureActivity, "${getString(R.string.add_favorite)} ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
                     R.id.picture_info_item_subscribe -> {

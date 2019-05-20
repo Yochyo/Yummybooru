@@ -10,7 +10,6 @@ package de.yochyo.ybooru
 //TODO md5 des bildes benutzen
 //TODO namen der xml elemente optimieren
 //TODO Manager.resetAll optimieren, anwendungszeit verbessern
-//TODO setContentView dauert ewig -- vllt programmatically schreiben?
 //TODO Previewactivity, padding kleiner
 //Bugs
 //TODO wenn man einen Tag/Sub löscht und schnell server wechselt, wird der tag nicht gelöscht / geadded

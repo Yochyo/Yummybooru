@@ -76,8 +76,7 @@ abstract class Api(var url: String) {
                     val post = instance!!.getPostFromJson(json.getJSONObject(i))
                     if (post != null) array += post
                 }
-                val filter = array.filter { it.extension == "png" || it.extension == "jpg" }
-                if (Server.currentServer.enableR18Filter) return filter.filter { it.rating == "s" }
+                if (Server.currentServer.enableR18Filter) return array.filter { it.rating == "s" }
             }
             return array
         }

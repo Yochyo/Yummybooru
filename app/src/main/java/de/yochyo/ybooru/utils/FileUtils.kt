@@ -4,9 +4,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.support.v4.provider.DocumentFile
 import de.yochyo.ybooru.api.Post
-import de.yochyo.ybooru.api.entities.Server
 import de.yochyo.ybooru.api.downloads.cache
 import de.yochyo.ybooru.api.downloads.downloadImage
+import de.yochyo.ybooru.api.entities.Server
 import de.yochyo.ybooru.database.db
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -57,19 +57,19 @@ object FileUtils {
         }
     }
 
-    private suspend fun createFileToWrite(context: Context, post: Post): DocumentFile? {
+    private suspend fun createFileToWrite(context: Context, post: Post, mimeType: String = post.extension): DocumentFile? {
         return withContext(Dispatchers.IO) {
             val folder = getOrCreateFolder(getParentFolder(context), Server.currentServer.urlHost)
-            createFileOrNull(folder, postToFilename(post), "png")
+            createFileOrNull(folder, postToFilename(post, mimeType), mimeType)
         }
 
     }
 
-    private suspend fun postToFilename(p: Post): String {
+    private suspend fun postToFilename(p: Post, mimeType: String): String {
         val s = "${Server.currentServer.urlHost} ${p.id} ${p.getTags().joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '[' && it != ']' }
         var last = s.length
-        if (last > 123) last = 123
-        return s.substring(0, last) + ".png"
+        if (last > 127 - (mimeType.length + 1)) last = 127 - (mimeType.length + 1)
+        return s.substring(0, last) + ".$mimeType"
     }
 
     private fun createFileOrNull(parent: DocumentFile, name: String, mimeType: String): DocumentFile? {

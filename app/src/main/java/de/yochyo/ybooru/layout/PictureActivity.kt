@@ -19,20 +19,17 @@ import com.github.chrisbanes.photoview.OnSingleFlingListener
 import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.ybooru.R
 import de.yochyo.ybooru.api.Post
-import de.yochyo.ybooru.api.entities.Subscription
-import de.yochyo.ybooru.api.entities.Tag
 import de.yochyo.ybooru.api.downloads.Manager
 import de.yochyo.ybooru.api.downloads.cache
 import de.yochyo.ybooru.api.downloads.downloadImage
+import de.yochyo.ybooru.api.entities.Subscription
+import de.yochyo.ybooru.api.entities.Tag
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.layout.res.Menus
 import de.yochyo.ybooru.utils.*
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 
 class PictureActivity : AppCompatActivity() {
@@ -118,6 +115,7 @@ class PictureActivity : AppCompatActivity() {
                 if (wasCurrentPosition == m.position) {
                     currentTags += tags
                     tagRecyclerView.adapter?.notifyDataSetChanged()
+                    tagRecyclerView.layoutManager?.scrollToPosition(0)
                 }
             }
         }
@@ -158,18 +156,30 @@ class PictureActivity : AppCompatActivity() {
             val imageView = layoutInflater.inflate(R.layout.picture_item_view, container, false) as PhotoView
             imageView.setAllowParentInterceptOnEdge(true)
             imageView.setOnSingleFlingListener(object : OnSingleFlingListener {
+                private var lastSwipeUp = 0L
                 override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
                     when (Fling.getDirection(e1, e2)) {
                         Fling.Direction.down -> finish()
                         Fling.Direction.up -> {
+                            val time = System.currentTimeMillis()
                             val p = posts[position]
-                            downloadOriginalPicture(p)
-                            val snack = Snackbar.make(view_pager, getString(R.string.download), Snackbar.LENGTH_SHORT)
-                            snack.show()
-                            GlobalScope.launch(Dispatchers.Main) {
-                                delay(150)
-                                snack.dismiss()
+                            if (time - lastSwipeUp > 400L) { //download
+                                downloadOriginalPicture(p)
+                                val snack = Snackbar.make(view_pager, getString(R.string.download), Snackbar.LENGTH_SHORT)
+                                snack.show()
+                                GlobalScope.launch(Dispatchers.Main) {
+                                    delay(150)
+                                    snack.dismiss()
+                                }
+                            } else { //add to history
+                                GlobalScope.launch {
+                                    for (tag in p.getTags().filter { it.type == Tag.ARTIST }) {
+                                        db.addTag(tag)
+                                        withContext(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Add ${tag.name}", Toast.LENGTH_SHORT).show() }
+                                    }
+                                }
                             }
+                            lastSwipeUp = time
                         }
                         else -> return false
                     }
@@ -207,7 +217,7 @@ class PictureActivity : AppCompatActivity() {
                     }
                     R.id.picture_info_item_add_favorite -> {
                         if (db.getTag(tag.name) == null) GlobalScope.launch { db.addTag(Tag(tag.name, tag.type, true)) }
-                        else GlobalScope.launch { db.changeTag(tag.copy( isFavorite = true)) }
+                        else GlobalScope.launch { db.changeTag(tag.copy(isFavorite = true)) }
                         Toast.makeText(this@PictureActivity, "${getString(R.string.add_favorite)} ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
                     R.id.picture_info_item_subscribe -> {

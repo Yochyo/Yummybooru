@@ -48,6 +48,7 @@ import java.util.*
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private val selectedTags = ArrayList<String>()
     //TODO lädt android das layout zur laufzeit aus der xml oder beim compilieren
+    private lateinit var tagRecyclerView: RecyclerView
     private lateinit var tagAdapter: SearchTagAdapter
     private lateinit var serverAdapter: ServerAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +67,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val navLayout = nav_search.findViewById<LinearLayout>(R.id.nav_search_layout)
         initAddTagButton(navLayout.findViewById(R.id.add_search))
         initSearchButton(navLayout.findViewById(R.id.start_search))
-        val tagRecyclerView = navLayout.findViewById<RecyclerView>(R.id.recycler_view_search)
+        tagRecyclerView = navLayout.findViewById<RecyclerView>(R.id.recycler_view_search)
         tagRecyclerView.layoutManager = LinearLayoutManager(this)
         tagAdapter = SearchTagAdapter().apply { tagRecyclerView.adapter = this }
         val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
@@ -101,7 +102,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         val tag = Api.getTag(it.text.toString())
                         launch(Dispatchers.Main) {
                             val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN)
-                            db.addTag(newTag)
+                            val t = db.addTag(newTag)
+                            tagRecyclerView.layoutManager?.scrollToPosition(db.tags.indexOf(t))
                         }
                     }
                 }
@@ -190,7 +192,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     R.id.main_search_favorite_tag -> GlobalScope.launch { db.changeTag(tag.copy(isFavorite = !tag.isFavorite)) }
                     R.id.main_search_subscribe_tag -> {
                         if (db.getSubscription(tag.name) == null) {
-                            GlobalScope.launch { val currentID = Api.newestID();launch(Dispatchers.Main) { db.addSubscription(Subscription(tag.name, tag.type, currentID, tag.count)) } }
+                            GlobalScope.launch { db.addSubscription(Subscription.fromTag(tag))}
                             Toast.makeText(this@MainActivity, "${getString(R.string.subscripted)} ${tag.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             GlobalScope.launch { db.deleteSubscription(tag.name) }

@@ -81,12 +81,14 @@ abstract class Database : RoomDatabase() {
     }
 
     fun getTag(name: String) = tags.find { it.name == name }
-    suspend fun addTag(tag: Tag) {
-        withContext(Dispatchers.Main) {
-            if (getTag(tag.name) == null) {
+    suspend fun addTag(tag: Tag): Tag {
+        return withContext(Dispatchers.Main) {
+            val t = getTag(tag.name)
+            if (t == null) {
                 tags += tag
                 withContext(Dispatchers.Default) { tagDao.insert(tag) }
-            }
+                return@withContext tag
+            } else t
         }
     }
 

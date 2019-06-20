@@ -9,7 +9,13 @@ import java.util.*
 @Entity(tableName = "subs", primaryKeys = ["name", "serverID"])
 data class Subscription(val name: String, val type: Int, val lastID: Int, val lastCount: Int, val isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID) : Comparable<Subscription> {
     companion object{
-        suspend fun fromTag(tag: Tag): Subscription = Subscription(tag.name, tag.type, Api.newestID(), tag.count, false, tag.creation, tag.serverID)
+
+        suspend fun fromTag(tag: Tag): Subscription{
+            val t = Api.getTag(tag.name)
+            return if(t != null)
+                Subscription(t.name, t.type, Api.newestID(), t.count, false, Date(), t.serverID)
+            else Subscription(tag.name, tag.type, Api.newestID(), tag.count, false, Date(), tag.serverID)
+        }
     }
 
     val color: Int

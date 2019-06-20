@@ -32,6 +32,7 @@ abstract class LiveCollection<C : MutableCollection<T>, T>(collection: C) : Live
         v.clear()
         notifyChange()
     }
+    fun indexOf(e: T) = v.indexOf(e)
 
     fun find(run: (e: T) -> Boolean) = v.find(run)
     val size: Int get() = v.size

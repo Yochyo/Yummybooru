@@ -104,11 +104,13 @@ data class Server(var name: String, var api: String, var url: String, var userNa
     }
 
     fun unselect() {
-        db.currentServerID = -1
-        _currentServer = null
-        Api.instance = null
-        db.tags.clear()
-        db.subs.clear()
+        synchronized(lock){
+            db.currentServerID = -1
+            _currentServer = null
+            Api.instance = null
+            db.tags.clear()
+            db.subs.clear()
+        }
     }
 
     fun deleteServer() {

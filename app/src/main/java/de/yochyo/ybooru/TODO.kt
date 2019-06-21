@@ -16,7 +16,6 @@ package de.yochyo.ybooru
 //TODO Previewactivity select pictures to download
 //TODO only search but don´t add tag
 //TODO tags wie bei mBooru suchen
-//TODO Sparsearray statt HashMap<Int, Any> nutzen
 //TODO Wenn man den ausgewählten server ändert, wo wird der wieder ausgewählt
 //scroll to added sub
 //Bugs

@@ -1,5 +1,6 @@
 package de.yochyo.ybooru.api.downloads
 
+import android.util.SparseArray
 import de.yochyo.ybooru.api.Post
 import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.events.events.DownloadManagerPageEvent
@@ -39,7 +40,7 @@ abstract class Manager(val tags: Array<String>) {
 
         suspend fun reset(tags: String) {
             val m: Manager?
-           synchronized(lock){ m = map[tags] }
+            synchronized(lock) { m = map[tags] }
             m?.reset()
         }
 
@@ -50,8 +51,8 @@ abstract class Manager(val tags: Array<String>) {
     }
 
     val posts = LiveArrayList<Post>()
-    private val pageStatus = HashMap<Int, PageStatus>()
-    private val pages = HashMap<Int, List<Post>>()
+    private val pageStatus = SparseArray<PageStatus>()
+    private val pages = SparseArray<List<Post>>()
     var position = -1
     var currentPage = 0
         private set(value) {
@@ -62,7 +63,7 @@ abstract class Manager(val tags: Array<String>) {
 
 
     fun loadPage(page: Int): List<Post>? {
-        if(pageStatus[page] == PageStatus.DOWNLOADED){
+        if (pageStatus[page] == PageStatus.DOWNLOADED) {
             val p = pages[page]
             if (p != null) {
                 if (page > currentPage) {
@@ -79,8 +80,8 @@ abstract class Manager(val tags: Array<String>) {
     suspend fun downloadPage(page: Int): List<Post> {
         val status = pageStatus[page]
         var p = pages[page]
-        if(status == null){
-            pageStatus[page] = PageStatus.DOWNLOADING
+        if (status == null) {
+            pageStatus.append(page, PageStatus.DOWNLOADING)
             p = Api.getPosts(page, tags)
             if (!posts.isEmpty) {
                 val lastFromLastPage = posts.value!!.last()
@@ -88,26 +89,26 @@ abstract class Manager(val tags: Array<String>) {
                 if (samePost != null)
                     p.takeWhile { it.id != samePost.id }
             }
-            pages[page] = p
-            pageStatus[page] = PageStatus.DOWNLOADED
+            pages.append(page, p)
+            pageStatus.append(page, PageStatus.DOWNLOADED)
             DownloadManagerPageEvent.trigger(DownloadManagerPageEvent(this, page, p))
-        }else if(status == PageStatus.DOWNLOADING){
+        } else if (status == PageStatus.DOWNLOADING) {
             p = awaitPage(page)
         }
         return p!!
     }
 
-    private suspend fun awaitPage(page: Int): List<Post>{
+    private suspend fun awaitPage(page: Int): List<Post> {
         var list: List<Post>? = null
         DownloadManagerPageEvent.registerSingleUseListener {
-            if(it.manager == this && it.page == page){
+            if (it.manager == this && it.page == page) {
                 list = it.posts
                 return@registerSingleUseListener true
             }
             false
         }
-        return withContext(Dispatchers.IO){
-            while(list == null)
+        return withContext(Dispatchers.IO) {
+            while (list == null)
                 delay(50)
             list!!
         }
@@ -121,6 +122,6 @@ abstract class Manager(val tags: Array<String>) {
     }
 }
 
-private enum class PageStatus{
+private enum class PageStatus {
     DOWNLOADING, DOWNLOADED, INITIALIZED
 }

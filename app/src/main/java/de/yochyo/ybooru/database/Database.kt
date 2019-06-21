@@ -11,6 +11,7 @@ import de.yochyo.ybooru.api.entities.*
 import de.yochyo.ybooru.database.converter.DateConverter
 import de.yochyo.ybooru.utils.createDefaultSavePath
 import de.yochyo.ybooru.utils.liveData.LiveTree
+import de.yochyo.ybooru.utils.lock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -82,21 +83,23 @@ abstract class Database : RoomDatabase() {
 
     fun getTag(name: String) = tags.find { it.name == name }
     suspend fun addTag(tag: Tag): Tag {
-        return withContext(Dispatchers.Main) {
+        val t: Tag
+        t = withContext(Dispatchers.Main) {
             val t = getTag(tag.name)
             if (t == null) {
-                tags += tag
+                synchronized(lock) { tags += tag }
                 withContext(Dispatchers.Default) { tagDao.insert(tag) }
                 return@withContext tag
             } else t
         }
+        return t
     }
 
     suspend fun deleteTag(name: String) {
         withContext(Dispatchers.Main) {
             val tag = tags.find { it.name == name }
             if (tag != null) {
-                tags.remove(tag)
+                synchronized(lock) { tags.remove(tag) }
                 withContext(Dispatchers.Default) { tagDao.delete(tag) }
             }
         }
@@ -117,7 +120,7 @@ abstract class Database : RoomDatabase() {
     suspend fun addSubscription(sub: Subscription) {
         withContext(Dispatchers.Main) {
             if (getSubscription(sub.name) == null) {
-                subs += sub
+                synchronized(lock) { subs += sub }
                 withContext(Dispatchers.Default) { subDao.insert(sub) }
             }
         }
@@ -127,7 +130,7 @@ abstract class Database : RoomDatabase() {
         withContext(Dispatchers.Main) {
             val sub = subs.find { it.name == name }
             if (sub != null) {
-                subs.remove(sub)
+                synchronized(lock) { subs.remove(sub) }
                 withContext(Dispatchers.Default) { subDao.delete(sub) }
             }
         }
@@ -149,7 +152,7 @@ abstract class Database : RoomDatabase() {
         withContext(Dispatchers.Main) {
             val s = getServer(server.id)
             if (s == null) {
-                servers += server.copy(id = id)
+                synchronized(lock) { servers += server.copy(id = id) }
                 withContext(Dispatchers.Default) { serverDao.insert(server) }
             }
         }
@@ -160,7 +163,7 @@ abstract class Database : RoomDatabase() {
             val s = servers.find { id == it.id }
             if (s != null) {
                 if (currentServerID == id) s.unselect()
-                servers.remove(s)
+                synchronized(lock) { servers.remove(s) }
                 withContext(Dispatchers.Default) { serverDao.delete(s) }
             }
         }
@@ -170,8 +173,10 @@ abstract class Database : RoomDatabase() {
         withContext(Dispatchers.Main) {
             val s = servers.find { it.id == server.id }
             if (s != null) {
-                servers -= s
-                servers += server
+                synchronized(lock) {
+                    servers -= s
+                    servers += server
+                }
                 withContext(Dispatchers.Default) { serverDao.update(server) }
             }
         }

@@ -61,7 +61,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             when (preference.key) {
                 "limit" -> {
                     database.limit = value.toString().toInt()
-                    Manager.resetAll()
+                    GlobalScope.launch { Manager.resetAll() }
                 }
                 "sortSubs" -> database.sortSubs = value.toString()
                 "sortTags" -> database.sortTags = value.toString()

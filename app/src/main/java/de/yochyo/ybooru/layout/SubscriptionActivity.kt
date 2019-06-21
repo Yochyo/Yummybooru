@@ -37,23 +37,27 @@ class SubscriptionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_subscription)
         setSupportActionBar(toolbar_subs)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        Manager.resetAll()
-        val recyclerView = subs_recycler
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
-        db.subs.observe(this, observer)
-        subs_swipe_refresh_layout.setOnRefreshListener {
-            subs_swipe_refresh_layout.isRefreshing = false
-            clear()
-            adapter.notifyDataSetChanged()
+        GlobalScope.launch(Dispatchers.Main) {
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            Manager.resetAll()
+            val recyclerView = subs_recycler
+            recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity)
+            recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
+            db.subs.observe(this@SubscriptionActivity, observer)
+            subs_swipe_refresh_layout.setOnRefreshListener {
+                subs_swipe_refresh_layout.isRefreshing = false
+                clear()
+                adapter.notifyDataSetChanged()
+            }
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Manager.resetAll()
-        db.subs.removeObserver(observer)
+        GlobalScope.launch {
+            Manager.resetAll()
+            db.subs.removeObserver(observer)
+        }
     }
 
     private fun clear() {

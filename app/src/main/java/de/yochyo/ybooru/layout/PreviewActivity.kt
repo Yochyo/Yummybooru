@@ -86,8 +86,10 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     private fun reloadView() {
-        m.reset()
-        loadPage(1)
+        GlobalScope.launch {
+            m.reset()
+            loadPage(1)
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

@@ -4,6 +4,7 @@ import android.arch.persistence.room.*
 import de.yochyo.ybooru.api.api.Api
 import de.yochyo.ybooru.api.downloads.Manager
 import de.yochyo.ybooru.database.db
+import de.yochyo.ybooru.utils.lock
 import de.yochyo.ybooru.utils.passwordToHash
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -52,14 +53,16 @@ data class Server(var name: String, var api: String, var url: String, var userNa
         get() = currentServer.id == id
 
     suspend fun select() {
-        db.currentServerID = this.id
-        _currentServer = this
-        Api.initApi(this.api, this.url)
+            db.currentServerID = this.id
+            _currentServer = this
+            Api.initApi(this.api, this.url)
         withContext(Dispatchers.Main) {
             Manager.resetAll()
-            db.initTags(id)
-            db.initSubscriptions(id)
-            db.servers.notifyChange()
+            synchronized(lock){
+                db.initTags(id)
+                db.initSubscriptions(id)
+                db.servers.notifyChange()
+            }
         }
     }
 

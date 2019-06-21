@@ -13,6 +13,7 @@ import de.yochyo.ybooru.api.entities.Server
 import java.io.File
 import java.security.MessageDigest
 
+val lock = Any() //lock fürs Server/Tags/Subs adden
 fun preview(id: Int) = "${id}P${Server.currentID}"
 fun sample(id: Int) = "${id}S${Server.currentID}"
 fun original(id: Int) = "${id}O${Server.currentID}"

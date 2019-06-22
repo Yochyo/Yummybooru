@@ -95,7 +95,7 @@ abstract class Manager(val tags: Array<String>) {
         } else if (status == PageStatus.DOWNLOADING) {
             p = awaitPage(page)
         }
-        return p!!
+        return p
     }
 
     private suspend fun awaitPage(page: Int): List<Post> {
@@ -115,6 +115,7 @@ abstract class Manager(val tags: Array<String>) {
     }
 
     suspend fun reset() {
+        pageStatus.clear()
         pages.clear()
         position = -1
         currentPage = 0

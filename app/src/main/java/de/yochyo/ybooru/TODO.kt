@@ -19,9 +19,8 @@ package de.yochyo.ybooru
 //TODO tags wie bei mBooru suchen
 //TODO Wenn man den ausgewählten server ändert, wo wird der wieder ausgewählt
 //Bugs
+//TODO Logger logt beim crash nicht mehr mit
 //TODO when z.B. ein download crasht, muss ein event (oder awaitPicture...) abgebrochen werden
-//TODO wenn man einen Tag/Sub löscht und schnell server wechselt, wird der tag nicht gelöscht / geadded -------
-//TODO was mach ich wenn der SPeicherPfad gelöscht wird -- vllt jedes mal nachschauen und sonst savePath auf default setzen
 //TODO bitmap = BitmapFactory.decodeStream(stream)!! in downloader schlägt selten fehl
 //TODO settings backpress geht nicht in emulierten handys
 //Nettes zeug für irgendwann

@@ -6,6 +6,7 @@ package de.yochyo.ybooru
 //TODO Auto mode bei server hinzufügen
 //TODO add pixiv support
 //Optimizations
+//TODO für Moebooru api getTags Jsoup benutzen
 //TODO beim Profiler ist die CPU belastung heavy
 //TODO downloader braucht ne lock, synchronisieren
 //TODO Code Kommentieren

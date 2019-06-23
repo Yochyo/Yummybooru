@@ -7,6 +7,6 @@ This application´s goal is to be the best available booru Client in all aspects
 
 
 #### Thanks to
-[Kotlin Coroutines](https://github.com/Kotlin/kotlinx.coroutines)
-[PhotoView](https://github.com/chrisbanes/PhotoView)
+- [Kotlin Coroutines](https://github.com/Kotlin/kotlinx.coroutines)
+- [PhotoView](https://github.com/chrisbanes/PhotoView)
 

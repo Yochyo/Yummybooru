@@ -26,14 +26,12 @@ import de.yochyo.ybooru.api.api.MoebooruApi
 import de.yochyo.ybooru.api.entities.Server
 import de.yochyo.ybooru.api.entities.Subscription
 import de.yochyo.ybooru.api.entities.Tag
-import de.yochyo.ybooru.api.downloads.Manager
 import de.yochyo.ybooru.api.downloads.cache
 import de.yochyo.ybooru.database.Database
 import de.yochyo.ybooru.database.db
 import de.yochyo.ybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.ybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.ybooru.layout.res.Menus
-import de.yochyo.ybooru.utils.Logger
 import de.yochyo.ybooru.utils.setColor
 import de.yochyo.ybooru.utils.toTagString
 import de.yochyo.ybooru.utils.underline
@@ -57,7 +55,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (!hasPermission) ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 122)
         val time = System.currentTimeMillis()
         setContentView(R.layout.activity_main)
-        println("999999: ${System.currentTimeMillis() - time}")
         setSupportActionBar(toolbar)
         val toggle = ActionBarDrawerToggle(this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle)
@@ -84,7 +81,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun initData() {
-        Logger.initLogger()
         GlobalScope.launch { cache.clearCache() }
         Api.addApi(DanbooruApi(""))
         Api.addApi(MoebooruApi(""))
@@ -251,11 +247,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         private fun editServerDialog(server: Server) {
             AddServerDialog {
                 GlobalScope.launch {
+                    if (Server.currentServer == it)
+
                     db.changeServer(it)
-                    if (Server.currentServer == it) {
-                        Manager.resetAll()
-                        it.select()
-                    }
                 }
                 Toast.makeText(this@MainActivity, "${getString(R.string.edited)} [${it.name}]", Toast.LENGTH_SHORT).show()
             }.apply {

@@ -7,6 +7,7 @@ import android.arch.persistence.room.TypeConverters
 import android.arch.persistence.room.migration.Migration
 import android.content.Context
 import android.content.SharedPreferences
+import de.yochyo.ybooru.api.downloads.Manager
 import de.yochyo.ybooru.api.entities.*
 import de.yochyo.ybooru.database.converter.DateConverter
 import de.yochyo.ybooru.utils.createDefaultSavePath
@@ -173,10 +174,13 @@ abstract class Database : RoomDatabase() {
         withContext(Dispatchers.Main) {
             val s = servers.find { it.id == server.id }
             if (s != null) {
+                val wasCurrentServer = Server.currentServer == server
                 synchronized(lock) {
                     servers -= s
                     servers += server
                 }
+                Manager.resetAll()
+                server.select()
                 withContext(Dispatchers.Default) { serverDao.update(server) }
             }
         }

@@ -26,6 +26,7 @@ import kotlinx.android.synthetic.main.content_subscription.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 class SubscriptionActivity : AppCompatActivity() {
@@ -56,7 +57,7 @@ class SubscriptionActivity : AppCompatActivity() {
         super.onDestroy()
         GlobalScope.launch {
             Manager.resetAll()
-            db.subs.removeObserver(observer)
+            withContext(Dispatchers.Main){db.subs.removeObserver(observer)}
         }
     }
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="de.yochyo.ybooru">
+          package="de.yochyo.yummybooru">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -9,14 +9,14 @@
 
     <application
 
-            android:label="yBooru :3"
+            android:label="YummyBooru"
             android:allowBackup="true"
             android:icon="@mipmap/ybooru_icon"
             android:roundIcon="@mipmap/ybooru_icon_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
         <activity
-                android:name=".layout.MainActivity"
+                android:name="de.yochyo.yummybooru.layout.MainActivity"
                 android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -25,22 +25,22 @@
         </activity>
         <activity
                 android:label=""
-                android:name=".layout.PreviewActivity"
+                android:name="de.yochyo.yummybooru.layout.PreviewActivity"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
                 android:label=""
-                android:name=".layout.PictureActivity"
+                android:name="de.yochyo.yummybooru.layout.PictureActivity"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
                 android:label="Subs"
-                android:name=".layout.SubscriptionActivity"
+                android:name="de.yochyo.yummybooru.layout.SubscriptionActivity"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
                 android:label="Settings"
-                android:name=".layout.SettingsActivity">
+                android:name="de.yochyo.yummybooru.layout.SettingsActivity">
         </activity>
     </application>
 </manifest>

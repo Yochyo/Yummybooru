@@ -23,12 +23,14 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.api.DanbooruApi
 import de.yochyo.yummybooru.api.api.MoebooruApi
+import de.yochyo.yummybooru.api.downloads.cache
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
-import de.yochyo.yummybooru.api.downloads.cache
 import de.yochyo.yummybooru.database.Database
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.events.events.*
+import de.yochyo.yummybooru.events.listeners.*
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.res.Menus
@@ -44,11 +46,15 @@ import java.util.*
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-    private val selectedTags = ArrayList<String>()
+    companion object {
+        val selectedTags = ArrayList<String>()
+    }
+
     private lateinit var tagRecyclerView: RecyclerView
     private lateinit var tagAdapter: SearchTagAdapter
     private lateinit var serverAdapter: ServerAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
+        initListeners()
         super.onCreate(savedInstanceState)
         val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
         if (!hasPermission) ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 122)
@@ -72,6 +78,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (hasPermission) initData()
     }
 
+    private fun initListeners() {
+        AddTagEvent.registerListener(DisplayToastAddTagListener())
+        AddSubEvent.registerListener(DisplayToastAddSubListener())
+        AddServerEvent.registerListener(DisplayToastAddServerListener())
+        DeleteServerEvent.registerListener(DisplayToastDeleteServerListener())
+        DeleteSubEvent.registerListener(DisplayToastDeleteSubListener())
+        DeleteTagEvent.registerListener(DisplayToastDeleteTagListener())
+        ChangeSubEvent.registerListener(DisplayToastFavoriteSubListener())
+        ChangeTagEvent.registerListener(DisplayToastFavoriteTagListener())
+        DeleteTagEvent.registerListener(RemoveSelectedTagsInMainactivityListener())
+        ChangeServerEvent.registerListener(DisplayToastChangeServerEvent())
+        SelectServerEvent.registerListener(DisplayToastSelectServerListener())
+        SelectServerEvent.registerListener(ClearSelectedTagsInMainactivityListener())
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults.none { it != PackageManager.PERMISSION_GRANTED })
@@ -91,14 +112,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun initAddTagButton(b: Button) {
         b.setOnClickListener {
             AddTagDialog {
-                if (db.getTag(it.text.toString()) == null) {
-                    GlobalScope.launch(Dispatchers.IO) {
-                        val tag = Api.getTag(it.text.toString())
-                        launch(Dispatchers.Main) {
-                            val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN)
-                            val t = db.addTag(newTag)
-                            tagRecyclerView.layoutManager?.scrollToPosition(db.tags.indexOf(t))
-                        }
+                GlobalScope.launch {
+                    val tag = Api.getTag(it.text.toString())
+                    launch(Dispatchers.Main) {
+                        val t = db.addTag(this@MainActivity, tag ?: Tag(it.text.toString(), Tag.UNKNOWN))
+                        tagRecyclerView.layoutManager?.scrollToPosition(db.tags.indexOf(t))
                     }
                 }
             }.apply { title = getString(R.string.add_tag) }.build(this)
@@ -126,8 +144,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_add_server -> AddServerDialog {
-                GlobalScope.launch { db.addServer(it) }
-                Toast.makeText(this, getString(R.string.add_server), Toast.LENGTH_SHORT).show()
+                GlobalScope.launch { db.addServer(this@MainActivity, it) }
             }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
         }
@@ -138,11 +155,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             R.id.nav_subs -> startActivity(Intent(this, SubscriptionActivity::class.java))
             R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
-            R.id.community -> {
-                val i = Intent(Intent.ACTION_VIEW)
-                i.data = Uri.parse("https://discord.gg/tbGCHpF")
-                startActivity(i)
-            }
+            R.id.community -> startActivity(Intent(Intent.ACTION_VIEW).apply { data = Uri.parse("https://discord.gg/tbGCHpF") })
             R.id.nav_help -> Toast.makeText(this, getString(R.string.join_discord), Toast.LENGTH_SHORT).show()
         }
         drawer_layout.closeDrawer(GravityCompat.START)
@@ -183,19 +196,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             toolbar.setOnMenuItemClickListener {
                 val tag = tags.elementAt(adapterPosition)
                 when (it.itemId) {
-                    R.id.main_search_favorite_tag -> GlobalScope.launch { db.changeTag(tag.copy(isFavorite = !tag.isFavorite)) }
+                    R.id.main_search_favorite_tag -> GlobalScope.launch {
+                        db.changeTag(this@MainActivity, tag.copy(isFavorite = !tag.isFavorite))
+                        //  withContext(Dispatchers.Main){tagRecyclerView.layoutManager?.scrollToPosition(tags.indexOf(tag))}
+                    }
                     R.id.main_search_subscribe_tag -> {
-                        if (db.getSubscription(tag.name) == null) {
-                            GlobalScope.launch { db.addSubscription(Subscription.fromTag(tag))}
-                            Toast.makeText(this@MainActivity, "${getString(R.string.subscripted)} ${tag.name}", Toast.LENGTH_SHORT).show()
-                        } else {
-                            GlobalScope.launch { db.deleteSubscription(tag.name) }
-                            Toast.makeText(this@MainActivity, "${getString(R.string.unsubscribed)} ${tag.name}", Toast.LENGTH_SHORT).show()
-                        }
+                        if (db.getSubscription(tag.name) == null) GlobalScope.launch { db.addSubscription(this@MainActivity, Subscription.fromTag(tag)) }
+                        else GlobalScope.launch { db.deleteSubscription(this@MainActivity, tag.name) }
                         notifyItemChanged(adapterPosition)
                     }
                     R.id.main_search_delete_tag -> {
-                        GlobalScope.launch { db.deleteTag(tag.name) }
+                        GlobalScope.launch { db.deleteTag(this@MainActivity, tag.name) }
                         selectedTags.remove(tag.name)
                     }
                 }
@@ -233,9 +244,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 when (i) {
                     0 -> editServerDialog(server)
                     1 -> {
-                        if (!server.isSelected) {
-                            deleteServerDialog(server)
-                        } else Toast.makeText(this@MainActivity, getString(R.string.cannot_delete_server), Toast.LENGTH_SHORT).show()
+                        if (!server.isSelected) deleteServerDialog(server)
+                        else Toast.makeText(this@MainActivity, getString(R.string.cannot_delete_server), Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -244,12 +254,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         private fun editServerDialog(server: Server) {
             AddServerDialog {
-                GlobalScope.launch {
-                    if (Server.currentServer == it)
-
-                    db.changeServer(it)
-                }
-                Toast.makeText(this@MainActivity, "${getString(R.string.edited)} [${it.name}]", Toast.LENGTH_SHORT).show()
+                GlobalScope.launch { db.changeServer(this@MainActivity, it) }
             }.apply {
                 serverID = server.id
                 nameText = server.name
@@ -267,10 +272,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             b.setTitle(R.string.delete)
             b.setMessage("${getString(R.string.do_you_want_to_delete_the_server)} [${server.name}]")
             b.setNegativeButton(getString(R.string.no)) { _, _ -> }
-            b.setPositiveButton(getString(R.string.yes)) { _, _ ->
-                server.deleteServer()
-                Toast.makeText(this@MainActivity, "${getString(R.string.deleted)} [${server.name}]", Toast.LENGTH_SHORT).show()
-            }
+            b.setPositiveButton(getString(R.string.yes)) { _, _ -> server.deleteServer(this@MainActivity) }
             b.show()
         }
 
@@ -279,9 +281,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             holder.layout.setOnClickListener {
                 val server = servers.elementAt(holder.adapterPosition)
                 GlobalScope.launch(Dispatchers.Main) {
-                    server.select()
-                    selectedTags.clear()
-                    Toast.makeText(this@MainActivity, getString(R.string.selected_server), Toast.LENGTH_SHORT).show()
+                    server.select(this@MainActivity)
                 }
             }
             holder.layout.setOnLongClickListener {

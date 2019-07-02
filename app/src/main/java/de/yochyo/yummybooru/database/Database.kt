@@ -10,6 +10,7 @@ import android.content.SharedPreferences
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.entities.*
 import de.yochyo.yummybooru.database.converter.DateConverter
+import de.yochyo.yummybooru.events.events.*
 import de.yochyo.yummybooru.utils.createDefaultSavePath
 import de.yochyo.yummybooru.utils.liveData.LiveTree
 import de.yochyo.yummybooru.utils.lock
@@ -38,7 +39,7 @@ abstract class Database : RoomDatabase() {
                     })
                     .addMigrations(*Migrations.all).build()
             instance!!.prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
-            instance!!.initServer()
+            instance!!.initServer(context)
 
             return instance!!
         }
@@ -49,67 +50,68 @@ abstract class Database : RoomDatabase() {
     val tags = LiveTree<Tag>()
     val subs = LiveTree<Subscription>()
 
-    fun initServer() {
+    fun initServer(context: Context) {
         GlobalScope.launch {
             val se: List<Server> = serverDao.getAllServers()
             withContext(Dispatchers.Main) {
                 servers.clear()
                 servers += se
-                Server.currentServer.select()
+                Server.currentServer.select(context)
             }
         }
     }
 
-    fun initTags(serverID: Int) {
+    fun initTags(context: Context, serverID: Int) {
         GlobalScope.launch {
             val t = tagDao.getAllTags().filter { it.serverID == serverID }
             withContext(Dispatchers.Main) {
                 tags.clear()
                 tags += t
-                Server.currentServer.updateMissingTypeTags()
+                Server.currentServer.updateMissingTypeTags(context)
             }
         }
     }
 
-    fun initSubscriptions(serverID: Int) {
+    fun initSubscriptions(context: Context, serverID: Int) {
         GlobalScope.launch {
             val s = subDao.getAllSubscriptions().filter { it.serverID == serverID }
             withContext(Dispatchers.Main) {
                 subs.clear()
                 subs += s
-                Server.currentServer.updateMissingTypeSubs()
+                Server.currentServer.updateMissingTypeSubs(context)
             }
         }
     }
 
     fun getTag(name: String) = tags.find { it.name == name }
-    suspend fun addTag(tag: Tag): Tag {
-        val t: Tag
-        t = withContext(Dispatchers.Main) {
+    suspend fun addTag(context: Context, tag: Tag): Tag {
+        return withContext(Dispatchers.Main) {
             val t = getTag(tag.name)
             if (t == null) {
+                AddTagEvent.trigger(AddTagEvent(context, tag))
                 synchronized(lock) { tags += tag }
                 withContext(Dispatchers.Default) { tagDao.insert(tag) }
                 return@withContext tag
             } else t
         }
-        return t
     }
 
-    suspend fun deleteTag(name: String) {
+    suspend fun deleteTag(context: Context, name: String) {
         withContext(Dispatchers.Main) {
             val tag = tags.find { it.name == name }
             if (tag != null) {
+                DeleteTagEvent.trigger(DeleteTagEvent(context, tag))
                 synchronized(lock) { tags.remove(tag) }
                 withContext(Dispatchers.Default) { tagDao.delete(tag) }
             }
         }
     }
 
-    suspend fun changeTag(changedTag: Tag) {
+    suspend fun changeTag(context: Context, changedTag: Tag) {
         withContext(Dispatchers.Main) {
             val tag = tags.find { it.name == changedTag.name }
             if (tag != null) {
+                ChangeTagEvent.trigger(ChangeTagEvent(context, tag, changedTag))
                 tags.remove(tag)
                 tags.add(changedTag)
                 withContext(Dispatchers.Default) { tagDao.update(changedTag) }
@@ -118,29 +120,32 @@ abstract class Database : RoomDatabase() {
     }
 
     fun getSubscription(name: String) = subs.find { it.name == name }
-    suspend fun addSubscription(sub: Subscription) {
+    suspend fun addSubscription(context: Context, sub: Subscription) {
         withContext(Dispatchers.Main) {
             if (getSubscription(sub.name) == null) {
+                AddSubEvent.trigger(AddSubEvent(context, sub))
                 synchronized(lock) { subs += sub }
                 withContext(Dispatchers.Default) { subDao.insert(sub) }
             }
         }
     }
 
-    suspend fun deleteSubscription(name: String) {
+    suspend fun deleteSubscription(context: Context, name: String) {
         withContext(Dispatchers.Main) {
             val sub = subs.find { it.name == name }
             if (sub != null) {
+                DeleteSubEvent.trigger(DeleteSubEvent(context, sub))
                 synchronized(lock) { subs.remove(sub) }
                 withContext(Dispatchers.Default) { subDao.delete(sub) }
             }
         }
     }
 
-    suspend fun changeSubscription(changedSub: Subscription) {
+    suspend fun changeSubscription(context: Context, changedSub: Subscription) {
         withContext(Dispatchers.Main) {
             val sub = subs.find { it.name == changedSub.name }
             if (sub != null) {
+                ChangeSubEvent.trigger(ChangeSubEvent(context, sub, changedSub))
                 subs.remove(sub)
                 subs.add(changedSub)
                 withContext(Dispatchers.Default) { subDao.update(changedSub) }
@@ -149,20 +154,22 @@ abstract class Database : RoomDatabase() {
     }
 
     fun getServer(id: Int) = servers.find { it.id == id }
-    suspend fun addServer(server: Server, id: Int = nextServerID++) {
+    suspend fun addServer(context: Context, server: Server, id: Int = nextServerID++) {
         withContext(Dispatchers.Main) {
             val s = getServer(server.id)
             if (s == null) {
+                AddServerEvent.trigger(AddServerEvent(context, server))
                 synchronized(lock) { servers += server.copy(id = id) }
                 withContext(Dispatchers.Default) { serverDao.insert(server) }
             }
         }
     }
 
-    suspend fun deleteServer(id: Int) {
+    suspend fun deleteServer(context: Context, id: Int) {
         withContext(Dispatchers.Main) {
             val s = servers.find { id == it.id }
             if (s != null) {
+                DeleteServerEvent.trigger(DeleteServerEvent(context, s))
                 if (currentServerID == id) s.unselect()
                 synchronized(lock) { servers.remove(s) }
                 withContext(Dispatchers.Default) { serverDao.delete(s) }
@@ -170,17 +177,19 @@ abstract class Database : RoomDatabase() {
         }
     }
 
-    suspend fun changeServer(server: Server) {
+    suspend fun changeServer(context: Context, server: Server) {
         withContext(Dispatchers.Main) {
             val s = servers.find { it.id == server.id }
             if (s != null) {
+                ChangeServerEvent.trigger(ChangeServerEvent(context, server, s))
                 val wasCurrentServer = Server.currentServer == server
                 synchronized(lock) {
                     servers -= s
                     servers += server
                 }
                 Manager.resetAll()
-                server.select()
+                if (wasCurrentServer)
+                    server.select(context)
                 withContext(Dispatchers.Default) { serverDao.update(server) }
             }
         }

@@ -113,7 +113,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
                         BackupUtils.restoreBackup(bytes, this@SettingsActivity)
                         withContext(Dispatchers.Main) {
                             Toast.makeText(this@SettingsActivity, "Restored backup", Toast.LENGTH_LONG).show()
-                            db.initServer()
+                            db.initServer(this@SettingsActivity)
                         }
                     }
             }

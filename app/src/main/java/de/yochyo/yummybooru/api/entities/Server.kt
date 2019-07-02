@@ -1,9 +1,11 @@
 package de.yochyo.yummybooru.api.entities
 
 import android.arch.persistence.room.*
+import android.content.Context
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.utils.lock
 import de.yochyo.yummybooru.utils.passwordToHash
 import kotlinx.coroutines.Dispatchers
@@ -52,21 +54,22 @@ data class Server(var name: String, var api: String, var url: String, var userNa
     val isSelected: Boolean
         get() = currentServer.id == id
 
-    suspend fun select() {
-            db.currentServerID = this.id
-            _currentServer = this
-            Api.initApi(this.api, this.url)
+    suspend fun select(context: Context) {
         withContext(Dispatchers.Main) {
+            if (_currentServer != null) SelectServerEvent.trigger(SelectServerEvent(context, _currentServer!!, this@Server))
+            db.currentServerID = id
+            _currentServer = this@Server
+            Api.initApi(api, url)
             Manager.resetAll()
-            synchronized(lock){
-                db.initTags(id)
-                db.initSubscriptions(id)
+            synchronized(lock) {
+                db.initTags(context, id)
+                db.initSubscriptions(context, id)
                 db.servers.notifyChange()
             }
         }
     }
 
-    fun updateMissingTypeTags() {
+    fun updateMissingTypeTags(context: Context) {
         GlobalScope.launch {
             val newTags = ArrayList<Tag>()
             for (tag in db.tags.value!!) { //Tags updaten
@@ -78,13 +81,13 @@ data class Server(var name: String, var api: String, var url: String, var userNa
                 }
             }
             for (tag in newTags) { //Tags ersetzen
-                db.deleteTag(tag.name)
-                db.addTag(tag)
+                db.deleteTag(context, tag.name)
+                db.addTag(context, tag)
             }
         }
     }
 
-    fun updateMissingTypeSubs() {
+    fun updateMissingTypeSubs(context: Context) {
         GlobalScope.launch {
             val newSubs = ArrayList<Subscription>()
             for (sub in db.subs.value!!) { //Tags updaten
@@ -97,14 +100,14 @@ data class Server(var name: String, var api: String, var url: String, var userNa
                 }
             }
             for (sub in newSubs) { //Tags ersetzen
-                db.deleteSubscription(sub.name)
-                db.addSubscription(sub)
+                db.deleteSubscription(context, sub.name)
+                db.addSubscription(context, sub)
             }
         }
     }
 
     fun unselect() {
-        synchronized(lock){
+        synchronized(lock) {
             db.currentServerID = -1
             _currentServer = null
             Api.instance = null
@@ -113,8 +116,8 @@ data class Server(var name: String, var api: String, var url: String, var userNa
         }
     }
 
-    fun deleteServer() {
-        GlobalScope.launch { db.deleteServer(id) }
+    fun deleteServer(context: Context) {
+        GlobalScope.launch { db.deleteServer(context, id) }
     }
 
     override fun toString() = name

@@ -7,6 +7,7 @@ package de.yochyo.yummybooru
 //TODO add pixiv support
 //Tags und Subs als eine Klasse?
 //Optimizations
+//TODO search[name] Allows searching for multiple tags with exact given names, separated by commas. e.g. search[name]=touhou,original,k-on! would return the three listed tags. anstatt von manuellem durchsuchen
 //TODO Programm Eventbassiert machen, um code übersichtlicher zu gestalten Manager.resetAll optimieren, anwendungszeit verbessern
 //TODO für Moebooru api getTags Jsoup benutzen
 //TODO beim Profiler ist die CPU belastung heavy
@@ -19,9 +20,7 @@ package de.yochyo.yummybooru
 //TODO Previewactivity select pictures to download
 //TODO Wenn man den ausgewählten server ändert, wo wird der wieder ausgewählt
 //Bugs
-//TODO Logger logt beim crash nicht mehr mit
 //TODO when z.B. ein download crasht, muss ein event (oder awaitPicture...) abgebrochen werden
 //TODO bitmap = BitmapFactory.decodeStream(stream)!! in downloader schlägt selten fehl
-//TODO settings backpress geht nicht in emulierten handys
 //Nettes zeug für irgendwann
 //TODO Subs nicht nur mit :id>X filtern, sondern auch per hand

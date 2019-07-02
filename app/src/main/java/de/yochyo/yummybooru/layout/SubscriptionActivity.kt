@@ -14,9 +14,9 @@ import android.widget.TextView
 import android.widget.Toast
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
+import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
-import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.utils.setColor
@@ -28,8 +28,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
+import kotlin.collections.HashMap
 
 class SubscriptionActivity : AppCompatActivity() {
+    private lateinit var totalTextView: TextView
     private val observer = Observer<TreeSet<Subscription>> { t -> if (t != null) adapter.updateSubs(t) }
     private var onClickedData: SubData? = null
     private lateinit var adapter: SubscribedTagAdapter
@@ -41,6 +43,7 @@ class SubscriptionActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
             Manager.resetAll()
+            initEverySubLayout()
             val recyclerView = subs_recycler
             recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity)
             recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
@@ -48,17 +51,27 @@ class SubscriptionActivity : AppCompatActivity() {
             subs_swipe_refresh_layout.setOnRefreshListener {
                 subs_swipe_refresh_layout.isRefreshing = false
                 clear()
-                adapter.notifyDataSetChanged()
+                reload()
             }
         }
+    }
+
+    private fun initEverySubLayout() {
+        val layout = every_sub_item as LinearLayout
+        layout.findViewById<TextView>(android.R.id.text1).text = "---"
+        totalTextView = layout.findViewById(android.R.id.text2)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         GlobalScope.launch {
             Manager.resetAll()
-            withContext(Dispatchers.Main){db.subs.removeObserver(observer)}
+            withContext(Dispatchers.Main) { db.subs.removeObserver(observer) }
         }
+    }
+
+    private fun reload() {
+        adapter.notifyDataSetChanged()
     }
 
     private fun clear() {
@@ -75,15 +88,15 @@ class SubscriptionActivity : AppCompatActivity() {
                 builder.setNegativeButton(R.string.no) { _, _ -> }
                 builder.setPositiveButton(R.string.yes) { _, _ ->
                     GlobalScope.launch {
-                        val s = sub.copy(lastID = onClickedData!!.idWhenClicked,lastCount = onClickedData!!.countWhenClicked)
                         onClickedData = null
-                        launch(Dispatchers.Main) { db.changeSubscription(s) }
+                        launch(Dispatchers.Main) { db.changeSubscription(this@SubscriptionActivity, sub.copy(lastID = onClickedData!!.idWhenClicked, lastCount = onClickedData!!.countWhenClicked)) }
                     }
                 }
                 builder.show()
             }
         }
     }
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.subscription_menu, menu)
@@ -100,7 +113,7 @@ class SubscriptionActivity : AppCompatActivity() {
                             val tag = Api.getTag(it.text.toString())
                             launch(Dispatchers.Main) {
                                 val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN)
-                                db.addSubscription(Subscription.fromTag(newTag))
+                                db.addSubscription(this@SubscriptionActivity, Subscription.fromTag(newTag))
                             }
                         }
                     }
@@ -115,7 +128,7 @@ class SubscriptionActivity : AppCompatActivity() {
 
         fun updateSubs(subs: TreeSet<Subscription>) {
             this.subs = subs
-            notifyDataSetChanged()
+            reload()
         }
 
         private fun longClickDialog(sub: Subscription) {
@@ -127,7 +140,7 @@ class SubscriptionActivity : AppCompatActivity() {
                 dialog.cancel()
                 when (i) {
                     0 -> {
-                        GlobalScope.launch { db.changeSubscription(sub.copy(isFavorite = !sub.isFavorite)) }
+                        GlobalScope.launch { db.changeSubscription(this@SubscriptionActivity, sub.copy(isFavorite = !sub.isFavorite)) }
                         Toast.makeText(this@SubscriptionActivity, "${if (sub.isFavorite) getString(R.string.favorite) else getString(R.string.unfavorite)} [${sub.name}]", Toast.LENGTH_SHORT).show()
                     }
                     1 -> {
@@ -145,7 +158,7 @@ class SubscriptionActivity : AppCompatActivity() {
             b.setMessage("${getString(R.string.delete)} ${getString(R.string.subscription)} ${sub.name}?")
             b.setNegativeButton(R.string.no) { _, _ -> }
             b.setPositiveButton(R.string.yes) { _, _ ->
-                GlobalScope.launch { db.deleteSubscription(sub.name) }
+                GlobalScope.launch { db.deleteSubscription(this@SubscriptionActivity, sub.name) }
                 Toast.makeText(this@SubscriptionActivity, "${getString(R.string.deleted)} [${sub.name}]", Toast.LENGTH_SHORT).show()
             }
             b.show()

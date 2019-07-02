@@ -16,7 +16,7 @@ object ServerBackup : BackupableEntity<Server> {
         val split = s.split(";")
         val iter = split.iterator()
         val server = Server(iter.next(), iter.next(), parseURL(iter.next()), iter.next(), iter.next(), iter.next().toBoolean(), iter.next().toInt())
-        GlobalScope.launch { db.addServer(server, server.id) }
+        GlobalScope.launch { db.addServer(context, server, server.id) }
     }
 
 }

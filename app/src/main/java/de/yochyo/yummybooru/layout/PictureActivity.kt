@@ -173,7 +173,7 @@ class PictureActivity : AppCompatActivity() {
                             } else { //add to history
                                 GlobalScope.launch {
                                     for (tag in p.getTags().filter { it.type == Tag.ARTIST }) {
-                                        db.addTag(tag)
+                                        db.addTag(this@PictureActivity, tag)
                                         withContext(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Add ${tag.name}", Toast.LENGTH_SHORT).show() }
                                     }
                                 }
@@ -211,22 +211,16 @@ class PictureActivity : AppCompatActivity() {
                 val tag = currentTags[adapterPosition]
                 when (it.itemId) {
                     R.id.picture_info_item_add_history -> {
-                        GlobalScope.launch { db.addTag(Tag(tag.name, tag.type)) }
+                        GlobalScope.launch { db.addTag(this@PictureActivity, Tag(tag.name, tag.type)) }
                         Toast.makeText(this@PictureActivity, "${getString(R.string.add_tag)} ${tag.name}", Toast.LENGTH_SHORT).show()
                     }
                     R.id.picture_info_item_add_favorite -> {
-                        if (db.getTag(tag.name) == null) GlobalScope.launch { db.addTag(Tag(tag.name, tag.type, true)) }
-                        else GlobalScope.launch { db.changeTag(tag.copy(isFavorite = true)) }
-                        Toast.makeText(this@PictureActivity, "${getString(R.string.add_favorite)} ${tag.name}", Toast.LENGTH_SHORT).show()
+                        if (db.getTag(tag.name) == null) GlobalScope.launch { db.addTag(this@PictureActivity, Tag(tag.name, tag.type, true)) }
+                        else GlobalScope.launch { db.changeTag(this@PictureActivity, tag.copy(isFavorite = true)) }
                     }
                     R.id.picture_info_item_subscribe -> {
-                        if (db.getSubscription(tag.name) == null) {
-                            GlobalScope.launch { db.addSubscription(Subscription.fromTag(tag)) }
-                            Toast.makeText(this@PictureActivity, "${getString(R.string.add_subscription)} ${tag.name}", Toast.LENGTH_SHORT).show()
-                        } else {
-                            GlobalScope.launch { db.deleteSubscription(tag.name) }
-                            Toast.makeText(this@PictureActivity, "${getString(R.string.unsubscribed)} ${tag.name}", Toast.LENGTH_SHORT).show()
-                        }
+                        if (db.getSubscription(tag.name) == null) GlobalScope.launch { db.addSubscription(this@PictureActivity, Subscription.fromTag(tag)) }
+                         else GlobalScope.launch { db.deleteSubscription(this@PictureActivity, tag.name) }
                     }
                 }
                 drawer_picture.closeDrawer(GravityCompat.END)

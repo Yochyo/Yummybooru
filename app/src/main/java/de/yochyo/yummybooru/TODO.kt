@@ -5,6 +5,7 @@ package de.yochyo.yummybooru
 //TODO folder in taglist einfügen
 //TODO Auto mode bei server hinzufügen
 //TODO add pixiv support
+//Tags und Subs als eine Klasse?
 //Optimizations
 //TODO Programm Eventbassiert machen, um code übersichtlicher zu gestalten
 //TODO für Moebooru api getTags Jsoup benutzen

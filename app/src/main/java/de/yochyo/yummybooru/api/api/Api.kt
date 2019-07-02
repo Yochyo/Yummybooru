@@ -11,12 +11,6 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
-import kotlin.collections.ArrayList
-import kotlin.collections.List
-import kotlin.collections.filter
-import kotlin.collections.find
-import kotlin.collections.isNotEmpty
-import kotlin.collections.plusAssign
 
 abstract class Api(var url: String) {
 
@@ -41,10 +35,9 @@ abstract class Api(var url: String) {
             val json = getJson(instance!!.urlGetTags(beginSequence))
             if (json != null) {
                 for (i in 0 until json.length()) {
-                    val tag = Api.instance!!.getTagFromJson(json.getJSONObject(i))
+                    val tag = instance!!.getTagFromJson(json.getJSONObject(i))
                     if (tag != null) array.add(tag)
                 }
-                array.sortBy { it.type }
             }
             return array
         }

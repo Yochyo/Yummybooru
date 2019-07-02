@@ -7,7 +7,7 @@ package de.yochyo.yummybooru
 //TODO add pixiv support
 //Tags und Subs als eine Klasse?
 //Optimizations
-//TODO Programm Eventbassiert machen, um code übersichtlicher zu gestalten
+//TODO Programm Eventbassiert machen, um code übersichtlicher zu gestalten Manager.resetAll optimieren, anwendungszeit verbessern
 //TODO für Moebooru api getTags Jsoup benutzen
 //TODO beim Profiler ist die CPU belastung heavy
 //TODO downloader braucht ne lock, synchronisieren
@@ -15,11 +15,8 @@ package de.yochyo.yummybooru
 //TODO strings vol pref_general in string.xml
 //TODO md5 des bildes benutzen
 //TODO namen der xml elemente optimieren
-//TODO Manager.resetAll optimieren, anwendungszeit verbessern
 //TODO Download All
 //TODO Previewactivity select pictures to download
-//TODO only search but don´t add tag
-//TODO tags wie bei mBooru suchen
 //TODO Wenn man den ausgewählten server ändert, wo wird der wieder ausgewählt
 //Bugs
 //TODO Logger logt beim crash nicht mehr mit

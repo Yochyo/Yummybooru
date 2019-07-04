@@ -36,6 +36,6 @@ dependencies {
 
     implementation "android.arch.persistence.room:runtime:1.1.1"
     implementation 'android.arch.lifecycle:livedata:1.1.1'
-    implementation "de.yochyo.eventmanager:EventManager:1.9"
+    implementation "de.yochyo.eventmanager:EventManager:1.10"
     kapt "android.arch.persistence.room:compiler:1.1.1"
 }

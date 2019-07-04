@@ -123,13 +123,9 @@ class PictureActivity : AppCompatActivity() {
     private fun downloadOriginalPicture(p: de.yochyo.yummybooru.api.Post) {
         GlobalScope.launch {
             if (db.downloadOriginal) {
-                FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL) {
-                    Toast.makeText(this@PictureActivity, "${getString(R.string.downloaded)}: ${p.id}", Toast.LENGTH_SHORT).show()
-                }
+                FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL)
             } else {
-                FileUtils.writeOrDownloadFile(this@PictureActivity, p, sample(p.id), p.fileSampleURL) {
-                    Toast.makeText(this@PictureActivity, "${getString(R.string.downloaded)}: ${p.id}", Toast.LENGTH_SHORT).show()
-                }
+                FileUtils.writeOrDownloadFile(this@PictureActivity, p, sample(p.id), p.fileSampleURL)
             }
         }
     }
@@ -172,10 +168,8 @@ class PictureActivity : AppCompatActivity() {
                                 }
                             } else { //add to history
                                 GlobalScope.launch {
-                                    for (tag in p.getTags().filter { it.type == Tag.ARTIST }) {
+                                    for (tag in p.getTags().filter { it.type == Tag.ARTIST })
                                         db.addTag(this@PictureActivity, tag)
-                                        withContext(Dispatchers.Main) { Toast.makeText(this@PictureActivity, "Add ${tag.name}", Toast.LENGTH_SHORT).show() }
-                                    }
                                 }
                             }
                             lastSwipeUp = time
@@ -210,10 +204,7 @@ class PictureActivity : AppCompatActivity() {
             toolbar.setOnMenuItemClickListener {
                 val tag = currentTags[adapterPosition]
                 when (it.itemId) {
-                    R.id.picture_info_item_add_history -> {
-                        GlobalScope.launch { db.addTag(this@PictureActivity, Tag(tag.name, tag.type)) }
-                        Toast.makeText(this@PictureActivity, "${getString(R.string.add_tag)} ${tag.name}", Toast.LENGTH_SHORT).show()
-                    }
+                    R.id.picture_info_item_add_history -> GlobalScope.launch { db.addTag(this@PictureActivity, Tag(tag.name, tag.type)) }
                     R.id.picture_info_item_add_favorite -> {
                         if (db.getTag(tag.name) == null) GlobalScope.launch { db.addTag(this@PictureActivity, Tag(tag.name, tag.type, true)) }
                         else GlobalScope.launch { db.changeTag(this@PictureActivity, tag.copy(isFavorite = true)) }

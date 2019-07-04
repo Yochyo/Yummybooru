@@ -7,9 +7,8 @@ import de.yochyo.yummybooru.api.downloads.cache
 import de.yochyo.yummybooru.api.downloads.downloadImage
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
-import kotlinx.coroutines.CoroutineScope
+import de.yochyo.yummybooru.events.events.SafeFileEvent
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 
@@ -33,14 +32,11 @@ object FileUtils {
         return parentFolder!!
     }
 
-    suspend fun writeOrDownloadFile(context: Context, post: de.yochyo.yummybooru.api.Post, id: String, url: String, doAfter: suspend CoroutineScope.() -> Unit = {}) {
+    suspend fun writeOrDownloadFile(context: Context, post: de.yochyo.yummybooru.api.Post, id: String, url: String) {
         withContext(Dispatchers.IO) {
             val f = context.cache.getCachedBitmap(id)
-            if (f != null) {
-                writeFile(context, post, f)
-                launch(Dispatchers.Main) { doAfter() }
-            } else context.downloadImage(url, id, { writeFile(context, post, it);doAfter() }, cache = false)
-
+            if (f != null) writeFile(context, post, f)
+            else context.downloadImage(url, id, { writeFile(context, post, it) }, cache = false)
         }
     }
 
@@ -52,6 +48,7 @@ object FileUtils {
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
                 context.contentResolver.openOutputStream(file.uri).write(stream.toByteArray())
                 stream.close()
+                withContext(Dispatchers.Main){SafeFileEvent.trigger(SafeFileEvent(context, file, post))}
             }
         }
     }

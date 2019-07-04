@@ -28,7 +28,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
-import kotlin.collections.HashMap
 
 class SubscriptionActivity : AppCompatActivity() {
     private lateinit var totalTextView: TextView
@@ -87,9 +86,9 @@ class SubscriptionActivity : AppCompatActivity() {
                 builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
                 builder.setNegativeButton(R.string.no) { _, _ -> }
                 builder.setPositiveButton(R.string.yes) { _, _ ->
-                    GlobalScope.launch {
+                    GlobalScope.launch(Dispatchers.Main) {
+                        db.changeSubscription(this@SubscriptionActivity, sub.copy(lastID = onClickedData!!.idWhenClicked, lastCount = onClickedData!!.countWhenClicked))
                         onClickedData = null
-                        launch(Dispatchers.Main) { db.changeSubscription(this@SubscriptionActivity, sub.copy(lastID = onClickedData!!.idWhenClicked, lastCount = onClickedData!!.countWhenClicked)) }
                     }
                 }
                 builder.show()
@@ -133,19 +132,12 @@ class SubscriptionActivity : AppCompatActivity() {
 
         private fun longClickDialog(sub: Subscription) {
             val builder = AlertDialog.Builder(this@SubscriptionActivity)
-            val array: Array<String>
-            if (sub.isFavorite) array = arrayOf(getString(R.string.unfavorite), getString(R.string.delete))
-            else array = arrayOf(getString(R.string.set_favorite), getString(R.string.delete))
+            val array = arrayOf(if (sub.isFavorite) getString(R.string.unfavorite) else getString(R.string.set_favorite), getString(R.string.delete))
             builder.setItems(array) { dialog, i ->
                 dialog.cancel()
                 when (i) {
-                    0 -> {
-                        GlobalScope.launch { db.changeSubscription(this@SubscriptionActivity, sub.copy(isFavorite = !sub.isFavorite)) }
-                        Toast.makeText(this@SubscriptionActivity, "${if (sub.isFavorite) getString(R.string.favorite) else getString(R.string.unfavorite)} [${sub.name}]", Toast.LENGTH_SHORT).show()
-                    }
-                    1 -> {
-                        deleteSubDialog(sub)
-                    }
+                    0 -> GlobalScope.launch { db.changeSubscription(this@SubscriptionActivity, sub.copy(isFavorite = !sub.isFavorite)) }
+                    1 -> deleteSubDialog(sub)
                 }
 
             }
@@ -157,10 +149,7 @@ class SubscriptionActivity : AppCompatActivity() {
             b.setTitle(R.string.delete)
             b.setMessage("${getString(R.string.delete)} ${getString(R.string.subscription)} ${sub.name}?")
             b.setNegativeButton(R.string.no) { _, _ -> }
-            b.setPositiveButton(R.string.yes) { _, _ ->
-                GlobalScope.launch { db.deleteSubscription(this@SubscriptionActivity, sub.name) }
-                Toast.makeText(this@SubscriptionActivity, "${getString(R.string.deleted)} [${sub.name}]", Toast.LENGTH_SHORT).show()
-            }
+            b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { db.deleteSubscription(this@SubscriptionActivity, sub.name) } }
             b.show()
         }
 

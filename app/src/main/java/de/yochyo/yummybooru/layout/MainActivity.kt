@@ -91,6 +91,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         ChangeServerEvent.registerListener(DisplayToastChangeServerEvent())
         SelectServerEvent.registerListener(DisplayToastSelectServerListener())
         SelectServerEvent.registerListener(ClearSelectedTagsInMainactivityListener())
+        SafeFileEvent.registerListener(DisplayToastDownloadFileListener())
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

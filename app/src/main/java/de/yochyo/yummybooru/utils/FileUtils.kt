@@ -32,15 +32,15 @@ object FileUtils {
         return parentFolder!!
     }
 
-    suspend fun writeOrDownloadFile(context: Context, post: de.yochyo.yummybooru.api.Post, id: String, url: String) {
+    suspend fun writeOrDownloadFile(context: Context, post: de.yochyo.yummybooru.api.Post, id: String, url: String, source: Int = SafeFileEvent.DEFAULT) {
         withContext(Dispatchers.IO) {
             val f = context.cache.getCachedBitmap(id)
-            if (f != null) writeFile(context, post, f)
-            else context.downloadImage(url, id, { writeFile(context, post, it) }, cache = false)
+            if (f != null) writeFile(context, post, f, source)
+            else context.downloadImage(url, id, { writeFile(context, post, it, source) }, cache = false)
         }
     }
 
-    suspend fun writeFile(context: Context, post: de.yochyo.yummybooru.api.Post, bitmap: Bitmap) {
+    suspend fun writeFile(context: Context, post: de.yochyo.yummybooru.api.Post, bitmap: Bitmap, source: Int = SafeFileEvent.DEFAULT) {
         withContext(Dispatchers.IO) {
             val file = createFileToWrite(context, post)
             if (file != null) {
@@ -48,7 +48,7 @@ object FileUtils {
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
                 context.contentResolver.openOutputStream(file.uri).write(stream.toByteArray())
                 stream.close()
-                withContext(Dispatchers.Main){SafeFileEvent.trigger(SafeFileEvent(context, file, post))}
+                withContext(Dispatchers.Main){SafeFileEvent.trigger(SafeFileEvent(context, file, post, source))}
             }
         }
     }

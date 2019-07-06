@@ -29,6 +29,7 @@ import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.Database
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.downloadservice.DownloadService
 import de.yochyo.yummybooru.events.events.*
 import de.yochyo.yummybooru.events.listeners.*
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
@@ -39,9 +40,7 @@ import de.yochyo.yummybooru.utils.toTagString
 import de.yochyo.yummybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.util.*
 
 
@@ -50,9 +49,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val selectedTags = ArrayList<String>()
     }
 
+    private lateinit var serviceIntent: Intent
+    private lateinit var service: DownloadService
     private lateinit var tagRecyclerView: RecyclerView
     private lateinit var tagAdapter: SearchTagAdapter
     private lateinit var serverAdapter: ServerAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         initListeners()
         super.onCreate(savedInstanceState)
@@ -64,7 +66,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         nav_view.setNavigationItemSelectedListener(this)
-
         val navLayout = nav_search.findViewById<LinearLayout>(R.id.nav_search_layout)
         initAddTagButton(navLayout.findViewById(R.id.add_search))
         initSearchButton(navLayout.findViewById(R.id.start_search))
@@ -74,9 +75,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
         serverRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
         serverAdapter = ServerAdapter().apply { serverRecyclerView.adapter = this }
-
-        if (hasPermission) initData()
+        if (hasPermission)
+            initData()
     }
+
 
     private fun initListeners() {
         AddTagEvent.registerListener(DisplayToastAddTagListener())

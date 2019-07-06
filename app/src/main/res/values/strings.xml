@@ -18,9 +18,6 @@
         history
     </string>
 
-    <string name="pref_title_display_name">Display name</string>
-    <string name="pref_default_display_name">John Smith</string>
-
     <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
     <string-array name="post_limit">
         <item>30</item>
@@ -29,7 +26,7 @@
         <item>150</item>
         <item>200</item>
     </string-array>
-
+    
     <string-array name="subs_sort_entries">
         <item>Favorite and Alphabet</item>
         <item>Favorite and newest</item>

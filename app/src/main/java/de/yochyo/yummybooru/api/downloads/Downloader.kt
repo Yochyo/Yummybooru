@@ -16,6 +16,17 @@ abstract class Downloader(context: Context) {
             if (_instance == null) _instance = object : Downloader(context) {}
             return _instance!!
         }
+
+        suspend fun download(url: String): Bitmap?{
+            return withContext(Dispatchers.IO){
+                val conn = URL(url).openConnection()
+                conn.addRequestProperty("User-Agent", "Mozilla/5.00")
+                val stream = conn.getInputStream()
+                val bitmap = BitmapFactory.decodeStream(stream)
+                stream.close()
+                bitmap
+            }
+        }
     }
 
     init {
@@ -27,11 +38,7 @@ abstract class Downloader(context: Context) {
                             val download = downloads.takeLast()
                             var bitmap = context.cache.getCachedBitmap(download.id)
                             if (bitmap == null) {
-                                val conn = URL(download.url).openConnection()
-                                conn.addRequestProperty("User-Agent", "Mozilla/5.00")
-                                val stream = conn.getInputStream()
-                                bitmap = BitmapFactory.decodeStream(stream)!!
-                                stream.close()
+                                bitmap = download(download.url)!!
                                 if (download.cache) GlobalScope.launch { context.cache.cacheBitmap(download.id, bitmap) }
                             }
                             launch(Dispatchers.Main) { download.doAfter.invoke(this, bitmap) }

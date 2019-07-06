@@ -6,41 +6,47 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
-
-            android:label="YummyBooru"
+            android:name=".downloadservice.App"
             android:allowBackup="true"
             android:icon="@mipmap/ybooru_icon"
+            android:label="YummyBooru"
             android:roundIcon="@mipmap/ybooru_icon_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
+
         <activity
-                android:name="de.yochyo.yummybooru.layout.MainActivity"
+                android:name=".layout.MainActivity"
                 android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity
+                android:name=".layout.PreviewActivity"
                 android:label=""
-                android:name="de.yochyo.yummybooru.layout.PreviewActivity"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
+                android:name=".layout.PictureActivity"
                 android:label=""
-                android:name="de.yochyo.yummybooru.layout.PictureActivity"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
+                android:name=".layout.SubscriptionActivity"
                 android:label="Subs"
-                android:name="de.yochyo.yummybooru.layout.SubscriptionActivity"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-                android:label="Settings"
-                android:name="de.yochyo.yummybooru.layout.SettingsActivity">
+                android:name=".layout.SettingsActivity"
+                android:label="Settings">
         </activity>
+
+        <service android:name=".downloadservice.DownloadService"/>
     </application>
+
 </manifest>

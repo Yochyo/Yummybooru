@@ -15,6 +15,8 @@ import android.widget.Toast
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.downloadImage
+import de.yochyo.yummybooru.downloadservice.DownloadService
+import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
 import de.yochyo.yummybooru.utils.preview
 import de.yochyo.yummybooru.utils.toTagString
 import kotlinx.android.synthetic.main.activity_preview.*
@@ -94,7 +96,7 @@ open class PreviewActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
-            R.id.download_all -> Toast.makeText(this, getString(R.string.not_inplemented), Toast.LENGTH_SHORT).show()
+            R.id.download_all -> DownloadPostsAlertdialog(this, m)
         }
         return super.onOptionsItemSelected(item)
     }

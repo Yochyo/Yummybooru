@@ -68,7 +68,6 @@ abstract class Manager(val tags: Array<String>) {
                 if (page > currentPage) {
                     currentPage = page
                     posts += p
-                    println(page)
                 }
                 return p
             }

@@ -4,7 +4,6 @@ package de.yochyo.yummybooru
 //TODO gifs und videos
 //TODO folder in taglist einfügen
 //TODO Auto mode bei server hinzufügen
-//TODO add pixiv support
 //Tags und Subs als eine Klasse?
 //Optimizations
 //TODO search[name] Allows searching for multiple tags with exact given names, separated by commas. e.g. search[name]=touhou,original,k-on! would return the three listed tags. anstatt von manuellem durchsuchen

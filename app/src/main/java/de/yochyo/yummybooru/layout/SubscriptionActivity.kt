@@ -57,7 +57,7 @@ class SubscriptionActivity : AppCompatActivity() {
 
     private fun initEverySubLayout() {
         val layout = every_sub_item as LinearLayout
-        layout.findViewById<TextView>(android.R.id.text1).text = "---"
+        layout.findViewById<TextView>(android.R.id.text1).text = "Coming Soon"
         totalTextView = layout.findViewById(android.R.id.text2)
     }
 

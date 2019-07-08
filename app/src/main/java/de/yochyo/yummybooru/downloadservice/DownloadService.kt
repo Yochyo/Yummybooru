@@ -3,7 +3,6 @@ package de.yochyo.yummybooru.downloadservice
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
@@ -25,9 +24,9 @@ class DownloadService : Service() {
 
     companion object {
         private var position = 0
-        private val downloadPosts = LinkedList<Manager>()
+        private val downloadPosts = LinkedList<Posts>()
         fun startService(context: Context, manager: Manager) {
-            downloadPosts += manager
+            downloadPosts += Posts(manager.tags.toTagString(), ArrayList(manager.posts.value!!))
             context.startService(Intent(context, DownloadService::class.java))
         }
     }
@@ -42,8 +41,7 @@ class DownloadService : Service() {
         job = GlobalScope.launch(Dispatchers.IO) {
             var p: Post? = getNextElement()
             while (p != null && isActive) {
-                val bitmap: Bitmap?
-                bitmap = if (db.downloadOriginal) Downloader.download(p.fileSampleURL)
+                val bitmap = if (db.downloadOriginal) Downloader.download(p.fileSampleURL)
                 else Downloader.download(p.fileURL)
                 if (bitmap != null) FileUtils.writeFile(this@DownloadService, p, bitmap, SafeFileEvent.SILENT)
                 p = getNextElement()
@@ -54,15 +52,13 @@ class DownloadService : Service() {
 
     private suspend fun getNextElement(): Post? {
         if (downloadPosts.isNotEmpty()) {
-            val manager = downloadPosts[0]
-            val posts = manager.posts.value
-            if (posts != null) {
-                if (posts.size > position) {
-                    val post = posts[position]
+            val posts = downloadPosts[0]
+                if (posts.posts.size > position) {
+                    val post = posts.posts[position]
                     withContext(Dispatchers.Main) {
-                        notificationBuilder.setContentTitle("Downloading $position/${posts.size}")
-                        notificationBuilder.setContentText(manager.tags.toTagString())
-                        notificationBuilder.setProgress(posts.size, position, false)
+                        notificationBuilder.setContentTitle("Downloading $position/${posts.posts.size}")
+                        notificationBuilder.setContentText(posts.tags)
+                        notificationBuilder.setProgress(posts.posts.size, position, false)
                         notificationManager.notify(1, notificationBuilder.build())
                     }
                     ++position
@@ -72,7 +68,6 @@ class DownloadService : Service() {
                     downloadPosts.removeAt(0)
                     return getNextElement()
                 }
-            }
         }
         return null
     }
@@ -90,4 +85,4 @@ class DownloadService : Service() {
     override fun onBind(intent: Intent): IBinder? = null
 }
 
-private class BackgroundPostDownload(val post: Post, val tags: String)
+private class Posts(val tags: String, val posts: List<Post>)

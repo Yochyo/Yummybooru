@@ -14,10 +14,10 @@ package de.yochyo.yummybooru
 //TODO strings vol pref_general in string.xml
 //TODO md5 des bildes benutzen
 //TODO namen der xml elemente optimieren
-//TODO Download All
 //TODO Previewactivity select pictures to download
 //TODO Wenn man den ausgewählten server ändert, wo wird der wieder ausgewählt
 //Bugs
+//TODO service muss unabhängig von der ganzen app sein, es gab in yande.re einen abstürz♠
 //TODO when z.B. ein download crasht, muss ein event (oder awaitPicture...) abgebrochen werden
 //TODO bitmap = BitmapFactory.decodeStream(stream)!! in downloader schlägt selten fehl //wahrscheinlich weil mein png/jpg
 //Nettes zeug für irgendwann

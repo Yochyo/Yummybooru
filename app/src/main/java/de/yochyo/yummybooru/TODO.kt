@@ -6,7 +6,7 @@ package de.yochyo.yummybooru
 //TODO Auto mode bei server hinzufügen
 //Tags und Subs als eine Klasse?
 //Optimizations
-//TODO search[name] Allows searching for multiple tags with exact given names, separated by commas. e.g. search[name]=touhou,original,k-on! would return the three listed tags. anstatt von manuellem durchsuchen
+//TODO auto-updater
 //TODO Statt LiveData events benutzen
 //TODO beim Profiler ist die CPU belastung heavy
 //TODO downloader braucht ne lock, synchronisieren
@@ -17,7 +17,6 @@ package de.yochyo.yummybooru
 //TODO Previewactivity select pictures to download
 //TODO Wenn man den ausgewählten server ändert, wo wird der wieder ausgewählt
 //Bugs
-//TODO service muss unabhängig von der ganzen app sein, es gab in yande.re einen abstürz♠
 //TODO when z.B. ein download crasht, muss ein event (oder awaitPicture...) abgebrochen werden
 //TODO bitmap = BitmapFactory.decodeStream(stream)!! in downloader schlägt selten fehl //wahrscheinlich weil mein png/jpg
 //Nettes zeug für irgendwann

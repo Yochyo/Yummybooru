@@ -1,4 +1,4 @@
-# Android App YummyBooru :3
+# Yummybooru for android :3
 
 This application´s goal is to be the best available booru Client in all aspects. To suggest a feature, join our discord Server.
 https://discord.gg/tbGCHpF

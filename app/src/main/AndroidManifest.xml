@@ -12,7 +12,7 @@
             android:name=".downloadservice.App"
             android:allowBackup="true"
             android:icon="@mipmap/ybooru_icon"
-            android:label="YummyBooru"
+            android:label="Yummybooru"
             android:roundIcon="@mipmap/ybooru_icon_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">

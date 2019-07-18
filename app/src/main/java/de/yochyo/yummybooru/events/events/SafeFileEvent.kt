@@ -5,11 +5,10 @@ import android.support.v4.provider.DocumentFile
 import de.yochyo.eventmanager.Event
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.Post
-import java.io.File
 
-class SafeFileEvent(val context: Context, val file: DocumentFile, val post: Post, val source: Int = DEFAULT) : Event{
-    companion object: EventHandler<SafeFileEvent>(){
-        val DEFAULT = 0
-        val SILENT = 99
+class SafeFileEvent(val context: Context, val file: DocumentFile, val post: Post, val source: Int = DEFAULT) : Event {
+    companion object : EventHandler<SafeFileEvent>() {
+        const val DEFAULT = 0
+        const val SILENT = 99
     }
 }

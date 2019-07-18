@@ -9,7 +9,7 @@ class MoebooruApi(url: String) : Api(url) {
     override val name: String = "moebooru"
     override fun urlGetTag(name: String): String = "${url}tag.json?name=$name*"
     override fun urlGetTags(beginSequence: String): String {
-        return "${url}tag.json?name=$beginSequence*&limit=${searchTagLimit}&search[order]=count"
+        return "${url}tag.json?name=$beginSequence*&limit=$searchTagLimit&search[order]=count"
     }
 
     override fun urlGetPosts(page: Int, tags: Array<String>, limit: Int): String {

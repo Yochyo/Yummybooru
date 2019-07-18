@@ -106,16 +106,16 @@ class SettingsActivity : AppCompatPreferenceActivity() {
                 setSavePathSummary()
             }
             if (requestCode == restoreDataCode) { //Daten wiederherstellen
-                    val stream = contentResolver.openInputStream(data.data)
-                    GlobalScope.launch(Dispatchers.IO) {
-                        val bytes = stream.readBytes()
-                        stream.close()
-                        BackupUtils.restoreBackup(bytes, this@SettingsActivity)
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(this@SettingsActivity, "Restored backup", Toast.LENGTH_LONG).show()
-                            db.initServer(this@SettingsActivity)
-                        }
+                val stream = contentResolver.openInputStream(data.data)
+                GlobalScope.launch(Dispatchers.IO) {
+                    val bytes = stream.readBytes()
+                    stream.close()
+                    BackupUtils.restoreBackup(bytes, this@SettingsActivity)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@SettingsActivity, "Restored backup", Toast.LENGTH_LONG).show()
+                        db.initServer(this@SettingsActivity)
                     }
+                }
             }
         }
     }

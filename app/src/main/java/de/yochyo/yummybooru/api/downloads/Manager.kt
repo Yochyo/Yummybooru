@@ -1,6 +1,7 @@
 package de.yochyo.yummybooru.api.downloads
 
 import android.util.SparseArray
+import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.events.events.DownloadManagerPageEvent
 import de.yochyo.yummybooru.utils.liveData.LiveArrayList
@@ -24,8 +25,8 @@ abstract class Manager(val tags: Array<String>) {
         fun getOrInit(tags: String): Manager {
             synchronized(lock) {
                 val m = map[tags]
-                if (m != null) return m
-                else return initialize(tags)
+                return if (m != null) m
+                else initialize(tags)
             }
         }
 
@@ -39,7 +40,9 @@ abstract class Manager(val tags: Array<String>) {
 
         suspend fun reset(tags: String) {
             val m: Manager?
-            synchronized(lock) { m = map[tags] }
+            synchronized(lock) {
+                m = map[tags]
+            }
             m?.reset()
         }
 
@@ -49,19 +52,17 @@ abstract class Manager(val tags: Array<String>) {
         }
     }
 
-    val posts = LiveArrayList<de.yochyo.yummybooru.api.Post>()
+    val posts = LiveArrayList<Post>()
     private val pageStatus = SparseArray<PageStatus>()
-    private val pages = SparseArray<List<de.yochyo.yummybooru.api.Post>>()
+    private val pages = SparseArray<List<Post>>()
     var position = -1
     var currentPage = 0
-        private set(value) {
-            field = value
-        }
-    val currentPost: de.yochyo.yummybooru.api.Post?
+        private set(value) { field = value }
+    val currentPost: Post?
         get() = posts[position]
 
 
-    fun loadPage(page: Int): List<de.yochyo.yummybooru.api.Post>? {
+    fun loadPage(page: Int): List<Post>? {
         if (pageStatus[page] == PageStatus.DOWNLOADED) {
             val p = pages[page]
             if (p != null) {
@@ -75,7 +76,7 @@ abstract class Manager(val tags: Array<String>) {
         return null
     }
 
-    suspend fun downloadPage(page: Int): List<de.yochyo.yummybooru.api.Post> {
+    suspend fun downloadPage(page: Int): List<Post> {
         val status = pageStatus[page]
         var p = pages[page]
         if (status == null) {
@@ -96,8 +97,8 @@ abstract class Manager(val tags: Array<String>) {
         return p
     }
 
-    private suspend fun awaitPage(page: Int): List<de.yochyo.yummybooru.api.Post> {
-        var list: List<de.yochyo.yummybooru.api.Post>? = null
+    private suspend fun awaitPage(page: Int): List<Post> {
+        var list: List<Post>? = null
         DownloadManagerPageEvent.registerSingleUseListener {
             if (it.manager == this && it.page == page) {
                 list = it.posts
@@ -122,5 +123,5 @@ abstract class Manager(val tags: Array<String>) {
 }
 
 private enum class PageStatus {
-    DOWNLOADING, DOWNLOADED, INITIALIZED
+    DOWNLOADING, DOWNLOADED
 }

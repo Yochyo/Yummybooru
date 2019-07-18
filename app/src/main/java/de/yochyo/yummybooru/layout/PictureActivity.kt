@@ -13,7 +13,6 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.*
 import android.widget.TextView
-import android.widget.Toast
 import android.widget.Toolbar
 import com.github.chrisbanes.photoview.OnSingleFlingListener
 import com.github.chrisbanes.photoview.PhotoView
@@ -28,7 +27,10 @@ import de.yochyo.yummybooru.layout.res.Menus
 import de.yochyo.yummybooru.utils.*
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class PictureActivity : AppCompatActivity() {
@@ -154,8 +156,8 @@ class PictureActivity : AppCompatActivity() {
                 private var lastSwipeUp = 0L
                 override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
                     when (Fling.getDirection(e1, e2)) {
-                        Fling.Direction.down -> finish()
-                        Fling.Direction.up -> {
+                        Fling.Direction.DOWN -> finish()
+                        Fling.Direction.UP -> {
                             val time = System.currentTimeMillis()
                             val p = posts[position]
                             if (time - lastSwipeUp > 400L) { //download
@@ -211,7 +213,7 @@ class PictureActivity : AppCompatActivity() {
                     }
                     R.id.picture_info_item_subscribe -> {
                         if (db.getSubscription(tag.name) == null) GlobalScope.launch { db.addSubscription(this@PictureActivity, Subscription.fromTag(tag)) }
-                         else GlobalScope.launch { db.deleteSubscription(this@PictureActivity, tag.name) }
+                        else GlobalScope.launch { db.deleteSubscription(this@PictureActivity, tag.name) }
                     }
                 }
                 drawer_picture.closeDrawer(GravityCompat.END)

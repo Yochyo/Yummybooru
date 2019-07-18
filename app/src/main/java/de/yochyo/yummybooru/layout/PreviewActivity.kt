@@ -11,11 +11,9 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.Toast
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.downloadImage
-import de.yochyo.yummybooru.downloadservice.DownloadService
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
 import de.yochyo.yummybooru.utils.preview
 import de.yochyo.yummybooru.utils.toTagString

@@ -44,7 +44,7 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             return _passwordHash!!
         }
     @Ignore
-    val urlHost = URL(url).host
+    val urlHost = URL(url).host!!
 
 
     override fun compareTo(other: Server): Int {

@@ -10,7 +10,7 @@ class DanbooruApi(url: String) : Api(url) {
     override val name = "danbooru"
     override fun urlGetTag(name: String): String = "${url}tags.json?search[name_matches]=$name"
     override fun urlGetTags(beginSequence: String): String {
-        return "${url}tags.json?search[name_matches]=$beginSequence*&limit=${Api.searchTagLimit}&search[order]=count"
+        return "${url}tags.json?search[name_matches]=$beginSequence*&limit=$searchTagLimit&search[order]=count"
     }
 
     override fun urlGetPosts(page: Int, tags: Array<String>, limit: Int): String {
@@ -52,14 +52,14 @@ class DanbooruApi(url: String) : Api(url) {
     }
 
     override fun getTagFromJson(json: JSONObject): Tag? {
-        try {
+        return try {
             var type = json.getInt("category")
             if (type !in 0..5)
                 type = Tag.UNKNOWN
-            return Tag(json.getString("name"), type, count = json.getInt("post_count"))
+            Tag(json.getString("name"), type, count = json.getInt("post_count"))
         } catch (e: Exception) {
             e.printStackTrace()
-            return null
+            null
         }
     }
 }

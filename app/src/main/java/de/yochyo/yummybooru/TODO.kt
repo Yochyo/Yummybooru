@@ -16,7 +16,11 @@ package de.yochyo.yummybooru
 //TODO namen der xml elemente optimieren
 //TODO Previewactivity select pictures to download
 //TODO Wenn man den ausgewählten server ändert, wo wird der wieder ausgewählt
+//TODO an manchen stellen kann man einfach den getter privat machen
+//TODO correctly create an apk
 //Bugs
+//TODO menüs in toolbars werden nicht actualisiert
+//TODO man darf scheinbar keine layouts without parent inflaten, ich AddServer/TagDialog mach parent googlen
 //TODO when z.B. ein download crasht, muss ein event (oder awaitPicture...) abgebrochen werden
 //TODO bitmap = BitmapFactory.decodeStream(stream)!! in downloader schlägt selten fehl //wahrscheinlich weil mein png/jpg
 //Nettes zeug für irgendwann

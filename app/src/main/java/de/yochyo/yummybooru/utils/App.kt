@@ -1,12 +1,12 @@
-package de.yochyo.yummybooru.downloadservice
+package de.yochyo.yummybooru.utils
 
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 
-class App : Application(){
-    companion object{
+class App : Application() {
+    companion object {
         const val CHANNEL_ID = "serviceChannel"
     }
 
@@ -14,8 +14,9 @@ class App : Application(){
         super.onCreate()
         createNotificationChannel()
     }
-    fun createNotificationChannel(){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(CHANNEL_ID, "Service Channel", NotificationManager.IMPORTANCE_DEFAULT)
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)

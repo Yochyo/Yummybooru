@@ -5,6 +5,6 @@ import de.yochyo.eventmanager.Event
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.entities.Server
 
-class AddServerEvent(val context: Context, val server: Server) : Event{
-    companion object: EventHandler<AddServerEvent>()
+class AddServerEvent(val context: Context, val server: Server) : Event {
+    companion object : EventHandler<AddServerEvent>()
 }

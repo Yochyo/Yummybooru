@@ -6,5 +6,5 @@ import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.entities.Server
 
 class ChangeServerEvent(val context: Context, val oldServer: Server, val newServer: Server) : Event {
-    companion object: EventHandler<ChangeServerEvent>()
+    companion object : EventHandler<ChangeServerEvent>()
 }

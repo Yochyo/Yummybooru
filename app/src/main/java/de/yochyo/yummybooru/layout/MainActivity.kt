@@ -40,7 +40,9 @@ import de.yochyo.yummybooru.utils.toTagString
 import de.yochyo.yummybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 
 
@@ -49,8 +51,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val selectedTags = ArrayList<String>()
     }
 
-    private lateinit var serviceIntent: Intent
-    private lateinit var service: DownloadService
     private lateinit var tagRecyclerView: RecyclerView
     private lateinit var tagAdapter: SearchTagAdapter
     private lateinit var serverAdapter: ServerAdapter
@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         tagRecyclerView.layoutManager?.scrollToPosition(db.tags.indexOf(t))
                     }
                 }
-            }.apply { title = getString(R.string.add_tag) }.build(this)
+            }.build(this)
         }
     }
 
@@ -171,9 +171,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onBackPressed() {
-        if (drawer_layout.isDrawerOpen(GravityCompat.START)) drawer_layout.closeDrawer(GravityCompat.START)
-        else if (drawer_layout.isDrawerOpen(GravityCompat.END)) drawer_layout.closeDrawer(GravityCompat.END)
-        else super.onBackPressed()
+        when {
+            drawer_layout.isDrawerOpen(GravityCompat.START) -> drawer_layout.closeDrawer(GravityCompat.START)
+            drawer_layout.isDrawerOpen(GravityCompat.END) -> drawer_layout.closeDrawer(GravityCompat.END)
+            else -> super.onBackPressed()
+        }
     }
 
     private inner class SearchTagAdapter : RecyclerView.Adapter<SearchTagViewHolder>() {
@@ -258,16 +260,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         private fun editServerDialog(server: Server) {
             AddServerDialog {
                 GlobalScope.launch { db.changeServer(this@MainActivity, it) }
-            }.apply {
-                serverID = server.id
-                nameText = server.name
-                apiText = server.api
-                urlText = server.url
-                userText = server.userName
-                passwordText = server.password
-                message = getString(R.string.edit_server)
-                enableR18 = server.enableR18Filter
-            }.build(this@MainActivity)
+            }.withServer(server).withTitle(getString(R.string.edit_server))
+                    .build(this@MainActivity)
         }
 
         private fun deleteServerDialog(server: Server) {

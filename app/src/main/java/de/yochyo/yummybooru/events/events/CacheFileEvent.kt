@@ -6,6 +6,6 @@ import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.Post
 import java.io.File
 
-class CacheFileEvent(val context: Context, val file: File, val post: Post) : Event{
-    companion object: EventHandler<CacheFileEvent>()
+class CacheFileEvent(val context: Context, val file: File, val post: Post) : Event {
+    companion object : EventHandler<CacheFileEvent>()
 }

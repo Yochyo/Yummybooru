@@ -17,17 +17,13 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
-    var serverID = -1
-    var nameText = ""
-    var apiText = ""
-    var urlText = ""
-    var userText = ""
-    var message = ""
-    var passwordText = ""
-    var enableR18 = false
+    var s = Server("", "", "", "", "", false, -1)
+    var title = "Add server"
+
+    fun withServer(server: Server) = apply { s = server }
+    fun withTitle(s: String) = apply { title = s }
 
     fun build(context: Context) {
-        if (message == "") message = context.getString(R.string.add_server)
         val builder = AlertDialog.Builder(context)
         val layout = LayoutInflater.from(context).inflate(R.layout.add_server_dialog_view, null) as LinearLayout
         builder.setView(layout)
@@ -37,24 +33,24 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
         spinner.adapter = adapter
         builder.setMessage(context.getString(R.string.add_server))
 
-        val name = layout.findViewById<TextView>(R.id.add_server_name).apply { text = nameText }
+        val name = layout.findViewById<TextView>(R.id.add_server_name).apply { text = s.name }
         val apiSpinner = layout.findViewById<Spinner>(R.id.add_server_api).apply {
-            for (s in 0 until this.adapter.count)
-                if ((this.adapter.getItem(s) as String).equals(apiText, true)) {
-                    this.setSelection(s)
+            for (spin in 0 until this.adapter.count)
+                if ((this.adapter.getItem(spin) as String).equals(s.api, true)) {
+                    this.setSelection(spin)
                     break
                 }
         }
-        val r18 = layout.findViewById<CheckBox>(R.id.server_enable_r18_filter).apply { isChecked = enableR18 }
-        val url = layout.findViewById<TextView>(R.id.add_server_url).apply { text = urlText }
-        val username = layout.findViewById<TextView>(R.id.add_server_username).apply { text = userText }
-        val password = layout.findViewById<TextView>(R.id.add_server_password).apply { text = passwordText }
+        val r18 = layout.findViewById<CheckBox>(R.id.server_enable_r18_filter).apply { isChecked = s.enableR18Filter }
+        val url = layout.findViewById<TextView>(R.id.add_server_url).apply { text = s.url }
+        val username = layout.findViewById<TextView>(R.id.add_server_username).apply { text = s.userName }
+        val password = layout.findViewById<TextView>(R.id.add_server_password).apply { text = s.password }
 
 
 
         builder.setPositiveButton(context.getString(R.string.ok)) { _, _ ->
             val s = Server(name.text.toString(), apiSpinner.selectedItem.toString(), parseURL(url.text.toString()), username.text.toString(),
-                    password.text.toString(), id = serverID, enableR18Filter = r18.isChecked)
+                    password.text.toString(), id = s.id, enableR18Filter = r18.isChecked)
             runOnPositive(s)
             GlobalScope.launch(Dispatchers.IO) {
                 val u = URL(Api.instance!!.urlGetPosts(1, arrayOf("*"), 1))
@@ -64,6 +60,6 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
                     withContext(Dispatchers.Main) { Toast.makeText(context, "Probably bad login", Toast.LENGTH_SHORT).show() }
             }
         }
-        builder.create().show()
+        builder.show()
     }
 }

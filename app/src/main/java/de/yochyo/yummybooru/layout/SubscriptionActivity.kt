@@ -11,7 +11,6 @@ import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.downloads.Manager
@@ -116,7 +115,7 @@ class SubscriptionActivity : AppCompatActivity() {
                             }
                         }
                     }
-                }.apply { title = getString(R.string.add_subscription) }.build(this)
+                }.withTitle(getString(R.string.add_subscription)).build(this)
             }
         }
         return super.onOptionsItemSelected(item)

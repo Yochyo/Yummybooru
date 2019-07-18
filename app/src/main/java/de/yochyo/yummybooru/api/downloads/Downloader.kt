@@ -17,8 +17,8 @@ abstract class Downloader(context: Context) {
             return _instance!!
         }
 
-        suspend fun download(url: String): Bitmap?{
-            return withContext(Dispatchers.IO){
+        suspend fun download(url: String): Bitmap? {
+            return withContext(Dispatchers.IO) {
                 val conn = URL(url).openConnection()
                 conn.addRequestProperty("User-Agent", "Mozilla/5.00")
                 val stream = conn.getInputStream()

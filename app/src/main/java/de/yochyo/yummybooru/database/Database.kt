@@ -23,11 +23,13 @@ import kotlinx.coroutines.withContext
 @android.arch.persistence.room.Database(entities = [Tag::class, Subscription::class, Server::class], version = 2)
 @TypeConverters(DateConverter::class)
 abstract class Database : RoomDatabase() {
-    lateinit var prefs: SharedPreferences
 
     companion object {
+        private var _prefs: SharedPreferences? = null
+        val prefs: SharedPreferences get() = _prefs!!
         var instance: Database? = null
         fun initDatabase(context: Context): Database {
+            if(_prefs == null) _prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
             if (instance == null) instance = Room.databaseBuilder(context.applicationContext,
                     Database::class.java, "db")
                     .addCallback(object : RoomDatabase.Callback() {
@@ -38,7 +40,6 @@ abstract class Database : RoomDatabase() {
                         }
                     })
                     .addMigrations(*Migrations.all).build()
-            instance!!.prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
             instance!!.initServer(context)
 
             return instance!!
@@ -195,43 +196,28 @@ abstract class Database : RoomDatabase() {
         }
     }
 
-    private var _nextServerID: Int? = null
-    var nextServerID: Int
-        get() {
-            if (_nextServerID == null)
-                _nextServerID = prefs.getInt("nextServerID", DefaultServerExeq.all.size)
-            return _nextServerID!!
-        }
+    var nextServerID = prefs.getInt("nextServerID", DefaultServerExeq.all.size)
         set(v) {
-            _nextServerID = v
+            field = v
             with(prefs.edit()) {
                 putInt("nextServerID", v)
                 apply()
             }
         }
 
-    private var _limit: Int? = null
-    var limit: Int
-        get() {
-            if (_limit == null) _limit = prefs.getInt("limit", 30)
-            return _limit!!
-        }
+
+    var limit= prefs.getInt("limit", 30)
         set(value) {
-            _limit = value
+            field = value
             with(prefs.edit()) {
                 putInt("limit", value)
                 apply()
             }
         }
 
-    private var _currentServerID: Int? = null
-    var currentServerID: Int
-        get() {
-            if (_currentServerID == null) _currentServerID = prefs.getInt("currentServer", 0)
-            return _currentServerID!!
-        }
+    var currentServerID= prefs.getInt("currentServer", 0)
         set(v) {
-            _currentServerID = v
+            field = v
             with(prefs.edit()) {
                 putInt("currentServer", v)
                 apply()
@@ -239,54 +225,34 @@ abstract class Database : RoomDatabase() {
         }
 
 
-    private var _sortTags: String? = null
-    var sortTags: String
-        get() {
-            if (_sortTags == null) _sortTags = prefs.getString("sortTags", "00")
-            return _sortTags!!
-        }
+    var sortTags= prefs.getString("sortTags", "00")!!
         set(value) {
-            _sortTags = value
+            field = value
             with(prefs.edit()) {
                 putString("sortTags", value)
                 apply()
             }
         }
-    private var _sortSubs: String? = null
-    var sortSubs: String
-        get() {
-            if (_sortSubs == null) _sortSubs = prefs.getString("sortSubs", "00")
-            return _sortSubs!!
-        }
+    var sortSubs= prefs.getString("sortSubs", "00")!!
         set(value) {
-            _sortSubs = value
+            field = value
             with(prefs.edit()) {
                 putString("sortSubs", value)
                 apply()
             }
         }
-    private var _downloadOriginal: Boolean? = null
-    var downloadOriginal: Boolean
-        get() {
-            if (_downloadOriginal == null) _downloadOriginal = prefs.getBoolean("downloadOriginal", true)
-            return _downloadOriginal!!
-        }
+    var downloadOriginal= prefs.getBoolean("downloadOriginal", true)
         set(v) {
-            _downloadOriginal = v
+            field = v
             with(prefs.edit()) {
                 putBoolean("downloadOriginal", v)
                 apply()
             }
         }
 
-    private var _savePath: String? = null
-    var savePath: String
-        get() {
-            if (_savePath == null) _savePath = prefs.getString("savePath", createDefaultSavePath())
-            return _savePath!!
-        }
+    var savePath = prefs.getString("savePath", createDefaultSavePath())!!
         set(v) {
-            _savePath = v
+            field = v
             with(prefs.edit()) {
                 putString("savePath", v)
                 apply()

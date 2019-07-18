@@ -2,7 +2,6 @@ package de.yochyo.yummybooru.layout.alertdialogs
 
 import android.app.AlertDialog
 import android.content.Context
-import android.media.tv.TvContract
 import android.os.Build
 import android.text.Editable
 import android.text.TextWatcher
@@ -17,7 +16,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class AddTagDialog(val runOnPositive: (editText: AutoCompleteTextView) -> Unit) {
-    var title: String = ""
+    var title: String = "Add tag"
+
+    fun withTitle(s: String) = apply { title = s }
 
     fun build(context: Context): AlertDialog {
         var dialogIsDismissed = false
@@ -71,7 +72,7 @@ class AddTagDialog(val runOnPositive: (editText: AutoCompleteTextView) -> Unit) 
         builder.setPositiveButton("OK") { _, _ ->
             runOnPositive(editText)
         }
-        builder.setNeutralButton("Search"){_,_->
+        builder.setNeutralButton("Search") { _, _ ->
             PreviewActivity.startActivity(context, editText.text.toString())
         }
 

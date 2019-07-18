@@ -4,9 +4,9 @@ import android.widget.Toast
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.events.events.AddTagEvent
 
-class DisplayToastAddTagListener : Listener<AddTagEvent>{
+class DisplayToastAddTagListener : Listener<AddTagEvent> {
     override fun onEvent(e: AddTagEvent): Boolean {
-        Toast.makeText(e.context, "Add ${if(e.tag.isFavorite) "favorite" else ""} tag [${e.tag.name}]", Toast.LENGTH_SHORT).show()
+        Toast.makeText(e.context, "Add ${if (e.tag.isFavorite) "favorite" else ""} tag [${e.tag.name}]", Toast.LENGTH_SHORT).show()
         return true
     }
 }

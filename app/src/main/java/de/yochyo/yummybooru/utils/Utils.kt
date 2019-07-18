@@ -12,6 +12,7 @@ import android.widget.TextView
 import de.yochyo.yummybooru.api.entities.Server
 import java.io.File
 import java.security.MessageDigest
+import kotlin.math.atan2
 
 val lock = Any() //lock fürs Server/Tags/Subs adden
 fun preview(id: Int) = "${id}P${Server.currentID}"
@@ -55,6 +56,7 @@ fun parseURL(url: String): String {
         b.append("/")
     return b.toString()
 }
+
 fun Context.isNetworkAvailable(): Boolean {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val activeNetworkInfo = connectivityManager.activeNetworkInfo
@@ -81,27 +83,27 @@ object Fling {
         return getDirection(x1, y1, x2, y2)
     }
 
-    fun getDirection(x1: Float, y1: Float, x2: Float, y2: Float): Direction {
+    private fun getDirection(x1: Float, y1: Float, x2: Float, y2: Float): Direction {
         val angle = getAngle(x1, y1, x2, y2)
         return Direction.fromAngle(angle)
     }
 
 
-    fun getAngle(x1: Float, y1: Float, x2: Float, y2: Float): Double {
+    private fun getAngle(x1: Float, y1: Float, x2: Float, y2: Float): Double {
 
-        val rad = Math.atan2((y1 - y2).toDouble(), (x2 - x1).toDouble()) + Math.PI
+        val rad = atan2((y1 - y2).toDouble(), (x2 - x1).toDouble()) + Math.PI
         return (rad * 180 / Math.PI + 180) % 360
     }
 
     enum class Direction {
-        up, down, left, right;
+        UP, DOWN, LEFT, RIGHT;
 
         companion object {
             fun fromAngle(angle: Double): Direction {
-                return if (inRange(angle, 45f, 135f)) Direction.up
-                else if (inRange(angle, 0f, 45f) || inRange(angle, 315f, 360f)) Direction.right
-                else if (inRange(angle, 225f, 315f)) Direction.down
-                else Direction.left
+                return if (inRange(angle, 45f, 135f)) UP
+                else if (inRange(angle, 0f, 45f) || inRange(angle, 315f, 360f)) RIGHT
+                else if (inRange(angle, 225f, 315f)) DOWN
+                else LEFT
             }
 
             private fun inRange(angle: Double, init: Float, end: Float): Boolean {
@@ -109,4 +111,5 @@ object Fling {
             }
         }
     }
+
 }

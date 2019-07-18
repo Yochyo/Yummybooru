@@ -13,8 +13,7 @@ abstract class Cache(context: Context) {
     private val notYetCached = ConcurrentHashMap<String, Bitmap>()
 
 
-    private val path = "${context.cacheDir}/"
-    private val directory = File(path)
+    private val directory = context.cacheDir
 
     init {
         directory.mkdirs()
@@ -30,7 +29,7 @@ abstract class Cache(context: Context) {
 
     suspend fun getCachedBitmap(id: String): Bitmap? {
         return withContext(Dispatchers.IO) {
-            val f = file(id)
+            val f = File(directory, id)
             if (f.exists() && f.length() != 0L) {
                 val stream = f.inputStream()
                 val bitmap = BitmapFactory.decodeStream(stream)
@@ -43,7 +42,7 @@ abstract class Cache(context: Context) {
     suspend fun cacheBitmap(id: String, bitmap: Bitmap) {
         withContext(Dispatchers.IO) {
             try {
-                val f = file(id)
+                val f = File(directory, id)
                 if (!f.exists()) {
                     notYetCached[id] = bitmap
                     f.createNewFile()
@@ -60,7 +59,7 @@ abstract class Cache(context: Context) {
 
     private fun removeCachedBitmap(id: String) {
         try {
-            file(id).delete()
+            File(directory, id).delete()
             notYetCached.remove(id)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -82,7 +81,6 @@ abstract class Cache(context: Context) {
         }
     }
 
-    private fun file(id: String) = File("$path$id")
 }
 
 inline val Context.cache: Cache get() = Cache.getInstance(this)

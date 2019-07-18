@@ -48,7 +48,7 @@ object FileUtils {
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
                 context.contentResolver.openOutputStream(file.uri).write(stream.toByteArray())
                 stream.close()
-                withContext(Dispatchers.Main){SafeFileEvent.trigger(SafeFileEvent(context, file, post, source))}
+                withContext(Dispatchers.Main) { SafeFileEvent.trigger(SafeFileEvent(context, file, post, source)) }
             }
         }
     }
@@ -75,8 +75,6 @@ object FileUtils {
     }
 
     private fun getOrCreateFolder(parent: DocumentFile, name: String): DocumentFile {
-        val file = parent.findFile(name)
-        return if (file != null) file
-        else parent.createDirectory(name)!!
+        return parent.findFile(name) ?: parent.createDirectory(name)!!
     }
 }

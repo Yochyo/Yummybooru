@@ -12,6 +12,7 @@ import de.yochyo.yummybooru.api.downloads.Downloader
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
+import de.yochyo.yummybooru.utils.App
 import de.yochyo.yummybooru.utils.FileUtils
 import de.yochyo.yummybooru.utils.toTagString
 import kotlinx.coroutines.*
@@ -53,21 +54,21 @@ class DownloadService : Service() {
     private suspend fun getNextElement(): Post? {
         if (downloadPosts.isNotEmpty()) {
             val posts = downloadPosts[0]
-                if (posts.posts.size > position) {
-                    val post = posts.posts[position]
-                    withContext(Dispatchers.Main) {
-                        notificationBuilder.setContentTitle("Downloading $position/${posts.posts.size}")
-                        notificationBuilder.setContentText(posts.tags)
-                        notificationBuilder.setProgress(posts.posts.size, position, false)
-                        notificationManager.notify(1, notificationBuilder.build())
-                    }
-                    ++position
-                    return post
-                } else {
-                    position = 0
-                    downloadPosts.removeAt(0)
-                    return getNextElement()
+            return if (posts.posts.size > position) {
+                val post = posts.posts[position]
+                withContext(Dispatchers.Main) {
+                    notificationBuilder.setContentTitle("Downloading $position/${posts.posts.size}")
+                    notificationBuilder.setContentText(posts.tags)
+                    notificationBuilder.setProgress(posts.posts.size, position, false)
+                    notificationManager.notify(1, notificationBuilder.build())
                 }
+                ++position
+                post
+            } else {
+                position = 0
+                downloadPosts.removeAt(0)
+                getNextElement()
+            }
         }
         return null
     }

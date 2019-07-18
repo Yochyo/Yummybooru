@@ -1,19 +1,19 @@
 package de.yochyo.yummybooru.utils
 
 object ResponseCodes {
-    val OK = 200
-    val NoContent = 204
-    val BadRequest = 400
-    val Unauthorized = 401
-    val Forbidden = 403
-    val NotFound = 404
-    val Gone = 410
-    val InvalidRecord = 420
-    val Locked = 422
-    val AlreadyExists = 423
-    val InvalidParameters = 424
-    val UserThrottled = 429
-    val InternalServerError = 500
-    val BadGateway = 502
-    val ServiceUnavailable = 503
+    const val OK = 200
+    const val NoContent = 204
+    const val BadRequest = 400
+    const val Unauthorized = 401
+    const val Forbidden = 403
+    const val NotFound = 404
+    const val Gone = 410
+    const val InvalidRecord = 420
+    const val Locked = 422
+    const val AlreadyExists = 423
+    const val InvalidParameters = 424
+    const val UserThrottled = 429
+    const val InternalServerError = 500
+    const val BadGateway = 502
+    const val ServiceUnavailable = 503
 }

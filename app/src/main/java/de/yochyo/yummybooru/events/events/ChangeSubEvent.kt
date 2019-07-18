@@ -6,5 +6,5 @@ import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.entities.Subscription
 
 class ChangeSubEvent(val context: Context, val oldSub: Subscription, val newSub: Subscription) : Event {
-    companion object: EventHandler<ChangeSubEvent>()
+    companion object : EventHandler<ChangeSubEvent>()
 }

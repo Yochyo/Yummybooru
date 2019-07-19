@@ -17,7 +17,7 @@ package de.yochyo.yummybooru
 //TODO Previewactivity select pictures to download
 //TODO Wenn man den ausgewählten server ändert, wo wird der wieder ausgewählt
 //TODO an manchen stellen kann man einfach den getter privat machen
-//TODO correctly create an apk
+//TODO subscription acitivty anders regeln, count wird bei jedem scrollen neu geladen
 //Bugs
 //TODO menüs in toolbars werden nicht actualisiert
 //TODO man darf scheinbar keine layouts without parent inflaten, ich AddServer/TagDialog mach parent googlen

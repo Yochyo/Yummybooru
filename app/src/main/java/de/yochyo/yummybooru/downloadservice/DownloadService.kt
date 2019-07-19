@@ -27,7 +27,7 @@ class DownloadService : Service() {
         private var position = 0
         private val downloadPosts = LinkedList<Posts>()
         fun startService(context: Context, manager: Manager) {
-            downloadPosts += Posts(manager.tags.toTagString(), ArrayList(manager.posts.value!!))
+            downloadPosts += Posts(manager.tags.toTagString(), ArrayList(manager.posts))
             context.startService(Intent(context, DownloadService::class.java))
         }
     }

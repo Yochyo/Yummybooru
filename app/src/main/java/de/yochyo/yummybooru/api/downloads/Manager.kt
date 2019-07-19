@@ -1,10 +1,12 @@
 package de.yochyo.yummybooru.api.downloads
 
+import android.content.Context
 import android.util.SparseArray
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.events.events.DownloadManagerPageEvent
-import de.yochyo.yummybooru.utils.liveData.LiveArrayList
+import de.yochyo.yummybooru.events.events.LoadManagerPageEvent
+import de.yochyo.eventmanager.EventCollection
 import de.yochyo.yummybooru.utils.toTagArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -52,7 +54,7 @@ abstract class Manager(val tags: Array<String>) {
         }
     }
 
-    val posts = LiveArrayList<Post>()
+    val posts = EventCollection<Post>(ArrayList())
     private val pageStatus = SparseArray<PageStatus>()
     private val pages = SparseArray<List<Post>>()
     var position = -1
@@ -62,7 +64,7 @@ abstract class Manager(val tags: Array<String>) {
         get() = posts[position]
 
 
-    fun loadPage(page: Int): List<Post>? {
+    fun loadPage(context: Context, page: Int): List<Post>? {
         if (pageStatus[page] == PageStatus.DOWNLOADED) {
             val p = pages[page]
             if (p != null) {
@@ -70,6 +72,7 @@ abstract class Manager(val tags: Array<String>) {
                     currentPage = page
                     posts += p
                 }
+                LoadManagerPageEvent.trigger(LoadManagerPageEvent(context, this, p))
                 return p
             }
         }
@@ -82,8 +85,8 @@ abstract class Manager(val tags: Array<String>) {
         if (status == null) {
             pageStatus.append(page, PageStatus.DOWNLOADING)
             p = Api.getPosts(page, tags)
-            if (!posts.isEmpty) {
-                val lastFromLastPage = posts.value!!.last()
+            if (posts.isNotEmpty()) {
+                val lastFromLastPage = posts.last()
                 val samePost = p.find { it.id == lastFromLastPage.id }
                 if (samePost != null)
                     p.takeWhile { it.id != samePost.id }

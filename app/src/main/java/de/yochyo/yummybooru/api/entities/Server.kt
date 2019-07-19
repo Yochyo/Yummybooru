@@ -72,7 +72,7 @@ data class Server(var name: String, var api: String, var url: String, var userNa
     fun updateMissingTypeTags(context: Context) {
         GlobalScope.launch {
             val newTags = ArrayList<Tag>()
-            for (tag in db.tags.value!!) { //Tags updaten
+            for (tag in db.tags) { //Tags updaten
                 if (tag.type == Tag.UNKNOWN && tag.name != "*") {
                     val t = Api.getTag(tag.name)
                     if (t != null) {
@@ -90,7 +90,7 @@ data class Server(var name: String, var api: String, var url: String, var userNa
     fun updateMissingTypeSubs(context: Context) {
         GlobalScope.launch {
             val newSubs = ArrayList<Subscription>()
-            for (sub in db.subs.value!!) { //Tags updaten
+            for (sub in db.subs) { //Tags updaten
                 if (sub.type == Tag.UNKNOWN && sub.name != "*") {
                     val t = Api.getTag(sub.name)
                     if (t != null) {

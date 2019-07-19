@@ -1,6 +1,5 @@
 package de.yochyo.yummybooru.layout
 
-import android.arch.lifecycle.Observer
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -11,9 +10,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.ImageView
+import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.downloadImage
+import de.yochyo.yummybooru.events.events.LoadManagerPageEvent
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
 import de.yochyo.yummybooru.utils.preview
 import de.yochyo.yummybooru.utils.toTagString
@@ -28,14 +30,13 @@ open class PreviewActivity : AppCompatActivity() {
         fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PreviewActivity::class.java).apply { putExtra("tags", tags) })
     }
 
-    private val observer = Observer<ArrayList<de.yochyo.yummybooru.api.Post>> { if (it != null) previewAdapter.updatePosts(it) }
+    private var isLoadingView = false
+    private var isScrolling = false
 
-    protected var isLoadingView = false
-    protected var isScrolling = false
-
-    protected lateinit var layoutManager: GridLayoutManager
-    protected lateinit var previewAdapter: PreviewAdapter
-    protected lateinit var m: Manager
+    private lateinit var layoutManager: GridLayoutManager
+    private lateinit var previewAdapter: PreviewAdapter
+    private lateinit var managerListener: Listener<LoadManagerPageEvent>
+    private lateinit var m: Manager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +56,10 @@ open class PreviewActivity : AppCompatActivity() {
 
         initScrollView()
         loadPage(1)
-        m.posts.observe(this, observer)
+        managerListener = LoadManagerPageEvent.registerListener {
+            previewAdapter.updatePosts()
+            true
+        }
     }
 
     fun loadPage(page: Int) {
@@ -63,7 +67,7 @@ open class PreviewActivity : AppCompatActivity() {
         GlobalScope.launch {
             m.downloadPage(page)
             launch(Dispatchers.Main) {
-                m.loadPage(page)
+                m.loadPage(this@PreviewActivity, page)
                 isLoadingView = false
             }
             launch { m.downloadPage(page + 1) }
@@ -78,7 +82,7 @@ open class PreviewActivity : AppCompatActivity() {
                     RecyclerView.SCROLL_STATE_DRAGGING -> isScrolling = true
                 }
                 if (!isLoadingView)
-                    if (layoutManager.findLastVisibleItemPosition() + 1 >= previewAdapter.posts.size) loadPage(m.currentPage + 1)
+                    if (layoutManager.findLastVisibleItemPosition() + 1 >= m.posts.size) loadPage(m.currentPage + 1)
                 return super.onScrollStateChanged(recyclerView, newState)
             }
         })
@@ -110,19 +114,17 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        m.posts.removeObserver(observer)
+        LoadManagerPageEvent.removeListener(managerListener)
         super.onDestroy()
     }
 
     protected inner class PreviewAdapter : RecyclerView.Adapter<PreviewViewHolder>() {
         private var oldSize = 0
-        var posts = ArrayList<de.yochyo.yummybooru.api.Post>()
 
-        fun updatePosts(array: ArrayList<de.yochyo.yummybooru.api.Post>) {
-            posts = array
-            if (array.size > oldSize) notifyItemRangeInserted(oldSize, array.size - oldSize)
+        fun updatePosts() {
+            if (m.posts.size > oldSize) notifyItemRangeInserted(oldSize, m.posts.size - oldSize)
             else notifyDataSetChanged()
-            oldSize = array.size
+            oldSize = m.posts.size
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
@@ -132,7 +134,7 @@ open class PreviewActivity : AppCompatActivity() {
             }
         }
 
-        override fun getItemCount(): Int = posts.size
+        override fun getItemCount(): Int = m.posts.size
         override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) = holder.imageView.setImageBitmap(null)
 
         override fun onViewAttachedToWindow(holder: PreviewViewHolder) {

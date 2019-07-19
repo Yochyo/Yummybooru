@@ -19,6 +19,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.*
+import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.api.DanbooruApi
@@ -35,6 +36,7 @@ import de.yochyo.yummybooru.events.listeners.*
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.res.Menus
+import de.yochyo.yummybooru.utils.ThreadExceptionHandler
 import de.yochyo.yummybooru.utils.setColor
 import de.yochyo.yummybooru.utils.toTagString
 import de.yochyo.yummybooru.utils.underline
@@ -55,7 +57,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var tagAdapter: SearchTagAdapter
     private lateinit var serverAdapter: ServerAdapter
 
+    private lateinit var tagListener: Listener<UpdateTagsEvent>
+    private lateinit var serverListener: Listener<UpdateServersEvent>
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        Thread.setDefaultUncaughtExceptionHandler(ThreadExceptionHandler())
         initListeners()
         super.onCreate(savedInstanceState)
         val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
@@ -71,10 +77,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         initSearchButton(navLayout.findViewById(R.id.start_search))
         tagRecyclerView = navLayout.findViewById(R.id.recycler_view_search)
         tagRecyclerView.layoutManager = LinearLayoutManager(this)
-        tagAdapter = SearchTagAdapter().apply { tagRecyclerView.adapter = this }
-        val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
-        serverRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
-        serverAdapter = ServerAdapter().apply { serverRecyclerView.adapter = this }
         if (hasPermission)
             initData()
     }
@@ -108,8 +110,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         Api.addApi(MoebooruApi(""))
         Database.initDatabase(this)
 
-        db.tags.observe(this, Observer<TreeSet<Tag>> { t -> if (t != null) tagAdapter.updateTags(t) })
-        db.servers.observe(this, Observer<TreeSet<Server>> { s -> if (s != null) serverAdapter.updateServers(s) })
+        tagListener = UpdateTagsEvent.registerListener {
+            tagAdapter.notifyDataSetChanged()
+            true
+        }
+        serverListener = UpdateServersEvent.registerListener {
+            serverAdapter.notifyDataSetChanged()
+            true
+        }
+
+        tagAdapter = SearchTagAdapter().apply { tagRecyclerView.adapter = this }
+        val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
+        serverRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
+        serverAdapter = ServerAdapter().apply { serverRecyclerView.adapter = this }
     }
 
     private fun initAddTagButton(b: Button) {
@@ -178,13 +191,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private inner class SearchTagAdapter : RecyclerView.Adapter<SearchTagViewHolder>() {
-        private var tags = TreeSet<Tag>()
+    override fun onDestroy() {
+        super.onDestroy()
+        UpdateTagsEvent.removeListener(tagListener)
+        UpdateServersEvent.removeListener(serverListener)
+    }
 
-        fun updateTags(set: TreeSet<Tag>) {
-            tags = set
-            notifyDataSetChanged()
-        }
+    private inner class SearchTagAdapter : RecyclerView.Adapter<SearchTagViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchTagViewHolder = SearchTagViewHolder((layoutInflater.inflate(R.layout.search_item_layout, parent, false) as Toolbar)).apply {
             val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
@@ -199,7 +212,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 else selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
             }
             toolbar.setOnMenuItemClickListener {
-                val tag = tags.elementAt(adapterPosition)
+                val tag = db.tags.elementAt(adapterPosition)
                 when (it.itemId) {
                     R.id.main_search_favorite_tag -> GlobalScope.launch {
                         db.changeTag(this@MainActivity, tag.copy(isFavorite = !tag.isFavorite))
@@ -219,9 +232,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
 
-        override fun getItemCount(): Int = tags.size
+        override fun getItemCount(): Int = db.tags.size
         override fun onBindViewHolder(holder: SearchTagViewHolder, position: Int) {
-            val tag = tags.elementAt(position)
+            val tag = db.tags.elementAt(position)
             val check = holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox)
             check.isChecked = selectedTags.contains(tag.name)
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
@@ -234,13 +247,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private inner class ServerAdapter : RecyclerView.Adapter<ServerViewHolder>() {
-        var servers = TreeSet<Server>()
-        override fun getItemCount(): Int = servers.size
-
-        fun updateServers(servers: TreeSet<Server>) {
-            this.servers = servers
-            notifyDataSetChanged()
-        }
+        override fun getItemCount(): Int = db.servers.size
 
         private fun longClickDialog(server: Server) {
             val builder = AlertDialog.Builder(this@MainActivity)
@@ -276,13 +283,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         override fun onCreateViewHolder(parent: ViewGroup, position: Int): ServerViewHolder {
             val holder = ServerViewHolder((layoutInflater.inflate(R.layout.server_item_layout, parent, false) as LinearLayout))
             holder.layout.setOnClickListener {
-                val server = servers.elementAt(holder.adapterPosition)
+                val server = db.servers.elementAt(holder.adapterPosition)
                 GlobalScope.launch(Dispatchers.Main) {
                     server.select(this@MainActivity)
                 }
             }
             holder.layout.setOnLongClickListener {
-                val server = servers.elementAt(holder.adapterPosition)
+                val server = db.servers.elementAt(holder.adapterPosition)
                 longClickDialog(server)
                 true
             }
@@ -290,7 +297,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         override fun onBindViewHolder(holder: ServerViewHolder, position: Int) {
-            val server = servers.elementAt(position)
+            val server = db.servers.elementAt(position)
             fillServerLayoutFields(holder.layout, server, server.isSelected)
         }
     }

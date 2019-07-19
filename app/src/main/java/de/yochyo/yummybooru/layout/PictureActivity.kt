@@ -1,6 +1,5 @@
 package de.yochyo.yummybooru.layout
 
-import android.arch.lifecycle.Observer
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -16,13 +15,16 @@ import android.widget.TextView
 import android.widget.Toolbar
 import com.github.chrisbanes.photoview.OnSingleFlingListener
 import com.github.chrisbanes.photoview.PhotoView
+import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.cache
 import de.yochyo.yummybooru.api.downloads.downloadImage
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.events.events.LoadManagerPageEvent
 import de.yochyo.yummybooru.layout.res.Menus
 import de.yochyo.yummybooru.utils.*
 import kotlinx.android.synthetic.main.activity_picture.*
@@ -38,10 +40,10 @@ class PictureActivity : AppCompatActivity() {
         fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PictureActivity::class.java).apply { putExtra("tags", tags) })
     }
 
-    private val observer = Observer<ArrayList<de.yochyo.yummybooru.api.Post>> { if (it != null) adapter.updatePosts(it) }
     private lateinit var tagRecyclerView: RecyclerView
     private lateinit var adapter: PageAdapter
     private val currentTags = ArrayList<Tag>()
+    lateinit var managerListener: Listener<LoadManagerPageEvent>
     lateinit var m: Manager
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,9 +59,12 @@ class PictureActivity : AppCompatActivity() {
         tagRecyclerView.layoutManager = LinearLayoutManager(this)
 
         adapter = PageAdapter()
+        managerListener = LoadManagerPageEvent.registerListener {
+            adapter.updatePosts()
+            true
+        }
         with(view_pager) {
             adapter = this@PictureActivity.adapter
-            m.posts.observe(this@PictureActivity, observer)
             m.currentPost?.updateCurrentTags(m.position)
 
 
@@ -92,20 +97,20 @@ class PictureActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        m.posts.removeObserver(observer)
+        LoadManagerPageEvent.removeListener(managerListener)
         super.onDestroy()
     }
 
     fun loadNextPage(page: Int) {
         GlobalScope.launch {
-            val postList = m.downloadPage(page)
+            m.downloadPage(page)
             launch(Dispatchers.Main) {
-                m.loadPage(page)
+                m.loadPage(this@PictureActivity, page)
             }
         }
     }
 
-    private fun de.yochyo.yummybooru.api.Post.updateCurrentTags(wasCurrentPosition: Int) {
+    private fun Post.updateCurrentTags(wasCurrentPosition: Int) {
         supportActionBar?.title = id.toString()
 
         currentTags.clear()
@@ -133,23 +138,20 @@ class PictureActivity : AppCompatActivity() {
     }
 
     private inner class PageAdapter : PagerAdapter() {
-        var posts = ArrayList<de.yochyo.yummybooru.api.Post>()
-
-        fun updatePosts(array: ArrayList<de.yochyo.yummybooru.api.Post>) {
-            posts = array
+        fun updatePosts() {
             notifyDataSetChanged()
             view_pager.currentItem = m.position
         }
 
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
-        override fun getCount(): Int = posts.size
+        override fun getCount(): Int = m.posts.size
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
-            if (position + 3 >= posts.lastIndex) GlobalScope.launch {
+            if (position + 3 >= m.posts.size - 1) GlobalScope.launch {
                 val postList = m.downloadPage(m.currentPage + 1)
                 for (p in postList)
                     downloadImage(p.filePreviewURL, preview(p.id), {}, downloadNow = false)
             }
-            if (position == posts.lastIndex) loadNextPage(m.currentPage + 1)
+            if (position == m.posts.size - 1) loadNextPage(m.currentPage + 1)
             val imageView = layoutInflater.inflate(R.layout.picture_item_view, container, false) as PhotoView
             imageView.setAllowParentInterceptOnEdge(true)
             imageView.setOnSingleFlingListener(object : OnSingleFlingListener {
@@ -159,7 +161,7 @@ class PictureActivity : AppCompatActivity() {
                         Fling.Direction.DOWN -> finish()
                         Fling.Direction.UP -> {
                             val time = System.currentTimeMillis()
-                            val p = posts[position]
+                            val p = m.posts.elementAt(position)
                             if (time - lastSwipeUp > 400L) { //download
                                 downloadOriginalPicture(p)
                                 val snack = Snackbar.make(view_pager, getString(R.string.download), Snackbar.LENGTH_SHORT)
@@ -181,7 +183,7 @@ class PictureActivity : AppCompatActivity() {
                     return true
                 }
             })
-            val p = posts[position]
+            val p = m.posts.elementAt(position)
             GlobalScope.launch {
                 val preview = cache.getCachedBitmap(preview(p.id))
                 if (preview != null) launch(Dispatchers.Main) { imageView.setImageBitmap(preview) }

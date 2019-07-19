@@ -1,6 +1,5 @@
 package de.yochyo.yummybooru.layout
 
-import android.arch.lifecycle.Observer
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -11,12 +10,14 @@ import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.events.events.UpdateSubsEvent
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.utils.setColor
 import de.yochyo.yummybooru.utils.underline
@@ -25,12 +26,11 @@ import kotlinx.android.synthetic.main.content_subscription.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.*
 
 class SubscriptionActivity : AppCompatActivity() {
     private lateinit var totalTextView: TextView
-    private val observer = Observer<TreeSet<Subscription>> { t -> if (t != null) adapter.updateSubs(t) }
+    private lateinit var listener: Listener<UpdateSubsEvent>
     private var onClickedData: SubData? = null
     private lateinit var adapter: SubscribedTagAdapter
 
@@ -45,7 +45,8 @@ class SubscriptionActivity : AppCompatActivity() {
             val recyclerView = subs_recycler
             recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity)
             recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
-            db.subs.observe(this@SubscriptionActivity, observer)
+            listener = UpdateSubsEvent.registerListener { adapter.updateSubs(); true }
+            adapter.updateSubs()
             subs_swipe_refresh_layout.setOnRefreshListener {
                 subs_swipe_refresh_layout.isRefreshing = false
                 clear()
@@ -62,10 +63,8 @@ class SubscriptionActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        GlobalScope.launch {
-            Manager.resetAll()
-            withContext(Dispatchers.Main) { db.subs.removeObserver(observer) }
-        }
+        UpdateSubsEvent.removeListener(listener)
+        GlobalScope.launch { Manager.resetAll() }
     }
 
     private fun reload() {
@@ -80,7 +79,7 @@ class SubscriptionActivity : AppCompatActivity() {
         super.onResume()
         if (onClickedData != null) {
             val sub = db.subs[onClickedData!!.clickedSub]
-            if (!Manager.getOrInit(sub.toString()).posts.isEmpty) {
+            if (!Manager.getOrInit(sub.toString()).posts.isEmpty()) {
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
                 builder.setNegativeButton(R.string.no) { _, _ -> }
@@ -122,10 +121,7 @@ class SubscriptionActivity : AppCompatActivity() {
     }
 
     private inner class SubscribedTagAdapter : RecyclerView.Adapter<SubscribedTagViewHolder>() {
-        private var subs = TreeSet<Subscription>()
-
-        fun updateSubs(subs: TreeSet<Subscription>) {
-            this.subs = subs
+        fun updateSubs() {
             reload()
         }
 
@@ -152,18 +148,18 @@ class SubscriptionActivity : AppCompatActivity() {
             b.show()
         }
 
-        override fun getItemCount(): Int = subs.size
+        override fun getItemCount(): Int = db.subs.size
 
         override fun onCreateViewHolder(parent: ViewGroup, p1: Int): SubscribedTagViewHolder = SubscribedTagViewHolder(layoutInflater.inflate(R.layout.subscription_item_layout, parent, false) as LinearLayout).apply {
             layout.setOnClickListener {
-                val sub = subs.elementAt(adapterPosition)
+                val sub = db.subs.elementAt(adapterPosition)
                 GlobalScope.launch {
                     onClickedData = SubData(adapterPosition, Api.newestID(), Api.getTag(sub.name)?.count ?: 0)
                 }
                 PreviewActivity.startActivity(this@SubscriptionActivity, sub.toString())
             }
             layout.setOnLongClickListener {
-                val sub = subs.elementAt(adapterPosition)
+                val sub = db.subs.elementAt(adapterPosition)
                 longClickDialog(sub)
                 true
             }
@@ -172,7 +168,7 @@ class SubscriptionActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: SubscribedTagViewHolder, position: Int) {
             val text1 = holder.layout.findViewById<TextView>(android.R.id.text1)
             val text2 = holder.layout.findViewById<TextView>(android.R.id.text2)
-            val sub = subs.elementAt(position)
+            val sub = db.subs.elementAt(position)
             text1.text = sub.name
             text1.setColor(sub.color)
             text1.underline(sub.isFavorite)

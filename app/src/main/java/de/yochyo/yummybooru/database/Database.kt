@@ -7,17 +7,19 @@ import android.arch.persistence.room.TypeConverters
 import android.arch.persistence.room.migration.Migration
 import android.content.Context
 import android.content.SharedPreferences
+import de.yochyo.eventmanager.EventCollection
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.entities.*
 import de.yochyo.yummybooru.database.converter.DateConverter
 import de.yochyo.yummybooru.events.events.*
 import de.yochyo.yummybooru.utils.createDefaultSavePath
-import de.yochyo.yummybooru.utils.liveData.LiveTree
 import de.yochyo.yummybooru.utils.lock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 @android.arch.persistence.room.Database(entities = [Tag::class, Subscription::class, Server::class], version = 2)
@@ -27,36 +29,39 @@ abstract class Database : RoomDatabase() {
     companion object {
         private var _prefs: SharedPreferences? = null
         val prefs: SharedPreferences get() = _prefs!!
+
         var instance: Database? = null
         fun initDatabase(context: Context): Database {
-            if(_prefs == null) _prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
-            if (instance == null) instance = Room.databaseBuilder(context.applicationContext,
-                    Database::class.java, "db")
-                    .addCallback(object : RoomDatabase.Callback() {
-                        override fun onCreate(db: SupportSQLiteDatabase) {
-                            super.onCreate(db)
-                            for (s in DefaultServerExeq.all)
-                                db.execSQL(s)
-                        }
-                    })
-                    .addMigrations(*Migrations.all).build()
-            instance!!.initServer(context)
-
+            if (instance == null) {
+                _prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
+                instance = Room.databaseBuilder(context.applicationContext,
+                        Database::class.java, "db")
+                        .addCallback(object : RoomDatabase.Callback() {
+                            override fun onCreate(db: SupportSQLiteDatabase) {
+                                super.onCreate(db)
+                                for (s in DefaultServerExeq.all)
+                                    db.execSQL(s)
+                            }
+                        }).addMigrations(*Migrations.all).build()
+                instance!!.servers.onUpdate = { UpdateServersEvent.trigger(UpdateServersEvent(context, instance!!.servers)) }
+                instance!!.tags.onUpdate = { UpdateTagsEvent.trigger(UpdateTagsEvent(context, instance!!.tags)) }
+                instance!!.subs.onUpdate = { UpdateSubsEvent.trigger(UpdateSubsEvent(context, instance!!.subs)) }
+                instance!!.initServer(context)
+            }
             return instance!!
         }
-
     }
 
-    val servers = LiveTree<Server>()
-    val tags = LiveTree<Tag>()
-    val subs = LiveTree<Subscription>()
+    val servers: EventCollection<Server> = EventCollection(TreeSet())
+    val tags: EventCollection<Tag> = EventCollection(TreeSet())
+    val subs: EventCollection<Subscription> =EventCollection(TreeSet())
 
     fun initServer(context: Context) {
         GlobalScope.launch {
             val se: List<Server> = serverDao.getAllServers()
             withContext(Dispatchers.Main) {
                 servers.clear()
-                servers += se
+                servers.addAll(se)
                 Server.currentServer.select(context)
             }
         }
@@ -67,7 +72,7 @@ abstract class Database : RoomDatabase() {
             val t = tagDao.getAllTags().filter { it.serverID == serverID }
             withContext(Dispatchers.Main) {
                 tags.clear()
-                tags += t
+                tags.addAll(t)
                 Server.currentServer.updateMissingTypeTags(context)
             }
         }
@@ -78,7 +83,7 @@ abstract class Database : RoomDatabase() {
             val s = subDao.getAllSubscriptions().filter { it.serverID == serverID }
             withContext(Dispatchers.Main) {
                 subs.clear()
-                subs += s
+                subs.addAll(s)
                 Server.currentServer.updateMissingTypeSubs(context)
             }
         }
@@ -90,7 +95,7 @@ abstract class Database : RoomDatabase() {
             val t = getTag(tag.name)
             if (t == null) {
                 AddTagEvent.trigger(AddTagEvent(context, tag))
-                synchronized(lock) { tags += tag }
+                synchronized(lock) { tags.add(tag) }
                 withContext(Dispatchers.Default) { tagDao.insert(tag) }
                 return@withContext tag
             } else t
@@ -125,7 +130,7 @@ abstract class Database : RoomDatabase() {
         withContext(Dispatchers.Main) {
             if (getSubscription(sub.name) == null) {
                 AddSubEvent.trigger(AddSubEvent(context, sub))
-                synchronized(lock) { subs += sub }
+                synchronized(lock) { subs.add(sub) }
                 withContext(Dispatchers.Default) { subDao.insert(sub) }
             }
         }
@@ -160,7 +165,7 @@ abstract class Database : RoomDatabase() {
             val s = getServer(server.id)
             if (s == null) {
                 AddServerEvent.trigger(AddServerEvent(context, server))
-                synchronized(lock) { servers += server.copy(id = id) }
+                synchronized(lock) { servers.add(server.copy(id = id)) }
                 withContext(Dispatchers.Default) { serverDao.insert(server) }
             }
         }
@@ -185,8 +190,8 @@ abstract class Database : RoomDatabase() {
                 ChangeServerEvent.trigger(ChangeServerEvent(context, server, s))
                 val wasCurrentServer = Server.currentServer == server
                 synchronized(lock) {
-                    servers -= s
-                    servers += server
+                    servers.remove(s)
+                    servers.add(server)
                 }
                 Manager.resetAll()
                 if (wasCurrentServer)
@@ -206,7 +211,7 @@ abstract class Database : RoomDatabase() {
         }
 
 
-    var limit= prefs.getInt("limit", 30)
+    var limit = prefs.getInt("limit", 30)
         set(value) {
             field = value
             with(prefs.edit()) {
@@ -215,7 +220,7 @@ abstract class Database : RoomDatabase() {
             }
         }
 
-    var currentServerID= prefs.getInt("currentServer", 0)
+    var currentServerID = prefs.getInt("currentServer", 0)
         set(v) {
             field = v
             with(prefs.edit()) {
@@ -225,7 +230,7 @@ abstract class Database : RoomDatabase() {
         }
 
 
-    var sortTags= prefs.getString("sortTags", "00")!!
+    var sortTags = prefs.getString("sortTags", "00")!!
         set(value) {
             field = value
             with(prefs.edit()) {
@@ -233,7 +238,7 @@ abstract class Database : RoomDatabase() {
                 apply()
             }
         }
-    var sortSubs= prefs.getString("sortSubs", "00")!!
+    var sortSubs = prefs.getString("sortSubs", "00")!!
         set(value) {
             field = value
             with(prefs.edit()) {
@@ -241,7 +246,7 @@ abstract class Database : RoomDatabase() {
                 apply()
             }
         }
-    var downloadOriginal= prefs.getBoolean("downloadOriginal", true)
+    var downloadOriginal = prefs.getBoolean("downloadOriginal", true)
         set(v) {
             field = v
             with(prefs.edit()) {

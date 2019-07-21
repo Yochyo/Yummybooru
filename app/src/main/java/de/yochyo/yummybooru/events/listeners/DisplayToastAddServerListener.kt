@@ -5,8 +5,7 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.events.events.AddServerEvent
 
 class DisplayToastAddServerListener : Listener<AddServerEvent> {
-    override fun onEvent(e: AddServerEvent): Boolean {
+    override fun onEvent(e: AddServerEvent) {
         Toast.makeText(e.context, "Add server [${e.server.name}]", Toast.LENGTH_SHORT).show()
-        return true
     }
 }

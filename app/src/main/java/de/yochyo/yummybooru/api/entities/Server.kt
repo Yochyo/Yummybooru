@@ -75,14 +75,14 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             for (tag in db.tags) { //Tags updaten
                 if (tag.type == Tag.UNKNOWN && tag.name != "*") {
                     val t = Api.getTag(tag.name)
-                    if (t != null) {
-                        newTags += t.copy(isFavorite = tag.isFavorite, creation = tag.creation, serverID = tag.serverID)
-                    }
+                    newTags += t.copy(isFavorite = tag.isFavorite, creation = tag.creation, serverID = tag.serverID)
                 }
             }
             for (tag in newTags) { //Tags ersetzen
-                db.deleteTag(context, tag.name)
-                db.addTag(context, tag)
+                if (tag.type != Tag.UNKNOWN){
+                    db.deleteTag(context, tag.name)
+                    db.addTag(context, tag)
+                }
             }
         }
     }
@@ -92,16 +92,15 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             val newSubs = ArrayList<Subscription>()
             for (sub in db.subs) { //Tags updaten
                 if (sub.type == Tag.UNKNOWN && sub.name != "*") {
-                    val t = Api.getTag(sub.name)
-                    if (t != null) {
-                        val s = Subscription.fromTag(t)
-                        newSubs += s.copy(isFavorite = sub.isFavorite, creation = sub.creation, serverID = sub.serverID)
-                    }
+                    val s = Subscription.fromTag(Api.getTag(sub.name))
+                    newSubs += s.copy(isFavorite = sub.isFavorite, creation = sub.creation, serverID = sub.serverID)
                 }
             }
             for (sub in newSubs) { //Tags ersetzen
-                db.deleteSubscription(context, sub.name)
-                db.addSubscription(context, sub)
+                if(sub.type != Tag.UNKNOWN){
+                    db.deleteSubscription(context, sub.name)
+                    db.addSubscription(context, sub)
+                }
             }
         }
     }

@@ -1,7 +1,6 @@
 package de.yochyo.yummybooru.layout
 
 import android.Manifest
-import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -27,10 +26,8 @@ import de.yochyo.yummybooru.api.api.MoebooruApi
 import de.yochyo.yummybooru.api.downloads.cache
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Subscription
-import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.Database
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.downloadservice.DownloadService
 import de.yochyo.yummybooru.events.events.*
 import de.yochyo.yummybooru.events.listeners.*
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
@@ -110,14 +107,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         Api.addApi(MoebooruApi(""))
         Database.initDatabase(this)
 
-        tagListener = UpdateTagsEvent.registerListener {
-            tagAdapter.notifyDataSetChanged()
-            true
-        }
-        serverListener = UpdateServersEvent.registerListener {
-            serverAdapter.notifyDataSetChanged()
-            true
-        }
+        tagListener = UpdateTagsEvent.registerListener { tagAdapter.notifyDataSetChanged() }
+        serverListener = UpdateServersEvent.registerListener { serverAdapter.notifyDataSetChanged() }
 
         tagAdapter = SearchTagAdapter().apply { tagRecyclerView.adapter = this }
         val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
@@ -130,8 +121,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             AddTagDialog {
                 GlobalScope.launch {
                     val tag = Api.getTag(it.text.toString())
+                    val t = db.addTag(this@MainActivity, tag)
                     launch(Dispatchers.Main) {
-                        val t = db.addTag(this@MainActivity, tag ?: Tag(it.text.toString(), Tag.UNKNOWN))
                         tagRecyclerView.layoutManager?.scrollToPosition(db.tags.indexOf(t))
                     }
                 }
@@ -228,6 +219,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         selectedTags.remove(tag.name)
                     }
                 }
+                true
+            }
+            toolbar.setOnLongClickListener {
+                val tag = db.tags.elementAt(adapterPosition)
+                AddTagDialog {
+                    val name = it.text.toString()
+                    if (name != tag.name) {
+                        GlobalScope.launch {
+                            val newTag = Api.getTag(name)
+                            db.deleteTag(this@MainActivity, tag.name)
+                            db.addTag(this@MainActivity, newTag)
+                        }
+                    }
+                }.withTag(tag.name).withTitle("Edit tag [${tag.name}]").build(this@MainActivity)
                 true
             }
         }

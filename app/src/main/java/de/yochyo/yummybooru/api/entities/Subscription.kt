@@ -12,9 +12,7 @@ data class Subscription(val name: String, val type: Int, val lastID: Int, val la
 
         suspend fun fromTag(tag: Tag): Subscription {
             val t = Api.getTag(tag.name)
-            return if (t != null)
-                Subscription(t.name, t.type, Api.newestID(), t.count, false, Date(), t.serverID)
-            else Subscription(tag.name, tag.type, Api.newestID(), tag.count, false, Date(), tag.serverID)
+            return Subscription(t.name, t.type, Api.newestID(), t.count, false, Date(), t.serverID)
         }
     }
 

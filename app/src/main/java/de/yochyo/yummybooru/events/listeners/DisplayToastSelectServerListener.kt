@@ -9,11 +9,8 @@ class DisplayToastSelectServerListener : Listener<SelectServerEvent> {
         private var selectServerOnStartUp = true
     }
 
-    override fun onEvent(e: SelectServerEvent): Boolean {
-        if (!selectServerOnStartUp) {
-            Toast.makeText(e.context, "Selected server [${e.newServer.name}]", Toast.LENGTH_SHORT).show()
-            return true
-        } else selectServerOnStartUp = false
-        return false
+    override fun onEvent(e: SelectServerEvent) {
+        if (!selectServerOnStartUp) Toast.makeText(e.context, "Selected server [${e.newServer.name}]", Toast.LENGTH_SHORT).show()
+        else selectServerOnStartUp = false
     }
 }

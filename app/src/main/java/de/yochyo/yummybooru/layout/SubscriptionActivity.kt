@@ -26,7 +26,6 @@ import kotlinx.android.synthetic.main.content_subscription.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.util.*
 
 class SubscriptionActivity : AppCompatActivity() {
     private lateinit var totalTextView: TextView
@@ -45,12 +44,11 @@ class SubscriptionActivity : AppCompatActivity() {
             val recyclerView = subs_recycler
             recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity)
             recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
-            listener = UpdateSubsEvent.registerListener { adapter.updateSubs(); true }
-            adapter.updateSubs()
+            listener = UpdateSubsEvent.registerListener { adapter.updateSubs() }
             subs_swipe_refresh_layout.setOnRefreshListener {
                 subs_swipe_refresh_layout.isRefreshing = false
                 clear()
-                reload()
+                adapter.notifyDataSetChanged()
             }
         }
     }
@@ -65,10 +63,6 @@ class SubscriptionActivity : AppCompatActivity() {
         super.onDestroy()
         UpdateSubsEvent.removeListener(listener)
         GlobalScope.launch { Manager.resetAll() }
-    }
-
-    private fun reload() {
-        adapter.notifyDataSetChanged()
     }
 
     private fun clear() {
@@ -108,10 +102,7 @@ class SubscriptionActivity : AppCompatActivity() {
                     if (db.getSubscription(it.text.toString()) == null) {
                         GlobalScope.launch {
                             val tag = Api.getTag(it.text.toString())
-                            launch(Dispatchers.Main) {
-                                val newTag: Tag = tag ?: Tag(it.text.toString(), Tag.UNKNOWN)
-                                db.addSubscription(this@SubscriptionActivity, Subscription.fromTag(newTag))
-                            }
+                            db.addSubscription(this@SubscriptionActivity, Subscription.fromTag(tag))
                         }
                     }
                 }.withTitle(getString(R.string.add_subscription)).build(this)
@@ -122,17 +113,27 @@ class SubscriptionActivity : AppCompatActivity() {
 
     private inner class SubscribedTagAdapter : RecyclerView.Adapter<SubscribedTagViewHolder>() {
         fun updateSubs() {
-            reload()
+            adapter.notifyDataSetChanged()
         }
 
         private fun longClickDialog(sub: Subscription) {
             val builder = AlertDialog.Builder(this@SubscriptionActivity)
-            val array = arrayOf(if (sub.isFavorite) getString(R.string.unfavorite) else getString(R.string.set_favorite), getString(R.string.delete))
+            val array = arrayOf(if (sub.isFavorite) getString(R.string.unfavorite) else getString(R.string.set_favorite), getString(R.string.delete), "Edit")
             builder.setItems(array) { dialog, i ->
                 dialog.cancel()
                 when (i) {
                     0 -> GlobalScope.launch { db.changeSubscription(this@SubscriptionActivity, sub.copy(isFavorite = !sub.isFavorite)) }
                     1 -> deleteSubDialog(sub)
+                    2 -> AddTagDialog{
+                        val name = it.text.toString()
+                        if(sub.name != name){
+                            GlobalScope.launch {
+                                val newSub = Subscription.fromTag(Api.getTag(name))
+                                db.deleteSubscription(this@SubscriptionActivity, sub.name)
+                                db.addSubscription(this@SubscriptionActivity, newSub)
+                            }
+                        }
+                    }.withTag(sub.name).withTitle("Edit sub [${sub.name}]").build(this@SubscriptionActivity)
                 }
 
             }
@@ -154,7 +155,7 @@ class SubscriptionActivity : AppCompatActivity() {
             layout.setOnClickListener {
                 val sub = db.subs.elementAt(adapterPosition)
                 GlobalScope.launch {
-                    onClickedData = SubData(adapterPosition, Api.newestID(), Api.getTag(sub.name)?.count ?: 0)
+                    onClickedData = SubData(adapterPosition, Api.newestID(), Api.getTag(sub.name).count)
                 }
                 PreviewActivity.startActivity(this@SubscriptionActivity, sub.toString())
             }
@@ -174,8 +175,7 @@ class SubscriptionActivity : AppCompatActivity() {
             text1.underline(sub.isFavorite)
             text2.text = getString(R.string.number_of_new_pictures)
             GlobalScope.launch {
-                var tag = Api.getTag(sub.name)
-                if (tag == null) tag = Tag(sub.name, sub.type)
+                val tag = Api.getTag(sub.name)
                 val countDifference = tag.count - sub.lastCount
                 launch(Dispatchers.Main) {
                     text2.text = "${getString(R.string.number_of_new_pictures)}$countDifference"

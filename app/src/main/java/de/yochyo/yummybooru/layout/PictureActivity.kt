@@ -58,15 +58,11 @@ class PictureActivity : AppCompatActivity() {
         tagRecyclerView.adapter = InfoAdapter()
         tagRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        adapter = PageAdapter()
-        managerListener = LoadManagerPageEvent.registerListener {
-            adapter.updatePosts()
-            true
-        }
         with(view_pager) {
-            adapter = this@PictureActivity.adapter
+            adapter = PageAdapter().apply { this@PictureActivity.adapter = this }
+            managerListener = LoadManagerPageEvent.registerListener { if(it.manager == m) this@PictureActivity.adapter.updatePosts() }
+            this@PictureActivity.adapter.updatePosts()
             m.currentPost?.updateCurrentTags(m.position)
-
 
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                 override fun onPageScrolled(position: Int, offset: Float, p2: Int) {
@@ -141,6 +137,7 @@ class PictureActivity : AppCompatActivity() {
         fun updatePosts() {
             notifyDataSetChanged()
             view_pager.currentItem = m.position
+            println(m.position)
         }
 
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`

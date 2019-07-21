@@ -8,6 +8,7 @@ import de.yochyo.yummybooru.events.events.DownloadManagerPageEvent
 import de.yochyo.yummybooru.events.events.LoadManagerPageEvent
 import de.yochyo.eventmanager.EventCollection
 import de.yochyo.yummybooru.utils.toTagArray
+import de.yochyo.yummybooru.utils.toTagString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -102,12 +103,11 @@ abstract class Manager(val tags: Array<String>) {
 
     private suspend fun awaitPage(page: Int): List<Post> {
         var list: List<Post>? = null
-        DownloadManagerPageEvent.registerSingleUseListener {
+        DownloadManagerPageEvent.registerListener {
             if (it.manager == this && it.page == page) {
                 list = it.posts
-                return@registerSingleUseListener true
+                it.deleteListener = true
             }
-            false
         }
         return withContext(Dispatchers.IO) {
             while (list == null)
@@ -122,6 +122,12 @@ abstract class Manager(val tags: Array<String>) {
         position = -1
         currentPage = 0
         withContext(Dispatchers.Main) { posts.clear() }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return if(other != null && other is Manager)
+            tags.toTagString() == other.tags.toTagString()
+        else false
     }
 }
 

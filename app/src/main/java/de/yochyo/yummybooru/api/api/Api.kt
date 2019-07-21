@@ -1,5 +1,6 @@
 package de.yochyo.yummybooru.api.api
 
+import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
@@ -42,12 +43,14 @@ abstract class Api(var url: String) {
             return array
         }
 
-        suspend fun getTag(name: String): Tag? {
+        suspend fun getTag(name: String): Tag {
             if (name == "*") return Tag(name, Tag.UNKNOWN, count = newestID())
             val json = getJson(instance!!.urlGetTag(name))
-            if (json != null && json.length() > 0)
-                return instance!!.getTagFromJson(json.getJSONObject(0))
-            return null
+            if (json != null && json.length() > 0) {
+                val tag = instance!!.getTagFromJson(json.getJSONObject(0))
+                if (tag != null) return tag
+            }
+            return Tag(name, Tag.UNKNOWN)
         }
 
         suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = db.limit): List<de.yochyo.yummybooru.api.Post> {
@@ -129,7 +132,7 @@ abstract class Api(var url: String) {
     abstract fun urlGetPosts(page: Int, tags: Array<String>, limit: Int): String
 
     abstract fun getTagFromJson(json: JSONObject): Tag?
-    abstract fun getPostFromJson(json: JSONObject): de.yochyo.yummybooru.api.Post?
+    abstract fun getPostFromJson(json: JSONObject): Post?
 }
 
 val api: Api get() = Api.instance!!

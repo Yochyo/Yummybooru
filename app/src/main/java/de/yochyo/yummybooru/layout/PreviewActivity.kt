@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.downloadImage
 import de.yochyo.yummybooru.events.events.LoadManagerPageEvent
@@ -54,12 +53,12 @@ open class PreviewActivity : AppCompatActivity() {
             reloadView()
         }
 
+        managerListener = LoadManagerPageEvent.registerListener {
+            if (it.manager == m)
+                previewAdapter.updatePosts()
+        }
         initScrollView()
         loadPage(1)
-        managerListener = LoadManagerPageEvent.registerListener {
-            previewAdapter.updatePosts()
-            true
-        }
     }
 
     fun loadPage(page: Int) {

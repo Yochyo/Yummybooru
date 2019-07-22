@@ -10,13 +10,12 @@ package de.yochyo.yummybooru
 //TODO auto-updater
 //TODO buttons für width, order ... features hinzufügen
 //Optimizations
+//TODO AddTagDialog vorschläge verstecken wenn der erste eintrag der mom. Eingabe entspricht
 //TODO seite laden bevor man das ende erreicht previweaactivity
 //TODO Mainactivity unselect all einfügen
 //TODO pictureactivity padding preview kleiner
 //TODO Mainactiviy mom. ausgewählte tags anzeigen
-//TODO gesamt-sub ding in toolbar zuklappen
 //TODO suchfeld bei tag/sub liste
-//TODO Der Logger friert die app beim absturz ein
 //TODO subs haben negative zahl wenn man kein internet hat
 //TODO locks überarbeiten
 //todo ---------------- edit tags on long press und subs

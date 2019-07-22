@@ -15,7 +15,6 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.entities.Subscription
-import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.UpdateSubsEvent
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
@@ -26,11 +25,13 @@ import kotlinx.android.synthetic.main.content_subscription.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SubscriptionActivity : AppCompatActivity() {
     private lateinit var totalTextView: TextView
     private lateinit var listener: Listener<UpdateSubsEvent>
     private var onClickedData: SubData? = null
+    private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: SubscribedTagAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +41,7 @@ class SubscriptionActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
             initEverySubLayout()
-            val recyclerView = subs_recycler
+            recyclerView = subs_recycler
             recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity)
             recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
             listener = UpdateSubsEvent.registerListener { adapter.updateSubs() }
@@ -100,7 +101,11 @@ class SubscriptionActivity : AppCompatActivity() {
                     if (db.getSubscription(it.text.toString()) == null) {
                         GlobalScope.launch {
                             val tag = Api.getTag(it.text.toString())
-                            db.addSubscription(this@SubscriptionActivity, Subscription.fromTag(tag))
+                            val sub = Subscription.fromTag(tag)
+                            db.addSubscription(this@SubscriptionActivity, sub)
+                            withContext(Dispatchers.Main){
+                                nested_scrollview.scrollY = recyclerView.getChildAt(db.subs.indexOf(sub)).y.toInt()
+                            }
                         }
                     }
                 }.withTitle(getString(R.string.add_subscription)).build(this)
@@ -129,6 +134,9 @@ class SubscriptionActivity : AppCompatActivity() {
                                 val newSub = Subscription.fromTag(Api.getTag(name))
                                 db.deleteSubscription(this@SubscriptionActivity, sub.name)
                                 db.addSubscription(this@SubscriptionActivity, newSub)
+                                withContext(Dispatchers.Main){
+                                    nested_scrollview.scrollY = recyclerView.getChildAt(db.subs.indexOf(newSub)).y.toInt()
+                                }
                             }
                         }
                     }.withTag(sub.name).withTitle("Edit sub [${sub.name}]").build(this@SubscriptionActivity)

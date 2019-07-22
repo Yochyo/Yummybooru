@@ -39,10 +39,7 @@ import de.yochyo.yummybooru.utils.toTagString
 import de.yochyo.yummybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.util.*
 
 
@@ -231,6 +228,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             val newTag = Api.getTag(name)
                             db.deleteTag(this@MainActivity, tag.name)
                             db.addTag(this@MainActivity, newTag)
+                            withContext(Dispatchers.Main) { tagRecyclerView.layoutManager?.scrollToPosition(db.tags.indexOf(newTag)) }
                         }
                     }
                 }.withTag(tag.name).withTitle("Edit tag [${tag.name}]").build(this@MainActivity)

@@ -11,18 +11,23 @@
         android:id="@+id/subs_swipe_refresh_layout"
         tools:context="de.yochyo.yummybooru.layout.SubscriptionActivity">
 
-        <android.support.v4.widget.NestedScrollView android:layout_width="match_parent" android:layout_height="wrap_content">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                        <include
-                                layout="@layout/subscription_item_layout"
-                                android:id="@+id/every_sub_item"/>
+    <android.support.v4.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/nested_scrollview">
 
-                        <android.support.v7.widget.RecyclerView
-                                android:id="@+id/subs_recycler"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent">
-                        </android.support.v7.widget.RecyclerView>
-                </LinearLayout>
-        </android.support.v4.widget.NestedScrollView>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                      android:orientation="vertical">
+            <include
+                    layout="@layout/subscription_item_layout"
+                    android:id="@+id/every_sub_item"/>
+
+            <android.support.v7.widget.RecyclerView
+                    android:id="@+id/subs_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+            </android.support.v7.widget.RecyclerView>
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
 
 </android.support.v4.widget.SwipeRefreshLayout>

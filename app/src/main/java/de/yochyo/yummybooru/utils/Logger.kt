@@ -3,11 +3,12 @@ package de.yochyo.yummybooru.utils
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.lang.StringBuilder
+import kotlin.system.exitProcess
 
 object Logger {
     private val directory = File("$configPath/logs/")
-    init{
+
+    init {
         directory.mkdirs()
     }
 
@@ -30,5 +31,6 @@ class ThreadExceptionHandler : Thread.UncaughtExceptionHandler {
             e.printStackTrace(PrintWriter(errors))
             Logger.log(errors.toString())
         }
+        exitProcess(10)
     }
 }

@@ -10,8 +10,10 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.downloadImage
 import de.yochyo.yummybooru.events.events.LoadManagerPageEvent
@@ -41,7 +43,7 @@ open class PreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_preview)
         setSupportActionBar(toolbar_preview)
-        m = Manager.getOrInit(intent.getStringExtra("tags"))
+        m = Manager.initialize(intent.getStringExtra("tags"))
         supportActionBar?.title = m.tags.toTagString()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -54,8 +56,11 @@ open class PreviewActivity : AppCompatActivity() {
         }
 
         managerListener = LoadManagerPageEvent.registerListener {
-            if (it.manager == m)
-                previewAdapter.updatePosts()
+            if (it.manager == m) {
+                if (it.newPage.isNotEmpty())
+                    previewAdapter.updatePosts(it.newPage)
+                else Toast.makeText(this@PreviewActivity, "End", Toast.LENGTH_SHORT).show()
+            }
         }
         initScrollView()
         loadPage(1)
@@ -118,12 +123,10 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     protected inner class PreviewAdapter : RecyclerView.Adapter<PreviewViewHolder>() {
-        private var oldSize = 0
-
-        fun updatePosts() {
-            if (m.posts.size > oldSize) notifyItemRangeInserted(oldSize, m.posts.size - oldSize)
-            else notifyDataSetChanged()
-            oldSize = m.posts.size
+        fun updatePosts(newPage: Collection<Post>) {
+            if (newPage.isNotEmpty())
+                if (m.posts.size > newPage.size) notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
+                else notifyDataSetChanged()
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {

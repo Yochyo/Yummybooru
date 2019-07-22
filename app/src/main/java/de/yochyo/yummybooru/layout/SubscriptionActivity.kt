@@ -39,7 +39,6 @@ class SubscriptionActivity : AppCompatActivity() {
         setSupportActionBar(toolbar_subs)
         GlobalScope.launch(Dispatchers.Main) {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            Manager.resetAll()
             initEverySubLayout()
             val recyclerView = subs_recycler
             recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity)
@@ -62,7 +61,6 @@ class SubscriptionActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         UpdateSubsEvent.removeListener(listener)
-        GlobalScope.launch { Manager.resetAll() }
     }
 
     private fun clear() {

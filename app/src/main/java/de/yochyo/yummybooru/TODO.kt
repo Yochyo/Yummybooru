@@ -1,6 +1,8 @@
 package de.yochyo.yummybooru
 
 //Features
+//TODO animated pictures
+//TODO changelog
 //TODO gifs und videos
 //TODO folder in taglist einfügen
 //TODO Auto mode bei server hinzufügen
@@ -8,6 +10,10 @@ package de.yochyo.yummybooru
 //TODO auto-updater
 //TODO buttons für width, order ... features hinzufügen
 //Optimizations
+//TODO seite laden bevor man das ende erreicht previweaactivity
+//TODO Mainactivity unselect all einfügen
+//TODO pictureactivity padding preview kleiner
+//TODO Mainactiviy mom. ausgewählte tags anzeigen
 //TODO gesamt-sub ding in toolbar zuklappen
 //TODO suchfeld bei tag/sub liste
 //TODO Der Logger friert die app beim absturz ein

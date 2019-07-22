@@ -8,6 +8,7 @@
     <TextView android:id="@android:id/text1"
               android:textSize="16sp"
               android:textStyle="bold"
+              android:textColor="@color/white"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"/>
 

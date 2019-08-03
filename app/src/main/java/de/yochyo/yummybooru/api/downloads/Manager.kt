@@ -2,57 +2,36 @@ package de.yochyo.yummybooru.api.downloads
 
 import android.content.Context
 import android.util.SparseArray
+import de.yochyo.eventmanager.EventCollection
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.events.events.DownloadManagerPageEvent
 import de.yochyo.yummybooru.events.events.LoadManagerPageEvent
-import de.yochyo.eventmanager.EventCollection
-import de.yochyo.yummybooru.utils.toTagArray
 import de.yochyo.yummybooru.utils.toTagString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import java.util.*
+import kotlin.collections.ArrayList
 
 abstract class Manager(val tags: Array<String>) {
     companion object {
         private val lock = Any()
-        private val map = HashMap<String, Manager>()
-        fun get(tags: String): Manager {
-            synchronized(lock) {
-                val m = map[tags]
-                if (m != null) return m
-                else throw NullPointerException("Manager ($tags) was not yet initialized")
+        private val managers = Stack<Manager>()
+        fun peek(): Manager?{
+            return try{
+                managers.peek()
+            }catch(e: java.lang.Exception){null}
+        }
+        fun pop(): Manager? {
+            return try {
+                managers.pop()
+            } catch (e: Exception) {
+                null
             }
         }
 
-        fun getOrInit(tags: String): Manager {
-            synchronized(lock) {
-                val m = map[tags]
-                return if (m != null) m
-                else initialize(tags)
-            }
-        }
-
-        fun initialize(tags: String): Manager {
-            synchronized(lock) {
-                val m = object : Manager(tags.toTagArray()) {}
-                map[tags] = m
-                return m
-            }
-        }
-
-        suspend fun reset(tags: String) {
-            val m: Manager?
-            synchronized(lock) {
-                m = map[tags]
-            }
-            m?.reset()
-        }
-
-        suspend fun resetAll() {
-            for (m in map.keys)
-                reset(m)
-        }
+        fun push(tags: Array<String>) = managers.push(object: Manager(tags){})
     }
 
     val posts = EventCollection<Post>(ArrayList())
@@ -60,7 +39,9 @@ abstract class Manager(val tags: Array<String>) {
     private val pages = SparseArray<List<Post>>()
     var position = -1
     var currentPage = 0
-        private set(value) { field = value }
+        private set(value) {
+            field = value
+        }
     val currentPost: Post?
         get() = posts[position]
 
@@ -125,7 +106,7 @@ abstract class Manager(val tags: Array<String>) {
     }
 
     override fun equals(other: Any?): Boolean {
-        return if(other != null && other is Manager)
+        return if (other != null && other is Manager)
             tags.toTagString() == other.tags.toTagString()
         else false
     }

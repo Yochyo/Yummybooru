@@ -4,7 +4,7 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.events.events.DeleteTagEvent
 import de.yochyo.yummybooru.layout.MainActivity
 
-class RemoveSelectedTagsInMainactivityListener : Listener<DeleteTagEvent> {
+class RemoveSelectedTagsInMainactivityListener : Listener<DeleteTagEvent>() {
     override fun onEvent(e: DeleteTagEvent) {
         MainActivity.selectedTags.remove(e.tag.name)
     }

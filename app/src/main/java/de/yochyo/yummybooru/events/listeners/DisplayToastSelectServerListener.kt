@@ -4,7 +4,7 @@ import android.widget.Toast
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 
-class DisplayToastSelectServerListener : Listener<SelectServerEvent> {
+class DisplayToastSelectServerListener : Listener<SelectServerEvent>() {
     companion object {
         private var selectServerOnStartUp = true
     }

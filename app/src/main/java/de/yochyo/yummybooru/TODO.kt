@@ -18,10 +18,14 @@ package de.yochyo.yummybooru
 
 
 //Optimizations
+//TODO subs update all subs
+//TODO Tag suchen (filtern) in Mainactivity
+//TODO Bei Moebooru tags speichern, damit sie nicht JEDES mal runtergeladen werden
+//TODO width/height... sind Tag.SPECIAL statt UNKNOWN
 //TODO logs in data abspeichern
-//TODO toolbars transparent machen
 //TODO AddTagDialog vorschläge verstecken wenn der erste eintrag der mom. Eingabe entspricht
-//TODO seite laden bevor man das ende erreicht previweaactivity
+//TODO AddTagDialog vorschläge beziehen sich immer auf den aktuellsten Tag (Falls man mehrere angibt)
+//TODO mehrere Tags entsprechen Tag.SPECIAL
 //TODO pictureactivity padding preview kleiner
 //TODO Mainactiviy mom. ausgewählte tags anzeigen
 //TODO subs haben negative zahl wenn man kein internet hat
@@ -35,9 +39,8 @@ package de.yochyo.yummybooru
 //TODO namen der xml elemente optimieren
 //TODO Wenn man den ausgewählten server ändert, wo wird der wieder ausgewählt
 //TODO subscription acitivty anders regeln, count wird bei jedem scrollen neu geladen
-//TODO tag array entfernen und alles in strings speichern (damit man nicht immer .toTagString machen muss)
-//TODO Ende Der Seiten erreiht benachrichtigung kommt zu oft
 //Bugs
+//TODO fehler im logs fixen
 //TODO menüs in toolbars werden nicht actualisiert
 //TODO when z.B. ein download crasht, muss ein event (oder awaitPicture...) abgebrochen werden
 //TODO bitmap = BitmapFactory.decodeStream(stream)!! in downloader schlägt selten fehl //wahrscheinlich weil mein png/jpg

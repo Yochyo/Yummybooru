@@ -4,7 +4,7 @@ import android.widget.Toast
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.events.events.ChangeTagEvent
 
-class DisplayToastFavoriteTagListener : Listener<ChangeTagEvent> {
+class DisplayToastFavoriteTagListener : Listener<ChangeTagEvent>() {
     override fun onEvent(e: ChangeTagEvent) {
         if (e.oldTag.isFavorite != e.newTag.isFavorite)
             if (e.newTag.isFavorite)

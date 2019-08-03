@@ -20,8 +20,10 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.LoadManagerPageEvent
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
 import de.yochyo.yummybooru.utils.preview
+import de.yochyo.yummybooru.utils.toTagArray
 import de.yochyo.yummybooru.utils.toTagString
 import kotlinx.android.synthetic.main.activity_preview.*
+import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.android.synthetic.main.content_preview.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -30,7 +32,10 @@ import kotlinx.coroutines.launch
 open class PreviewActivity : AppCompatActivity() {
     companion object {
         private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit/2
-        fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PreviewActivity::class.java).apply { putExtra("tags", tags) })
+        fun startActivity(context: Context, tags: String){
+            Manager.push(tags.toTagArray())
+            context.startActivity(Intent(context, PreviewActivity::class.java))
+        }
     }
 
     private var isLoadingView = false
@@ -45,7 +50,10 @@ open class PreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_preview)
         setSupportActionBar(toolbar_preview)
-        m = Manager.initialize(intent.getStringExtra("tags"))
+        val manager = Manager.peek()
+        if(manager != null) m = manager else finish()
+
+        nav_view_picture.bringToFront()
         supportActionBar?.title = m.tags.toTagString()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -59,8 +67,7 @@ open class PreviewActivity : AppCompatActivity() {
 
         managerListener = LoadManagerPageEvent.registerListener {
             if (it.manager == m) {
-                if (it.newPage.isNotEmpty())
-                    previewAdapter.updatePosts(it.newPage)
+                if (it.newPage.isNotEmpty()) previewAdapter.updatePosts(it.newPage)
                 else Toast.makeText(this@PreviewActivity, "End", Toast.LENGTH_SHORT).show()
             }
         }
@@ -121,6 +128,7 @@ open class PreviewActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         LoadManagerPageEvent.removeListener(managerListener)
+        Manager.pop()
         super.onDestroy()
     }
 
@@ -134,7 +142,7 @@ open class PreviewActivity : AppCompatActivity() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
             imageView.setOnClickListener {
                 m.position = layoutPosition
-                PictureActivity.startActivity(this@PreviewActivity, m.tags.toTagString())
+                PictureActivity.startActivity(this@PreviewActivity)
             }
         }
 

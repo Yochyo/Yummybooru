@@ -59,10 +59,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         private val sBindPreferenceSummaryToValueListener = Preference.OnPreferenceChangeListener { preference, value ->
             val database = db
             when (preference.key) {
-                "limit" -> {
-                    database.limit = value.toString().toInt()
-                    GlobalScope.launch { Manager.resetAll() }
-                }
+                "limit" -> database.limit = value.toString().toInt()
                 "sortSubs" -> database.sortSubs = value.toString()
                 "sortTags" -> database.sortTags = value.toString()
                 "downloadOriginal" -> database.downloadOriginal = value.toString().toBoolean()

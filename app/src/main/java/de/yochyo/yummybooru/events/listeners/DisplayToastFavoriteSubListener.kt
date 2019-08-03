@@ -4,7 +4,7 @@ import android.widget.Toast
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.events.events.ChangeSubEvent
 
-class DisplayToastFavoriteSubListener : Listener<ChangeSubEvent> {
+class DisplayToastFavoriteSubListener : Listener<ChangeSubEvent>() {
     override fun onEvent(e: ChangeSubEvent) {
         if (e.oldSub.isFavorite != e.newSub.isFavorite)
             if (e.newSub.isFavorite)

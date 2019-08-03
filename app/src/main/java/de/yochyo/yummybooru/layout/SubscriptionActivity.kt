@@ -13,12 +13,12 @@ import android.widget.TextView
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.UpdateSubsEvent
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.utils.setColor
+import de.yochyo.yummybooru.utils.toTagArray
 import de.yochyo.yummybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_subscription.*
 import kotlinx.android.synthetic.main.content_subscription.*
@@ -72,18 +72,16 @@ class SubscriptionActivity : AppCompatActivity() {
         super.onResume()
         if (onClickedData != null) {
             val sub = db.subs[onClickedData!!.clickedSub]
-            if (!Manager.getOrInit(sub.toString()).posts.isEmpty()) {
-                val builder = AlertDialog.Builder(this)
-                builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
-                builder.setNegativeButton(R.string.no) { _, _ -> }
-                builder.setPositiveButton(R.string.yes) { _, _ ->
-                    GlobalScope.launch(Dispatchers.Main) {
-                        db.changeSubscription(this@SubscriptionActivity, sub.copy(lastID = onClickedData!!.idWhenClicked, lastCount = onClickedData!!.countWhenClicked))
-                        onClickedData = null
-                    }
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
+            builder.setNegativeButton(R.string.no) { _, _ -> }
+            builder.setPositiveButton(R.string.yes) { _, _ ->
+                GlobalScope.launch(Dispatchers.Main) {
+                    db.changeSubscription(this@SubscriptionActivity, sub.copy(lastID = onClickedData!!.idWhenClicked, lastCount = onClickedData!!.countWhenClicked))
+                    onClickedData = null
                 }
-                builder.show()
             }
+            builder.show()
         }
     }
 
@@ -103,7 +101,7 @@ class SubscriptionActivity : AppCompatActivity() {
                             val tag = Api.getTag(it.text.toString())
                             val sub = Subscription.fromTag(tag)
                             db.addSubscription(this@SubscriptionActivity, sub)
-                            withContext(Dispatchers.Main){
+                            withContext(Dispatchers.Main) {
                                 nested_scrollview.scrollY = recyclerView.getChildAt(db.subs.indexOf(sub)).y.toInt()
                             }
                         }
@@ -127,14 +125,14 @@ class SubscriptionActivity : AppCompatActivity() {
                 when (i) {
                     0 -> GlobalScope.launch { db.changeSubscription(this@SubscriptionActivity, sub.copy(isFavorite = !sub.isFavorite)) }
                     1 -> deleteSubDialog(sub)
-                    2 -> AddTagDialog{
+                    2 -> AddTagDialog {
                         val name = it.text.toString()
-                        if(sub.name != name){
+                        if (sub.name != name) {
                             GlobalScope.launch {
                                 val newSub = Subscription.fromTag(Api.getTag(name))
                                 db.deleteSubscription(this@SubscriptionActivity, sub.name)
                                 db.addSubscription(this@SubscriptionActivity, newSub)
-                                withContext(Dispatchers.Main){
+                                withContext(Dispatchers.Main) {
                                     nested_scrollview.scrollY = recyclerView.getChildAt(db.subs.indexOf(newSub)).y.toInt()
                                 }
                             }

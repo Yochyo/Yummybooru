@@ -60,7 +60,6 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             db.currentServerID = id
             _currentServer = this@Server
             Api.initApi(api, url)
-            Manager.resetAll()
             synchronized(lock) {
                 db.initTags(context, id)
                 db.initSubscriptions(context, id)

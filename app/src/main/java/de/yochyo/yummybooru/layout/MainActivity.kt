@@ -33,10 +33,7 @@ import de.yochyo.yummybooru.events.listeners.*
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.res.Menus
-import de.yochyo.yummybooru.utils.ThreadExceptionHandler
-import de.yochyo.yummybooru.utils.setColor
-import de.yochyo.yummybooru.utils.toTagString
-import de.yochyo.yummybooru.utils.underline
+import de.yochyo.yummybooru.utils.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.coroutines.*
@@ -187,7 +184,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private inner class SearchTagAdapter : RecyclerView.Adapter<SearchTagViewHolder>() {
-
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchTagViewHolder = SearchTagViewHolder((layoutInflater.inflate(R.layout.search_item_layout, parent, false) as Toolbar)).apply {
             val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
             toolbar.inflateMenu(R.menu.activity_main_search_menu)
@@ -236,18 +232,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
 
-        override fun getItemCount(): Int = db.tags.size
         override fun onBindViewHolder(holder: SearchTagViewHolder, position: Int) {
             val tag = db.tags.elementAt(position)
-            val check = holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox)
-            check.isChecked = selectedTags.contains(tag.name)
+            holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox).isChecked = selectedTags.contains(tag.name)
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
-            textView.text = tag.name
-            textView.setColor(tag.color)
-            textView.underline(tag.isFavorite)
-
+            textView.text = tag.name;textView.setColor(tag.color);textView.underline(tag.isFavorite)
             Menus.initMainSearchTagMenu(holder.toolbar.menu, tag)
         }
+        override fun getItemCount(): Int = db.tags.size
     }
 
     private inner class ServerAdapter : RecyclerView.Adapter<ServerViewHolder>() {

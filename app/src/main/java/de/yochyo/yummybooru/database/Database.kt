@@ -193,7 +193,6 @@ abstract class Database : RoomDatabase() {
                     servers.remove(s)
                     servers.add(server)
                 }
-                Manager.resetAll()
                 if (wasCurrentServer)
                     server.select(context)
                 withContext(Dispatchers.Default) { serverDao.update(server) }

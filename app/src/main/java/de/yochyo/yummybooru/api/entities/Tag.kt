@@ -15,6 +15,7 @@ data class Tag(val name: String, val type: Int, val isFavorite: Boolean = false,
         const val ARTIST = 1
         const val META = 5
         const val UNKNOWN = 99
+        const val SPECIAL = 100
     }
 
     val color: Int

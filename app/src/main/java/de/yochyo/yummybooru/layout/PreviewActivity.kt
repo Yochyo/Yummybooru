@@ -16,6 +16,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.downloadImage
+import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.LoadManagerPageEvent
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
 import de.yochyo.yummybooru.utils.preview
@@ -28,6 +29,7 @@ import kotlinx.coroutines.launch
 
 open class PreviewActivity : AppCompatActivity() {
     companion object {
+        private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit/2
         fun startActivity(context: Context, tags: String) = context.startActivity(Intent(context, PreviewActivity::class.java).apply { putExtra("tags", tags) })
     }
 
@@ -86,7 +88,7 @@ open class PreviewActivity : AppCompatActivity() {
                     RecyclerView.SCROLL_STATE_DRAGGING -> isScrolling = true
                 }
                 if (!isLoadingView)
-                    if (layoutManager.findLastVisibleItemPosition() + 1 >= m.posts.size) loadPage(m.currentPage + 1)
+                    if (layoutManager.findLastVisibleItemPosition() + OFFSET_BEFORE_LOAD_NEXT_PAGE >= m.posts.size) loadPage(m.currentPage + 1)
                 return super.onScrollStateChanged(recyclerView, newState)
             }
         })

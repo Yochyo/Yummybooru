@@ -215,6 +215,7 @@ class PictureActivity : AppCompatActivity() {
                         else GlobalScope.launch { db.deleteSubscription(this@PictureActivity, tag.name) }
                     }
                 }
+                notifyItemChanged(adapterPosition)
                 drawer_picture.closeDrawer(GravityCompat.END)
                 true
             }

@@ -12,14 +12,11 @@ package de.yochyo.yummybooru
 //TODO einen width/height/order button (wie bei mbooru) hinzufügen, Tag hat type.SPECIAL tag
 //TODO Mainactivity unselect all einfügen
 //TODO suchfeld bei tag/sub liste
-
-
-
-
+//TODO subs update all subs button
+//TODO Tag suchen (filtern) in Mainactivity
+//TODO Mainactiviy mom. ausgewählte tags anzeigen
 
 //Optimizations
-//TODO subs update all subs
-//TODO Tag suchen (filtern) in Mainactivity
 //TODO Bei Moebooru tags speichern, damit sie nicht JEDES mal runtergeladen werden
 //TODO width/height... sind Tag.SPECIAL statt UNKNOWN
 //TODO logs in data abspeichern
@@ -27,22 +24,18 @@ package de.yochyo.yummybooru
 //TODO AddTagDialog vorschläge beziehen sich immer auf den aktuellsten Tag (Falls man mehrere angibt)
 //TODO mehrere Tags entsprechen Tag.SPECIAL
 //TODO pictureactivity padding preview kleiner
-//TODO Mainactiviy mom. ausgewählte tags anzeigen
+
 //TODO subs haben negative zahl wenn man kein internet hat
 //TODO locks überarbeiten
-//todo normale downloads auch über einen service laufen lassen?
 //TODO beim Profiler ist die CPU belastung heavy
 //TODO downloader braucht ne lock, synchronisieren
 //TODO Code Kommentieren
 //TODO strings vol pref_general in string.xml
 //TODO md5 des bildes benutzen
-//TODO namen der xml elemente optimieren
-//TODO Wenn man den ausgewählten server ändert, wo wird der wieder ausgewählt
 //TODO subscription acitivty anders regeln, count wird bei jedem scrollen neu geladen
 //Bugs
-//TODO fehler im logs fixen
-//TODO menüs in toolbars werden nicht actualisiert
+//TODO wenn ein Server gelöscht wird, müssen auch alle subs/tags dazu gelöscht werden
+//TODO fehler die man in den logs findet fixen
 //TODO when z.B. ein download crasht, muss ein event (oder awaitPicture...) abgebrochen werden
-//TODO bitmap = BitmapFactory.decodeStream(stream)!! in downloader schlägt selten fehl //wahrscheinlich weil mein png/jpg
 //Nettes zeug für irgendwann
 //TODO Subs nicht nur mit :id>X filtern, sondern auch per hand

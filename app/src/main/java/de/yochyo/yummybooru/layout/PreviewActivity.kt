@@ -108,6 +108,34 @@ open class PreviewActivity : AppCompatActivity() {
         }
     }
 
+
+
+    protected inner class PreviewAdapter : RecyclerView.Adapter<PreviewViewHolder>() {
+        fun updatePosts(newPage: Collection<Post>) {
+            if (newPage.isNotEmpty())
+                if (m.posts.size > newPage.size) notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
+                else notifyDataSetChanged()
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
+            imageView.setOnClickListener {
+                m.position = layoutPosition
+                PictureActivity.startActivity(this@PreviewActivity)
+            }
+        }
+
+        override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
+            val pos = holder.adapterPosition
+            val p = m.posts[holder.adapterPosition]
+            downloadImage(p.filePreviewURL, preview(p.id), {
+                if (pos == holder.adapterPosition)
+                    holder.imageView.setImageBitmap(it)
+            }, isScrolling)
+        }
+        override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) = holder.imageView.setImageBitmap(null)
+        override fun getItemCount(): Int = m.posts.size
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
@@ -130,33 +158,6 @@ open class PreviewActivity : AppCompatActivity() {
         LoadManagerPageEvent.removeListener(managerListener)
         Manager.pop()
         super.onDestroy()
-    }
-
-    protected inner class PreviewAdapter : RecyclerView.Adapter<PreviewViewHolder>() {
-        fun updatePosts(newPage: Collection<Post>) {
-            if (newPage.isNotEmpty())
-                if (m.posts.size > newPage.size) notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
-                else notifyDataSetChanged()
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
-            imageView.setOnClickListener {
-                m.position = layoutPosition
-                PictureActivity.startActivity(this@PreviewActivity)
-            }
-        }
-
-        override fun getItemCount(): Int = m.posts.size
-        override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) = holder.imageView.setImageBitmap(null)
-
-        override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
-            val pos = holder.adapterPosition
-            val p = m.posts[holder.adapterPosition]
-            downloadImage(p.filePreviewURL, preview(p.id), {
-                if (pos == holder.adapterPosition)
-                    holder.imageView.setImageBitmap(it)
-            }, isScrolling)
-        }
     }
 
     protected inner class PreviewViewHolder(val imageView: ImageView) : RecyclerView.ViewHolder(imageView)

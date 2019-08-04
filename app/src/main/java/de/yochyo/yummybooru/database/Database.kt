@@ -174,9 +174,8 @@ abstract class Database : RoomDatabase() {
     suspend fun deleteServer(context: Context, id: Int) {
         withContext(Dispatchers.Main) {
             val s = servers.find { id == it.id }
-            if (s != null) {
+            if (s != null && !s.isSelected) {
                 DeleteServerEvent.trigger(DeleteServerEvent(context, s))
-                if (currentServerID == id) s.unselect()
                 synchronized(lock) { servers.remove(s) }
                 withContext(Dispatchers.Default) { serverDao.delete(s) }
             }

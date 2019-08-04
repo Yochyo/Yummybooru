@@ -33,10 +33,16 @@ import de.yochyo.yummybooru.events.listeners.*
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.res.Menus
-import de.yochyo.yummybooru.utils.*
+import de.yochyo.yummybooru.utils.ThreadExceptionHandler
+import de.yochyo.yummybooru.utils.setColor
+import de.yochyo.yummybooru.utils.toTagString
+import de.yochyo.yummybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 
@@ -65,30 +71,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         toggle.syncState()
         nav_view.setNavigationItemSelectedListener(this)
         val navLayout = nav_search.findViewById<LinearLayout>(R.id.nav_search_layout)
-        initAddTagButton(navLayout.findViewById(R.id.add_search))
-        initSearchButton(navLayout.findViewById(R.id.start_search))
+        initDrawerButtons(navLayout.findViewById(R.id.add_search),navLayout.findViewById(R.id.start_search))
         tagRecyclerView = navLayout.findViewById(R.id.recycler_view_search)
         tagRecyclerView.layoutManager = LinearLayoutManager(this)
         if (hasPermission)
             initData()
     }
 
-
-    private fun initListeners() {
-        AddTagEvent.registerListener(DisplayToastAddTagListener())
-        AddSubEvent.registerListener(DisplayToastAddSubListener())
-        AddServerEvent.registerListener(DisplayToastAddServerListener())
-        DeleteServerEvent.registerListener(DisplayToastDeleteServerListener())
-        DeleteSubEvent.registerListener(DisplayToastDeleteSubListener())
-        DeleteTagEvent.registerListener(DisplayToastDeleteTagListener())
-        ChangeSubEvent.registerListener(DisplayToastFavoriteSubListener())
-        ChangeTagEvent.registerListener(DisplayToastFavoriteTagListener())
-        DeleteTagEvent.registerListener(RemoveSelectedTagsInMainactivityListener())
-        ChangeServerEvent.registerListener(DisplayToastChangeServerEvent())
-        SelectServerEvent.registerListener(DisplayToastSelectServerListener())
-        SelectServerEvent.registerListener(ClearSelectedTagsInMainactivityListener())
-        SafeFileEvent.registerListener(DisplayToastDownloadFileListener())
-    }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -111,8 +100,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         serverAdapter = ServerAdapter().apply { serverRecyclerView.adapter = this }
     }
 
-    private fun initAddTagButton(b: Button) {
-        b.setOnClickListener {
+
+    private fun initDrawerButtons(addButton: Button, searchButton: Button) {
+        addButton.setOnClickListener {
             AddTagDialog {
                 GlobalScope.launch {
                     val tag = Api.getTag(it.text.toString())
@@ -123,10 +113,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             }.build(this)
         }
-    }
 
-    private fun initSearchButton(b: Button) {
-        b.setOnClickListener {
+        searchButton.setOnClickListener {
             drawer_layout.closeDrawer(GravityCompat.END)
             if (selectedTags.isEmpty()) PreviewActivity.startActivity(this, "*")
             else PreviewActivity.startActivity(this, selectedTags.toTagString())
@@ -140,47 +128,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         else text1.setColor(R.color.violet)
         layout.findViewById<TextView>(R.id.server_text2).text = server.api
         layout.findViewById<TextView>(R.id.server_text3).text = server.userName
-
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_add_server -> AddServerDialog {
-                GlobalScope.launch { db.addServer(this@MainActivity, it) }
-            }.build(this)
-            R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.nav_subs -> startActivity(Intent(this, SubscriptionActivity::class.java))
-            R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
-            R.id.community -> startActivity(Intent(Intent.ACTION_VIEW).apply { data = Uri.parse("https://discord.gg/tbGCHpF") })
-            R.id.nav_help -> Toast.makeText(this, getString(R.string.join_discord), Toast.LENGTH_SHORT).show()
-        }
-        drawer_layout.closeDrawer(GravityCompat.START)
-        return super.onOptionsItemSelected(item)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.main_menu, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onBackPressed() {
-        when {
-            drawer_layout.isDrawerOpen(GravityCompat.START) -> drawer_layout.closeDrawer(GravityCompat.START)
-            drawer_layout.isDrawerOpen(GravityCompat.END) -> drawer_layout.closeDrawer(GravityCompat.END)
-            else -> super.onBackPressed()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        UpdateTagsEvent.removeListener(tagListener)
-        UpdateServersEvent.removeListener(serverListener)
     }
 
     private inner class SearchTagAdapter : RecyclerView.Adapter<SearchTagViewHolder>() {
@@ -239,6 +186,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             textView.text = tag.name;textView.setColor(tag.color);textView.underline(tag.isFavorite)
             Menus.initMainSearchTagMenu(holder.toolbar.menu, tag)
         }
+
         override fun getItemCount(): Int = db.tags.size
     }
 
@@ -296,6 +244,62 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val server = db.servers.elementAt(position)
             fillServerLayoutFields(holder.layout, server, server.isSelected)
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_add_server -> AddServerDialog {
+                GlobalScope.launch { db.addServer(this@MainActivity, it) }
+            }.build(this)
+            R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.nav_subs -> startActivity(Intent(this, SubscriptionActivity::class.java))
+            R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
+            R.id.community -> startActivity(Intent(Intent.ACTION_VIEW).apply { data = Uri.parse("https://discord.gg/tbGCHpF") })
+            R.id.nav_help -> Toast.makeText(this, getString(R.string.join_discord), Toast.LENGTH_SHORT).show()
+        }
+        drawer_layout.closeDrawer(GravityCompat.START)
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onBackPressed() {
+        when {
+            drawer_layout.isDrawerOpen(GravityCompat.START) -> drawer_layout.closeDrawer(GravityCompat.START)
+            drawer_layout.isDrawerOpen(GravityCompat.END) -> drawer_layout.closeDrawer(GravityCompat.END)
+            else -> super.onBackPressed()
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        UpdateTagsEvent.removeListener(tagListener)
+        UpdateServersEvent.removeListener(serverListener)
+    }
+
+    private fun initListeners() {
+        AddTagEvent.registerListener(DisplayToastAddTagListener())
+        AddSubEvent.registerListener(DisplayToastAddSubListener())
+        AddServerEvent.registerListener(DisplayToastAddServerListener())
+        DeleteServerEvent.registerListener(DisplayToastDeleteServerListener())
+        DeleteSubEvent.registerListener(DisplayToastDeleteSubListener())
+        DeleteTagEvent.registerListener(DisplayToastDeleteTagListener())
+        ChangeSubEvent.registerListener(DisplayToastFavoriteSubListener())
+        ChangeTagEvent.registerListener(DisplayToastFavoriteTagListener())
+        DeleteTagEvent.registerListener(RemoveSelectedTagsInMainactivityListener())
+        ChangeServerEvent.registerListener(DisplayToastChangeServerEvent())
+        SelectServerEvent.registerListener(DisplayToastSelectServerListener())
+        SelectServerEvent.registerListener(ClearSelectedTagsInMainactivityListener())
+        SafeFileEvent.registerListener(DisplayToastDownloadFileListener())
     }
 
     private inner class ServerViewHolder(val layout: LinearLayout) : RecyclerView.ViewHolder(layout)

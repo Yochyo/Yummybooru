@@ -11,6 +11,7 @@ import de.yochyo.yummybooru.utils.toTagString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.NotNull
 import java.util.*
 import kotlin.collections.ArrayList
 

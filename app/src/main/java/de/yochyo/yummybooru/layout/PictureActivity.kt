@@ -52,16 +52,15 @@ class PictureActivity : AppCompatActivity() {
         setSupportActionBar(toolbar_picture)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         val manager = Manager.peek()
-        if(manager != null) m = manager else finish()
+        if (manager != null) m = manager else finish()
         nav_view_picture.bringToFront()
 
         tagRecyclerView = nav_view_picture.findViewById(R.id.recycle_view_info)
         tagRecyclerView.adapter = InfoAdapter()
         tagRecyclerView.layoutManager = LinearLayoutManager(this)
-
         with(view_pager) {
             adapter = PageAdapter().apply { this@PictureActivity.adapter = this }
-            managerListener = LoadManagerPageEvent.registerListener { if(it.manager == m) this@PictureActivity.adapter.updatePosts() }
+            managerListener = LoadManagerPageEvent.registerListener { if (it.manager == m) this@PictureActivity.adapter.updatePosts() }
             this@PictureActivity.adapter.updatePosts()
             m.currentPost?.updateCurrentTags(m.position)
 
@@ -77,25 +76,6 @@ class PictureActivity : AppCompatActivity() {
                 override fun onPageSelected(position: Int) {}
             })
         }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> finish()
-            R.id.show_info -> drawer_picture.openDrawer(GravityCompat.END)
-            R.id.save -> m.currentPost?.apply { downloadOriginalPicture(this) }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.picture_menu, menu)
-        return true
-    }
-
-    override fun onDestroy() {
-        LoadManagerPageEvent.removeListener(managerListener)
-        super.onDestroy()
     }
 
     fun loadNextPage(page: Int) {
@@ -124,13 +104,10 @@ class PictureActivity : AppCompatActivity() {
         }
     }
 
-    private fun downloadOriginalPicture(p: de.yochyo.yummybooru.api.Post) {
+    private fun downloadOriginalPicture(p: Post) {
         GlobalScope.launch {
-            if (db.downloadOriginal) {
-                FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL)
-            } else {
-                FileUtils.writeOrDownloadFile(this@PictureActivity, p, sample(p.id), p.fileSampleURL)
-            }
+            if (db.downloadOriginal) FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL)
+            else FileUtils.writeOrDownloadFile(this@PictureActivity, p, sample(p.id), p.fileSampleURL)
         }
     }
 
@@ -138,15 +115,13 @@ class PictureActivity : AppCompatActivity() {
         fun updatePosts() {
             notifyDataSetChanged()
             view_pager.currentItem = m.position
-            println(m.position)
         }
 
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
         override fun getCount(): Int = m.posts.size
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
             if (position + 3 >= m.posts.size - 1) GlobalScope.launch {
-                val postList = m.downloadPage(m.currentPage + 1)
-                for (p in postList)
+                for (p in m.downloadPage(m.currentPage + 1))
                     downloadImage(p.filePreviewURL, preview(p.id), {}, downloadNow = false)
             }
             if (position == m.posts.size - 1) loadNextPage(m.currentPage + 1)
@@ -188,7 +163,6 @@ class PictureActivity : AppCompatActivity() {
                 downloadImage(p.fileSampleURL, sample(p.id), { imageView.setImageBitmap(it) })
             }
 
-
             container.addView(imageView)
             return imageView
         }
@@ -222,7 +196,6 @@ class PictureActivity : AppCompatActivity() {
             }
         }
 
-        override fun getItemCount(): Int = currentTags.size
         override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
             val tag = currentTags[position]
             val textView = holder.toolbar.findViewById<TextView>(R.id.info_textview)
@@ -230,6 +203,27 @@ class PictureActivity : AppCompatActivity() {
             textView.setColor(tag.color)
             Menus.initPictureInfoTagMenu(holder.toolbar.menu, tag)
         }
+
+        override fun getItemCount(): Int = currentTags.size
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.picture_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> finish()
+            R.id.show_info -> drawer_picture.openDrawer(GravityCompat.END)
+            R.id.save -> m.currentPost?.apply { downloadOriginalPicture(this) }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onDestroy() {
+        LoadManagerPageEvent.removeListener(managerListener)
+        super.onDestroy()
     }
 
     private inner class InfoButtonHolder(val toolbar: Toolbar) : RecyclerView.ViewHolder(toolbar)

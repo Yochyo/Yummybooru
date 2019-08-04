@@ -59,57 +59,13 @@ class SubscriptionActivity : AppCompatActivity() {
         totalTextView = layout.findViewById(android.R.id.text2)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        UpdateSubsEvent.removeListener(listener)
-    }
-
     private fun clear() {
         onClickedData = null
     }
 
-    override fun onResume() {
-        super.onResume()
-        if (onClickedData != null) {
-            val sub = db.subs[onClickedData!!.clickedSub]
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
-            builder.setNegativeButton(R.string.no) { _, _ -> }
-            builder.setPositiveButton(R.string.yes) { _, _ ->
-                GlobalScope.launch(Dispatchers.Main) {
-                    db.changeSubscription(this@SubscriptionActivity, sub.copy(lastID = onClickedData!!.idWhenClicked, lastCount = onClickedData!!.countWhenClicked))
-                    onClickedData = null
-                }
-            }
-            builder.show()
-        }
-    }
-
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.subscription_menu, menu)
         return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> finish()
-            R.id.add_subscription -> {
-                AddTagDialog {
-                    if (db.getSubscription(it.text.toString()) == null) {
-                        GlobalScope.launch {
-                            val tag = Api.getTag(it.text.toString())
-                            val sub = Subscription.fromTag(tag)
-                            db.addSubscription(this@SubscriptionActivity, sub)
-                            withContext(Dispatchers.Main) {
-                                nested_scrollview.scrollY = recyclerView.getChildAt(db.subs.indexOf(sub)).y.toInt()
-                            }
-                        }
-                    }
-                }.withTitle(getString(R.string.add_subscription)).build(this)
-            }
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     private inner class SubscribedTagAdapter : RecyclerView.Adapter<SubscribedTagViewHolder>() {
@@ -186,6 +142,49 @@ class SubscriptionActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (onClickedData != null) {
+            val sub = db.subs[onClickedData!!.clickedSub]
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
+            builder.setNegativeButton(R.string.no) { _, _ -> }
+            builder.setPositiveButton(R.string.yes) { _, _ ->
+                GlobalScope.launch(Dispatchers.Main) {
+                    db.changeSubscription(this@SubscriptionActivity, sub.copy(lastID = onClickedData!!.idWhenClicked, lastCount = onClickedData!!.countWhenClicked))
+                    onClickedData = null
+                }
+            }
+            builder.show()
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> finish()
+            R.id.add_subscription -> {
+                AddTagDialog {
+                    if (db.getSubscription(it.text.toString()) == null) {
+                        GlobalScope.launch {
+                            val tag = Api.getTag(it.text.toString())
+                            val sub = Subscription.fromTag(tag)
+                            db.addSubscription(this@SubscriptionActivity, sub)
+                            withContext(Dispatchers.Main) {
+                                nested_scrollview.scrollY = recyclerView.getChildAt(db.subs.indexOf(sub)).y.toInt()
+                            }
+                        }
+                    }
+                }.withTitle(getString(R.string.add_subscription)).build(this)
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        UpdateSubsEvent.removeListener(listener)
     }
 
     private inner class SubscribedTagViewHolder(val layout: LinearLayout) : RecyclerView.ViewHolder(layout)

@@ -53,8 +53,8 @@ abstract class Api(var url: String) {
             return Tag(name, Tag.UNKNOWN)
         }
 
-        suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = db.limit): List<de.yochyo.yummybooru.api.Post> {
-            val array = ArrayList<de.yochyo.yummybooru.api.Post>(limit)
+        suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = db.limit): List<Post> {
+            val array = ArrayList<Post>(limit)
             var url = instance!!.urlGetPosts(page, tags, limit)
 
             if (tags.isNotEmpty()) {

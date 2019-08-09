@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
-           android:layout_width="match_parent"
-           android:layout_height="120dp"
-           android:background="@color/grey"
-           android:layout_margin="3dp">
-</ImageView>
+<FrameLayout
+        android:id="@+id/foreground"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:background="@color/grey"
+               android:layout_margin="3dp"
+               android:id="@+id/preview_picture">
+    </ImageView>
+</FrameLayout>

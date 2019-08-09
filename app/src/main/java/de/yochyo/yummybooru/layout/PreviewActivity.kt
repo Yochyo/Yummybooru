@@ -2,6 +2,8 @@ package de.yochyo.yummybooru.layout
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
@@ -9,8 +11,11 @@ import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.Toast
+import android.widget.Toolbar
+import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
@@ -49,13 +54,11 @@ open class PreviewActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_preview)
-        setSupportActionBar(toolbar_preview)
+
         val manager = Manager.peek()
         if(manager != null) m = manager else finish()
-
-        nav_view_picture.bringToFront()
-        supportActionBar?.title = m.tags.toTagString()
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        setSupportActionBar(toolbar_preview)
+        initToolbar()
 
         recycler_view.layoutManager = GridLayoutManager(this, 3).apply { layoutManager = this }
         recycler_view.adapter = PreviewAdapter().apply { previewAdapter = this }
@@ -107,8 +110,15 @@ open class PreviewActivity : AppCompatActivity() {
             loadPage(1)
         }
     }
-
-
+fun initToolbar(){
+    supportActionBar?.title = m.tags.toTagString()
+    supportActionBar?.setDisplayHomeAsUpEnabled(true)
+}
+ fun initSelectionToolbar(){
+     supportActionBar?.setDisplayHomeAsUpEnabled(false)
+     val toolbar = Toolbar(this)
+     toolbar.setNavigationIcon(resources.getDrawable(R.drawable.clear))
+ }
 
     protected inner class PreviewAdapter : RecyclerView.Adapter<PreviewViewHolder>() {
         fun updatePosts(newPage: Collection<Post>) {
@@ -117,11 +127,17 @@ open class PreviewActivity : AppCompatActivity() {
                 else notifyDataSetChanged()
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as ImageView)).apply {
-            imageView.setOnClickListener {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as FrameLayout)).apply {
+            layout.setOnClickListener {
                 m.position = layoutPosition
                 PictureActivity.startActivity(this@PreviewActivity)
             }
+            /*
+            layout.setOnLongClickListener {
+                layout.foreground = ColorDrawable(resources.getColor(R.color.darker))
+                true
+            }
+             */
         }
 
         override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
@@ -129,10 +145,10 @@ open class PreviewActivity : AppCompatActivity() {
             val p = m.posts[holder.adapterPosition]
             downloadImage(p.filePreviewURL, preview(p.id), {
                 if (pos == holder.adapterPosition)
-                    holder.imageView.setImageBitmap(it)
+                    holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it)
             }, isScrolling)
         }
-        override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) = holder.imageView.setImageBitmap(null)
+        override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) = holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(null)
         override fun getItemCount(): Int = m.posts.size
     }
 
@@ -160,7 +176,7 @@ open class PreviewActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    protected inner class PreviewViewHolder(val imageView: ImageView) : RecyclerView.ViewHolder(imageView)
+    protected inner class PreviewViewHolder(val layout: FrameLayout) : RecyclerView.ViewHolder(layout)
 
 
 }

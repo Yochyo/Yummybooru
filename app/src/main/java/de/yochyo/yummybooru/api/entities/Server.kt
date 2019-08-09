@@ -3,7 +3,6 @@ package de.yochyo.yummybooru.api.entities
 import android.arch.persistence.room.*
 import android.content.Context
 import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.utils.lock
@@ -70,6 +69,7 @@ data class Server(var name: String, var api: String, var url: String, var userNa
 
     fun updateMissingTypeTags(context: Context) {
         GlobalScope.launch {
+            val current = currentServer
             val newTags = ArrayList<Tag>()
             for (tag in db.tags) { //Tags updaten
                 if (tag.type == Tag.UNKNOWN && tag.name != "*") {
@@ -78,16 +78,19 @@ data class Server(var name: String, var api: String, var url: String, var userNa
                 }
             }
             for (tag in newTags) { //Tags ersetzen
-                if (tag.type != Tag.UNKNOWN){
-                    db.deleteTag(context, tag.name)
-                    db.addTag(context, tag)
-                }
+                if (currentServer == current) {
+                    if (tag.type != Tag.UNKNOWN) {
+                        db.deleteTag(context, tag.name)
+                        db.addTag(context, tag)
+                    }
+                } else break
             }
         }
     }
 
     fun updateMissingTypeSubs(context: Context) {
         GlobalScope.launch {
+            val current = currentServer
             val newSubs = ArrayList<Subscription>()
             for (sub in db.subs) { //Tags updaten
                 if (sub.type == Tag.UNKNOWN && sub.name != "*") {
@@ -96,10 +99,12 @@ data class Server(var name: String, var api: String, var url: String, var userNa
                 }
             }
             for (sub in newSubs) { //Tags ersetzen
-                if(sub.type != Tag.UNKNOWN){
-                    db.deleteSubscription(context, sub.name)
-                    db.addSubscription(context, sub)
-                }
+                if (current == currentServer) {
+                    if (sub.type != Tag.UNKNOWN) {
+                        db.deleteSubscription(context, sub.name)
+                        db.addSubscription(context, sub)
+                    }
+                } else break
             }
         }
     }

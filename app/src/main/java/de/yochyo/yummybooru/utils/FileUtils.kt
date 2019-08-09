@@ -56,7 +56,7 @@ object FileUtils {
     private suspend fun createFileToWrite(context: Context, post: de.yochyo.yummybooru.api.Post, mimeType: String = post.extension): DocumentFile? {
         return withContext(Dispatchers.IO) {
             val folder = getOrCreateFolder(getParentFolder(context), Server.currentServer.urlHost)
-            createFileOrNull(folder, postToFilename(post, mimeType), mimeType)
+            if(folder != null) createFileOrNull(folder, postToFilename(post, mimeType), mimeType) else null
         }
 
     }
@@ -71,10 +71,10 @@ object FileUtils {
     private fun createFileOrNull(parent: DocumentFile, name: String, mimeType: String): DocumentFile? {
         val file = parent.findFile(name)
         return if (file != null) null
-        else return parent.createFile(mimeType, name)!!
+        else return parent.createFile(mimeType, name)
     }
 
-    private fun getOrCreateFolder(parent: DocumentFile, name: String): DocumentFile {
-        return parent.findFile(name) ?: parent.createDirectory(name)!!
+    private fun getOrCreateFolder(parent: DocumentFile, name: String): DocumentFile? {
+        return parent.findFile(name) ?: parent.createDirectory(name)
     }
 }

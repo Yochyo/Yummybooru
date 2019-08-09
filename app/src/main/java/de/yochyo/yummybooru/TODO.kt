@@ -25,7 +25,6 @@ package de.yochyo.yummybooru
 //TODO mehrere Tags entsprechen Tag.SPECIAL
 //TODO pictureactivity padding preview kleiner
 
-//TODO subs haben negative zahl wenn man kein internet hat
 //TODO locks überarbeiten
 //TODO beim Profiler ist die CPU belastung heavy
 //TODO downloader braucht ne lock, synchronisieren

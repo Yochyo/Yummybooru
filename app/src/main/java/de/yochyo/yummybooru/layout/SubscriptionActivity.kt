@@ -136,7 +136,8 @@ class SubscriptionActivity : AppCompatActivity() {
             text2.text = getString(R.string.number_of_new_pictures)
             GlobalScope.launch {
                 val tag = Api.getTag(sub.name)
-                val countDifference = tag.count - sub.lastCount
+                var countDifference = tag.count - sub.lastCount
+                if(countDifference<0) countDifference = 0
                 launch(Dispatchers.Main) {
                     text2.text = "${getString(R.string.number_of_new_pictures)}$countDifference"
                 }

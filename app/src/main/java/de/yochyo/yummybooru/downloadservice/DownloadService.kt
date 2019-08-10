@@ -26,10 +26,12 @@ class DownloadService : Service() {
     companion object {
         private var position = 0
         private val downloadPosts = LinkedList<Posts>()
-        fun startService(context: Context, manager: Manager) {
-            downloadPosts += Posts(manager.tags.toTagString(), ArrayList(manager.posts))
+
+        fun startService(context: Context, tags: String, posts: List<Post>){
+            downloadPosts += Posts(tags, posts)
             context.startService(Intent(context, DownloadService::class.java))
         }
+        fun startService(context: Context, manager: Manager) = startService(context, manager.tags.toTagString(), ArrayList(manager.posts))
     }
 
     override fun onCreate() {

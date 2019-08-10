@@ -38,7 +38,10 @@ import kotlinx.coroutines.launch
 
 class PictureActivity : AppCompatActivity() {
     companion object {
-        fun startActivity(context: Context) = context.startActivity(Intent(context, PictureActivity::class.java))
+        fun startActivity(context: Context, manager: Manager){
+            Manager.current = manager
+            context.startActivity(Intent(context, PictureActivity::class.java))
+        }
     }
 
     private lateinit var tagRecyclerView: RecyclerView
@@ -52,7 +55,7 @@ class PictureActivity : AppCompatActivity() {
         setContentView(R.layout.activity_picture)
         setSupportActionBar(toolbar_picture)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        val manager = Manager.peek()
+        val manager = Manager.current
         if (manager != null) m = manager else finish()
         nav_view_picture.bringToFront()
 

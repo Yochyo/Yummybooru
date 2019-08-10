@@ -38,7 +38,7 @@ open class PreviewActivity : AppCompatActivity() {
     companion object {
         private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit/2
         fun startActivity(context: Context, tags: String){
-            Manager.push(tags.toTagArray())
+            Manager.current = Manager(tags.toTagArray())
             context.startActivity(Intent(context, PreviewActivity::class.java))
         }
     }
@@ -55,7 +55,7 @@ open class PreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_preview)
 
-        val manager = Manager.peek()
+        val manager = Manager.current
         if(manager != null) m = manager else finish()
         setSupportActionBar(toolbar_preview)
         initToolbar()
@@ -130,7 +130,7 @@ fun initToolbar(){
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as FrameLayout)).apply {
             layout.setOnClickListener {
                 m.position = layoutPosition
-                PictureActivity.startActivity(this@PreviewActivity)
+                PictureActivity.startActivity(this@PreviewActivity, m)
             }
             /*
             layout.setOnLongClickListener {
@@ -172,7 +172,6 @@ fun initToolbar(){
 
     override fun onDestroy() {
         LoadManagerPageEvent.removeListener(managerListener)
-        Manager.pop()
         super.onDestroy()
     }
 

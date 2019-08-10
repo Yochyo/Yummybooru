@@ -15,24 +15,15 @@ import org.jetbrains.annotations.NotNull
 import java.util.*
 import kotlin.collections.ArrayList
 
-abstract class Manager(val tags: Array<String>) {
+class Manager(val tags: Array<String>) {
     companion object {
         private val lock = Any()
-        private val managers = Stack<Manager>()
-        fun peek(): Manager?{
-            return try{
-                managers.peek()
-            }catch(e: java.lang.Exception){null}
+        var current: Manager? = null
+        get() {
+            val v = field
+            field = null
+            return v
         }
-        fun pop(): Manager? {
-            return try {
-                managers.pop()
-            } catch (e: Exception) {
-                null
-            }
-        }
-
-        fun push(tags: Array<String>) = managers.push(object: Manager(tags){})
     }
 
     val posts = EventCollection<Post>(ArrayList())

@@ -5,4 +5,7 @@
           android:title="@string/download_all"
           android:icon="@drawable/search"
           app:showAsAction="never"/>
+    <item android:id="@+id/select_all"
+          android:title="Select all"
+          app:showAsAction="never"/>
 </menu>

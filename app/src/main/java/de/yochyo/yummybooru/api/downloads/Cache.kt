@@ -3,6 +3,7 @@ package de.yochyo.yummybooru.api.downloads
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import de.yochyo.yummybooru.utils.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -52,6 +53,7 @@ abstract class Cache(context: Context) {
                     notYetCached.remove(id)
                 }
             } catch (e: Exception) {
+                Logger.log(e, id)
                 e.printStackTrace()
             }
         }
@@ -62,6 +64,7 @@ abstract class Cache(context: Context) {
             File(directory, id).delete()
             notYetCached.remove(id)
         } catch (e: Exception) {
+            Logger.log(e)
             e.printStackTrace()
         }
     }
@@ -75,6 +78,7 @@ abstract class Cache(context: Context) {
                         it.delete()
                     } catch (e: Exception) {
                         e.printStackTrace()
+                        Logger.log(e)
                     }
                 }
             }

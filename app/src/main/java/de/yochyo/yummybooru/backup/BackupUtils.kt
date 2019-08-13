@@ -2,6 +2,7 @@ package de.yochyo.yummybooru.backup
 
 import android.content.Context
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.utils.Logger
 import de.yochyo.yummybooru.utils.configPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -69,6 +70,7 @@ object BackupUtils {
                     restore(entry.key, v)
             }
         } catch (e: Exception) {
+            Logger.log(e)
         }
     }
 

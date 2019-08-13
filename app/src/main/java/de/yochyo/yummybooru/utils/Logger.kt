@@ -14,23 +14,25 @@ object Logger {
 
     fun log(message: String) {
         val files = directory.listFiles().sorted()
-        if (files.size > 200) //keep the amount of logs to a minimum
-            for (i in 0..files.size / 2)
-                files[i].delete()
+        for (i in 0..files.size / 2)
+            files[i].delete()
 
         val logFile = File(directory, "logcat ${System.currentTimeMillis()}.txt")
         logFile.createNewFile()
         logFile.writeText(message)
     }
+
+    fun log(e: Throwable, info: String = "") {
+        val errors = StringWriter()
+        e.printStackTrace(PrintWriter(errors))
+        log("$info\n$errors")
+    }
 }
 
 class ThreadExceptionHandler : Thread.UncaughtExceptionHandler {
     override fun uncaughtException(t: Thread?, e: Throwable?) {
-        if (e != null) {
-            val errors = StringWriter()
-            e.printStackTrace(PrintWriter(errors))
-            Logger.log(errors.toString())
-        }
+        if (e != null)
+            Logger.log(e)
         exitProcess(10)
     }
 }

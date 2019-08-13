@@ -2,6 +2,7 @@ package de.yochyo.yummybooru.api.api
 
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
+import de.yochyo.yummybooru.utils.Logger
 import org.json.JSONObject
 
 class DanbooruApi(url: String) : Api(url) {
@@ -46,6 +47,7 @@ class DanbooruApi(url: String) : Api(url) {
                 }
             }
         } catch (e: Exception) {
+            Logger.log(e, json.toString())
             e.printStackTrace()
             return null
         }
@@ -58,6 +60,7 @@ class DanbooruApi(url: String) : Api(url) {
                 type = Tag.UNKNOWN
             Tag(json.getString("name"), type, count = json.getInt("post_count"))
         } catch (e: Exception) {
+            Logger.log(e, json.toString())
             e.printStackTrace()
             null
         }

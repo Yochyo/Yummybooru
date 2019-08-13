@@ -3,6 +3,7 @@ package de.yochyo.yummybooru.api.downloads
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import de.yochyo.yummybooru.utils.Logger
 import kotlinx.coroutines.*
 import java.net.URL
 import java.util.concurrent.LinkedBlockingDeque
@@ -34,8 +35,9 @@ abstract class Downloader(context: Context) {
             GlobalScope.launch(Dispatchers.IO) {
                 while (true) {
                     if (downloads.isNotEmpty()) {
+                        var download: Download? = null
                         try {
-                            val download = downloads.takeLast()
+                            download = downloads.takeLast()
                             var bitmap = context.cache.getCachedBitmap(download.id)
                             if (bitmap == null) {
                                 bitmap = download(download.url)!!
@@ -43,6 +45,7 @@ abstract class Downloader(context: Context) {
                             }
                             launch(Dispatchers.Main) { download.doAfter.invoke(this, bitmap) }
                         } catch (e: Exception) {
+                            Logger.log(e, download?.url ?: "")
                             e.printStackTrace()
                         }
                         delay(5)

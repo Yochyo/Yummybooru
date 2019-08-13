@@ -4,6 +4,7 @@ import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.utils.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -98,8 +99,8 @@ abstract class Api(var url: String) {
                     rd.close()
                     array = JSONArray(result.toString())
                 } catch (e: Exception) {
-                    println("URL: $urlToRead")
                     e.printStackTrace()
+                    Logger.log(e, "URL: $urlToRead")
                 }
             }
             return array

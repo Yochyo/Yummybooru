@@ -2,6 +2,7 @@ package de.yochyo.yummybooru.api.api
 
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
+import de.yochyo.yummybooru.utils.Logger
 import org.json.JSONObject
 
 class MoebooruApi(url: String) : Api(url) {
@@ -44,6 +45,7 @@ class MoebooruApi(url: String) : Api(url) {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            Logger.log(e, json.toString())
             return null
         }
     }
@@ -93,6 +95,7 @@ class MoebooruApi(url: String) : Api(url) {
                     tags += Tag(name, type)
                 }
             } catch (e: Exception) {
+                Logger.log(e)
             }
         }
 
@@ -107,6 +110,7 @@ class MoebooruApi(url: String) : Api(url) {
             Tag(json.getString("name"), type, count = json.getInt("count"))
         } catch (e: Exception) {
             e.printStackTrace()
+            Logger.log(e, json.toString())
             null
         }
     }

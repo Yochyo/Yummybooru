@@ -32,6 +32,8 @@ package de.yochyo.yummybooru
 //TODO strings vol pref_general in string.xml
 //TODO md5 des bildes benutzen
 //TODO subscription acitivty anders regeln, count wird bei jedem scrollen neu geladen
+//TODO Share button
+//TODO LoadManagerPageEvent local machen
 //Bugs
 //TODO wenn ein Server gelöscht wird, müssen auch alle subs/tags dazu gelöscht werden
 //TODO fehler die man in den logs findet fixen

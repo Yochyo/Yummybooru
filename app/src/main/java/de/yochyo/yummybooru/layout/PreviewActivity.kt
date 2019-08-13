@@ -3,9 +3,9 @@ package de.yochyo.yummybooru.layout
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.view.ActionMode
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.Menu
@@ -14,30 +14,30 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.Toast
-import android.widget.Toolbar
-import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.downloadImage
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.downloadservice.DownloadService
 import de.yochyo.yummybooru.events.events.LoadManagerPageEvent
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
 import de.yochyo.yummybooru.utils.preview
 import de.yochyo.yummybooru.utils.toTagArray
 import de.yochyo.yummybooru.utils.toTagString
 import kotlinx.android.synthetic.main.activity_preview.*
-import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.android.synthetic.main.content_preview.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.collections.HashMap
 
 open class PreviewActivity : AppCompatActivity() {
     companion object {
-        private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit/2
-        fun startActivity(context: Context, tags: String){
+        private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit / 2
+        fun startActivity(context: Context, tags: String) {
             Manager.current = Manager(tags.toTagArray())
             context.startActivity(Intent(context, PreviewActivity::class.java))
         }
@@ -51,12 +51,48 @@ open class PreviewActivity : AppCompatActivity() {
     private lateinit var managerListener: Listener<LoadManagerPageEvent>
     private lateinit var m: Manager
 
+    protected var actionmode: ActionMode? = null
+    var selected = HashMap<Post, Boolean>()
+    protected val actionModeCallback = object : ActionMode.Callback {
+        override fun onCreateActionMode(p0: ActionMode, p1: Menu): Boolean {
+            p0.menuInflater.inflate(R.menu.preview_activity_selection_menu, p1)
+            p0.title = "${selected.size}/${m.posts.size}"
+            return true
+        }
+
+        override fun onActionItemClicked(p0: ActionMode, p1: MenuItem): Boolean {
+            when (p1.itemId) {
+                R.id.select_all -> {
+                    if (selected.size == m.posts.size) selected.clear()
+                    else for (p in m.posts) selected[p] = true
+                    previewAdapter.notifyDataSetChanged()
+                }
+                R.id.download_selected -> {
+                    val posts = LinkedList<Post>()
+                    val iter = selected.keys.iterator()
+                    while (iter.hasNext())
+                        posts += iter.next()
+
+                    DownloadService.startService(this@PreviewActivity, m.tags.toTagString(), posts)
+                }
+                else -> return false
+            }
+            return true
+        }
+
+        override fun onDestroyActionMode(p0: ActionMode) {
+            selected.clear()
+            previewAdapter.notifyDataSetChanged()
+        }
+
+        override fun onPrepareActionMode(p0: ActionMode?, p1: Menu?) = false
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_preview)
-
         val manager = Manager.current
-        if(manager != null) m = manager else finish()
+        if (manager != null) m = manager else finish()
         setSupportActionBar(toolbar_preview)
         initToolbar()
 
@@ -66,6 +102,7 @@ open class PreviewActivity : AppCompatActivity() {
         swipeRefreshLayout.setOnRefreshListener {
             swipeRefreshLayout.isRefreshing = false
             reloadView()
+            selected.clear()
         }
 
         managerListener = LoadManagerPageEvent.registerListener {
@@ -110,34 +147,49 @@ open class PreviewActivity : AppCompatActivity() {
             loadPage(1)
         }
     }
-fun initToolbar(){
-    supportActionBar?.title = m.tags.toTagString()
-    supportActionBar?.setDisplayHomeAsUpEnabled(true)
-}
- fun initSelectionToolbar(){
-     supportActionBar?.setDisplayHomeAsUpEnabled(false)
-     val toolbar = Toolbar(this)
-     toolbar.setNavigationIcon(resources.getDrawable(R.drawable.clear))
- }
+
+    fun initToolbar() {
+        supportActionBar?.title = m.tags.toTagString()
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    }
 
     protected inner class PreviewAdapter : RecyclerView.Adapter<PreviewViewHolder>() {
+        lateinit var _onClickForSelection: (holder: PreviewViewHolder) -> Unit
+
         fun updatePosts(newPage: Collection<Post>) {
             if (newPage.isNotEmpty())
                 if (m.posts.size > newPage.size) notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
                 else notifyDataSetChanged()
         }
 
+        val onClickForSelection = { holder: PreviewViewHolder ->
+            val post = m.posts[holder.adapterPosition]
+            if (selected.isEmpty()) {
+                onClick = _onClickForSelection
+                actionmode = startSupportActionMode(actionModeCallback)
+            }
+            if (selected[post] != null) {
+                selected.remove(post)
+                holder.layout.foreground = ColorDrawable(resources.getColor(R.color.transparent))
+            } else {
+                selected[post] = true
+                holder.layout.foreground = ColorDrawable(resources.getColor(R.color.darker))
+            }
+            actionmode?.title = "${selected.size}/${m.posts.size}"
+            if (selected.isEmpty()) {
+                onClick = onClickToStartActivity
+                actionmode?.finish()
+            }
+        }.apply { _onClickForSelection = this }
+        val onClickToStartActivity = { holder: PreviewViewHolder ->
+            m.position = holder.layoutPosition
+            PictureActivity.startActivity(this@PreviewActivity, m)
+        }
+        var onClick = onClickToStartActivity
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as FrameLayout)).apply {
-            layout.setOnClickListener {
-                m.position = layoutPosition
-                PictureActivity.startActivity(this@PreviewActivity, m)
-            }
-            /*
-            layout.setOnLongClickListener {
-                layout.foreground = ColorDrawable(resources.getColor(R.color.darker))
-                true
-            }
-             */
+            layout.setOnClickListener { onClick(this) }
+            layout.setOnLongClickListener { onClickForSelection(this);true }
         }
 
         override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
@@ -147,7 +199,11 @@ fun initToolbar(){
                 if (pos == holder.adapterPosition)
                     holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it)
             }, isScrolling)
+
+            if (selected[p] != null) holder.layout.foreground = ColorDrawable(resources.getColor(R.color.darker))
+            else holder.layout.foreground = ColorDrawable(resources.getColor(R.color.transparent))
         }
+
         override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) = holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(null)
         override fun getItemCount(): Int = m.posts.size
     }
@@ -176,6 +232,4 @@ fun initToolbar(){
     }
 
     protected inner class PreviewViewHolder(val layout: FrameLayout) : RecyclerView.ViewHolder(layout)
-
-
 }

@@ -2,17 +2,16 @@ package de.yochyo.yummybooru.api.downloads
 
 import android.content.Context
 import android.util.SparseArray
+import de.yochyo.eventmanager.Event
 import de.yochyo.eventmanager.EventCollection
+import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.events.events.DownloadManagerPageEvent
-import de.yochyo.yummybooru.events.events.LoadManagerPageEvent
 import de.yochyo.yummybooru.utils.toTagString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import org.jetbrains.annotations.NotNull
-import java.util.*
 import kotlin.collections.ArrayList
 
 class Manager(val tags: Array<String>) {
@@ -25,6 +24,8 @@ class Manager(val tags: Array<String>) {
             return v
         }
     }
+
+    val loadManagerPageEvent = EventHandler<LoadManagerPageEvent>()
 
     val posts = EventCollection<Post>(ArrayList())
     private val pageStatus = SparseArray<PageStatus>()
@@ -46,7 +47,7 @@ class Manager(val tags: Array<String>) {
                     currentPage = page
                     posts += p
                 }
-                LoadManagerPageEvent.trigger(LoadManagerPageEvent(context, this, p))
+                loadManagerPageEvent.trigger(LoadManagerPageEvent(context, this, p))
                 return p
             }
         }
@@ -103,6 +104,8 @@ class Manager(val tags: Array<String>) {
         else false
     }
 }
+
+class LoadManagerPageEvent(val context: Context, val manager: Manager, val newPage: List<Post>) : Event()
 
 private enum class PageStatus {
     DOWNLOADING, DOWNLOADED

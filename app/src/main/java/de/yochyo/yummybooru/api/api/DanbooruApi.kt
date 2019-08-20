@@ -55,10 +55,8 @@ class DanbooruApi(url: String) : Api(url) {
 
     override fun getTagFromJson(json: JSONObject): Tag? {
         return try {
-            var type = json.getInt("category")
-            if (type !in 0..5)
-                type = Tag.UNKNOWN
-            Tag(json.getString("name"), type, count = json.getInt("post_count"))
+            val name = json.getString("name")
+            Tag(name, Tag.getCorrectTagType(name, json.getInt("category")), count = json.getInt("post_count"))
         } catch (e: Exception) {
             Logger.log(e, json.toString())
             e.printStackTrace()

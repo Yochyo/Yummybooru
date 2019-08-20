@@ -14,9 +14,6 @@ object Logger {
 
     fun log(message: String) {
         val files = directory.listFiles().sorted()
-        for (i in 0..files.size / 2)
-            files[i].delete()
-
         val logFile = File(directory, "logcat ${System.currentTimeMillis()}.txt")
         logFile.createNewFile()
         logFile.writeText(message)

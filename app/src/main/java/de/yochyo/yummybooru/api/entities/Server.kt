@@ -5,6 +5,7 @@ import android.content.Context
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SelectServerEvent
+import de.yochyo.yummybooru.utils.Logger
 import de.yochyo.yummybooru.utils.lock
 import de.yochyo.yummybooru.utils.passwordToHash
 import kotlinx.coroutines.Dispatchers
@@ -42,8 +43,16 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             }
             return _passwordHash!!
         }
-    @Ignore
-    val urlHost = URL(url).host!!
+    val urlHost: String
+        get() {
+            return try {
+                URL(url).host!!
+            } catch (e: Exception) {
+                Logger.log(e)
+                e.printStackTrace()
+                ""
+            }
+        }
 
 
     override fun compareTo(other: Server): Int {

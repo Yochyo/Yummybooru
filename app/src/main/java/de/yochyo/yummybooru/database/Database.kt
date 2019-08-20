@@ -177,7 +177,13 @@ abstract class Database : RoomDatabase() {
             if (s != null && !s.isSelected) {
                 DeleteServerEvent.trigger(DeleteServerEvent(context, s))
                 synchronized(lock) { servers.remove(s) }
-                withContext(Dispatchers.Default) { serverDao.delete(s) }
+                withContext(Dispatchers.Default) {
+                    serverDao.delete(s)
+                    val tags = tagDao.getAllTags().filter { it.serverID == s.id }
+                    val subs = subDao.getAllSubscriptions().filter { it.serverID == s.id }
+                    for(tag in tags) tagDao.delete(tag)
+                    for(sub in subs) subDao.delete(sub)
+                }
             }
         }
     }

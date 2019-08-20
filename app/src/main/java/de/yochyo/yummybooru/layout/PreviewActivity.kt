@@ -2,7 +2,6 @@ package de.yochyo.yummybooru.layout
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.view.ActionMode
@@ -17,12 +16,14 @@ import android.widget.Toast
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
+import de.yochyo.yummybooru.api.downloads.LoadManagerPageEvent
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.downloadImage
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.DownloadService
-import de.yochyo.yummybooru.events.events.LoadManagerPageEvent
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
+import de.yochyo.yummybooru.layout.views.SelectableRecyclerViewAdapter
+import de.yochyo.yummybooru.layout.views.SelectableViewHolder
 import de.yochyo.yummybooru.utils.preview
 import de.yochyo.yummybooru.utils.toTagArray
 import de.yochyo.yummybooru.utils.toTagString
@@ -32,7 +33,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.*
-import kotlin.collections.HashMap
 
 open class PreviewActivity : AppCompatActivity() {
     companion object {
@@ -48,28 +48,32 @@ open class PreviewActivity : AppCompatActivity() {
 
     private lateinit var layoutManager: GridLayoutManager
     private lateinit var previewAdapter: PreviewAdapter
-    private lateinit var managerListener: Listener<LoadManagerPageEvent>
+    private val managerListener: Listener<LoadManagerPageEvent> = object : Listener<LoadManagerPageEvent>() {
+        override fun onEvent(e: LoadManagerPageEvent) {
+            if (e.newPage.isNotEmpty()) previewAdapter.updatePosts(e.newPage)
+            else Toast.makeText(this@PreviewActivity, "End", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private lateinit var m: Manager
 
     protected var actionmode: ActionMode? = null
-    var selected = HashMap<Post, Boolean>()
     protected val actionModeCallback = object : ActionMode.Callback {
         override fun onCreateActionMode(p0: ActionMode, p1: Menu): Boolean {
             p0.menuInflater.inflate(R.menu.preview_activity_selection_menu, p1)
-            p0.title = "${selected.size}/${m.posts.size}"
+            p0.title = "${previewAdapter.selected.size}/${m.posts.size}"
             return true
         }
 
         override fun onActionItemClicked(p0: ActionMode, p1: MenuItem): Boolean {
             when (p1.itemId) {
-                R.id.select_all -> if (selected.size == m.posts.size) unselectAll() else selectAll()
+                R.id.select_all -> if (previewAdapter.selected.size == m.posts.size) previewAdapter.unselectAll() else previewAdapter.selectAll()
                 R.id.download_selected -> {
                     val posts = LinkedList<Post>()
-                    val iter = selected.keys.iterator()
-                    while (iter.hasNext())
-                        posts += iter.next()
-
+                    for (i in 0 until previewAdapter.selected.size)
+                        posts += m.posts[i]
                     DownloadService.startService(this@PreviewActivity, m.tags.toTagString(), posts)
+                    previewAdapter.unselectAll()
                 }
                 else -> return false
             }
@@ -77,8 +81,7 @@ open class PreviewActivity : AppCompatActivity() {
         }
 
         override fun onDestroyActionMode(p0: ActionMode) {
-            selected.clear()
-            previewAdapter.notifyDataSetChanged()
+            previewAdapter.unselectAll()
         }
 
         override fun onPrepareActionMode(p0: ActionMode?, p1: Menu?) = false
@@ -92,22 +95,12 @@ open class PreviewActivity : AppCompatActivity() {
         setSupportActionBar(toolbar_preview)
         initToolbar()
 
+        m.loadManagerPageEvent.registerListener(managerListener)
         recycler_view.layoutManager = GridLayoutManager(this, 3).apply { layoutManager = this }
         recycler_view.adapter = PreviewAdapter().apply { previewAdapter = this }
-
-        swipeRefreshLayout.setOnRefreshListener {
-            swipeRefreshLayout.isRefreshing = false
-            reloadView()
-            selected.clear()
-        }
-
-        managerListener = LoadManagerPageEvent.registerListener {
-            if (it.manager == m) {
-                if (it.newPage.isNotEmpty()) previewAdapter.updatePosts(it.newPage)
-                else Toast.makeText(this@PreviewActivity, "End", Toast.LENGTH_SHORT).show()
-            }
-        }
+        initSwipeRefreshLayout()
         initScrollView()
+
         loadPage(1)
     }
 
@@ -137,10 +130,14 @@ open class PreviewActivity : AppCompatActivity() {
         })
     }
 
-    private fun reloadView() {
-        GlobalScope.launch {
-            m.reset()
-            loadPage(1)
+    fun initSwipeRefreshLayout() {
+        swipeRefreshLayout.setOnRefreshListener {
+            swipeRefreshLayout.isRefreshing = false
+            previewAdapter.unselectAll()
+            GlobalScope.launch {
+                m.reset()
+                loadPage(1)
+            }
         }
     }
 
@@ -149,29 +146,19 @@ open class PreviewActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
-    protected inner class PreviewAdapter : RecyclerView.Adapter<PreviewViewHolder>() {
+    protected inner class PreviewAdapter : SelectableRecyclerViewAdapter<PreviewViewHolder>() {
         fun updatePosts(newPage: Collection<Post>) {
             if (newPage.isNotEmpty())
                 if (m.posts.size > newPage.size) notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
                 else notifyDataSetChanged()
         }
 
-        val onClickForSelection = { holder: PreviewViewHolder ->
-            val post = m.posts[holder.adapterPosition]
-            if (selected[post] != null) unselect(post, holder)
-            else select(post, holder)
-        }
-        val onClickToStartActivity = { holder: PreviewViewHolder ->
+        override val onClickLayout = { holder: PreviewViewHolder ->
             m.position = holder.layoutPosition
             PictureActivity.startActivity(this@PreviewActivity, m)
         }
-        var onClick = onClickToStartActivity
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as FrameLayout)).apply {
-            layout.setOnClickListener { onClick(this) }
-            layout.setOnLongClickListener { onClickForSelection(this);true }
-        }
-
+        override fun createViewHolder(parent: ViewGroup) = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as FrameLayout))
         override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
             val pos = holder.adapterPosition
             val p = m.posts[holder.adapterPosition]
@@ -179,12 +166,31 @@ open class PreviewActivity : AppCompatActivity() {
                 if (pos == holder.adapterPosition)
                     holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it)
             }, isScrolling)
-
-            if (selected[p] != null) holder.layout.foreground = ColorDrawable(resources.getColor(R.color.darker))
-            else holder.layout.foreground = ColorDrawable(resources.getColor(R.color.transparent))
         }
 
-        override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) = holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(null)
+        override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) {
+            super.onBindViewHolder(holder, position)
+            holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(null)
+        }
+
+
+        override fun onStartSelecting() {
+            if (actionmode == null) {
+                actionmode = startSupportActionMode(actionModeCallback)
+                m.loadManagerPageEvent.registerListener(loadManagerPageUpdateActionModeListener)
+            }
+        }
+
+        override fun onStopSelecting() {
+            actionmode?.finish()
+            actionmode = null
+            m.loadManagerPageEvent.removeListener(loadManagerPageUpdateActionModeListener)
+        }
+
+        override fun onUpdate() {
+            actionmode?.title = "${selected.size}/${m.posts.size}"
+        }
+
         override fun getItemCount(): Int = m.posts.size
     }
 
@@ -192,7 +198,7 @@ open class PreviewActivity : AppCompatActivity() {
         when (item.itemId) {
             android.R.id.home -> finish()
             R.id.download_all -> DownloadPostsAlertdialog(this, m)
-            R.id.select_all -> selectAll()
+            R.id.select_all -> previewAdapter.selectAll()
         }
         return super.onOptionsItemSelected(item)
     }
@@ -208,73 +214,15 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        LoadManagerPageEvent.removeListener(managerListener)
+        m.loadManagerPageEvent.removeListener(managerListener)
         super.onDestroy()
     }
 
-    fun select(post: Post, holder: PreviewViewHolder? = null) {
-        if(selected.isEmpty()) {
-            startActionMode()
-            previewAdapter.onClick = previewAdapter.onClickForSelection
-        }
-        selected[post] = true
-        updateActionMode()
-        if (holder != null) holder.layout.foreground = ColorDrawable(resources.getColor(R.color.darker))
-        else previewAdapter.notifyItemChanged(m.posts.indexOf(post))
-    }
-
-    fun unselect(post: Post, holder: PreviewViewHolder? = null) {
-        selected.remove(post)
-        if(selected.isEmpty()) {
-            previewAdapter.onClick = previewAdapter.onClickToStartActivity
-            stopActionMode()
-        }
-        else{
-            updateActionMode()
-            if (holder != null) holder.layout.foreground = ColorDrawable(resources.getColor(R.color.transparent))
-            else previewAdapter.notifyItemChanged(m.posts.indexOf(post))
-        }
-    }
-
-    fun selectAll() {
-        startActionMode()
-        for (p in m.posts) selected[p] = true
-        previewAdapter.onClick = previewAdapter.onClickForSelection
-        actionmode?.title = "${selected.size}/${m.posts.size}"
-        updateActionMode()
-        previewAdapter.notifyDataSetChanged()
-
-    }
-
-    fun unselectAll() {
-        stopActionMode()
-        selected.clear()
-        previewAdapter.onClick = previewAdapter.onClickToStartActivity
-        previewAdapter.notifyDataSetChanged()
-    }
-
-    private val loadManagerPageUpdateActionModeListener = object: Listener<LoadManagerPageEvent>(){
+    private val loadManagerPageUpdateActionModeListener = object : Listener<LoadManagerPageEvent>() {
         override fun onEvent(e: LoadManagerPageEvent) {
-            if(e.manager == m)
-                actionmode?.title = "${selected.size}/${m.posts.size}"
+            actionmode?.title = "${previewAdapter.selected.size}/${m.posts.size}"
         }
     }
-    fun startActionMode() {
-        if (actionmode == null){
-            actionmode = startSupportActionMode(actionModeCallback)
-            LoadManagerPageEvent.registerListener(loadManagerPageUpdateActionModeListener)
-        }
 
-    }
-
-    fun stopActionMode() {
-        LoadManagerPageEvent.removeListener(loadManagerPageUpdateActionModeListener)
-        actionmode?.finish()
-        actionmode = null
-    }
-    fun updateActionMode(){
-        actionmode?.title = "${selected.size}/${m.posts.size}"
-    }
-
-    inner class PreviewViewHolder(val layout: FrameLayout) : RecyclerView.ViewHolder(layout)
+    inner class PreviewViewHolder(layout: FrameLayout) : SelectableViewHolder(layout)
 }

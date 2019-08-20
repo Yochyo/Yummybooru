@@ -19,13 +19,13 @@ import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
+import de.yochyo.yummybooru.api.downloads.LoadManagerPageEvent
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.cache
 import de.yochyo.yummybooru.api.downloads.downloadImage
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.events.events.LoadManagerPageEvent
 import de.yochyo.yummybooru.layout.res.Menus
 import de.yochyo.yummybooru.utils.*
 import kotlinx.android.synthetic.main.activity_picture.*
@@ -64,7 +64,8 @@ class PictureActivity : AppCompatActivity() {
         tagRecyclerView.layoutManager = LinearLayoutManager(this)
         with(view_pager) {
             adapter = PageAdapter().apply { this@PictureActivity.adapter = this }
-            managerListener = LoadManagerPageEvent.registerListener { if (it.manager == m) this@PictureActivity.adapter.updatePosts() }
+
+            managerListener = m.loadManagerPageEvent.registerListener{this@PictureActivity.adapter.updatePosts()}
             this@PictureActivity.adapter.updatePosts()
             m.currentPost?.updateCurrentTags(m.position)
 
@@ -226,7 +227,7 @@ class PictureActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        LoadManagerPageEvent.removeListener(managerListener)
+        m.loadManagerPageEvent.removeListener(managerListener)
         super.onDestroy()
     }
 

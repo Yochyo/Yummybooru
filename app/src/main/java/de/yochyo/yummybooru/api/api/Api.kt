@@ -45,13 +45,13 @@ abstract class Api(var url: String) {
         }
 
         suspend fun getTag(name: String): Tag {
-            if (name == "*") return Tag(name, Tag.UNKNOWN, count = newestID())
+            if (name == "*") return Tag(name, Tag.SPECIAL, count = newestID())
             val json = getJson(instance!!.urlGetTag(name))
             if (json != null && json.length() > 0) {
                 val tag = instance!!.getTagFromJson(json.getJSONObject(0))
                 if (tag != null) return tag
             }
-            return Tag(name, Tag.UNKNOWN)
+            return Tag(name, if(Tag.isSpecialTag(name)) Tag.SPECIAL else Tag.UNKNOWN)
         }
 
         suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = db.limit): List<Post> {

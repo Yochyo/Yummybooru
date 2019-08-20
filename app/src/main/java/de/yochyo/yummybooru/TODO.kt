@@ -15,7 +15,7 @@ package de.yochyo.yummybooru
 //TODO subs update all subs button
 //TODO Tag suchen (filtern) in Mainactivity
 //TODO Mainactiviy mom. ausgewählte tags anzeigen
-
+//TODO pixiv
 //Optimizations
 //TODO Bei Moebooru tags speichern, damit sie nicht JEDES mal runtergeladen werden
 //TODO width/height... sind Tag.SPECIAL statt UNKNOWN
@@ -23,7 +23,6 @@ package de.yochyo.yummybooru
 //TODO AddTagDialog vorschläge verstecken wenn der erste eintrag der mom. Eingabe entspricht
 //TODO AddTagDialog vorschläge beziehen sich immer auf den aktuellsten Tag (Falls man mehrere angibt)
 //TODO mehrere Tags entsprechen Tag.SPECIAL
-//TODO pictureactivity padding preview kleiner
 
 //TODO locks überarbeiten
 //TODO beim Profiler ist die CPU belastung heavy
@@ -33,10 +32,5 @@ package de.yochyo.yummybooru
 //TODO md5 des bildes benutzen
 //TODO subscription acitivty anders regeln, count wird bei jedem scrollen neu geladen
 //TODO Share button
-//TODO LoadManagerPageEvent local machen
 //Bugs
-//TODO wenn ein Server gelöscht wird, müssen auch alle subs/tags dazu gelöscht werden
-//TODO fehler die man in den logs findet fixen
 //TODO when z.B. ein download crasht, muss ein event (oder awaitPicture...) abgebrochen werden
-//Nettes zeug für irgendwann
-//TODO Subs nicht nur mit :id>X filtern, sondern auch per hand

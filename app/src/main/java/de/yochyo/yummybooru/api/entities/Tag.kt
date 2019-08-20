@@ -3,6 +3,7 @@ package de.yochyo.yummybooru.api.entities
 import android.arch.persistence.room.*
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
+import java.lang.Exception
 import java.util.*
 
 @Entity(tableName = "tags", primaryKeys = ["name", "serverID"])
@@ -20,6 +21,12 @@ data class Tag(val name: String, val type: Int, val isFavorite: Boolean = false,
         const val META = 5
         const val UNKNOWN = 99
         const val SPECIAL = 100
+
+        fun getCorrectTagType(tagName: String, id: Int): Int{
+            return if(id in 0..1 || id in 3..5) id
+            else if(isSpecialTag(tagName)) SPECIAL
+            else UNKNOWN
+        }
     }
 
     val color: Int

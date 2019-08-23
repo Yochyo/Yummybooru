@@ -8,7 +8,7 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:showIn="@layout/activity_picture"
-        android:background="@color/dark_grey"
+        android:background="@color/very_dark_grey"
         tools:context=".layout.PictureActivity"
         tools:openDrawer="end">
 
@@ -19,7 +19,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="end"
             android:fitsSystemWindows="true"
-            android:background="@color/dark_grey"
+            android:background="@color/very_dark_grey"
             app:itemTextColor="@color/white">
 
         <LinearLayout

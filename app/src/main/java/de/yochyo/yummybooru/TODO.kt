@@ -13,18 +13,13 @@ package de.yochyo.yummybooru
 //TODO Mainactivity unselect all einfügen
 //TODO suchfeld bei tag/sub liste
 //TODO subs update all subs button
-//TODO Tag suchen (filtern) in Mainactivity
 //TODO Mainactiviy mom. ausgewählte tags anzeigen
 //TODO pixiv
 //Optimizations
 //TODO Bei Moebooru tags speichern, damit sie nicht JEDES mal runtergeladen werden
-//TODO width/height... sind Tag.SPECIAL statt UNKNOWN
 //TODO logs in data abspeichern
-//TODO AddTagDialog vorschläge verstecken wenn der erste eintrag der mom. Eingabe entspricht
 //TODO AddTagDialog vorschläge beziehen sich immer auf den aktuellsten Tag (Falls man mehrere angibt)
-//TODO mehrere Tags entsprechen Tag.SPECIAL
 
-//TODO locks überarbeiten
 //TODO beim Profiler ist die CPU belastung heavy
 //TODO downloader braucht ne lock, synchronisieren
 //TODO Code Kommentieren
@@ -33,7 +28,8 @@ package de.yochyo.yummybooru
 //TODO subscription acitivty anders regeln, count wird bei jedem scrollen neu geladen
 //TODO Share button
 //Bugs
+//TODO Mainactivity TagRecyclerView selecting view machen
+//TODO Braucht Manager eine lock
 //TODO stürzt ab wenn man UNKNOWN tags hinzufügt und updatemissing tags ausgeführt wird
-//TODO scroll to new position when making favorite in Mainactivity
-//TODO anders regeln, sowas sollte nicht in der datenbank stecken
+//TODO updatemissing anders regeln, sowas sollte nicht in der datenbank stecken
 //TODO when z.B. ein download crasht, muss ein event (oder awaitPicture...) abgebrochen werden

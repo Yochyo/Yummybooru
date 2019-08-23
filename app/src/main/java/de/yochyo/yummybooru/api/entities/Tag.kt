@@ -11,7 +11,7 @@ data class Tag(val name: String, val type: Int, val isFavorite: Boolean = false,
 
     companion object {
         fun isSpecialTag(name: String): Boolean{
-            return name == "*" || name.startsWith("height") || name.startsWith("width") || name.startsWith("order") || name.startsWith("rating")
+            return name == "*" || name.startsWith("height") || name.startsWith("width") || name.startsWith("order") || name.startsWith("rating") || name.contains(" ")
         }
 
         const val GENERAL = 0

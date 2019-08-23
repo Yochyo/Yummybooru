@@ -18,6 +18,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.*
+import de.yochyo.eventmanager.EventHandler
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
@@ -147,8 +148,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val tag = db.tags.elementAt(adapterPosition)
                 when (it.itemId) {
                     R.id.main_search_favorite_tag -> GlobalScope.launch {
-                        db.changeTag(this@MainActivity, tag.copy(isFavorite = !tag.isFavorite))
-                        //  withContext(Dispatchers.Main){tagRecyclerView.layoutManager?.scrollToPosition(tags.indexOf(tag))}
+                        val copy = tag.copy(isFavorite = !tag.isFavorite)
+                        db.changeTag(this@MainActivity, copy)
+                          withContext(Dispatchers.Main){tagRecyclerView.layoutManager?.scrollToPosition(db.tags.indexOf(copy))}
                     }
                     R.id.main_search_subscribe_tag -> {
                         if (db.getSubscription(tag.name) == null) GlobalScope.launch { db.addSubscription(this@MainActivity, Subscription.fromTag(tag)) }

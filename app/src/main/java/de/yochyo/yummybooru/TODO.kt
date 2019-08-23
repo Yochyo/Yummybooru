@@ -33,4 +33,7 @@ package de.yochyo.yummybooru
 //TODO subscription acitivty anders regeln, count wird bei jedem scrollen neu geladen
 //TODO Share button
 //Bugs
+//TODO stürzt ab wenn man UNKNOWN tags hinzufügt und updatemissing tags ausgeführt wird
+//TODO scroll to new position when making favorite in Mainactivity
+//TODO anders regeln, sowas sollte nicht in der datenbank stecken
 //TODO when z.B. ein download crasht, muss ein event (oder awaitPicture...) abgebrochen werden

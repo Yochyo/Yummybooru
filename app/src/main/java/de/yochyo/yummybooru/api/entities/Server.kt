@@ -68,11 +68,8 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             db.currentServerID = id
             _currentServer = this@Server
             Api.initApi(api, url)
-            synchronized(lock) {
-                db.initTags(context, id)
-                db.initSubscriptions(context, id)
-                db.servers.notifyChange()
-            }
+            db.loadServerWithMutex(context)
+            db.servers.notifyChange()
         }
     }
 
@@ -81,7 +78,7 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             val current = currentServer
             val newTags = ArrayList<Tag>()
             for (tag in db.tags) { //Tags updaten
-                if (tag.type == Tag.UNKNOWN && tag.name != "*") {
+                if (tag.type == Tag.UNKNOWN) {
                     val t = Api.getTag(tag.name)
                     newTags += t.copy(isFavorite = tag.isFavorite, creation = tag.creation, serverID = tag.serverID)
                 }
@@ -102,7 +99,7 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             val current = currentServer
             val newSubs = ArrayList<Subscription>()
             for (sub in db.subs) { //Tags updaten
-                if (sub.type == Tag.UNKNOWN && sub.name != "*") {
+                if (sub.type == Tag.UNKNOWN) {
                     val s = Subscription.fromTag(Api.getTag(sub.name))
                     newSubs += s.copy(isFavorite = sub.isFavorite, creation = sub.creation, serverID = sub.serverID)
                 }

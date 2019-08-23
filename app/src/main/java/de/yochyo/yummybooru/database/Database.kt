@@ -8,15 +8,15 @@ import android.arch.persistence.room.migration.Migration
 import android.content.Context
 import android.content.SharedPreferences
 import de.yochyo.eventmanager.EventCollection
-import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.entities.*
 import de.yochyo.yummybooru.database.converter.DateConverter
 import de.yochyo.yummybooru.events.events.*
 import de.yochyo.yummybooru.utils.createDefaultSavePath
-import de.yochyo.yummybooru.utils.lock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.*
 import kotlin.collections.ArrayList
@@ -25,6 +25,7 @@ import kotlin.collections.ArrayList
 @android.arch.persistence.room.Database(entities = [Tag::class, Subscription::class, Server::class], version = 2)
 @TypeConverters(DateConverter::class)
 abstract class Database : RoomDatabase() {
+    private val lock = Mutex()
 
     companion object {
         private var _prefs: SharedPreferences? = null
@@ -43,10 +44,13 @@ abstract class Database : RoomDatabase() {
                                     db.execSQL(s)
                             }
                         }).addMigrations(*Migrations.all).build()
-                instance!!.servers.onUpdate = { UpdateServersEvent.trigger(UpdateServersEvent(context, instance!!.servers)) }
-                instance!!.tags.onUpdate = { UpdateTagsEvent.trigger(UpdateTagsEvent(context, instance!!.tags)) }
-                instance!!.subs.onUpdate = { UpdateSubsEvent.trigger(UpdateSubsEvent(context, instance!!.subs)) }
-                instance!!.initServer(context)
+                instance!!.servers.onUpdate = { GlobalScope.launch(Dispatchers.Main) { UpdateServersEvent.trigger(UpdateServersEvent(context, instance!!.servers)) } }
+                instance!!.tags.onUpdate = { GlobalScope.launch(Dispatchers.Main) { UpdateTagsEvent.trigger(UpdateTagsEvent(context, instance!!.tags)) } }
+                instance!!.subs.onUpdate = { GlobalScope.launch(Dispatchers.Main) { UpdateSubsEvent.trigger(UpdateSubsEvent(context, instance!!.subs)) } }
+                GlobalScope.launch {
+                    instance!!.loadServers()
+                    Server.currentServer.select(context)
+                }
             }
             return instance!!
         }
@@ -54,21 +58,27 @@ abstract class Database : RoomDatabase() {
 
     val servers: EventCollection<Server> = EventCollection(TreeSet())
     val tags: EventCollection<Tag> = EventCollection(TreeSet())
-    val subs: EventCollection<Subscription> =EventCollection(TreeSet())
-
-    fun initServer(context: Context) {
-        GlobalScope.launch {
+    val subs: EventCollection<Subscription> = EventCollection(TreeSet())
+    suspend private fun loadServers() {
+        withContext(Dispatchers.Default) {
             val se: List<Server> = serverDao.getAllServers()
-            withContext(Dispatchers.Main) {
-                servers.clear()
-                servers.addAll(se)
-                Server.currentServer.select(context)
-            }
+            servers.clear()
+            servers.addAll(se)
         }
     }
 
-    fun initTags(context: Context, serverID: Int) {
-        GlobalScope.launch {
+    suspend fun loadServerWithMutex(context: Context) = lock.withLock { loadServer(context) }
+    suspend fun loadServer(context: Context) {
+        withContext(Dispatchers.Default) {
+            val server = Server.currentServer
+            loadTags(context, server.id)
+            loadSubscriptions(context, server.id)
+        }
+    }
+
+    suspend fun loadTagsWithMutex(context: Context, serverID: Int) = lock.withLock { loadTags(context, serverID) }
+    suspend fun loadTags(context: Context, serverID: Int) {
+        withContext(Dispatchers.Default) {
             val t = tagDao.getAllTags().filter { it.serverID == serverID }
             withContext(Dispatchers.Main) {
                 tags.clear()
@@ -78,129 +88,133 @@ abstract class Database : RoomDatabase() {
         }
     }
 
-    fun initSubscriptions(context: Context, serverID: Int) {
-        GlobalScope.launch {
+    suspend fun loadSubscriptionsWithMutex(context: Context, serverID: Int) = lock.withLock { loadSubscriptions(context, serverID) }
+    suspend fun loadSubscriptions(context: Context, serverID: Int) {
+        withContext(Dispatchers.Default) {
             val s = subDao.getAllSubscriptions().filter { it.serverID == serverID }
-            withContext(Dispatchers.Main) {
-                subs.clear()
-                subs.addAll(s)
-                Server.currentServer.updateMissingTypeSubs(context)
+            subs.clear()
+            subs.addAll(s)
+            Server.currentServer.updateMissingTypeSubs(context) //TODO
+        }
+    }
+
+    fun getServer(id: Int) = servers.find { it.id == id }
+
+    suspend fun addServerWithMutex(context: Context, server: Server, id: Int = nextServerID++) = lock.withLock { addServer(context, server, id) }
+    suspend fun addServer(context: Context, server: Server, id: Int = nextServerID++) {
+        withContext(Dispatchers.Default) {
+            val s = getServer(server.id)
+            if (s == null) {
+                servers.add(server.copy(id = id))
+                serverDao.insert(server)
+                withContext(Dispatchers.Main) { AddServerEvent.trigger(AddServerEvent(context, server)) }
+            }
+        }
+    }
+
+    suspend fun deleteServerWithMutex(context: Context, id: Int) = lock.withLock { deleteServer(context, id) }
+    suspend fun deleteServer(context: Context, id: Int) {
+        withContext(Dispatchers.Default) {
+            val s = servers.find { id == it.id }
+            if (s != null && !s.isSelected) {
+                servers.remove(s)
+                serverDao.delete(s)
+                for (tag in tagDao.getAllTags().filter { it.serverID == s.id }) tagDao.delete(tag)
+                for (sub in subDao.getAllSubscriptions().filter { it.serverID == s.id }) subDao.delete(sub)
+                withContext(Dispatchers.Main) { DeleteServerEvent.trigger(DeleteServerEvent(context, s)) }
+            }
+        }
+    }
+
+    suspend fun changeServerWithMutex(context: Context, changedServer: Server) = lock.withLock { changeServer(context, changedServer) }
+    suspend fun changeServer(context: Context, changedServer: Server) {
+        withContext(Dispatchers.Default) {
+            val s = servers.find { it.id == changedServer.id }
+            if (s != null) {
+                val wasCurrentServer = Server.currentServer == changedServer
+                servers.remove(s)
+                servers.add(changedServer)
+                if (wasCurrentServer) changedServer.select(context)
+                serverDao.update(changedServer)
+                withContext(Dispatchers.Main) { ChangeServerEvent.trigger(ChangeServerEvent(context, changedServer, s)) }
             }
         }
     }
 
     fun getTag(name: String) = tags.find { it.name == name }
+
+    suspend fun addTagWithMutex(context: Context, tag: Tag) = lock.withLock { addTag(context, tag) }
     suspend fun addTag(context: Context, tag: Tag): Tag {
-        return withContext(Dispatchers.Main) {
+        return withContext(Dispatchers.Default) {
             val t = getTag(tag.name)
             if (t == null) {
-                AddTagEvent.trigger(AddTagEvent(context, tag))
-                synchronized(lock) { tags.add(tag) }
-                withContext(Dispatchers.Default) { tagDao.insert(tag) }
-                return@withContext tag
+                tags.add(tag)
+                tagDao.insert(tag)
+                withContext(Dispatchers.Main) { AddTagEvent.trigger(AddTagEvent(context, tag)) }
+                tag
             } else t
         }
     }
 
+    suspend fun deleteTagWithMutex(context: Context, name: String) = lock.withLock { deleteTag(context, name) }
     suspend fun deleteTag(context: Context, name: String) {
-        withContext(Dispatchers.Main) {
+        withContext(Dispatchers.Default) {
             val tag = tags.find { it.name == name }
             if (tag != null) {
-                DeleteTagEvent.trigger(DeleteTagEvent(context, tag))
-                synchronized(lock) { tags.remove(tag) }
-                withContext(Dispatchers.Default) { tagDao.delete(tag) }
+                tags.remove(tag)
+                tagDao.delete(tag)
+                withContext(Dispatchers.Main) { DeleteTagEvent.trigger(DeleteTagEvent(context, tag)) }
             }
         }
     }
 
+    suspend fun changeTagWithMutex(context: Context, changedTag: Tag) = lock.withLock { changeTag(context, changedTag) }
     suspend fun changeTag(context: Context, changedTag: Tag) {
-        withContext(Dispatchers.Main) {
+        withContext(Dispatchers.Default) {
             val tag = tags.find { it.name == changedTag.name }
             if (tag != null) {
-                ChangeTagEvent.trigger(ChangeTagEvent(context, tag, changedTag))
                 tags.remove(tag)
                 tags.add(changedTag)
-                withContext(Dispatchers.Default) { tagDao.update(changedTag) }
+                tagDao.update(changedTag)
+                withContext(Dispatchers.Main) { ChangeTagEvent.trigger(ChangeTagEvent(context, tag, changedTag)) }
             }
         }
     }
 
     fun getSubscription(name: String) = subs.find { it.name == name }
+
+    suspend fun addSubscriptionWithMutex(context: Context, sub: Subscription) = lock.withLock { addSubscription(context, sub) }
     suspend fun addSubscription(context: Context, sub: Subscription) {
-        withContext(Dispatchers.Main) {
+        withContext(Dispatchers.Default) {
             if (getSubscription(sub.name) == null) {
-                AddSubEvent.trigger(AddSubEvent(context, sub))
-                synchronized(lock) { subs.add(sub) }
-                withContext(Dispatchers.Default) { subDao.insert(sub) }
+                subs.add(sub)
+                subDao.insert(sub)
+                withContext(Dispatchers.Main) { AddSubEvent.trigger(AddSubEvent(context, sub)) }
             }
         }
     }
 
+    suspend fun deleteSubscriptionWithMutex(context: Context, name: String) = lock.withLock { deleteSubscription(context, name) }
     suspend fun deleteSubscription(context: Context, name: String) {
-        withContext(Dispatchers.Main) {
+        withContext(Dispatchers.Default) {
             val sub = subs.find { it.name == name }
             if (sub != null) {
-                DeleteSubEvent.trigger(DeleteSubEvent(context, sub))
-                synchronized(lock) { subs.remove(sub) }
-                withContext(Dispatchers.Default) { subDao.delete(sub) }
+                subs.remove(sub)
+                subDao.delete(sub)
+                withContext(Dispatchers.Main) { DeleteSubEvent.trigger(DeleteSubEvent(context, sub)) }
             }
         }
     }
 
+    suspend fun changeSubscriptionWithMutex(context: Context, changedSub: Subscription) = lock.withLock { changeSubscription(context, changedSub) }
     suspend fun changeSubscription(context: Context, changedSub: Subscription) {
-        withContext(Dispatchers.Main) {
+        withContext(Dispatchers.Default) {
             val sub = subs.find { it.name == changedSub.name }
             if (sub != null) {
-                ChangeSubEvent.trigger(ChangeSubEvent(context, sub, changedSub))
                 subs.remove(sub)
                 subs.add(changedSub)
-                withContext(Dispatchers.Default) { subDao.update(changedSub) }
-            }
-        }
-    }
-
-    fun getServer(id: Int) = servers.find { it.id == id }
-    suspend fun addServer(context: Context, server: Server, id: Int = nextServerID++) {
-        withContext(Dispatchers.Main) {
-            val s = getServer(server.id)
-            if (s == null) {
-                AddServerEvent.trigger(AddServerEvent(context, server))
-                synchronized(lock) { servers.add(server.copy(id = id)) }
-                withContext(Dispatchers.Default) { serverDao.insert(server) }
-            }
-        }
-    }
-
-    suspend fun deleteServer(context: Context, id: Int) {
-        withContext(Dispatchers.Main) {
-            val s = servers.find { id == it.id }
-            if (s != null && !s.isSelected) {
-                DeleteServerEvent.trigger(DeleteServerEvent(context, s))
-                synchronized(lock) { servers.remove(s) }
-                withContext(Dispatchers.Default) {
-                    serverDao.delete(s)
-                    val tags = tagDao.getAllTags().filter { it.serverID == s.id }
-                    val subs = subDao.getAllSubscriptions().filter { it.serverID == s.id }
-                    for(tag in tags) tagDao.delete(tag)
-                    for(sub in subs) subDao.delete(sub)
-                }
-            }
-        }
-    }
-
-    suspend fun changeServer(context: Context, server: Server) {
-        withContext(Dispatchers.Main) {
-            val s = servers.find { it.id == server.id }
-            if (s != null) {
-                ChangeServerEvent.trigger(ChangeServerEvent(context, server, s))
-                val wasCurrentServer = Server.currentServer == server
-                synchronized(lock) {
-                    servers.remove(s)
-                    servers.add(server)
-                }
-                if (wasCurrentServer)
-                    server.select(context)
-                withContext(Dispatchers.Default) { serverDao.update(server) }
+                subDao.update(changedSub)
+                withContext(Dispatchers.Main) { ChangeSubEvent.trigger(ChangeSubEvent(context, sub, changedSub)) }
             }
         }
     }

@@ -6,7 +6,6 @@ import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.utils.Logger
-import de.yochyo.yummybooru.utils.lock
 import de.yochyo.yummybooru.utils.passwordToHash
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -112,16 +111,6 @@ data class Server(var name: String, var api: String, var url: String, var userNa
                     }
                 } else break
             }
-        }
-    }
-
-    fun unselect() {
-        synchronized(lock) {
-            db.currentServerID = -1
-            _currentServer = null
-            Api.instance = null
-            db.tags.clear()
-            db.subs.clear()
         }
     }
 

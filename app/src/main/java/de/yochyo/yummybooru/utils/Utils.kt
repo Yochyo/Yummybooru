@@ -14,7 +14,6 @@ import java.io.File
 import java.security.MessageDigest
 import kotlin.math.atan2
 
-val lock = Any() //lock fürs Server/Tags/Subs adden
 fun preview(id: Int) = "${id}P${Server.currentID}"
 fun sample(id: Int) = "${id}S${Server.currentID}"
 fun original(id: Int) = "${id}O${Server.currentID}"

@@ -11,12 +11,13 @@ import de.yochyo.yummybooru.events.events.DownloadManagerPageEvent
 import de.yochyo.yummybooru.utils.toTagString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.collections.ArrayList
 
 class Manager(val tags: Array<String>) {
     companion object {
-        private val lock = Any()
         var current: Manager? = null
         get() {
             val v = field
@@ -91,11 +92,11 @@ class Manager(val tags: Array<String>) {
     }
 
     suspend fun reset() {
-        pageStatus.clear()
-        pages.clear()
-        position = -1
-        currentPage = 0
-        withContext(Dispatchers.Main) { posts.clear() }
+            pageStatus.clear()
+            pages.clear()
+            position = -1
+            currentPage = 0
+            withContext(Dispatchers.Main) { posts.clear() }
     }
 
     override fun equals(other: Any?): Boolean {

@@ -4,7 +4,8 @@
         android:layout_width="match_parent"
         android:layout_height="120dp"
         android:layout_margin="2dp"
-        xmlns:android="http://schemas.android.com/apk/res/android">
+        xmlns:android="http://schemas.android.com/apk/res/android"
+android:clickable="true">
     <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
                android:layout_width="match_parent"
                android:layout_height="match_parent"

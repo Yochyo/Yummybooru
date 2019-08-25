@@ -54,6 +54,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private lateinit var tagRecyclerView: RecyclerView
     private lateinit var tagAdapter: SearchTagAdapter
+    private lateinit var tagLayoutManager: LinearLayoutManager
     private lateinit var serverAdapter: ServerAdapter
 
     private lateinit var tagListener: Listener<UpdateTagsEvent>
@@ -74,7 +75,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val navLayout = nav_search.findViewById<LinearLayout>(R.id.nav_search_layout)
         initDrawerButtons(navLayout.findViewById(R.id.add_search),navLayout.findViewById(R.id.start_search))
         tagRecyclerView = navLayout.findViewById(R.id.recycler_view_search)
-        tagRecyclerView.layoutManager = LinearLayoutManager(this)
+        tagRecyclerView.layoutManager = LinearLayoutManager(this).apply { tagLayoutManager = this }
         if (hasPermission)
             initData()
     }
@@ -109,7 +110,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val tag = Api.getTag(it.text.toString())
                     val t = db.addTag(this@MainActivity, tag)
                     launch(Dispatchers.Main) {
-                        tagRecyclerView.layoutManager?.scrollToPosition(db.tags.indexOf(t))
+                        tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(t), 0)
                     }
                 }
             }.build(this)
@@ -150,7 +151,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     R.id.main_search_favorite_tag -> GlobalScope.launch {
                         val copy = tag.copy(isFavorite = !tag.isFavorite)
                         db.changeTag(this@MainActivity, copy)
-                          withContext(Dispatchers.Main){tagRecyclerView.layoutManager?.scrollToPosition(db.tags.indexOf(copy))}
+                          withContext(Dispatchers.Main){tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(copy), 0)}
                     }
                     R.id.main_search_subscribe_tag -> {
                         if (db.getSubscription(tag.name) == null) GlobalScope.launch { db.addSubscription(this@MainActivity, Subscription.fromTag(tag)) }
@@ -173,7 +174,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             val newTag = Api.getTag(name)
                             db.deleteTag(this@MainActivity, tag.name)
                             db.addTag(this@MainActivity, newTag)
-                            withContext(Dispatchers.Main) { tagRecyclerView.layoutManager?.scrollToPosition(db.tags.indexOf(newTag)) }
+                            withContext(Dispatchers.Main) { tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(newTag), 0) }
                         }
                     }
                 }.withTag(tag.name).withTitle("Edit tag [${tag.name}]").build(this@MainActivity)

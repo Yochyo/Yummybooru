@@ -103,7 +103,7 @@ class PictureActivity : AppCompatActivity() {
                 if (wasCurrentPosition == m.position) {
                     currentTags += tags
                     tagRecyclerView.adapter?.notifyDataSetChanged()
-                    tagRecyclerView.layoutManager?.scrollToPosition(0)
+                    tagRecyclerView.scrollToPosition(0)
                 }
             }
         }

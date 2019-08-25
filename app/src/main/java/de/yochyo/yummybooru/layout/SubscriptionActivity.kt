@@ -3,13 +3,16 @@ package de.yochyo.yummybooru.layout
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.view.ActionMode
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
-import android.widget.LinearLayout
+import android.widget.FrameLayout
 import android.widget.TextView
+import android.widget.Toast
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
@@ -17,8 +20,10 @@ import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.UpdateSubsEvent
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
+import de.yochyo.yummybooru.layout.res.Menus
+import de.yochyo.yummybooru.layout.views.SelectableRecyclerViewAdapter
+import de.yochyo.yummybooru.layout.views.SelectableViewHolder
 import de.yochyo.yummybooru.utils.setColor
-import de.yochyo.yummybooru.utils.toTagArray
 import de.yochyo.yummybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_subscription.*
 import kotlinx.android.synthetic.main.content_subscription.*
@@ -28,11 +33,39 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class SubscriptionActivity : AppCompatActivity() {
-    private lateinit var totalTextView: TextView
     private lateinit var listener: Listener<UpdateSubsEvent>
     private var onClickedData: SubData? = null
+
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: SubscribedTagAdapter
+    private lateinit var layoutManager: LinearLayoutManager
+
+    protected var actionmode: ActionMode? = null
+    protected val actionModeCallback = object : ActionMode.Callback {
+        override fun onCreateActionMode(p0: ActionMode, p1: Menu): Boolean {
+            p0.menuInflater.inflate(R.menu.subscription_activity_selection_menu, p1)
+            p0.title = "${adapter.selected.size}/${db.subs.size}"
+            return true
+        }
+
+        override fun onActionItemClicked(p0: ActionMode, p1: MenuItem): Boolean {
+            when (p1.itemId) {
+                R.id.select_all -> if (adapter.selected.size == db.subs.size) adapter.unselectAll() else adapter.selectAll()
+                R.id.open_selected -> {
+                    Toast.makeText(this@SubscriptionActivity, "Not yet implemented", Toast.LENGTH_SHORT).show()
+                    adapter.unselectAll()
+                }
+                else -> return false
+            }
+            return true
+        }
+
+        override fun onDestroyActionMode(p0: ActionMode) {
+            adapter.unselectAll()
+        }
+
+        override fun onPrepareActionMode(p0: ActionMode?, p1: Menu?) = false
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,9 +73,9 @@ class SubscriptionActivity : AppCompatActivity() {
         setSupportActionBar(toolbar_subs)
         GlobalScope.launch(Dispatchers.Main) {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            initEverySubLayout()
             recyclerView = subs_recycler
-            recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity)
+            recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity).apply { layoutManager = this}
+
             recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
             listener = UpdateSubsEvent.registerListener { adapter.updateSubs() }
             subs_swipe_refresh_layout.setOnRefreshListener {
@@ -51,12 +84,6 @@ class SubscriptionActivity : AppCompatActivity() {
                 adapter.notifyDataSetChanged()
             }
         }
-    }
-
-    private fun initEverySubLayout() {
-        val layout = every_sub_item as LinearLayout
-        layout.findViewById<TextView>(android.R.id.text1).text = "Coming Soon"
-        totalTextView = layout.findViewById(android.R.id.text2)
     }
 
     private fun clear() {
@@ -68,36 +95,42 @@ class SubscriptionActivity : AppCompatActivity() {
         return true
     }
 
-    private inner class SubscribedTagAdapter : RecyclerView.Adapter<SubscribedTagViewHolder>() {
+    private inner class SubscribedTagAdapter : SelectableRecyclerViewAdapter<SubscribedTagViewHolder>() {
         fun updateSubs() {
             adapter.notifyDataSetChanged()
         }
 
-        private fun longClickDialog(sub: Subscription) {
-            val builder = AlertDialog.Builder(this@SubscriptionActivity)
-            val array = arrayOf(if (sub.isFavorite) getString(R.string.unfavorite) else getString(R.string.set_favorite), getString(R.string.delete), "Edit")
-            builder.setItems(array) { dialog, i ->
-                dialog.cancel()
-                when (i) {
-                    0 -> GlobalScope.launch { db.changeSubscription(this@SubscriptionActivity, sub.copy(isFavorite = !sub.isFavorite)) }
-                    1 -> deleteSubDialog(sub)
-                    2 -> AddTagDialog {
-                        val name = it.text.toString()
-                        if (sub.name != name) {
-                            GlobalScope.launch {
-                                val newSub = Subscription.fromTag(Api.getTag(name))
-                                db.deleteSubscription(this@SubscriptionActivity, sub.name)
-                                db.addSubscription(this@SubscriptionActivity, newSub)
-                                withContext(Dispatchers.Main) {
-                                    nested_scrollview.scrollY = recyclerView.getChildAt(db.subs.indexOf(newSub)).y.toInt()
-                                }
-                            }
-                        }
-                    }.withTag(sub.name).withTitle("Edit sub [${sub.name}]").build(this@SubscriptionActivity)
-                }
-
+        override val onClickLayout = { holder: SubscribedTagViewHolder ->
+            val sub = db.subs.elementAt(holder.adapterPosition)
+            GlobalScope.launch {
+                onClickedData = SubData(holder.adapterPosition, Api.newestID(), Api.getTag(sub.name).count)
             }
-            builder.show()
+            PreviewActivity.startActivity(this@SubscriptionActivity, sub.toString())
+        }
+
+        override fun setListeners(holder: SubscribedTagViewHolder) {
+            val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
+            toolbar.setOnClickListener { onClick(holder) }
+            toolbar.setOnLongClickListener { onSelectItem(holder); true }
+        }
+
+        override fun createViewHolder(parent: ViewGroup): SubscribedTagViewHolder {
+            return SubscribedTagViewHolder(layoutInflater.inflate(R.layout.subscription_item_layout, parent, false) as FrameLayout)
+        }
+
+        override fun onStartSelecting() {
+            if (actionmode == null) {
+                actionmode = startSupportActionMode(actionModeCallback)
+            }
+        }
+
+        override fun onStopSelecting() {
+            actionmode?.finish()
+            actionmode = null
+        }
+
+        override fun onUpdate() {
+            actionmode?.title = "${selected.size}/${db.subs.size}"
         }
 
         private fun deleteSubDialog(sub: Subscription) {
@@ -108,42 +141,61 @@ class SubscriptionActivity : AppCompatActivity() {
             b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { db.deleteSubscription(this@SubscriptionActivity, sub.name) } }
             b.show()
         }
+        private fun editSubDialog(sub: Subscription){
+            AddTagDialog {
+                val name = it.text.toString()
+                if (sub.name != name) {
+                    GlobalScope.launch {
+                        val newSub = Subscription.fromTag(Api.getTag(name))
+                        db.deleteSubscription(this@SubscriptionActivity, sub.name)
+                        db.addSubscription(this@SubscriptionActivity, newSub)
+                        withContext(Dispatchers.Main) {
+                            layoutManager.scrollToPositionWithOffset(db.subs.indexOf(newSub), 0)
+                        }
+                    }
+                }
+            }.withTag(sub.name).withTitle("Edit sub [${sub.name}]").build(this@SubscriptionActivity)
+        }
 
         override fun getItemCount(): Int = db.subs.size
-
-        override fun onCreateViewHolder(parent: ViewGroup, p1: Int): SubscribedTagViewHolder = SubscribedTagViewHolder(layoutInflater.inflate(R.layout.subscription_item_layout, parent, false) as LinearLayout).apply {
-            layout.setOnClickListener {
-                val sub = db.subs.elementAt(adapterPosition)
-                GlobalScope.launch {
-                    onClickedData = SubData(adapterPosition, Api.newestID(), Api.getTag(sub.name).count)
+        override fun onCreateViewHolder(parent: ViewGroup, position: Int): SubscribedTagViewHolder {
+            val holder = super.onCreateViewHolder(parent, position)
+            val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
+            toolbar.inflateMenu(R.menu.activity_subscription_item_menu)
+            toolbar.setOnMenuItemClickListener {
+                val sub = db.subs.elementAt(holder.adapterPosition)
+                when(it.itemId){
+                    R.id.subscription_set_favorite -> GlobalScope.launch { db.changeSubscription(this@SubscriptionActivity, sub.copy(isFavorite = !sub.isFavorite)) }
+                    R.id.subscription_edit -> editSubDialog(sub)
+                    R.id.subscription_delete -> deleteSubDialog(sub)
                 }
-                PreviewActivity.startActivity(this@SubscriptionActivity, sub.toString())
-            }
-            layout.setOnLongClickListener {
-                val sub = db.subs.elementAt(adapterPosition)
-                longClickDialog(sub)
                 true
             }
+            return holder
         }
 
         override fun onBindViewHolder(holder: SubscribedTagViewHolder, position: Int) {
-            val text1 = holder.layout.findViewById<TextView>(android.R.id.text1)
-            val text2 = holder.layout.findViewById<TextView>(android.R.id.text2)
+            super.onBindViewHolder(holder, position)
+            val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
+            val text1 = toolbar.findViewById<TextView>(android.R.id.text1)
+            val text2 = toolbar.findViewById<TextView>(android.R.id.text2)
             val sub = db.subs.elementAt(position)
             text1.text = sub.name
             text1.setColor(sub.color)
             text1.underline(sub.isFavorite)
             text2.text = getString(R.string.number_of_new_pictures)
+            Menus.initSubscriptionMenu(toolbar.menu, db.subs.elementAt(position))
             GlobalScope.launch {
                 val tag = Api.getTag(sub.name)
                 var countDifference = tag.count - sub.lastCount
-                if(countDifference<0) countDifference = 0
+                if (countDifference < 0) countDifference = 0
                 launch(Dispatchers.Main) {
                     text2.text = "${getString(R.string.number_of_new_pictures)}$countDifference"
                 }
             }
         }
     }
+
 
     override fun onResume() {
         super.onResume()
@@ -173,7 +225,7 @@ class SubscriptionActivity : AppCompatActivity() {
                             val sub = Subscription.fromTag(tag)
                             db.addSubscription(this@SubscriptionActivity, sub)
                             withContext(Dispatchers.Main) {
-                                nested_scrollview.scrollY = recyclerView.getChildAt(db.subs.indexOf(sub)).y.toInt()
+                                layoutManager.scrollToPositionWithOffset(db.subs.indexOf(sub), 0)
                             }
                         }
                     }
@@ -188,7 +240,7 @@ class SubscriptionActivity : AppCompatActivity() {
         UpdateSubsEvent.removeListener(listener)
     }
 
-    private inner class SubscribedTagViewHolder(val layout: LinearLayout) : RecyclerView.ViewHolder(layout)
+    private inner class SubscribedTagViewHolder(layout: FrameLayout) : SelectableViewHolder(layout)
 }
 
 private class SubData(val clickedSub: Int, val idWhenClicked: Int, val countWhenClicked: Int)

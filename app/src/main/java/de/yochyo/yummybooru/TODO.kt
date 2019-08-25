@@ -15,9 +15,19 @@ package de.yochyo.yummybooru
 //TODO subs update all subs button
 //TODO Mainactiviy mom. ausgewählte tags anzeigen
 //TODO pixiv
+//TODO Tags in png metadata Speichern
+//TODO developer mode app flags setzen können
+//TODO Suchen nach id in mainactiity
+//TODO Tags und subs vereinen?
+//TODO Update all subs button
 //Optimizations
+//TODO Normale Downloads auch über nen service? zumindest wenn die app geschlossen wird, downloads umlagern
+//TODO Pictureactivity infotags multiselect mit Fab Button suchen
+//TODO Wenn Ein Speicherpfad nicht existiert, erst versuchen ihn zu erstellen, dann resetten
+//TODO Selection-Actionmode hinzufügen, statt alles einzeln zu machen
+//TODO Bilder durch Vector Drawables ersetzen
 //TODO Bei Moebooru tags speichern, damit sie nicht JEDES mal runtergeladen werden
-//TODO logs in data abspeichern
+//TODO logs in data abspeichern -- werden zu einem server geschickt
 //TODO AddTagDialog vorschläge beziehen sich immer auf den aktuellsten Tag (Falls man mehrere angibt)
 
 //TODO beim Profiler ist die CPU belastung heavy
@@ -28,6 +38,9 @@ package de.yochyo.yummybooru
 //TODO subscription acitivty anders regeln, count wird bei jedem scrollen neu geladen
 //TODO Share button
 //Bugs
+//TODO Wenn ein Service downloaded während Server gewechselt wird wird im falschen Server gespeicheet
+//TODO Icons sind nicht ganz stimmig, fehlen bei der Nofication und wenn man auf die AppÜbersicht geht - round icon fehlt glaub
+//TODO Toolbar menu aktualisiert sich noch nicht immer?
 //TODO Mainactivity TagRecyclerView selecting view machen
 //TODO Braucht Manager eine lock
 //TODO stürzt ab wenn man UNKNOWN tags hinzufügt und updatemissing tags ausgeführt wird

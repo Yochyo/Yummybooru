@@ -22,11 +22,15 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder> : Recycle
             else onClickLayout
         }
 
+
     abstract fun createViewHolder(parent: ViewGroup): T
-    override fun onCreateViewHolder(parent: ViewGroup, position: Int): T {
-        val holder = createViewHolder(parent)
+    open fun setListeners(holder: T){
         holder.layout.setOnClickListener { onClick(holder) }
         holder.layout.setOnLongClickListener { onSelectItem(holder); true }
+    }
+    override fun onCreateViewHolder(parent: ViewGroup, position: Int): T {
+        val holder = createViewHolder(parent)
+        setListeners(holder)
         return holder
     }
 

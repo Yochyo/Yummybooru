@@ -165,7 +165,11 @@ class SubscriptionActivity : AppCompatActivity() {
             toolbar.setOnMenuItemClickListener {
                 val sub = db.subs.elementAt(holder.adapterPosition)
                 when(it.itemId){
-                    R.id.subscription_set_favorite -> GlobalScope.launch { db.changeSubscription(this@SubscriptionActivity, sub.copy(isFavorite = !sub.isFavorite)) }
+                    R.id.subscription_set_favorite -> GlobalScope.launch {
+                        val copy = sub.copy(isFavorite = !sub.isFavorite)
+                        db.changeSubscription(this@SubscriptionActivity, copy)
+                        withContext(Dispatchers.Main){layoutManager.scrollToPositionWithOffset(db.subs.indexOf(copy), 0)}
+                    }
                     R.id.subscription_edit -> editSubDialog(sub)
                     R.id.subscription_delete -> deleteSubDialog(sub)
                 }

@@ -23,6 +23,7 @@ import de.yochyo.yummybooru.api.downloads.LoadManagerPageEvent
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.cache
 import de.yochyo.yummybooru.api.downloads.downloadImage
+import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
@@ -111,8 +112,8 @@ class PictureActivity : AppCompatActivity() {
 
     private fun downloadOriginalPicture(p: Post) {
         GlobalScope.launch {
-            if (db.downloadOriginal) FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL)
-            else FileUtils.writeOrDownloadFile(this@PictureActivity, p, sample(p.id), p.fileSampleURL)
+            if (db.downloadOriginal) FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL, Server.currentServer)
+            else FileUtils.writeOrDownloadFile(this@PictureActivity, p, sample(p.id), p.fileSampleURL, Server.currentServer)
         }
     }
 

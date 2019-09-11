@@ -46,7 +46,7 @@ class AddTagDialog(val runOnPositive: (editText: AutoCompleteTextView) -> Unit) 
         editText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable) {
                 editText.setAdapter(arrayAdapter) //Because of bug, that suggestions aren´t correctly updated
-                val name = s.toString()
+                val name = if(s.toString().split(" ").isNotEmpty()) s.toString().split(" ").last() else ""
                 GlobalScope.launch {
                     val tags = Api.searchTags(name)
                     launch(Dispatchers.Main) {

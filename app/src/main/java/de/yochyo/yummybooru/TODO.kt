@@ -34,17 +34,12 @@ package de.yochyo.yummybooru
 //TODO AddTagDialog vorschläge beziehen sich immer auf den aktuellsten Tag (Falls man mehrere angibt)
 
 //TODO beim Profiler ist die CPU belastung heavy
-//TODO downloader braucht ne lock, synchronisieren
-//TODO Code Kommentieren
-//TODO strings vol pref_general in string.xml
-//TODO md5 des bildes benutzen
-//TODO subscription acitivty anders regeln, count wird bei jedem scrollen neu geladen
+//TODO Code Kommentieren, neu anordnen
 //TODO Share button
 //Bugs
 //TODO es kann passieren, dass ein bild größer als 25MB ist, oder nicht in den heap passt
 //TODO downloadservice geht nicht
 //TODO speicherordner resettet sich
-//TODO Wenn ein Service downloaded während Server gewechselt wird wird im falschen Server gespeicheet
 //TODO Icons sind nicht ganz stimmig, fehlen bei der Nofication und wenn man auf die AppÜbersicht geht - round icon fehlt glaub
 //TODO Toolbar menu aktualisiert sich noch nicht immer?
 //TODO Mainactivity TagRecyclerView selecting view machen

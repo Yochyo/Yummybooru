@@ -10,6 +10,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.downloads.Downloader
 import de.yochyo.yummybooru.api.downloads.Manager
+import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
 import de.yochyo.yummybooru.utils.App
@@ -27,11 +28,11 @@ class DownloadService : Service() {
         private var position = 0
         private val downloadPosts = LinkedList<Posts>()
 
-        fun startService(context: Context, tags: String, posts: List<Post>){
-            downloadPosts += Posts(tags, posts)
+        fun startService(context: Context, tags: String, posts: List<Post>, server: Server){
+            downloadPosts += Posts(tags, posts, server)
             context.startService(Intent(context, DownloadService::class.java))
         }
-        fun startService(context: Context, manager: Manager) = startService(context, manager.tags.toTagString(), ArrayList(manager.posts))
+        fun startService(context: Context, manager: Manager, server: Server) = startService(context, manager.tags.toTagString(), ArrayList(manager.posts), server)
     }
 
     override fun onCreate() {
@@ -42,18 +43,18 @@ class DownloadService : Service() {
 
         startForeground(1, notificationBuilder.build())
         job = GlobalScope.launch(Dispatchers.IO) {
-            var p: Post? = getNextElement()
-            while (p != null && isActive) {
-                val bitmap = if (db.downloadOriginal) Downloader.download(p.fileSampleURL)
-                else Downloader.download(p.fileURL)
-                if (bitmap != null) FileUtils.writeFile(this@DownloadService, p, bitmap, SafeFileEvent.SILENT)
-                p = getNextElement()
+            var pair = getNextElement()
+            while (pair != null && isActive) {
+                val bitmap = if (db.downloadOriginal) Downloader.download(pair.first.fileSampleURL)
+                else Downloader.download(pair.first.fileURL)
+                if (bitmap != null) FileUtils.writeFile(this@DownloadService, pair.first, bitmap, pair.second, SafeFileEvent.SILENT)
+                pair = getNextElement()
             }
             stopSelf()
         }
     }
 
-    private suspend fun getNextElement(): Post? {
+    private suspend fun getNextElement(): Pair<Post, Server>? {
         if (downloadPosts.isNotEmpty()) {
             val posts = downloadPosts[0]
             return if (posts.posts.size > position) {
@@ -65,7 +66,7 @@ class DownloadService : Service() {
                     notificationManager.notify(1, notificationBuilder.build())
                 }
                 ++position
-                post
+                Pair(post, posts.server)
             } else {
                 position = 0
                 downloadPosts.removeAt(0)
@@ -88,4 +89,4 @@ class DownloadService : Service() {
     override fun onBind(intent: Intent): IBinder? = null
 }
 
-private class Posts(val tags: String, val posts: List<Post>)
+private class Posts(val tags: String, val posts: List<Post>, val server: Server)

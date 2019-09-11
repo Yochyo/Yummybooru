@@ -25,6 +25,7 @@ object FileUtils {
             parentFolder = documentFile(context, oldSavePath!!)
         } //Falls der Pfad nicht mehr existiert
         if (parentFolder == null || !parentFolder!!.exists()) {
+            println("error-------")
             oldSavePath = createDefaultSavePath()
             db.savePath = oldSavePath!!
             parentFolder = documentFile(context, oldSavePath!!)
@@ -32,17 +33,17 @@ object FileUtils {
         return parentFolder!!
     }
 
-    suspend fun writeOrDownloadFile(context: Context, post: de.yochyo.yummybooru.api.Post, id: String, url: String, source: Int = SafeFileEvent.DEFAULT) {
+    suspend fun writeOrDownloadFile(context: Context, post: de.yochyo.yummybooru.api.Post, id: String, url: String, server: Server, source: Int = SafeFileEvent.DEFAULT) {
         withContext(Dispatchers.IO) {
             val f = context.cache.getCachedBitmap(id)
-            if (f != null) writeFile(context, post, f, source)
-            else context.downloadImage(url, id, { writeFile(context, post, it, source) }, cache = false)
+            if (f != null) writeFile(context, post, f, server, source)
+            else context.downloadImage(url, id, { writeFile(context, post, it, server, source) }, cache = false)
         }
     }
 
-    suspend fun writeFile(context: Context, post: de.yochyo.yummybooru.api.Post, bitmap: Bitmap, source: Int = SafeFileEvent.DEFAULT) {
+    suspend fun writeFile(context: Context, post: de.yochyo.yummybooru.api.Post, bitmap: Bitmap, server: Server, source: Int = SafeFileEvent.DEFAULT) {
         withContext(Dispatchers.IO) {
-            val file = createFileToWrite(context, post)
+            val file = createFileToWrite(context, post,server)
             if (file != null) {
                 val stream = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
@@ -59,16 +60,16 @@ object FileUtils {
         }
     }
 
-    private suspend fun createFileToWrite(context: Context, post: de.yochyo.yummybooru.api.Post, mimeType: String = post.extension): DocumentFile? {
+    private suspend fun createFileToWrite(context: Context, post: de.yochyo.yummybooru.api.Post, server: Server, mimeType: String = post.extension): DocumentFile? {
         return withContext(Dispatchers.IO) {
-            val folder = getOrCreateFolder(getParentFolder(context), Server.currentServer.urlHost)
-            if (folder != null) createFileOrNull(folder, postToFilename(post, mimeType), mimeType) else null
+            val folder = getOrCreateFolder(getParentFolder(context), server.urlHost)
+            if (folder != null) createFileOrNull(folder, postToFilename(post, mimeType, server), mimeType) else null
         }
 
     }
 
-    private suspend fun postToFilename(p: de.yochyo.yummybooru.api.Post, mimeType: String): String {
-        val s = "${Server.currentServer.urlHost} ${p.id} ${p.getTags().joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '[' && it != ']' }
+    private suspend fun postToFilename(p: de.yochyo.yummybooru.api.Post, mimeType: String, server: Server): String {
+        val s = "${server.urlHost} ${p.id} ${p.getTags().joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '[' && it != ']' }
         var last = s.length
         if (last > 127 - (mimeType.length + 1)) last = 127 - (mimeType.length + 1)
         return s.substring(0, last) + ".$mimeType"

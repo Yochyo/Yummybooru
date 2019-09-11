@@ -19,6 +19,7 @@ import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.downloads.LoadManagerPageEvent
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.downloadImage
+import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.DownloadService
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
@@ -72,7 +73,7 @@ open class PreviewActivity : AppCompatActivity() {
                     val posts = LinkedList<Post>()
                     for (i in 0 until previewAdapter.selected.size)
                         posts += m.posts[i]
-                    DownloadService.startService(this@PreviewActivity, m.tags.toTagString(), posts)
+                    DownloadService.startService(this@PreviewActivity, m.tags.toTagString(), posts, Server.currentServer)
                     previewAdapter.unselectAll()
                 }
                 else -> return false

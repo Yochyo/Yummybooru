@@ -45,7 +45,7 @@ abstract class Downloader(context: Context) {
                             }
                             launch(Dispatchers.Main) { download.doAfter.invoke(this, bitmap) }
                         } catch (e: Exception) {
-                            Logger.log(e, download?.url ?: "")
+                           //TODO  Logger.log(e, download?.url ?: "")
                             e.printStackTrace()
                         }
                         delay(5)
@@ -57,9 +57,11 @@ abstract class Downloader(context: Context) {
     }
 
     fun downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(bitmap: Bitmap) -> Unit = {}, downloadNow: Boolean = true, cache: Boolean = true) {
-        val download = Download(url, id, cache, doAfter)
-        if (downloadNow) downloads.putLast(download)
-        else downloads.putFirst(download)
+        if(downloads.filter { it.url == url }.isEmpty()){
+            val download = Download(url, id, cache, doAfter)
+            if (downloadNow) downloads.putLast(download)
+            else downloads.putFirst(download)
+        }
     }
 }
 

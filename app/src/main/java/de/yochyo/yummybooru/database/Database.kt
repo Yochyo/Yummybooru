@@ -44,9 +44,9 @@ abstract class Database : RoomDatabase() {
                                     db.execSQL(s)
                             }
                         }).addMigrations(*Migrations.all).build()
-                instance!!.servers.onUpdate = { GlobalScope.launch(Dispatchers.Main) { UpdateServersEvent.trigger(UpdateServersEvent(context, instance!!.servers)) } }
-                instance!!.tags.onUpdate = { GlobalScope.launch(Dispatchers.Main) { UpdateTagsEvent.trigger(UpdateTagsEvent(context, instance!!.tags)) } }
-                instance!!.subs.onUpdate = { GlobalScope.launch(Dispatchers.Main) { UpdateSubsEvent.trigger(UpdateSubsEvent(context, instance!!.subs)) } }
+                instance!!.servers.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateServersEvent.trigger(UpdateServersEvent(context, instance!!.servers)) } }
+                instance!!.tags.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateTagsEvent.trigger(UpdateTagsEvent(context, instance!!.tags)) } }
+                instance!!.subs.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateSubsEvent.trigger(UpdateSubsEvent(context, instance!!.subs)) } }
                 GlobalScope.launch {
                     instance!!.loadServers()
                     Server.currentServer.select(context)

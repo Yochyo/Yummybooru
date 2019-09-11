@@ -46,9 +46,15 @@ object FileUtils {
             if (file != null) {
                 val stream = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-                context.contentResolver.openOutputStream(file.uri).write(stream.toByteArray())
-                stream.close()
-                withContext(Dispatchers.Main) { SafeFileEvent.trigger(SafeFileEvent(context, file, post, source)) }
+                try {
+                    context.contentResolver.openOutputStream(file.uri).write(stream.toByteArray())
+                    withContext(Dispatchers.Main) { SafeFileEvent.trigger(SafeFileEvent(context, file, post, source)) }
+                } catch (e: Exception) {
+                    Logger.log(e)
+                    e.printStackTrace()
+                } finally {
+                    stream.close()
+                }
             }
         }
     }
@@ -56,7 +62,7 @@ object FileUtils {
     private suspend fun createFileToWrite(context: Context, post: de.yochyo.yummybooru.api.Post, mimeType: String = post.extension): DocumentFile? {
         return withContext(Dispatchers.IO) {
             val folder = getOrCreateFolder(getParentFolder(context), Server.currentServer.urlHost)
-            if(folder != null) createFileOrNull(folder, postToFilename(post, mimeType), mimeType) else null
+            if (folder != null) createFileOrNull(folder, postToFilename(post, mimeType), mimeType) else null
         }
 
     }

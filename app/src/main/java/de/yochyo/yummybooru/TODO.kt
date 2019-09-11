@@ -1,6 +1,8 @@
 package de.yochyo.yummybooru
 
 //Features
+//TODO multiselect pictureactivity kann auch einen tag hinzufügen (elsword eve_(elsword) oder so)
+//TODO download and add all authors
 //TODO animated pictures
 //TODO changelog
 //TODO gifs und videos
@@ -21,6 +23,7 @@ package de.yochyo.yummybooru
 //TODO Tags und subs vereinen?
 //TODO Update all subs button
 //Optimizations
+//TODO wenn mp4... eingeführt ist, muss downloader loggen
 //TODO Normale Downloads auch über nen service? zumindest wenn die app geschlossen wird, downloads umlagern
 //TODO Pictureactivity infotags multiselect mit Fab Button suchen
 //TODO Wenn Ein Speicherpfad nicht existiert, erst versuchen ihn zu erstellen, dann resetten
@@ -38,6 +41,9 @@ package de.yochyo.yummybooru
 //TODO subscription acitivty anders regeln, count wird bei jedem scrollen neu geladen
 //TODO Share button
 //Bugs
+//TODO es kann passieren, dass ein bild größer als 25MB ist, oder nicht in den heap passt
+//TODO downloadservice geht nicht
+//TODO speicherordner resettet sich
 //TODO Wenn ein Service downloaded während Server gewechselt wird wird im falschen Server gespeicheet
 //TODO Icons sind nicht ganz stimmig, fehlen bei der Nofication und wenn man auf die AppÜbersicht geht - round icon fehlt glaub
 //TODO Toolbar menu aktualisiert sich noch nicht immer?

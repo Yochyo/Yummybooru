@@ -5,6 +5,10 @@
           android:title="Open activity"
           android:icon="@drawable/play"
           app:showAsAction="ifRoom"/>
+    <item android:id="@+id/update_subs"
+          android:title="Update all subs"
+          android:icon="@drawable/sync"
+          app:showAsAction="ifRoom"/>
     <item android:id="@+id/select_all"
           android:title="Select all"
           android:icon="@drawable/select_all"

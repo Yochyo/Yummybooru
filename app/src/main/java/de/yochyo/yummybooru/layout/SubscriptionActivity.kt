@@ -56,6 +56,15 @@ class SubscriptionActivity : AppCompatActivity() {
                     Toast.makeText(this@SubscriptionActivity, "Not yet implemented", Toast.LENGTH_SHORT).show()
                     adapter.unselectAll()
                 }
+                R.id.update_subs ->{
+                    ConfirmDialog {GlobalScope.launch {
+                        val id = Api.newestID()
+                        for(selected in adapter.selected.getSelected(db.subs)){
+                            val tag = Api.getTag(selected.name)
+                            db.changeSubscription(this@SubscriptionActivity, selected.copy(lastCount = tag.count, lastID = id))
+                        }
+                    }}.withMessage("Update selected subs?").build(this@SubscriptionActivity)
+                }
                 else -> return false
             }
             return true

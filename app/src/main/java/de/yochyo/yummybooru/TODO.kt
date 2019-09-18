@@ -29,9 +29,7 @@ package de.yochyo.yummybooru
 //TODO Wenn Ein Speicherpfad nicht existiert, erst versuchen ihn zu erstellen, dann resetten
 //TODO Selection-Actionmode hinzufügen, statt alles einzeln zu machen
 //TODO Bilder durch Vector Drawables ersetzen
-//TODO Bei Moebooru tags speichern, damit sie nicht JEDES mal runtergeladen werden
 //TODO logs in data abspeichern -- werden zu einem server geschickt
-//TODO AddTagDialog vorschläge beziehen sich immer auf den aktuellsten Tag (Falls man mehrere angibt)
 
 //TODO beim Profiler ist die CPU belastung heavy
 //TODO Code Kommentieren, neu anordnen
@@ -45,5 +43,3 @@ package de.yochyo.yummybooru
 //TODO Mainactivity TagRecyclerView selecting view machen
 //TODO Braucht Manager eine lock
 //TODO stürzt ab wenn man UNKNOWN tags hinzufügt und updatemissing tags ausgeführt wird
-//TODO updatemissing anders regeln, sowas sollte nicht in der datenbank stecken
-//TODO when z.B. ein download crasht, muss ein event (oder awaitPicture...) abgebrochen werden

@@ -69,6 +69,8 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             Api.initApi(api, url)
             db.loadServerWithMutex(context)
             db.servers.notifyChange()
+            currentServer.updateMissingTypeTags(context)
+            currentServer.updateMissingTypeSubs(context)
         }
     }
 

@@ -83,7 +83,6 @@ abstract class Database : RoomDatabase() {
             withContext(Dispatchers.Main) {
                 tags.clear()
                 tags.addAll(t)
-                Server.currentServer.updateMissingTypeTags(context)
             }
         }
     }
@@ -94,7 +93,6 @@ abstract class Database : RoomDatabase() {
             val s = subDao.getAllSubscriptions().filter { it.serverID == serverID }
             subs.clear()
             subs.addAll(s)
-            Server.currentServer.updateMissingTypeSubs(context) //TODO
         }
     }
 

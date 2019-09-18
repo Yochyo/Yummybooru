@@ -20,6 +20,7 @@ import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.UpdateSubsEvent
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
+import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.layout.res.Menus
 import de.yochyo.yummybooru.layout.views.SelectableRecyclerViewAdapter
 import de.yochyo.yummybooru.layout.views.SelectableViewHolder
@@ -234,6 +235,15 @@ class SubscriptionActivity : AppCompatActivity() {
                         }
                     }
                 }.withTitle(getString(R.string.add_subscription)).build(this)
+            }
+            R.id.update_subs -> {
+                ConfirmDialog {GlobalScope.launch {
+                    val id = Api.newestID()
+                    for(sub in db.subs){
+                        val tag = Api.getTag(sub.name)
+                        db.changeSubscription(this@SubscriptionActivity, sub.copy(lastCount = tag.count, lastID = id))
+                    }
+                }}.withMessage("Update all subs?").build(this@SubscriptionActivity)
             }
         }
         return super.onOptionsItemSelected(item)

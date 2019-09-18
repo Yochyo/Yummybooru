@@ -18,7 +18,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.*
-import de.yochyo.eventmanager.EventHandler
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
@@ -34,16 +33,10 @@ import de.yochyo.yummybooru.events.listeners.*
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.res.Menus
-import de.yochyo.yummybooru.utils.ThreadExceptionHandler
-import de.yochyo.yummybooru.utils.setColor
-import de.yochyo.yummybooru.utils.toTagString
-import de.yochyo.yummybooru.utils.underline
+import de.yochyo.yummybooru.utils.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.util.*
 
 
@@ -73,11 +66,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         toggle.syncState()
         nav_view.setNavigationItemSelectedListener(this)
         val navLayout = nav_search.findViewById<LinearLayout>(R.id.nav_search_layout)
-        initDrawerButtons(navLayout.findViewById(R.id.add_search),navLayout.findViewById(R.id.start_search))
+        initDrawerButtons(navLayout.findViewById(R.id.add_search), navLayout.findViewById(R.id.start_search))
         tagRecyclerView = navLayout.findViewById(R.id.recycler_view_search)
         tagRecyclerView.layoutManager = LinearLayoutManager(this).apply { tagLayoutManager = this }
         if (hasPermission)
             initData()
+        GlobalScope.launch {
+            delay(2000)
+            withContext(Dispatchers.Main) {
+                while (true) {
+                    FileUtils.getParentFolder(this@MainActivity)
+                    delay(10)
+                }
+            }
+        }
     }
 
 
@@ -151,7 +153,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     R.id.main_search_favorite_tag -> GlobalScope.launch {
                         val copy = tag.copy(isFavorite = !tag.isFavorite)
                         db.changeTag(this@MainActivity, copy)
-                          withContext(Dispatchers.Main){tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(copy), 0)}
+                        withContext(Dispatchers.Main) { tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(copy), 0) }
                     }
                     R.id.main_search_subscribe_tag -> {
                         if (db.getSubscription(tag.name) == null) GlobalScope.launch { db.addSubscription(this@MainActivity, Subscription.fromTag(tag)) }

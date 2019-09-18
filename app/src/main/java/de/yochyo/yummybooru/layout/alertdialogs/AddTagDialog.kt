@@ -11,9 +11,8 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.layout.PreviewActivity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+
 
 class AddTagDialog(val runOnPositive: (editText: AutoCompleteTextView) -> Unit) {
     var title: String = "Add tag"
@@ -40,24 +39,26 @@ class AddTagDialog(val runOnPositive: (editText: AutoCompleteTextView) -> Unit) 
                 }
                 return textView
             }
+
         }
         editText.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id -> clickedDropdown = true }
         editText.setAdapter(arrayAdapter)
         editText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable) {
                 editText.setAdapter(arrayAdapter) //Because of bug, that suggestions aren´t correctly updated
-                val name = if(s.toString().split(" ").isNotEmpty()) s.toString().split(" ").last() else ""
+                val string = s.toString()
+                val name = if (string.contains(" ")) string.split(" ").last() else string
                 GlobalScope.launch {
-                    val tags = Api.searchTags(name)
+                    val lastIndexOf = string.lastIndexOf(" ")
+                    val a = if (lastIndexOf != -1) string.substring(0..lastIndexOf) else ""
+                    val tags = Api.searchTags(name).map { it.copy(name = a + it.name) } //damit der filter funktioniert
                     launch(Dispatchers.Main) {
-                        if (!dialogIsDismissed && editText.text.toString() == name) {
+                        if (!dialogIsDismissed) {
                             arrayAdapter.apply { clear(); addAll(tags); notifyDataSetChanged() }
-                            if (clickedDropdown || (tags.size == 1 && tags.first().name == name)) {
+                            if (clickedDropdown || (tags.size == 1 && tags.first().name == string)) {
                                 editText.dismissDropDown()
                                 clickedDropdown = false
-                            } else {
-                                editText.showDropDown()
-                            }
+                            } else editText.showDropDown()
                         }
                     }
                 }

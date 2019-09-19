@@ -134,10 +134,11 @@ open class PreviewActivity : AppCompatActivity() {
     fun initSwipeRefreshLayout() {
         swipeRefreshLayout.setOnRefreshListener {
             swipeRefreshLayout.isRefreshing = false
-            previewAdapter.unselectAll()
-            GlobalScope.launch {
-                m.reset()
-                loadPage(1)
+            if(actionmode == null){
+                GlobalScope.launch {
+                    m.reset()
+                    loadPage(1)
+                }
             }
         }
     }

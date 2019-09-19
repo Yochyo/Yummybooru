@@ -13,7 +13,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:singleLine="true"/>
+            android:maxLines="1"
+            android:inputType="text"/>
     <Spinner
             android:id="@+id/add_server_api"
             android:layout_width="match_parent"
@@ -42,20 +43,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:singleLine="true"/>
+            android:maxLines="1"
+            android:inputType="text"/>
     <EditText
             android:hint="@string/username"
             android:id="@+id/add_server_username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:singleLine="true"/>
+            android:maxLines="1"
+            android:inputType="text"/>
     <EditText
             android:hint="@string/password"
             android:id="@+id/add_server_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:singleLine="true"/>
+            android:maxLines="1"
+            android:inputType="text"/>
 
 </LinearLayout>

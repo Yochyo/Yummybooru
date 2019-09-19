@@ -37,7 +37,7 @@
                 xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/nav_search_layout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingTop="24dp">
 
@@ -49,24 +49,52 @@
                         android:id="@+id/add_search"
                         android:layout_width="0dp"
                         android:text="@string/add"
-                        android:background="@color/transparent"
+                        android:background="@color/very_dark_grey"
                         android:textColor="@color/white"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"/>
                 <Button
                         android:id="@+id/start_search"
                         android:layout_width="0dp"
-                        android:background="@color/transparent"
+                        android:background="@color/very_dark_grey"
                         android:text="@string/search"
                         android:textColor="@color/white"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"/>
             </LinearLayout>
 
-            <android.support.v7.widget.RecyclerView
-                    android:id="@+id/recycler_view_search"
+            <android.support.design.widget.CoordinatorLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="wrap_content">
+                <android.support.design.widget.AppBarLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:theme="@style/AppTheme.AppBarOverlay">
+                    <android.support.v7.widget.Toolbar
+                            android:id="@+id/toolbar_search"
+                            android:layout_width="match_parent"
+                            android:layout_height="?attr/actionBarSize"
+                            android:background="@color/very_dark_grey"
+                            app:layout_scrollFlags="scroll|enterAlwaysCollapsed|enterAlways">
+                        <android.support.v7.widget.SearchView
+                                android:id="@+id/tag_filter"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="16dp"
+                                android:layout_marginEnd="16dp"
+                                android:maxLines="1"
+                                app:queryHint="Search"
+                                app:iconifiedByDefault="false"
+                                app:searchIcon="@null"
+                                android:inputType="text"/>
+                    </android.support.v7.widget.Toolbar>
+                </android.support.design.widget.AppBarLayout>
+                <android.support.v7.widget.RecyclerView
+                        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                        android:id="@+id/recycler_view_search"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+            </android.support.design.widget.CoordinatorLayout>
 
         </LinearLayout>
 

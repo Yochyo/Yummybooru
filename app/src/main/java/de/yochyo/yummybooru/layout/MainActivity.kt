@@ -14,11 +14,14 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.SearchView
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.*
+import de.yochyo.eventmanager.EventCollection
 import de.yochyo.eventmanager.Listener
+import de.yochyo.subeventcollection.SubEventCollection
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.api.DanbooruApi
@@ -26,6 +29,7 @@ import de.yochyo.yummybooru.api.api.MoebooruApi
 import de.yochyo.yummybooru.api.downloads.cache
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Subscription
+import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.Database
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.*
@@ -33,14 +37,58 @@ import de.yochyo.yummybooru.events.listeners.*
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.res.Menus
-import de.yochyo.yummybooru.utils.*
+import de.yochyo.yummybooru.utils.ThreadExceptionHandler
+import de.yochyo.yummybooru.utils.setColor
+import de.yochyo.yummybooru.utils.toTagString
+import de.yochyo.yummybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+    private val filteredTags = ArrayList<Pair<EventCollection<Tag>, String>>()
+    private val currentFilter get() = filteredTags.last().first
+    private val filterMutex = Mutex()
+    suspend fun filter(name: String) {
+        withContext(Dispatchers.Default) {
+            filterMutex.withLock {
+                var addChild: EventCollection<Tag>
+                if (name == "") {
+                    for (item in filteredTags) {
+                        val list = item.first
+                        if (list is SubEventCollection) list.destroy()
+                    }
+                    filteredTags.clear()
+                    addChild = db.tags
+                } else {
+                    for (i in filteredTags.indices.reversed()) {
+                        if (name.startsWith(filteredTags[i].second)) {
+                            val subCollection = SubEventCollection(TreeSet(), filteredTags[i].first) { it.name.contains(name) }
+                            addChild = subCollection
+                            println("Subcollection of '${filteredTags[i].second}' size ${filteredTags[i].first.size}")
+                            println(subCollection.size)
+                            break
+                        }
+                    }
+                    addChild = SubEventCollection(TreeSet(), db.tags) { it.name.contains(name) }
+                }
+                withContext(Dispatchers.Main) {
+                    tagLayoutManager.scrollToPosition(0)
+                    tagAdapter.notifyDataSetChanged()
+                    filteredTags += Pair(addChild, name)
+                }
+            }
+        }
+    }
+
     companion object {
         val selectedTags = ArrayList<String>()
     }
@@ -69,17 +117,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         initDrawerButtons(navLayout.findViewById(R.id.add_search), navLayout.findViewById(R.id.start_search))
         tagRecyclerView = navLayout.findViewById(R.id.recycler_view_search)
         tagRecyclerView.layoutManager = LinearLayoutManager(this).apply { tagLayoutManager = this }
+        tag_filter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextChange(newText: String?): Boolean {
+                if (newText != null)
+                    GlobalScope.launch { filter(newText) }
+                return true
+            }
+            override fun onQueryTextSubmit(query: String?) = true
+        })
         if (hasPermission)
             initData()
-        GlobalScope.launch {
-            delay(2000)
-            withContext(Dispatchers.Main) {
-                while (true) {
-                    FileUtils.getParentFolder(this@MainActivity)
-                    delay(10)
-                }
-            }
-        }
     }
 
 
@@ -94,6 +141,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         Api.addApi(DanbooruApi(""))
         Api.addApi(MoebooruApi(""))
         Database.initDatabase(this)
+        filteredTags += Pair(db.tags, "")
 
         tagListener = UpdateTagsEvent.registerListener { tagAdapter.notifyDataSetChanged() }
         serverListener = UpdateServersEvent.registerListener { serverAdapter.notifyDataSetChanged() }
@@ -134,6 +182,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         layout.findViewById<TextView>(R.id.server_text3).text = server.userName
     }
 
+
     private inner class SearchTagAdapter : RecyclerView.Adapter<SearchTagViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchTagViewHolder = SearchTagViewHolder((layoutInflater.inflate(R.layout.search_item_layout, parent, false) as Toolbar)).apply {
             val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
@@ -148,12 +197,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 else selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
             }
             toolbar.setOnMenuItemClickListener {
-                val tag = db.tags.elementAt(adapterPosition)
+                val tag = currentFilter.elementAt(adapterPosition)
                 when (it.itemId) {
                     R.id.main_search_favorite_tag -> GlobalScope.launch {
                         val copy = tag.copy(isFavorite = !tag.isFavorite)
                         db.changeTag(this@MainActivity, copy)
-                        withContext(Dispatchers.Main) { tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(copy), 0) }
+                        withContext(Dispatchers.Main) { tagLayoutManager.scrollToPositionWithOffset(currentFilter.indexOf(copy), 0) }
                     }
                     R.id.main_search_subscribe_tag -> {
                         if (db.getSubscription(tag.name) == null) GlobalScope.launch { db.addSubscription(this@MainActivity, Subscription.fromTag(tag)) }
@@ -168,7 +217,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 true
             }
             toolbar.setOnLongClickListener {
-                val tag = db.tags.elementAt(adapterPosition)
+                val tag = currentFilter.elementAt(adapterPosition)
                 AddTagDialog {
                     val name = it.text.toString()
                     if (name != tag.name) {
@@ -176,7 +225,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             val newTag = Api.getTag(name)
                             db.deleteTag(this@MainActivity, tag.name)
                             db.addTag(this@MainActivity, newTag)
-                            withContext(Dispatchers.Main) { tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(newTag), 0) }
+                            withContext(Dispatchers.Main) { tagLayoutManager.scrollToPositionWithOffset(currentFilter.indexOf(newTag), 0) }
                         }
                     }
                 }.withTag(tag.name).withTitle("Edit tag [${tag.name}]").build(this@MainActivity)
@@ -185,14 +234,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         override fun onBindViewHolder(holder: SearchTagViewHolder, position: Int) {
-            val tag = db.tags.elementAt(position)
+            val tag = currentFilter.elementAt(position)
             holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox).isChecked = selectedTags.contains(tag.name)
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
             textView.text = tag.name;textView.setColor(tag.color);textView.underline(tag.isFavorite)
             Menus.initMainSearchTagMenu(holder.toolbar.menu, tag)
         }
 
-        override fun getItemCount(): Int = db.tags.size
+        override fun getItemCount(): Int = currentFilter.size
     }
 
     private inner class ServerAdapter : RecyclerView.Adapter<ServerViewHolder>() {

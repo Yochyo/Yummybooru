@@ -35,6 +35,7 @@ package de.yochyo.yummybooru
 //TODO Code Kommentieren, neu anordnen
 //TODO Share button
 //Bugs
+//TODO icon updaten, unter anderem bei discord... sieht es komisch aus
 //TODO es kann passieren, dass ein bild größer als 25MB ist, oder nicht in den heap passt
 //TODO downloadservice geht nicht
 //TODO speicherordner resettet sich
@@ -42,4 +43,3 @@ package de.yochyo.yummybooru
 //TODO Toolbar menu aktualisiert sich noch nicht immer?
 //TODO Mainactivity TagRecyclerView selecting view machen
 //TODO Braucht Manager eine lock
-//TODO stürzt ab wenn man UNKNOWN tags hinzufügt und updatemissing tags ausgeführt wird

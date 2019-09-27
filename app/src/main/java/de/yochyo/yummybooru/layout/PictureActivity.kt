@@ -2,6 +2,7 @@ package de.yochyo.yummybooru.layout
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.view.GravityCompat
@@ -223,6 +224,17 @@ class PictureActivity : AppCompatActivity() {
             android.R.id.home -> finish()
             R.id.show_info -> drawer_picture.openDrawer(GravityCompat.END)
             R.id.save -> m.currentPost?.apply { downloadOriginalPicture(this) }
+            R.id.share -> {
+                val post = m.currentPost
+                if(post != null){
+                    val intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, post.fileURL)
+                        type = "text/plain"
+                    }
+                    startActivity(Intent.createChooser(intent, null))
+                }
+            }
         }
         return super.onOptionsItemSelected(item)
     }

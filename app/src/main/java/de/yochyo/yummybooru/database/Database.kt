@@ -8,6 +8,7 @@ import android.arch.persistence.room.migration.Migration
 import android.content.Context
 import android.content.SharedPreferences
 import de.yochyo.eventmanager.EventCollection
+import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.api.entities.*
 import de.yochyo.yummybooru.database.converter.DateConverter
 import de.yochyo.yummybooru.events.events.*
@@ -244,6 +245,14 @@ abstract class Database : RoomDatabase() {
                 apply()
             }
         }
+    var lastVersion = prefs.getInt("lastVersion", BuildConfig.VERSION_CODE)
+    set(v){
+        field = v
+        with(prefs.edit()){
+            putInt("lastVersion", v)
+            apply()
+        }
+    }
 
 
     var sortTags = prefs.getString("sortTags", "00")!!

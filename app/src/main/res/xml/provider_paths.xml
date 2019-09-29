@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen>
-    <external-path name="external_files" path="."/>
-</PreferenceScreen>
+<paths>
+<external-path name="external_files" path="."/>
+</paths>

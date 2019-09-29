@@ -35,6 +35,15 @@
             android:enabled="true"/>
     <Preference
             android:key="restore_backup"
-            android:title="Restore Backup"
+            android:title="Restore backup"
+            android:enabled="true"/>
+    <Preference/>
+    <Preference
+            android:key="updates"
+            android:title="Check updates"
+            android:enabled="true"/>
+    <Preference
+            android:key="changelogs"
+            android:title="Show Changelogs"
             android:enabled="true"/>
 </PreferenceScreen>

@@ -22,6 +22,7 @@ import android.widget.*
 import de.yochyo.eventmanager.EventCollection
 import de.yochyo.eventmanager.Listener
 import de.yochyo.subeventcollection.SubEventCollection
+import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.api.DanbooruApi
@@ -36,7 +37,10 @@ import de.yochyo.yummybooru.events.events.*
 import de.yochyo.yummybooru.events.listeners.*
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
+import de.yochyo.yummybooru.layout.alertdialogs.ShowChangelogsDialog
 import de.yochyo.yummybooru.layout.res.Menus
+import de.yochyo.yummybooru.updater.AutoUpdater
+import de.yochyo.yummybooru.updater.Changelog
 import de.yochyo.yummybooru.utils.ThreadExceptionHandler
 import de.yochyo.yummybooru.utils.setColor
 import de.yochyo.yummybooru.utils.toTagString
@@ -123,6 +127,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     GlobalScope.launch { filter(newText) }
                 return true
             }
+
             override fun onQueryTextSubmit(query: String?) = true
         })
         if (hasPermission)
@@ -150,8 +155,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
         serverRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
         serverAdapter = ServerAdapter().apply { serverRecyclerView.adapter = this }
-    }
 
+        Changelog.showChangelogs(this)
+        AutoUpdater().autoUpdate(this)
+    }
 
     private fun initDrawerButtons(addButton: Button, searchButton: Button) {
         addButton.setOnClickListener {

@@ -14,6 +14,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.backup.BackupUtils
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.utils.documentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -47,12 +48,22 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             startActivityForResult(intent, restoreDataCode)
             true
         }
+        findPreference("updates").setOnPreferenceClickListener {
+            AutoUpdater().autoUpdate(this)
+            true
+        }
+        findPreference("changelogs").setOnPreferenceClickListener {
+            AutoUpdater().autoUpdate(this)
+            true
+        }
 
         bindPreferenceSummaryToValue(findPreference("limit"))
         bindPreferenceSummaryToValue(findPreference("sortSubs"))
         bindPreferenceSummaryToValue(findPreference("sortTags"))
         bindPreferenceSummaryToValue(findPreference("downloadOriginal"))
         bindPreferenceSummaryToValue(findPreference("savePath"))
+        bindPreferenceSummaryToValue(findPreference("updates"))
+        bindPreferenceSummaryToValue(findPreference("changelogs"))
     }
 
     companion object {

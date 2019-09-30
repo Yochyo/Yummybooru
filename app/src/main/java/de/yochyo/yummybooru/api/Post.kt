@@ -14,4 +14,5 @@ abstract class Post {
     abstract val filePreviewURL: String
 
     abstract suspend fun getTags(): List<Tag>
+    override fun toString() = "[$id] [${width}x$height]\n$fileURL\n$fileSampleURL\n$filePreviewURL"
 }

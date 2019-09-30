@@ -66,7 +66,7 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             if (_currentServer != null) SelectServerEvent.trigger(SelectServerEvent(context, _currentServer!!, this@Server))
             db.currentServerID = id
             _currentServer = this@Server
-            Api.initApi(api, url)
+            Api.selectApi(api, url)
             db.loadServerWithMutex(context)
             db.servers.notifyChange()
             currentServer.updateMissingTypeTags(context)

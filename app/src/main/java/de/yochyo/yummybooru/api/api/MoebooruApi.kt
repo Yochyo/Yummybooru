@@ -1,8 +1,10 @@
 package de.yochyo.yummybooru.api.api
 
+import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.utils.Logger
+import de.yochyo.yummybooru.utils.network.DownloadUtils
 import org.json.JSONObject
 
 class MoebooruApi(url: String) : Api(url) {
@@ -17,12 +19,12 @@ class MoebooruApi(url: String) : Api(url) {
         return "${url}post.json?limit=$limit&page=$page&login=${Server.currentServer.userName}&password_hash=${Server.currentServer.passwordHash}"
     }
 
-    override fun getPostFromJson(json: JSONObject): de.yochyo.yummybooru.api.Post? {
+    override fun getPostFromJson(json: JSONObject): Post? {
         try {
             val fileURL = json.getString("file_url")
             val id = json.getInt("id")
 
-            return object : de.yochyo.yummybooru.api.Post() {
+            return object : Post() {
                 override val id = id
                 override val width = json.getInt("jpeg_width")
                 override val height = json.getInt("jpeg_height")
@@ -35,12 +37,8 @@ class MoebooruApi(url: String) : Api(url) {
                 private var tags: List<Tag>? = null
                 override suspend fun getTags(): List<Tag> {
                     if (tags == null)
-                        tags = getTagsfromURL(getURLSourceLines("${Server.currentServer.url}post/show/$id"))
+                        tags = parseTagsfromURL(DownloadUtils.getUrlLines("${Server.currentServer.url}post/show/$id"))
                     return tags!!
-                }
-
-                override fun toString(): String {
-                    return "[$id] [${width}x$height]\nTags: $tags \n$fileURL\n$fileSampleURL\n$filePreviewURL"
                 }
             }
         } catch (e: Exception) {
@@ -50,7 +48,18 @@ class MoebooruApi(url: String) : Api(url) {
         }
     }
 
-    private fun getTagsfromURL(lines: ArrayList<String>): List<Tag> {
+    override fun getTagFromJson(json: JSONObject): Tag? {
+        return try {
+            val name = json.getString("name")
+            Tag(name, Tag.getCorrectTagType(name, json.getInt("type")), count = json.getInt("count"))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Logger.log(e, json.toString())
+            null
+        }
+    }
+
+    private fun parseTagsfromURL(lines: Collection<String>): List<Tag> {
         val tags = ArrayList<Tag>()
         fun getCurrentTagType(type: String): Int {
             if (type.contains("tag-type-general")) return Tag.GENERAL
@@ -62,7 +71,7 @@ class MoebooruApi(url: String) : Api(url) {
 
         fun String.startWithIgnoreSpace(start: String): Boolean {
             val a = toCharArray()
-            for (i in 0 until a.size) {
+            for (i in a.indices) {
                 if (a[i] != ' ')
                     return startsWith(start, startIndex = i)
             }
@@ -98,19 +107,6 @@ class MoebooruApi(url: String) : Api(url) {
                 Logger.log(e)
             }
         }
-
         return tags
     }
-
-    override fun getTagFromJson(json: JSONObject): Tag? {
-        return try {
-            val name = json.getString("name")
-            Tag(name, Tag.getCorrectTagType(name, json.getInt("type")), count = json.getInt("count"))
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Logger.log(e, json.toString())
-            null
-        }
-    }
-
 }

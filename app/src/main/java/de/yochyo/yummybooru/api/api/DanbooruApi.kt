@@ -1,5 +1,6 @@
 package de.yochyo.yummybooru.api.api
 
+import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.utils.Logger
@@ -18,7 +19,7 @@ class DanbooruApi(url: String) : Api(url) {
         return "${url}posts.json?limit=$limit&page=$page&login=${Server.currentServer.userName}&password_hash=${Server.currentServer.passwordHash}"
     }
 
-    override fun getPostFromJson(json: JSONObject): de.yochyo.yummybooru.api.Post? {
+    override fun getPostFromJson(json: JSONObject): Post? {
         try {
             val tagsGeneral = json.getString("tag_string_general").split(" ").map { Tag(it, Tag.GENERAL) }.filter { it.name != "" }
             val tagsCharacter = json.getString("tag_string_character").split(" ").map { Tag(it, Tag.CHARACTER) }.filter { it.name != "" }
@@ -31,7 +32,7 @@ class DanbooruApi(url: String) : Api(url) {
             tags += tagsCharacter
             tags += tagsGeneral
             tags += tagsMeta
-            return object : de.yochyo.yummybooru.api.Post() {
+            return object :Post() {
                 override val id = json.getInt("id")
                 override val width = json.getInt("image_width")
                 override val height = json.getInt("image_height")
@@ -42,9 +43,6 @@ class DanbooruApi(url: String) : Api(url) {
                 override val fileSampleURL = json.getString("large_file_url")
                 override val filePreviewURL = json.getString("preview_file_url")
                 override suspend fun getTags() = tags
-                override fun toString(): String {
-                    return "[$id] [${width}x$height]\nTags: $tags \n$fileURL\n$fileSampleURL\n$filePreviewURL"
-                }
             }
         } catch (e: Exception) {
             Logger.log(e, json.toString())

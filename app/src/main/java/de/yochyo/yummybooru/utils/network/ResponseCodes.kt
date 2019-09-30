@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.utils
+package de.yochyo.yummybooru.utils.network
 
 object ResponseCodes {
     const val OK = 200

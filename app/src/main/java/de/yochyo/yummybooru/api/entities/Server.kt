@@ -15,6 +15,7 @@ import java.net.URL
 
 @Entity(tableName = "servers")
 data class Server(var name: String, var api: String, var url: String, var userName: String = "", var password: String = "", var enableR18Filter: Boolean = false, @PrimaryKey val id: Int = -1) : Comparable<Server> {
+
     companion object {
         var currentServer: Server = db.getServer(db.currentServerID)!!
             get() {
@@ -22,6 +23,7 @@ data class Server(var name: String, var api: String, var url: String, var userNa
                 return field
             }
             private set
+
         val currentID: Int get() = currentServer.id
     }
 
@@ -39,6 +41,7 @@ data class Server(var name: String, var api: String, var url: String, var userNa
         }
         private set
 
+    @Ignore
     val urlHost: String = try {
         URL(url).host!!
     } catch (e: Exception) {
@@ -51,19 +54,15 @@ data class Server(var name: String, var api: String, var url: String, var userNa
 
     suspend fun select(context: Context) {
         withContext(Dispatchers.Main) {
-            SelectServerEvent.trigger(SelectServerEvent(context, currentServer, this@Server))
+            if (currentServer != this@Server)
+                SelectServerEvent.trigger(SelectServerEvent(context, currentServer, this@Server))
             db.currentServerID = id
-            currentServer = this@Server
             Api.selectApi(api, url)
             db.loadServerWithMutex(context)
             db.servers.notifyChange()
-            currentServer.updateMissingTypeTags(context)
-            currentServer.updateMissingTypeSubs(context)
+            updateMissingTypeTags(context)
+            updateMissingTypeSubs(context)
         }
-    }
-
-    fun deleteServer(context: Context) {
-        GlobalScope.launch { db.deleteServer(context, id) }
     }
 
     override fun compareTo(other: Server) = id.compareTo(other.id)
@@ -77,8 +76,9 @@ data class Server(var name: String, var api: String, var url: String, var userNa
     private fun updateMissingTypeTags(context: Context) {
         GlobalScope.launch {
             val current = currentServer
+            val oldTags = db.tags.toCollection(ArrayList())
             val newTags = ArrayList<Tag>()
-            for (tag in db.tags) { //Tags updaten
+            for (tag in oldTags) { //Tags updaten
                 if (tag.type == Tag.UNKNOWN) {
                     val t = Api.getTag(tag.name)
                     newTags += t.copy(isFavorite = tag.isFavorite, creation = tag.creation, serverID = tag.serverID)
@@ -98,8 +98,9 @@ data class Server(var name: String, var api: String, var url: String, var userNa
     private fun updateMissingTypeSubs(context: Context) {
         GlobalScope.launch {
             val current = currentServer
+            val oldSubs = db.subs.toCollection(ArrayList())
             val newSubs = ArrayList<Subscription>()
-            for (sub in db.subs) { //Tags updaten
+            for (sub in oldSubs) { //Tags updaten
                 if (sub.type == Tag.UNKNOWN) {
                     val s = Subscription.fromTag(Api.getTag(sub.name))
                     newSubs += s.copy(isFavorite = sub.isFavorite, creation = sub.creation, serverID = sub.serverID)

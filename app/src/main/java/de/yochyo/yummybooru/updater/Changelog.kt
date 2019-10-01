@@ -6,9 +6,10 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.alertdialogs.ShowChangelogsDialog
 
 class Changelog(val versionName: String, val version: Int, val description: String) {
-    companion object{
+    companion object {
         private val logs = ArrayList<Changelog>()
-        init{
+
+        init {
             logs += Changelog("1.0", 0, "- First Version")
             logs += Changelog("1.1", 1, "- Bug fixes")
             logs += Changelog("1.3", 2, "- You can now download all pictures of a type automatically\n" +
@@ -25,10 +26,14 @@ class Changelog(val versionName: String, val version: Int, val description: Stri
                     "- Double swipe up a picture to add the artists to the tag history")
         }
 
-        fun showChangelogs(context: Context){
+        fun showChangelogs(context: Context) {
+            ShowChangelogsDialog().withChangelogs(changeLogs().reversed()).build(context)
+        }
+
+        fun showChangelogIfChanges(context: Context) {
             if (BuildConfig.VERSION_CODE != db.lastVersion) {
                 db.lastVersion = BuildConfig.VERSION_CODE
-                ShowChangelogsDialog().withChangelogs(Changelog.changeLogs().reversed()).build(context)
+                showChangelogs(context)
             }
         }
 

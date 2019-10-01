@@ -83,7 +83,7 @@ class Manager(val tags: Array<String>) {
     }
 
     private fun List<Post>.filterNewPosts(): List<Post> {
-        val lastPostID = if (posts.isEmpty()) posts.last().id else Integer.MAX_VALUE
+        val lastPostID = if (posts.isNotEmpty()) posts.last().id else Integer.MAX_VALUE
         return this.takeLastWhile { lastPostID > it.id }
     }
 

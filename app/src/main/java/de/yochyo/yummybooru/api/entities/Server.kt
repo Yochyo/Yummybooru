@@ -17,12 +17,12 @@ import java.net.URL
 data class Server(var name: String, var api: String, var url: String, var userName: String = "", var password: String = "", var enableR18Filter: Boolean = false, @PrimaryKey val id: Int = -1) : Comparable<Server> {
 
     companion object {
-        var currentServer: Server = db.getServer(db.currentServerID)!!
+        private var _currentServer: Server? = null
+        val currentServer: Server
             get() {
-                if (currentServer.id != db.currentServerID) currentServer = db.getServer(db.currentServerID)!!
-                return field
+                if (_currentServer == null || _currentServer!!.id != db.currentServerID) _currentServer = db.getServer(db.currentServerID)!!
+                return _currentServer!!
             }
-            private set
 
         val currentID: Int get() = currentServer.id
     }
@@ -71,6 +71,10 @@ data class Server(var name: String, var api: String, var url: String, var userNa
         if (other is Server)
             return other.id == id
         return false
+    }
+
+    fun deleteServer(context: Context) {
+        GlobalScope.launch { db.deleteServer(context, id) }
     }
 
     private fun updateMissingTypeTags(context: Context) {

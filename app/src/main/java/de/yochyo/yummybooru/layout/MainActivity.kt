@@ -156,7 +156,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         serverRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
         serverAdapter = ServerAdapter().apply { serverRecyclerView.adapter = this }
 
-        Changelog.showChangelogs(this)
+        Changelog.showChangelogIfChanges(this)
         AutoUpdater().autoUpdate(this)
     }
 

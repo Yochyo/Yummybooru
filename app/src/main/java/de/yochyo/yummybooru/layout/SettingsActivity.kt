@@ -15,6 +15,7 @@ import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.backup.BackupUtils
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.updater.AutoUpdater
+import de.yochyo.yummybooru.updater.Changelog
 import de.yochyo.yummybooru.utils.documentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -53,7 +54,8 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             true
         }
         findPreference("changelogs").setOnPreferenceClickListener {
-            AutoUpdater().autoUpdate(this)
+            Changelog.showChangelogs(this)
+            println("show changelogs")
             true
         }
 

@@ -11,15 +11,6 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
 abstract class Cache(context: Context) {
-    private val notYetCached = ConcurrentHashMap<String, Bitmap>()
-
-
-    private val directory = context.cacheDir
-
-    init {
-        directory.mkdirs()
-    }
-
     companion object {
         private var _instance: Cache? = null
         fun getInstance(context: Context): Cache {
@@ -28,16 +19,11 @@ abstract class Cache(context: Context) {
         }
     }
 
-    suspend fun getCachedBitmap(id: String): Bitmap? {
-        return withContext(Dispatchers.IO) {
-            val f = File(directory, id)
-            if (f.exists() && f.length() != 0L) {
-                val stream = f.inputStream()
-                val bitmap = BitmapFactory.decodeStream(stream)
-                stream.close()
-                bitmap
-            } else notYetCached[id]
-        }
+    private val directory = context.cacheDir
+    private val notYetCached = ConcurrentHashMap<String, Bitmap>()
+
+    init {
+        directory.mkdirs()
     }
 
     suspend fun cacheBitmap(id: String, bitmap: Bitmap) {
@@ -56,6 +42,18 @@ abstract class Cache(context: Context) {
                 Logger.log(e, id)
                 e.printStackTrace()
             }
+        }
+    }
+
+    suspend fun getCachedBitmap(id: String): Bitmap? {
+        return withContext(Dispatchers.IO) {
+            val f = File(directory, id)
+            if (f.exists() && f.length() != 0L) {
+                val stream = f.inputStream()
+                val bitmap = BitmapFactory.decodeStream(stream)
+                stream.close()
+                bitmap
+            } else notYetCached[id]
         }
     }
 

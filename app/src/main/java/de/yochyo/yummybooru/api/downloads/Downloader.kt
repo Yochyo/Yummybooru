@@ -9,8 +9,6 @@ import java.net.URL
 import java.util.concurrent.LinkedBlockingDeque
 
 abstract class Downloader(context: Context) {
-    private val downloads = LinkedBlockingDeque<Download>()
-
     companion object {
         private var _instance: Downloader? = null
         fun getInstance(context: Context): Downloader {
@@ -30,6 +28,8 @@ abstract class Downloader(context: Context) {
         }
     }
 
+    private val downloads = LinkedBlockingDeque<Download>()
+
     init {
         for (i in 1..5) {
             GlobalScope.launch(Dispatchers.IO) {
@@ -45,7 +45,6 @@ abstract class Downloader(context: Context) {
                             }
                             launch(Dispatchers.Main) { download.doAfter.invoke(this, bitmap) }
                         } catch (e: Exception) {
-                           //TODO  Logger.log(e, download?.url ?: "")
                             e.printStackTrace()
                         }
                         delay(5)
@@ -57,7 +56,7 @@ abstract class Downloader(context: Context) {
     }
 
     fun downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(bitmap: Bitmap) -> Unit = {}, downloadNow: Boolean = true, cache: Boolean = true) {
-        if(downloads.filter { it.url == url }.isEmpty()){
+        if(downloads.none { it.url == url }){
             val download = Download(url, id, cache, doAfter)
             if (downloadNow) downloads.putLast(download)
             else downloads.putFirst(download)

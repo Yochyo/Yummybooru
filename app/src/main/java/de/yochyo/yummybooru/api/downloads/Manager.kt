@@ -7,75 +7,70 @@ import de.yochyo.eventmanager.EventCollection
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.events.events.DownloadManagerPageEvent
+import de.yochyo.yummybooru.utils.toTagArray
 import de.yochyo.yummybooru.utils.toTagString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 class Manager(val tags: Array<String>) {
     companion object {
-        var current: Manager? = null
-            get() {
-                val v = field
-                field = null
-                return v
-            }
+        var current: Manager = Manager("*".toTagArray())
     }
 
+    private val mutex = Mutex()
+
+    val downloadManagerPageEvent = EventHandler<DownloadManagerPageEvent>()
     val loadManagerPageEvent = EventHandler<LoadManagerPageEvent>()
 
-    val posts = EventCollection<Post>(ArrayList())
     private val pageStatus = SparseArray<PageStatus>()
     private val pages = SparseArray<List<Post>>()
-    var position = -1
+    val posts = EventCollection<Post>(ArrayList())
+
+    val currentPost: Post? get() = posts[position]
     var currentPage = 0
         private set
-    val currentPost: Post?
-        get() = posts[position]
+    var position = -1
 
+    suspend fun downloadPage(page: Int): List<Post> {
+        return withContext(Dispatchers.Default) {
+            val status = pageStatus[page]
+            var p = pages[page]
+            if (status == null) {
+                pageStatus.append(page, PageStatus.DOWNLOADING)
+                p = Api.getPosts(page, tags).filterNewPosts()
+                pages.append(page, p)
+                downloadManagerPageEvent.trigger(DownloadManagerPageEvent(page, p))
+            } else
+                if (status == PageStatus.DOWNLOADING) p = awaitPage(page)
+            pageStatus.append(page, PageStatus.DOWNLOADED)
+            return@withContext p
+        }
+    }
 
-    fun loadPage(context: Context, page: Int): List<Post>? {
-        if (pageStatus[page] == PageStatus.DOWNLOADED) {
-            val p = pages[page]
-            if (p != null) {
+    suspend fun loadPage(context: Context, page: Int): List<Post>? {
+        val p = pages[page]
+        mutex.withLock {
+            if (pageStatus[page] == PageStatus.DOWNLOADED && p != null) {
                 if (page > currentPage) {
                     currentPage = page
                     posts += p
                 }
-                pages.remove(page) //so that a page can't be loaded two times
-                loadManagerPageEvent.trigger(LoadManagerPageEvent(context, this, p))
-                return p
+                pageStatus.append(page, PageStatus.LOADED)
+                withContext(Dispatchers.Main) {
+                    loadManagerPageEvent.trigger(LoadManagerPageEvent(context, p))
+                }
             }
-        }
-        return null
-    }
-
-    suspend fun downloadPage(page: Int): List<Post> {
-        val status = pageStatus[page]
-        var p = pages[page]
-        if (status == null) {
-            pageStatus.append(page, PageStatus.DOWNLOADING)
-            p = Api.getPosts(page, tags)
-            if (posts.isNotEmpty()) {
-                val lastFromLastPage = posts.last()
-                val samePost = p.find { it.id == lastFromLastPage.id }
-                if (samePost != null)
-                    p.takeWhile { it.id != samePost.id }
-            }
-            pages.append(page, p)
-            pageStatus.append(page, PageStatus.DOWNLOADED)
-            DownloadManagerPageEvent.trigger(DownloadManagerPageEvent(this, page, p))
-        } else if (status == PageStatus.DOWNLOADING) {
-            p = awaitPage(page)
         }
         return p
     }
 
     private suspend fun awaitPage(page: Int): List<Post> {
         var list: List<Post>? = null
-        DownloadManagerPageEvent.registerListener {
-            if (it.manager == this && it.page == page) {
+        downloadManagerPageEvent.registerListener {
+            if (it.page == page) {
                 list = it.posts
                 it.deleteListener = true
             }
@@ -85,6 +80,11 @@ class Manager(val tags: Array<String>) {
                 delay(50)
             list!!
         }
+    }
+
+    private fun List<Post>.filterNewPosts(): List<Post> {
+        val lastPostID = if (posts.isEmpty()) posts.last().id else Integer.MAX_VALUE
+        return this.takeLastWhile { lastPostID > it.id }
     }
 
     suspend fun reset() {
@@ -102,8 +102,9 @@ class Manager(val tags: Array<String>) {
     }
 }
 
-class LoadManagerPageEvent(val context: Context, val manager: Manager, val newPage: List<Post>) : Event()
+class DownloadManagerPageEvent(val page: Int, val posts: List<Post>) : Event()
+class LoadManagerPageEvent(val context: Context, val newPage: List<Post>) : Event()
 
 private enum class PageStatus {
-    DOWNLOADING, DOWNLOADED
+    DOWNLOADING, DOWNLOADED, LOADED
 }

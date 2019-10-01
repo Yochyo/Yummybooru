@@ -22,7 +22,6 @@ package de.yochyo.yummybooru
 //TODO developer mode app flags setzen können
 //TODO Suchen nach id in mainactiity
 //TODO Tags und subs vereinen?
-//TODO Update all subs button
 //Optimizations
 //TODO wenn mp4... eingeführt ist, muss downloader loggen
 //TODO Normale Downloads auch über nen service? zumindest wenn die app geschlossen wird, downloads umlagern
@@ -35,6 +34,8 @@ package de.yochyo.yummybooru
 //TODO beim Profiler ist die CPU belastung heavy
 //TODO Code Kommentieren, neu anordnen
 //Bugs
+//TODO moebooru tag reinfolge ist glaub noch falsch
+//TODO discord schauen
 //TODO es kann passieren, dass ein bild größer als 25MB ist, oder nicht in den heap passt
 //TODO downloadservice geht nicht
 //TODO speicherordner resettet sich

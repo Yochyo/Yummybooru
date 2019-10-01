@@ -23,6 +23,8 @@ package de.yochyo.yummybooru
 //TODO Suchen nach id in mainactiity
 //TODO Tags und subs vereinen?
 //Optimizations
+//TODO Tag.getCorrectTagType besser einbetten
+//TODO statt Tga.compareTo dem TreeSet einen eigenen Comparator geben
 //TODO wenn mp4... eingeführt ist, muss downloader loggen
 //TODO Normale Downloads auch über nen service? zumindest wenn die app geschlossen wird, downloads umlagern
 //TODO Pictureactivity infotags multiselect mit Fab Button suchen

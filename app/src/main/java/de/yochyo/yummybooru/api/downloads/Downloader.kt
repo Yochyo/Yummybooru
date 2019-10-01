@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import de.yochyo.yummybooru.utils.Logger
+import de.yochyo.yummybooru.utils.network.DownloadUtils
 import kotlinx.coroutines.*
 import java.net.URL
 import java.util.concurrent.LinkedBlockingDeque
@@ -16,16 +17,6 @@ abstract class Downloader(context: Context) {
             return _instance!!
         }
 
-        suspend fun download(url: String): Bitmap? {
-            return withContext(Dispatchers.IO) {
-                val conn = URL(url).openConnection()
-                conn.addRequestProperty("User-Agent", "Mozilla/5.00")
-                val stream = conn.getInputStream()
-                val bitmap = BitmapFactory.decodeStream(stream)
-                stream.close()
-                bitmap
-            }
-        }
     }
 
     private val downloads = LinkedBlockingDeque<Download>()
@@ -40,7 +31,7 @@ abstract class Downloader(context: Context) {
                             download = downloads.takeLast()
                             var bitmap = context.cache.getCachedBitmap(download.id)
                             if (bitmap == null) {
-                                bitmap = download(download.url)!!
+                                bitmap = DownloadUtils.downloadBitmap(download.url)!! //throws exception when null
                                 if (download.cache) GlobalScope.launch { context.cache.cacheBitmap(download.id, bitmap) }
                             }
                             launch(Dispatchers.Main) { download.doAfter.invoke(this, bitmap) }

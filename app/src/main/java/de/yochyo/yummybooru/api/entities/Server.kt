@@ -16,56 +16,44 @@ import java.net.URL
 @Entity(tableName = "servers")
 data class Server(var name: String, var api: String, var url: String, var userName: String = "", var password: String = "", var enableR18Filter: Boolean = false, @PrimaryKey val id: Int = -1) : Comparable<Server> {
     companion object {
-        private var _currentServer: Server? = null
-        val currentServer: Server
+        var currentServer: Server = db.getServer(db.currentServerID)!!
             get() {
-                if (_currentServer == null || _currentServer!!.id != db.currentServerID)
-                    _currentServer = db.getServer(db.currentServerID)
-                return _currentServer!!
+                if (currentServer.id != db.currentServerID) currentServer = db.getServer(db.currentServerID)!!
+                return field
             }
-        val currentID: Int
-            get() = currentServer.id
+            private set
+        val currentID: Int get() = currentServer.id
     }
 
     @Ignore
     private var cachedPassword = password
+
     @Ignore
-    var _passwordHash: String? = null
-    val passwordHash: String
+    var passwordHash: String = passwordToHash(password)
         get() {
-            if (_passwordHash == null || cachedPassword != password) {
+            if (cachedPassword != password) {
                 cachedPassword = password
-                if (cachedPassword == "")
-                    _passwordHash = ""
-                else
-                    _passwordHash = passwordToHash(password)
+                field = passwordToHash(password)
             }
-            return _passwordHash!!
+            return field
         }
-    val urlHost: String
-        get() {
-            return try {
-                URL(url).host!!
-            } catch (e: Exception) {
-                Logger.log(e)
-                e.printStackTrace()
-                ""
-            }
-        }
+        private set
 
-
-    override fun compareTo(other: Server): Int {
-        return id.compareTo(other.id)
+    val urlHost: String = try {
+        URL(url).host!!
+    } catch (e: Exception) {
+        Logger.log(e)
+        e.printStackTrace()
+        ""
     }
 
-    val isSelected: Boolean
-        get() = currentServer.id == id
+    val isSelected: Boolean get() = currentServer.id == id
 
     suspend fun select(context: Context) {
         withContext(Dispatchers.Main) {
-            if (_currentServer != null) SelectServerEvent.trigger(SelectServerEvent(context, _currentServer!!, this@Server))
+            SelectServerEvent.trigger(SelectServerEvent(context, currentServer, this@Server))
             db.currentServerID = id
-            _currentServer = this@Server
+            currentServer = this@Server
             Api.selectApi(api, url)
             db.loadServerWithMutex(context)
             db.servers.notifyChange()
@@ -74,7 +62,19 @@ data class Server(var name: String, var api: String, var url: String, var userNa
         }
     }
 
-    fun updateMissingTypeTags(context: Context) {
+    fun deleteServer(context: Context) {
+        GlobalScope.launch { db.deleteServer(context, id) }
+    }
+
+    override fun compareTo(other: Server) = id.compareTo(other.id)
+    override fun toString() = name
+    override fun equals(other: Any?): Boolean {
+        if (other is Server)
+            return other.id == id
+        return false
+    }
+
+    private fun updateMissingTypeTags(context: Context) {
         GlobalScope.launch {
             val current = currentServer
             val newTags = ArrayList<Tag>()
@@ -95,7 +95,7 @@ data class Server(var name: String, var api: String, var url: String, var userNa
         }
     }
 
-    fun updateMissingTypeSubs(context: Context) {
+    private fun updateMissingTypeSubs(context: Context) {
         GlobalScope.launch {
             val current = currentServer
             val newSubs = ArrayList<Subscription>()
@@ -114,17 +114,6 @@ data class Server(var name: String, var api: String, var url: String, var userNa
                 } else break
             }
         }
-    }
-
-    fun deleteServer(context: Context) {
-        GlobalScope.launch { db.deleteServer(context, id) }
-    }
-
-    override fun toString() = name
-    override fun equals(other: Any?): Boolean {
-        if (other is Server)
-            return other.id == id
-        return false
     }
 }
 

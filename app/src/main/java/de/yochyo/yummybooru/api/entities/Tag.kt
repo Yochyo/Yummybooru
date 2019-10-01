@@ -10,10 +10,6 @@ import java.util.*
 data class Tag(val name: String, val type: Int, val isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID, val count: Int = 0) : Comparable<Tag> {
 
     companion object {
-        fun isSpecialTag(name: String): Boolean{
-            return name == "*" || name.startsWith("height") || name.startsWith("width") || name.startsWith("order") || name.startsWith("rating") || name.contains(" ")
-        }
-
         const val GENERAL = 0
         const val CHARACTER = 4
         const val COPYPRIGHT = 3
@@ -21,6 +17,10 @@ data class Tag(val name: String, val type: Int, val isFavorite: Boolean = false,
         const val META = 5
         const val UNKNOWN = 99
         const val SPECIAL = 100
+
+        fun isSpecialTag(name: String): Boolean{
+            return name == "*" || name.startsWith("height") || name.startsWith("width") || name.startsWith("order") || name.startsWith("rating") || name.contains(" ")
+        }
 
         fun getCorrectTagType(tagName: String, id: Int): Int{
             return if(id in 0..1 || id in 3..5) id

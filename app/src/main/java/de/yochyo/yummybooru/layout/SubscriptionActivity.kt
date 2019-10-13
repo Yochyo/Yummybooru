@@ -63,7 +63,7 @@ class SubscriptionActivity : AppCompatActivity() {
                             val tag = Api.getTag(selected.name)
                             db.changeSubscription(this@SubscriptionActivity, selected.copy(lastCount = tag.count, lastID = id))
                         }
-                    }}.withMessage("Update selected subs?").build(this@SubscriptionActivity)
+                    }}.withTitle("Update selected subs?").build(this@SubscriptionActivity)
                 }
                 else -> return false
             }
@@ -252,7 +252,7 @@ class SubscriptionActivity : AppCompatActivity() {
                         val tag = Api.getTag(sub.name)
                         db.changeSubscription(this@SubscriptionActivity, sub.copy(lastCount = tag.count, lastID = id))
                     }
-                }}.withMessage("Update all subs?").build(this@SubscriptionActivity)
+                }}.withTitle("Update all subs?").build(this@SubscriptionActivity)
             }
         }
         return super.onOptionsItemSelected(item)

@@ -20,28 +20,23 @@ import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.*
 import de.yochyo.eventmanager.EventCollection
-import de.yochyo.eventmanager.Listener
 import de.yochyo.subeventcollection.SubEventCollection
-import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.api.api.DanbooruApi
-import de.yochyo.yummybooru.api.api.MoebooruApi
 import de.yochyo.yummybooru.api.downloads.cache
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.Database
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.events.events.*
-import de.yochyo.yummybooru.events.listeners.*
+import de.yochyo.yummybooru.events.events.UpdateServersEvent
+import de.yochyo.yummybooru.events.events.UpdateTagsEvent
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
-import de.yochyo.yummybooru.layout.alertdialogs.ShowChangelogsDialog
+import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.layout.res.Menus
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
-import de.yochyo.yummybooru.utils.ThreadExceptionHandler
 import de.yochyo.yummybooru.utils.setColor
 import de.yochyo.yummybooru.utils.toTagString
 import de.yochyo.yummybooru.utils.underline
@@ -77,8 +72,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         if (name.startsWith(filteredTags[i].second)) {
                             val subCollection = SubEventCollection(TreeSet(), filteredTags[i].first) { it.name.contains(name) }
                             addChild = subCollection
-                            println("Subcollection of '${filteredTags[i].second}' size ${filteredTags[i].first.size}")
-                            println(subCollection.size)
                             break
                         }
                     }
@@ -102,12 +95,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var tagLayoutManager: LinearLayoutManager
     private lateinit var serverAdapter: ServerAdapter
 
-    private lateinit var tagListener: Listener<UpdateTagsEvent>
-    private lateinit var serverListener: Listener<UpdateServersEvent>
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        Thread.setDefaultUncaughtExceptionHandler(ThreadExceptionHandler())
-        initListeners()
         super.onCreate(savedInstanceState)
         val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
         if (!hasPermission) ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 122)
@@ -123,8 +111,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         tagRecyclerView.layoutManager = LinearLayoutManager(this).apply { tagLayoutManager = this }
         tag_filter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
-                if (newText != null)
-                    GlobalScope.launch { filter(newText) }
+                if (newText != null) GlobalScope.launch { filter(newText) }
                 return true
             }
 
@@ -143,13 +130,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     fun initData() {
         GlobalScope.launch { cache.clearCache() }
-        Api.addApi(DanbooruApi(""))
-        Api.addApi(MoebooruApi(""))
         Database.initDatabase(this)
         filteredTags += Pair(db.tags, "")
 
-        tagListener = UpdateTagsEvent.registerListener { tagAdapter.notifyDataSetChanged() }
-        serverListener = UpdateServersEvent.registerListener { serverAdapter.notifyDataSetChanged() }
+        UpdateTagsEvent.registerListener { tagAdapter.notifyDataSetChanged() }
+        UpdateServersEvent.registerListener { serverAdapter.notifyDataSetChanged() }
 
         tagAdapter = SearchTagAdapter().apply { tagRecyclerView.adapter = this }
         val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
@@ -180,28 +165,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    fun fillServerLayoutFields(layout: LinearLayout, server: Server, isSelected: Boolean = false) {
-        val text1 = layout.findViewById<TextView>(R.id.server_text1)
-        text1.text = server.name
-        if (isSelected) text1.setColor(R.color.dark_red)
-        else text1.setColor(R.color.violet)
-        layout.findViewById<TextView>(R.id.server_text2).text = server.api
-        layout.findViewById<TextView>(R.id.server_text3).text = server.userName
-    }
-
-
     private inner class SearchTagAdapter : RecyclerView.Adapter<SearchTagViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchTagViewHolder = SearchTagViewHolder((layoutInflater.inflate(R.layout.search_item_layout, parent, false) as Toolbar)).apply {
-            val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
             toolbar.inflateMenu(R.menu.activity_main_search_menu)
+            val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
+
+            fun onClick(){
+                if (check.isChecked) selectedTags.remove(toolbar.findViewById<TextView>(R.id.search_textview).text)
+                else selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
+            }
             toolbar.setOnClickListener {
-                if (check.isChecked) selectedTags.remove(it.findViewById<TextView>(R.id.search_textview).text)
-                else selectedTags.add(it.findViewById<TextView>(R.id.search_textview).text.toString())
+                onClick()
                 check.isChecked = !check.isChecked
             }
             check.setOnClickListener {
-                if (!(it as CheckBox).isChecked) selectedTags.remove(toolbar.findViewById<TextView>(R.id.search_textview).text)
-                else selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
+                onClick()
             }
             toolbar.setOnMenuItemClickListener {
                 val tag = currentFilter.elementAt(adapterPosition)
@@ -261,7 +239,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 when (i) {
                     0 -> editServerDialog(server)
                     1 -> {
-                        if (!server.isSelected) deleteServerDialog(server)
+                        if (!server.isSelected) ConfirmDialog { server.deleteServer(this@MainActivity) }.withTitle(getString(R.string.delete)).build(this@MainActivity)
                         else Toast.makeText(this@MainActivity, getString(R.string.cannot_delete_server), Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -272,17 +250,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         private fun editServerDialog(server: Server) {
             AddServerDialog {
                 GlobalScope.launch { db.changeServer(this@MainActivity, it) }
-            }.withServer(server).withTitle(getString(R.string.edit_server))
-                    .build(this@MainActivity)
-        }
-
-        private fun deleteServerDialog(server: Server) {
-            val b = AlertDialog.Builder(this@MainActivity)
-            b.setTitle(R.string.delete)
-            b.setMessage("${getString(R.string.do_you_want_to_delete_the_server)} [${server.name}]")
-            b.setNegativeButton(getString(R.string.no)) { _, _ -> }
-            b.setPositiveButton(getString(R.string.yes)) { _, _ -> server.deleteServer(this@MainActivity) }
-            b.show()
+            }.withServer(server).withTitle(getString(R.string.edit_server)).build(this@MainActivity)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, position: Int): ServerViewHolder {
@@ -304,6 +272,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         override fun onBindViewHolder(holder: ServerViewHolder, position: Int) {
             val server = db.servers.elementAt(position)
             fillServerLayoutFields(holder.layout, server, server.isSelected)
+        }
+
+        fun fillServerLayoutFields(layout: LinearLayout, server: Server, isSelected: Boolean = false) {
+            val text1 = layout.findViewById<TextView>(R.id.server_text1)
+            text1.text = server.name
+            if (isSelected) text1.setColor(R.color.dark_red)
+            else text1.setColor(R.color.violet)
+            layout.findViewById<TextView>(R.id.server_text2).text = server.api
+            layout.findViewById<TextView>(R.id.server_text3).text = server.userName
         }
     }
 
@@ -339,28 +316,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
         return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        UpdateTagsEvent.removeListener(tagListener)
-        UpdateServersEvent.removeListener(serverListener)
-    }
-
-    private fun initListeners() {
-        AddTagEvent.registerListener(DisplayToastAddTagListener())
-        AddSubEvent.registerListener(DisplayToastAddSubListener())
-        AddServerEvent.registerListener(DisplayToastAddServerListener())
-        DeleteServerEvent.registerListener(DisplayToastDeleteServerListener())
-        DeleteSubEvent.registerListener(DisplayToastDeleteSubListener())
-        DeleteTagEvent.registerListener(DisplayToastDeleteTagListener())
-        ChangeSubEvent.registerListener(DisplayToastFavoriteSubListener())
-        ChangeTagEvent.registerListener(DisplayToastFavoriteTagListener())
-        DeleteTagEvent.registerListener(RemoveSelectedTagsInMainactivityListener())
-        ChangeServerEvent.registerListener(DisplayToastChangeServerEvent())
-        SelectServerEvent.registerListener(DisplayToastSelectServerListener())
-        SelectServerEvent.registerListener(ClearSelectedTagsInMainactivityListener())
-        SafeFileEvent.registerListener(DisplayToastDownloadFileListener())
     }
 
     private inner class ServerViewHolder(val layout: LinearLayout) : RecyclerView.ViewHolder(layout)

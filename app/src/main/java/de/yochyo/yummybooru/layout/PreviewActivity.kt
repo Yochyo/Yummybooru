@@ -3,16 +3,16 @@ package de.yochyo.yummybooru.layout
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.view.ActionMode
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
@@ -26,6 +26,7 @@ import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
 import de.yochyo.yummybooru.layout.views.SelectableRecyclerViewAdapter
 import de.yochyo.yummybooru.layout.views.SelectableViewHolder
 import de.yochyo.yummybooru.utils.preview
+import de.yochyo.yummybooru.utils.toBitmap
 import de.yochyo.yummybooru.utils.toTagArray
 import de.yochyo.yummybooru.utils.toTagString
 import kotlinx.android.synthetic.main.activity_preview.*
@@ -134,7 +135,7 @@ open class PreviewActivity : AppCompatActivity() {
     fun initSwipeRefreshLayout() {
         swipeRefreshLayout.setOnRefreshListener {
             swipeRefreshLayout.isRefreshing = false
-            if(actionmode == null){
+            if (actionmode == null) {
                 GlobalScope.launch {
                     m.reset()
                     loadPage(1)
@@ -166,7 +167,7 @@ open class PreviewActivity : AppCompatActivity() {
             val p = m.posts[holder.adapterPosition]
             downloadImage(p.filePreviewURL, preview(p.id), {
                 if (pos == holder.adapterPosition)
-                    holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it)
+                    holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it.toBitmap())
             }, isScrolling)
         }
 

@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <application
+            xmlns:tools="http://schemas.android.com/tools"
             android:name=".utils.App"
             android:largeHeap="true"
             android:allowBackup="true"

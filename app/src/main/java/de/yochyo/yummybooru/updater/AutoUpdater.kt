@@ -3,9 +3,9 @@ package de.yochyo.yummybooru.updater
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.support.v4.app.NotificationCompat
-import android.support.v4.app.NotificationManagerCompat
-import android.support.v4.content.FileProvider
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.FileProvider
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.utils.App
@@ -78,7 +78,7 @@ class AutoUpdater {
                         file.writeBytes(byteArray)
                     }
                 }
-                if(file.exists()) return@withContext file
+                if (file.exists()) return@withContext file
             } catch (e: Exception) {
             }
             return@withContext null

@@ -5,6 +5,6 @@ import de.yochyo.eventmanager.Event
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.entities.Server
 
-class UpdateServersEvent(val context: Context, val servers: Collection<Server>): Event() {
-    companion object: EventHandler<UpdateServersEvent>()
+class UpdateServersEvent(val context: Context, val servers: Collection<Server>) : Event() {
+    companion object : EventHandler<UpdateServersEvent>()
 }

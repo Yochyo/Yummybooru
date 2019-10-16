@@ -31,14 +31,14 @@ object Menus {
         }
     }
 
-    fun initSubscriptionMenu(menu: Menu, sub: Subscription){
-        with(menu.findItem(R.id.subscription_set_favorite)){
-            title = if(sub.isFavorite) "Unfavorite" else "Favorite"
+    fun initSubscriptionMenu(menu: Menu, sub: Subscription) {
+        with(menu.findItem(R.id.subscription_set_favorite)) {
+            title = if (sub.isFavorite) "Unfavorite" else "Favorite"
         }
-        with(menu.findItem(R.id.subscription_edit)){
+        with(menu.findItem(R.id.subscription_edit)) {
             title = "Edit"
         }
-        with(menu.findItem(R.id.subscription_delete)){
+        with(menu.findItem(R.id.subscription_delete)) {
             title = "Delete"
         }
     }

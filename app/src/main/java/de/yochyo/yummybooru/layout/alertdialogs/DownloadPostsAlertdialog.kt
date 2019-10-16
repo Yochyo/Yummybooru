@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.widget.Toast
 import de.yochyo.yummybooru.api.downloads.Manager
-import de.yochyo.yummybooru.downloadservice.DownloadService
 
 class DownloadPostsAlertdialog(context: Context, manager: Manager) {
     init {

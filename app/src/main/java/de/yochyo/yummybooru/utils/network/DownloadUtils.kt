@@ -12,28 +12,29 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
-object DownloadUtils{
+object DownloadUtils {
 
-    suspend fun getUrlInputStream(url: String): InputStream?{
-        return withContext(Dispatchers.IO){
-            return@withContext try{
+    suspend fun getUrlInputStream(url: String): InputStream? {
+        return withContext(Dispatchers.IO) {
+            return@withContext try {
                 val conn = URL(url).openConnection() as HttpURLConnection
                 conn.addRequestProperty("User-Agent", "Mozilla/5.00")
                 conn.requestMethod = "GET"
                 conn.inputStream
-            }catch(e: Exception){
+            } catch (e: Exception) {
                 e.printStackTrace()
                 Logger.log(e, url)
                 null
             }
         }
     }
+
     suspend fun getUrlLines(urlToRead: String): Collection<String> {
         return withContext(Dispatchers.IO) {
             val result = ArrayList<String>()
             try {
                 val stream = getUrlInputStream(urlToRead)
-                if(stream != null){
+                if (stream != null) {
                     BufferedReader(InputStreamReader(stream, "UTF-8")).use { bufferedReader ->
                         var inputLine: String? = bufferedReader.readLine()
                         while (inputLine != null) {
@@ -51,26 +52,35 @@ object DownloadUtils{
         }
     }
 
-    suspend fun getJson(urlToRead: String): JSONArray?{
-        var array: JSONArray?=null
+    suspend fun getJson(urlToRead: String): JSONArray? {
+        var array: JSONArray? = null
         try {
             array = JSONArray(getUrlLines(urlToRead).joinToString(""))
-        }catch (e: Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
             Logger.log(e, "URL: $urlToRead")
         }
         return array
     }
+
     suspend fun downloadBitmap(url: String): Bitmap? {
+        return withContext(Dispatchers.IO) {
+            val byteArray = downloadByteArray(url)
+            if (byteArray != null) BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+            else null
+        }
+    }
+
+    suspend fun downloadByteArray(url: String): ByteArray? {
         return withContext(Dispatchers.IO) {
             try {
                 val stream = DownloadUtils.getUrlInputStream(url)
-                if(stream != null){
-                    val bitmap = BitmapFactory.decodeStream(stream)
+                if (stream != null) {
+                    val byteArray = stream.readBytes()
                     stream.close()
-                    return@withContext bitmap
+                    return@withContext byteArray
                 }
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 Logger.log(e, url)
                 e.printStackTrace()
             }

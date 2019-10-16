@@ -2,21 +2,20 @@ package de.yochyo.yummybooru.layout
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v4.view.GravityCompat
-import android.support.v4.view.PagerAdapter
-import android.support.v4.view.ViewPager
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.*
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toolbar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager.widget.PagerAdapter
+import androidx.viewpager.widget.ViewPager
+import com.bumptech.glide.Glide
 import com.github.chrisbanes.photoview.OnSingleFlingListener
 import com.github.chrisbanes.photoview.PhotoView
+import com.google.android.material.snackbar.Snackbar
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
@@ -40,7 +39,7 @@ import kotlinx.coroutines.launch
 
 class PictureActivity : AppCompatActivity() {
     companion object {
-        fun startActivity(context: Context, manager: Manager){
+        fun startActivity(context: Context, manager: Manager) {
             Manager.current = manager
             context.startActivity(Intent(context, PictureActivity::class.java))
         }
@@ -67,7 +66,7 @@ class PictureActivity : AppCompatActivity() {
         with(view_pager) {
             adapter = PageAdapter().apply { this@PictureActivity.adapter = this }
 
-            managerListener = m.loadManagerPageEvent.registerListener{this@PictureActivity.adapter.updatePosts()}
+            managerListener = m.loadManagerPageEvent.registerListener { this@PictureActivity.adapter.updatePosts() }
             this@PictureActivity.adapter.updatePosts()
             m.currentPost?.updateCurrentTags(m.position)
 
@@ -165,9 +164,9 @@ class PictureActivity : AppCompatActivity() {
             })
             val p = m.posts.elementAt(position)
             GlobalScope.launch {
-                val preview = cache.getCachedBitmap(preview(p.id))
-                if (preview != null) launch(Dispatchers.Main) { imageView.setImageBitmap(preview) }
-                downloadImage(p.fileSampleURL, sample(p.id), { imageView.setImageBitmap(it) })
+                val preview = cache.getCachedFile(preview(p.id))
+                if (preview != null) launch(Dispatchers.Main) { Glide.with(this@PictureActivity).load(preview).into(imageView) }
+                downloadImage(p.fileSampleURL, sample(p.id), { Glide.with(this@PictureActivity).load(it).into(imageView) })
             }
 
             container.addView(imageView)
@@ -226,7 +225,7 @@ class PictureActivity : AppCompatActivity() {
             R.id.save -> m.currentPost?.apply { downloadOriginalPicture(this) }
             R.id.share -> {
                 val post = m.currentPost
-                if(post != null){
+                if (post != null) {
                     val intent = Intent().apply {
                         action = Intent.ACTION_SEND
                         putExtra(Intent.EXTRA_TEXT, post.fileURL)

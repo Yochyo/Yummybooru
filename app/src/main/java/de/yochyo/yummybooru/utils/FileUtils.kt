@@ -1,8 +1,8 @@
 package de.yochyo.yummybooru.utils
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.support.v4.provider.DocumentFile
+import androidx.documentfile.provider.DocumentFile
+import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.downloads.cache
 import de.yochyo.yummybooru.api.downloads.downloadImage
 import de.yochyo.yummybooru.api.entities.Server
@@ -10,7 +10,6 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
 
 object FileUtils {
     private var oldSavePath: String? = null
@@ -33,34 +32,30 @@ object FileUtils {
         return parentFolder!!
     }
 
-    suspend fun writeOrDownloadFile(context: Context, post: de.yochyo.yummybooru.api.Post, id: String, url: String, server: Server, source: Int = SafeFileEvent.DEFAULT) {
+    suspend fun writeOrDownloadFile(context: Context, post: Post, id: String, url: String, server: Server, source: Int = SafeFileEvent.DEFAULT) {
         withContext(Dispatchers.IO) {
-            val f = context.cache.getCachedBitmap(id)
+            val f = context.cache.getCachedFile(id)
             if (f != null) writeFile(context, post, f, server, source)
             else context.downloadImage(url, id, { writeFile(context, post, it, server, source) }, cache = false)
         }
     }
 
-    suspend fun writeFile(context: Context, post: de.yochyo.yummybooru.api.Post, bitmap: Bitmap, server: Server, source: Int = SafeFileEvent.DEFAULT) {
+    suspend fun writeFile(context: Context, post: Post, image: ByteArray, server: Server, source: Int = SafeFileEvent.DEFAULT) {
         withContext(Dispatchers.IO) {
-            val file = createFileToWrite(context, post,server)
+            val file = createFileToWrite(context, post, server)
             if (file != null) {
-                val stream = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
                 try {
-                    context.contentResolver.openOutputStream(file.uri).write(stream.toByteArray())
+                    context.contentResolver.openOutputStream(file.uri).write(image)
                     withContext(Dispatchers.Main) { SafeFileEvent.trigger(SafeFileEvent(context, file, post, source)) }
                 } catch (e: Exception) {
                     Logger.log(e)
                     e.printStackTrace()
-                } finally {
-                    stream.close()
                 }
             }
         }
     }
 
-    private suspend fun createFileToWrite(context: Context, post: de.yochyo.yummybooru.api.Post, server: Server, mimeType: String = post.extension): DocumentFile? {
+    private suspend fun createFileToWrite(context: Context, post: Post, server: Server, mimeType: String = post.extension): DocumentFile? {
         return withContext(Dispatchers.IO) {
             val folder = getOrCreateFolder(getParentFolder(context), server.urlHost)
             if (folder != null) createFileOrNull(folder, postToFilename(post, mimeType, server), mimeType) else null
@@ -68,7 +63,7 @@ object FileUtils {
 
     }
 
-    private suspend fun postToFilename(p: de.yochyo.yummybooru.api.Post, mimeType: String, server: Server): String {
+    private suspend fun postToFilename(p: Post, mimeType: String, server: Server): String {
         val s = "${server.urlHost} ${p.id} ${p.getTags().joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '[' && it != ']' }
         var last = s.length
         if (last > 127 - (mimeType.length + 1)) last = 127 - (mimeType.length + 1)

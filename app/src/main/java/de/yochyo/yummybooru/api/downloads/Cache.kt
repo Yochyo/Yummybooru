@@ -1,12 +1,9 @@
 package de.yochyo.yummybooru.api.downloads
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import de.yochyo.yummybooru.utils.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
@@ -20,22 +17,20 @@ abstract class Cache(context: Context) {
     }
 
     private val directory = context.cacheDir
-    private val notYetCached = ConcurrentHashMap<String, Bitmap>()
+    private val notYetCached = ConcurrentHashMap<String, ByteArray>()
 
     init {
         directory.mkdirs()
     }
 
-    suspend fun cacheBitmap(id: String, bitmap: Bitmap) {
+    suspend fun cacheFile(id: String, image: ByteArray) {
         withContext(Dispatchers.IO) {
             try {
                 val f = File(directory, id)
                 if (!f.exists()) {
-                    notYetCached[id] = bitmap
+                    notYetCached[id] = image
                     f.createNewFile()
-                    val output = ByteArrayOutputStream().apply { bitmap.compress(Bitmap.CompressFormat.PNG, 100, this) }
-                    f.writeBytes(output.toByteArray())
-                    output.close()
+                    f.writeBytes(image)
                     notYetCached.remove(id)
                 }
             } catch (e: Exception) {
@@ -45,14 +40,14 @@ abstract class Cache(context: Context) {
         }
     }
 
-    suspend fun getCachedBitmap(id: String): Bitmap? {
+    suspend fun getCachedFile(id: String): ByteArray? {
         return withContext(Dispatchers.IO) {
             val f = File(directory, id)
             if (f.exists() && f.length() != 0L) {
                 val stream = f.inputStream()
-                val bitmap = BitmapFactory.decodeStream(stream)
+                val byteArray = stream.readBytes()
                 stream.close()
-                bitmap
+                byteArray
             } else notYetCached[id]
         }
     }

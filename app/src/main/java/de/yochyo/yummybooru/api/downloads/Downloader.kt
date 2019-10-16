@@ -1,12 +1,8 @@
 package de.yochyo.yummybooru.api.downloads
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import de.yochyo.yummybooru.utils.Logger
 import de.yochyo.yummybooru.utils.network.DownloadUtils
 import kotlinx.coroutines.*
-import java.net.URL
 import java.util.concurrent.LinkedBlockingDeque
 
 abstract class Downloader(context: Context) {
@@ -29,12 +25,12 @@ abstract class Downloader(context: Context) {
                         var download: Download? = null
                         try {
                             download = downloads.takeLast()
-                            var bitmap = context.cache.getCachedBitmap(download.id)
-                            if (bitmap == null) {
-                                bitmap = DownloadUtils.downloadBitmap(download.url)!! //throws exception when null
-                                if (download.cache) GlobalScope.launch { context.cache.cacheBitmap(download.id, bitmap) }
+                            var byteArray = context.cache.getCachedFile(download.id)
+                            if (byteArray == null) {
+                                byteArray = DownloadUtils.downloadByteArray(download.url)!! //throws exception when null
+                                if (download.cache) GlobalScope.launch { context.cache.cacheFile(download.id, byteArray) }
                             }
-                            launch(Dispatchers.Main) { download.doAfter.invoke(this, bitmap) }
+                            launch(Dispatchers.Main) { download.doAfter.invoke(this, byteArray) }
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
@@ -46,8 +42,8 @@ abstract class Downloader(context: Context) {
         }
     }
 
-    fun downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(bitmap: Bitmap) -> Unit = {}, downloadNow: Boolean = true, cache: Boolean = true) {
-        if(downloads.none { it.url == url }){
+    fun downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(image: ByteArray) -> Unit = {}, downloadNow: Boolean = true, cache: Boolean = true) {
+        if (downloads.none { it.url == url }) {
             val download = Download(url, id, cache, doAfter)
             if (downloadNow) downloads.putLast(download)
             else downloads.putFirst(download)
@@ -56,7 +52,7 @@ abstract class Downloader(context: Context) {
 }
 
 inline val Context.downloader: Downloader get() = Downloader.getInstance(this)
-fun Context.downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(bitmap: Bitmap) -> Unit = {}, downloadNow: Boolean = true, cache: Boolean = true) = Downloader.getInstance(this).downloadImage(url, id, doAfter, downloadNow, cache)
+fun Context.downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(image: ByteArray) -> Unit = {}, downloadNow: Boolean = true, cache: Boolean = true) = Downloader.getInstance(this).downloadImage(url, id, doAfter, downloadNow, cache)
 
 
-private class Download(val url: String, val id: String, val cache: Boolean, val doAfter: suspend CoroutineScope.(bitmap: Bitmap) -> Unit = {})
+private class Download(val url: String, val id: String, val cache: Boolean, val doAfter: suspend CoroutineScope.(image: ByteArray) -> Unit = {})

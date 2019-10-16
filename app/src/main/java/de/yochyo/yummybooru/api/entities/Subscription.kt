@@ -1,6 +1,6 @@
 package de.yochyo.yummybooru.api.entities
 
-import android.arch.persistence.room.*
+import androidx.room.*
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.database.db

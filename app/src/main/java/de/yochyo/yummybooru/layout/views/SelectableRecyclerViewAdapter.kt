@@ -1,8 +1,8 @@
 package de.yochyo.yummybooru.layout.views
 
 import android.graphics.drawable.ColorDrawable
-import android.support.v7.widget.RecyclerView
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
 
 abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder> : RecyclerView.Adapter<T>() {
@@ -24,10 +24,11 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder> : Recycle
 
 
     abstract fun createViewHolder(parent: ViewGroup): T
-    open fun setListeners(holder: T){
+    open fun setListeners(holder: T) {
         holder.layout.setOnClickListener { onClick(holder) }
         holder.layout.setOnLongClickListener { onSelectItem(holder); true }
     }
+
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): T {
         val holder = createViewHolder(parent)
         setListeners(holder)

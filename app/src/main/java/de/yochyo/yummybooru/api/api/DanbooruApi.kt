@@ -32,7 +32,7 @@ class DanbooruApi(url: String) : Api(url) {
             tags += tagsCharacter
             tags += tagsGeneral
             tags += tagsMeta
-            return object :Post() {
+            return object : Post() {
                 override val id = json.getInt("id")
                 override val width = json.getInt("image_width")
                 override val height = json.getInt("image_height")

@@ -22,6 +22,7 @@ package de.yochyo.yummybooru
 //TODO in Previewactivity einen favorite button für den Tag hinuzfügen
 //TODO SeveralTagsPreviewLayout -< siehe unten
 //Optimizations
+//TODO parentFile nicht überschreiben sondern konstante speichern
 //TODO on Long click für info was ein menü button in der actionbar macht macht
 //TOOOOOOOOOOOOOOOOODOOOOOOOOOOOOoo select all -> download all and add author
 //TODO updateMissingSubs/Tags überarbeiten

@@ -1,7 +1,7 @@
 package de.yochyo.yummybooru.api.entities
 
-import android.arch.persistence.room.*
 import android.content.Context
+import androidx.room.*
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SelectServerEvent

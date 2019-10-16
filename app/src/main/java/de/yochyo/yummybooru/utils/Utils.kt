@@ -1,14 +1,14 @@
 package de.yochyo.yummybooru.utils
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.graphics.Paint
-import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.support.v4.provider.DocumentFile
 import android.view.MotionEvent
 import android.widget.TextView
+import androidx.documentfile.provider.DocumentFile
 import de.yochyo.yummybooru.api.entities.Server
 import java.io.File
 import java.security.MessageDigest
@@ -65,6 +65,14 @@ fun createDefaultSavePath(): String {
 fun documentFile(context: Context, path: String): DocumentFile? {
     return if (path.startsWith("content")) DocumentFile.fromTreeUri(context, Uri.parse(path))
     else DocumentFile.fromFile(File(path))
+}
+
+fun ByteArray.toBitmap() = BitmapFactory.decodeByteArray(this, 0, this.size)
+val String.mimeType: String?
+get(){
+    val lastIndex = lastIndexOf(".")
+    return if(lastIndex != -1) substring(lastIndexOf("."))
+    else null
 }
 
 object Fling {

@@ -4,17 +4,17 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import android.support.v4.app.NotificationCompat
-import android.support.v4.app.NotificationManagerCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
-import de.yochyo.yummybooru.api.downloads.Downloader
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
 import de.yochyo.yummybooru.utils.App
 import de.yochyo.yummybooru.utils.FileUtils
+import de.yochyo.yummybooru.utils.mimeType
 import de.yochyo.yummybooru.utils.network.DownloadUtils
 import de.yochyo.yummybooru.utils.toTagString
 import kotlinx.coroutines.*
@@ -29,10 +29,11 @@ class DownloadService : Service() {
         private var position = 0
         private val downloadPosts = LinkedList<Posts>()
 
-        fun startService(context: Context, tags: String, posts: List<Post>, server: Server){
+        fun startService(context: Context, tags: String, posts: List<Post>, server: Server) {
             downloadPosts += Posts(tags, posts, server)
             context.startService(Intent(context, DownloadService::class.java))
         }
+
         fun startService(context: Context, manager: Manager, server: Server) = startService(context, manager.tags.toTagString(), ArrayList(manager.posts), server)
     }
 
@@ -46,9 +47,9 @@ class DownloadService : Service() {
         job = GlobalScope.launch(Dispatchers.IO) {
             var pair = getNextElement()
             while (pair != null && isActive) {
-                val bitmap = if (db.downloadOriginal) DownloadUtils.downloadBitmap(pair.first.fileSampleURL)
-                else DownloadUtils.downloadBitmap(pair.first.fileURL)
-                if (bitmap != null) FileUtils.writeFile(this@DownloadService, pair.first, bitmap, pair.second, SafeFileEvent.SILENT)
+                val url = if (db.downloadOriginal) pair.first.fileURL else pair.first.fileSampleURL
+                val image = DownloadUtils.downloadByteArray(url)
+                if (image != null) FileUtils.writeFile(this@DownloadService, pair.first, image, pair.second, SafeFileEvent.SILENT)
                 pair = getNextElement()
             }
             stopSelf()

@@ -1,18 +1,18 @@
 package de.yochyo.yummybooru.layout
 
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.view.ActionMode
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
+import androidx.appcompat.widget.Toolbar
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
@@ -56,14 +56,16 @@ class SubscriptionActivity : AppCompatActivity() {
                     Toast.makeText(this@SubscriptionActivity, "Not yet implemented", Toast.LENGTH_SHORT).show()
                     adapter.unselectAll()
                 }
-                R.id.update_subs ->{
-                    ConfirmDialog {GlobalScope.launch {
-                        val id = Api.newestID()
-                        for(selected in adapter.selected.getSelected(db.subs)){
-                            val tag = Api.getTag(selected.name)
-                            db.changeSubscription(this@SubscriptionActivity, selected.copy(lastCount = tag.count, lastID = id))
+                R.id.update_subs -> {
+                    ConfirmDialog {
+                        GlobalScope.launch {
+                            val id = Api.newestID()
+                            for (selected in adapter.selected.getSelected(db.subs)) {
+                                val tag = Api.getTag(selected.name)
+                                db.changeSubscription(this@SubscriptionActivity, selected.copy(lastCount = tag.count, lastID = id))
+                            }
                         }
-                    }}.withTitle("Update selected subs?").build(this@SubscriptionActivity)
+                    }.withTitle("Update selected subs?").build(this@SubscriptionActivity)
                 }
                 else -> return false
             }
@@ -84,7 +86,7 @@ class SubscriptionActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
             recyclerView = subs_recycler
-            recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity).apply { layoutManager = this}
+            recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity).apply { layoutManager = this }
 
             recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
             listener = UpdateSubsEvent.registerListener { adapter.updateSubs() }
@@ -151,7 +153,8 @@ class SubscriptionActivity : AppCompatActivity() {
             b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { db.deleteSubscription(this@SubscriptionActivity, sub.name) } }
             b.show()
         }
-        private fun editSubDialog(sub: Subscription){
+
+        private fun editSubDialog(sub: Subscription) {
             AddTagDialog {
                 val name = it.text.toString()
                 if (sub.name != name) {
@@ -174,11 +177,11 @@ class SubscriptionActivity : AppCompatActivity() {
             toolbar.inflateMenu(R.menu.activity_subscription_item_menu)
             toolbar.setOnMenuItemClickListener {
                 val sub = db.subs.elementAt(holder.adapterPosition)
-                when(it.itemId){
+                when (it.itemId) {
                     R.id.subscription_set_favorite -> GlobalScope.launch {
                         val copy = sub.copy(isFavorite = !sub.isFavorite)
                         db.changeSubscription(this@SubscriptionActivity, copy)
-                        withContext(Dispatchers.Main){layoutManager.scrollToPositionWithOffset(db.subs.indexOf(copy), 0)}
+                        withContext(Dispatchers.Main) { layoutManager.scrollToPositionWithOffset(db.subs.indexOf(copy), 0) }
                     }
                     R.id.subscription_edit -> editSubDialog(sub)
                     R.id.subscription_delete -> deleteSubDialog(sub)
@@ -246,13 +249,15 @@ class SubscriptionActivity : AppCompatActivity() {
                 }.withTitle(getString(R.string.add_subscription)).build(this)
             }
             R.id.update_subs -> {
-                ConfirmDialog {GlobalScope.launch {
-                    val id = Api.newestID()
-                    for(sub in db.subs){
-                        val tag = Api.getTag(sub.name)
-                        db.changeSubscription(this@SubscriptionActivity, sub.copy(lastCount = tag.count, lastID = id))
+                ConfirmDialog {
+                    GlobalScope.launch {
+                        val id = Api.newestID()
+                        for (sub in db.subs) {
+                            val tag = Api.getTag(sub.name)
+                            db.changeSubscription(this@SubscriptionActivity, sub.copy(lastCount = tag.count, lastID = id))
+                        }
                     }
-                }}.withTitle("Update all subs?").build(this@SubscriptionActivity)
+                }.withTitle("Update all subs?").build(this@SubscriptionActivity)
             }
         }
         return super.onOptionsItemSelected(item)

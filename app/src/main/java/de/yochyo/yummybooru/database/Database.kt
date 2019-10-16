@@ -1,12 +1,12 @@
 package de.yochyo.yummybooru.database
 
-import android.arch.persistence.db.SupportSQLiteDatabase
-import android.arch.persistence.room.Room
-import android.arch.persistence.room.RoomDatabase
-import android.arch.persistence.room.TypeConverters
-import android.arch.persistence.room.migration.Migration
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import de.yochyo.eventmanager.EventCollection
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.api.entities.*
@@ -23,7 +23,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-@android.arch.persistence.room.Database(entities = [Tag::class, Subscription::class, Server::class], version = 2)
+@androidx.room.Database(entities = [Tag::class, Subscription::class, Server::class], version = 2)
 @TypeConverters(DateConverter::class)
 abstract class Database : RoomDatabase() {
     private val lock = Mutex()
@@ -60,7 +60,7 @@ abstract class Database : RoomDatabase() {
     val servers: EventCollection<Server> = EventCollection(TreeSet())
     val tags: EventCollection<Tag> = EventCollection(TreeSet())
     val subs: EventCollection<Subscription> = EventCollection(TreeSet())
-    suspend private fun loadServers() {
+    private suspend fun loadServers() {
         withContext(Dispatchers.Default) {
             val se: List<Server> = serverDao.getAllServers()
             servers.clear()
@@ -246,13 +246,13 @@ abstract class Database : RoomDatabase() {
             }
         }
     var lastVersion = prefs.getInt("lastVersion", BuildConfig.VERSION_CODE)
-    set(v){
-        field = v
-        with(prefs.edit()){
-            putInt("lastVersion", v)
-            apply()
+        set(v) {
+            field = v
+            with(prefs.edit()) {
+                putInt("lastVersion", v)
+                apply()
+            }
         }
-    }
 
 
     var sortTags = prefs.getString("sortTags", "00")!!

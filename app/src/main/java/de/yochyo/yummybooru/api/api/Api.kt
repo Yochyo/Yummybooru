@@ -4,16 +4,8 @@ import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.utils.Logger
 import de.yochyo.yummybooru.utils.network.DownloadUtils
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.json.JSONArray
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
 
 abstract class Api(var url: String) {
 
@@ -52,7 +44,7 @@ abstract class Api(var url: String) {
                 val tag = api.getTagFromJson(json.getJSONObject(0))
                 if (tag != null) return tag
             }
-            return Tag(name, if(Tag.isSpecialTag(name)) Tag.SPECIAL else Tag.UNKNOWN)
+            return Tag(name, if (Tag.isSpecialTag(name)) Tag.SPECIAL else Tag.UNKNOWN)
         }
 
         suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = db.limit): List<Post> {

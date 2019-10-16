@@ -7,11 +7,10 @@ import android.os.Bundle
 import android.preference.Preference
 import android.preference.PreferenceFragment
 import android.preference.PreferenceManager
-import android.support.v4.provider.DocumentFile
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.documentfile.provider.DocumentFile
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.backup.BackupUtils
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.updater.AutoUpdater

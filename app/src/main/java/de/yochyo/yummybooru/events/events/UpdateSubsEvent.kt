@@ -5,6 +5,6 @@ import de.yochyo.eventmanager.Event
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.entities.Subscription
 
-class UpdateSubsEvent(val context: Context, val subs: Collection<Subscription>): Event(){
-    companion object: EventHandler<UpdateSubsEvent>()
+class UpdateSubsEvent(val context: Context, val subs: Collection<Subscription>) : Event() {
+    companion object : EventHandler<UpdateSubsEvent>()
 }

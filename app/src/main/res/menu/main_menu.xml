@@ -7,6 +7,6 @@
           app:showAsAction="ifRoom"/>
     <item android:id="@+id/action_add_server"
           android:title="@string/add_server"
-          android:icon="@drawable/plus"
+          android:icon="@drawable/add"
           app:showAsAction="ifRoom"/>
 </menu>

@@ -3,7 +3,6 @@ package de.yochyo.yummybooru
 //Features
 //TODO Tests einfügen
 //TODO multiselect pictureactivity kann auch einen tag hinzufügen (elsword eve_(elsword) oder so)
-//TODO multiselect previewactivity download and add all authors
 //TODO gifs und videos
 //TODO folder in taglist einfügen
 //TODO Auto mode bei server hinzufügen
@@ -22,17 +21,16 @@ package de.yochyo.yummybooru
 //TODO in Previewactivity einen favorite button für den Tag hinuzfügen
 //TODO SeveralTagsPreviewLayout -< siehe unten
 //Optimizations
+//TODO muss hashCode() methode überschrieben werden?
 //TODO parentFile nicht überschreiben sondern konstante speichern
 //TODO on Long click für info was ein menü button in der actionbar macht macht
-//TOOOOOOOOOOOOOOOOODOOOOOOOOOOOOoo select all -> download all and add author
+//TODO TOOOOOOOOOOOOOOOOODOOOOOOOOOOOOoo select all -> download all and add author
 //TODO updateMissingSubs/Tags überarbeiten
 //TODO Tag.getCorrectTagType besser einbetten
 //TODO statt Tga.compareTo dem TreeSet einen eigenen Comparator geben
-//TODO wenn mp4... eingeführt ist, muss downloader loggen
 //TODO Pictureactivity infotags multiselect mit Fab Button suchen
 //TODO Wenn Ein Speicherpfad nicht existiert, erst versuchen ihn zu erstellen, dann resetten
 //TODO Selection-Actionmode hinzufügen, statt alles einzeln zu machen
-//TODO Bilder durch Vector Drawables ersetzen
 //TODO logs in data abspeichern -- werden zu einem server geschickt
 //TODO Mainactivity TagRecyclerView selecting view machen
 //TODO beim Profiler ist die CPU belastung heavy

@@ -4,12 +4,10 @@
         android:layout_width="match_parent"
         android:layout_height="120dp"
         android:layout_margin="2dp"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-android:clickable="true">
+        xmlns:android="http://schemas.android.com/apk/res/android">
     <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
                android:layout_width="match_parent"
                android:layout_height="match_parent"
                android:background="@color/grey"
-               android:id="@+id/preview_picture">
-    </ImageView>
+               android:id="@+id/preview_picture"/>
 </FrameLayout>

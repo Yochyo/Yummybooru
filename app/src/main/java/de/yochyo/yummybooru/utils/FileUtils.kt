@@ -12,26 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 object FileUtils {
-    private var oldSavePath: String? = null
-    private var parentFolder: DocumentFile? = null
-    fun getParentFolder(context: Context): DocumentFile {
-        if (oldSavePath == null) { //Initialisieren beim ersten mal
-            oldSavePath = db.savePath
-            parentFolder = documentFile(context, oldSavePath!!)
-        } //Falls der Speicherpfad geändert wird
-        if (oldSavePath != db.savePath) {
-            oldSavePath = db.savePath
-            parentFolder = documentFile(context, oldSavePath!!)
-        } //Falls der Pfad nicht mehr existiert
-        if (parentFolder == null || !parentFolder!!.exists()) {
-            println("error-------")
-            oldSavePath = createDefaultSavePath()
-            db.savePath = oldSavePath!!
-            parentFolder = documentFile(context, oldSavePath!!)
-        }
-        return parentFolder!!
-    }
-
     suspend fun writeOrDownloadFile(context: Context, post: Post, id: String, url: String, server: Server, source: Int = SafeFileEvent.DEFAULT) {
         withContext(Dispatchers.IO) {
             val f = context.cache.getCachedFile(id)
@@ -57,7 +37,7 @@ object FileUtils {
 
     private suspend fun createFileToWrite(context: Context, post: Post, server: Server, mimeType: String = post.extension): DocumentFile? {
         return withContext(Dispatchers.IO) {
-            val folder = getOrCreateFolder(getParentFolder(context), server.urlHost)
+            val folder = getOrCreateFolder(db.saveFile, server.urlHost)
             if (folder != null) createFileOrNull(folder, postToFilename(post, mimeType, server), mimeType) else null
         }
 

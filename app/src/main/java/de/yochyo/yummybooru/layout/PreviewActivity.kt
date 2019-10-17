@@ -20,6 +20,7 @@ import de.yochyo.yummybooru.api.downloads.LoadManagerPageEvent
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.downloadImage
 import de.yochyo.yummybooru.api.entities.Server
+import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.DownloadService
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
@@ -71,9 +72,19 @@ open class PreviewActivity : AppCompatActivity() {
             when (p1.itemId) {
                 R.id.select_all -> if (previewAdapter.selected.size == m.posts.size) previewAdapter.unselectAll() else previewAdapter.selectAll()
                 R.id.download_selected -> {
-                    val posts = LinkedList<Post>()
-                    for (i in 0 until previewAdapter.selected.size)
-                        posts += m.posts[i]
+                    val posts = previewAdapter.selected.getSelected(m.posts)
+                    DownloadService.startService(this@PreviewActivity, m.tags.toTagString(), posts, Server.currentServer)
+                    previewAdapter.unselectAll()
+                }
+                R.id.download_and_add_authors_selected -> {
+                    val posts = previewAdapter.selected.getSelected(m.posts)
+                    GlobalScope.launch {
+                        for(post in posts){
+                            for(tag in post.getTags()){
+                                if(tag.type == Tag.ARTIST) db.addTag(this@PreviewActivity, tag)
+                            }
+                        }
+                    }
                     DownloadService.startService(this@PreviewActivity, m.tags.toTagString(), posts, Server.currentServer)
                     previewAdapter.unselectAll()
                 }

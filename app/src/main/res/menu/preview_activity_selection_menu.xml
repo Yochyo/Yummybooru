@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/download_and_add_authors_selected"
+          android:title="Download + add artists"
+          android:icon="@drawable/library_add"
+          app:showAsAction="ifRoom"/>
     <item android:id="@+id/download_selected"
           android:title="Download"
           android:icon="@drawable/download"

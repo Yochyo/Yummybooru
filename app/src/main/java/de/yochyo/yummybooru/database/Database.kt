@@ -2,6 +2,7 @@ package de.yochyo.yummybooru.database
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.documentfile.provider.DocumentFile
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -13,12 +14,14 @@ import de.yochyo.yummybooru.api.entities.*
 import de.yochyo.yummybooru.database.converter.DateConverter
 import de.yochyo.yummybooru.events.events.*
 import de.yochyo.yummybooru.utils.createDefaultSavePath
+import de.yochyo.yummybooru.utils.documentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -29,11 +32,13 @@ abstract class Database : RoomDatabase() {
     private val lock = Mutex()
 
     companion object {
+        private lateinit var context: Context
         private var _prefs: SharedPreferences? = null
         val prefs: SharedPreferences get() = _prefs!!
 
         var instance: Database? = null
         fun initDatabase(context: Context): Database {
+            this.context = context
             if (instance == null) {
                 _prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
                 instance = Room.databaseBuilder(context.applicationContext,
@@ -280,14 +285,14 @@ abstract class Database : RoomDatabase() {
             }
         }
 
-    var savePath = prefs.getString("savePath", createDefaultSavePath())!!
-        set(v) {
-            field = v
-            with(prefs.edit()) {
-                putString("savePath", v)
-                apply()
-            }
+    var saveFile: DocumentFile = documentFile(context, prefs.getString("savePath", createDefaultSavePath()))
+    set(v){
+        field = v
+        with(prefs.edit()){
+            putString("savePath", v.uri.toString())
+            apply()
         }
+    }
 
     var sortTagsByFavorite: Boolean
         get() = sortTags.first() == '1'

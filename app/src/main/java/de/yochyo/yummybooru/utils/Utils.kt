@@ -62,8 +62,8 @@ fun createDefaultSavePath(): String {
     return f.absolutePath
 }
 
-fun documentFile(context: Context, path: String): DocumentFile? {
-    return if (path.startsWith("content")) DocumentFile.fromTreeUri(context, Uri.parse(path))
+fun documentFile(context: Context, path: String): DocumentFile {
+    return if (path.startsWith("content")) DocumentFile.fromTreeUri(context, Uri.parse(path))!!
     else DocumentFile.fromFile(File(path))
 }
 

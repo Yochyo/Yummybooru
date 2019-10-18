@@ -154,22 +154,6 @@ class SubscriptionActivity : AppCompatActivity() {
             b.show()
         }
 
-        private fun editSubDialog(sub: Subscription) {
-            AddTagDialog {
-                val name = it.text.toString()
-                if (sub.name != name) {
-                    GlobalScope.launch {
-                        val newSub = Subscription.fromTag(Api.getTag(name))
-                        db.deleteSubscription(this@SubscriptionActivity, sub.name)
-                        db.addSubscription(this@SubscriptionActivity, newSub)
-                        withContext(Dispatchers.Main) {
-                            layoutManager.scrollToPositionWithOffset(db.subs.indexOf(newSub), 0)
-                        }
-                    }
-                }
-            }.withTag(sub.name).withTitle("Edit sub [${sub.name}]").build(this@SubscriptionActivity)
-        }
-
         override fun getItemCount(): Int = db.subs.size
         override fun onCreateViewHolder(parent: ViewGroup, position: Int): SubscribedTagViewHolder {
             val holder = super.onCreateViewHolder(parent, position)
@@ -183,7 +167,6 @@ class SubscriptionActivity : AppCompatActivity() {
                         db.changeSubscription(this@SubscriptionActivity, copy)
                         withContext(Dispatchers.Main) { layoutManager.scrollToPositionWithOffset(db.subs.indexOf(copy), 0) }
                     }
-                    R.id.subscription_edit -> editSubDialog(sub)
                     R.id.subscription_delete -> deleteSubDialog(sub)
                 }
                 true

@@ -35,9 +35,6 @@ object Menus {
         with(menu.findItem(R.id.subscription_set_favorite)) {
             title = if (sub.isFavorite) "Unfavorite" else "Favorite"
         }
-        with(menu.findItem(R.id.subscription_edit)) {
-            title = "Edit"
-        }
         with(menu.findItem(R.id.subscription_delete)) {
             title = "Delete"
         }

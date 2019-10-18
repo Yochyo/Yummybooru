@@ -10,7 +10,6 @@ package de.yochyo.yummybooru
 //TODO gifs und videos
 //TODO folder in taglist einfügen
 //TODO Auto mode bei server hinzufügen
-//TODO Previewactivity select pictures to download
 //TODO einen width/height/order button (wie bei mbooru) hinzufügen, Tag hat type.SPECIAL tag
 //TODO Mainactivity unselect all einfügen
 //TODO suchfeld bei tag/sub liste
@@ -22,7 +21,6 @@ package de.yochyo.yummybooru
 //TODO Tags und subs vereinen?
 //TODO Normale Downloads auch über nen service? zumindest wenn die app geschlossen wird, downloads umlagern
 //TODO Doppelklick auf image in previewactivity lädt das bild herunter
-//TODO in Previewactivity einen favorite und add Tag  button für den Tag hinuzfügen
 //TODO SeveralTagsPreviewLayout -< siehe unten
 //Optimizations
 //TODO datenbank immer mit mutex, normale methoden addTagWithoutMutex... umbennenen
@@ -31,13 +29,10 @@ package de.yochyo.yummybooru
 //TODO updateMissingSubs/Tags überarbeiten
 //TODO Tag.getCorrectTagType besser einbetten
 //TODO statt Tga.compareTo dem TreeSet einen eigenen Comparator geben
-//TODO Pictureactivity infotags multiselect mit Fab Button suchen
-//TODO Wenn Ein Speicherpfad nicht existiert, erst versuchen ihn zu erstellen, dann resetten
+//TODO Pictureactivity, Mainactivity infotags multiselect
 //TODO Selection-Actionmode hinzufügen, statt alles einzeln zu machen
 //TODO logs in data abspeichern -- werden zu einem server geschickt
-//TODO Mainactivity TagRecyclerView selecting view machen
-//TODO beim Profiler ist die CPU belastung heavy
-//TODO Code Kommentieren, neu anordnen
+//TODO CPU leistung optimieren Code Kommentieren und übersichtlicher gestalten
 //Bugs
 //TODO tag 6+girls geht nicht
 //TODO wenn man kein Internet hat kann es passieren, dass die EndOfManager Fehlermeldung kommt

@@ -202,21 +202,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
                 true
             }
-            toolbar.setOnLongClickListener {
-                val tag = currentFilter.elementAt(adapterPosition)
-                AddTagDialog {
-                    val name = it.text.toString()
-                    if (name != tag.name) {
-                        GlobalScope.launch {
-                            val newTag = Api.getTag(name)
-                            db.deleteTag(this@MainActivity, tag.name)
-                            db.addTag(this@MainActivity, newTag)
-                            withContext(Dispatchers.Main) { tagLayoutManager.scrollToPositionWithOffset(currentFilter.indexOf(newTag), 0) }
-                        }
-                    }
-                }.withTag(tag.name).withTitle("Edit tag [${tag.name}]").build(this@MainActivity)
-                true
-            }
         }
 
         override fun onBindViewHolder(holder: SearchTagViewHolder, position: Int) {

@@ -25,12 +25,12 @@ abstract class Downloader(context: Context) {
                         var download: Download? = null
                         try {
                             download = downloads.takeLast()
-                            var byteArray = context.cache.getCachedFile(download.id)
-                            if (byteArray == null) {
-                                byteArray = DownloadUtils.downloadByteArray(download.url)!! //throws exception when null
-                                if (download.cache) GlobalScope.launch { context.cache.cacheFile(download.id, byteArray) }
+                            var res = context.cache.getCachedFile(download.id)
+                            if (res == null) {
+                                res = DownloadUtils.downloadResource(download.url)!! //throws exception when null
+                                if (download.cache) GlobalScope.launch { context.cache.cacheFile(download.id, res) }
                             }
-                            launch(Dispatchers.Main) { download.doAfter.invoke(this, byteArray) }
+                            launch(Dispatchers.Main) { download.doAfter.invoke(this, res) }
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
@@ -42,7 +42,7 @@ abstract class Downloader(context: Context) {
         }
     }
 
-    fun downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(image: ByteArray) -> Unit = {}, downloadNow: Boolean = true, cache: Boolean = true) {
+    fun downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(res: Resource) -> Unit = {}, downloadNow: Boolean = true, cache: Boolean = true) {
         if (downloads.none { it.url == url }) {
             val download = Download(url, id, cache, doAfter)
             if (downloadNow) downloads.putLast(download)
@@ -52,7 +52,7 @@ abstract class Downloader(context: Context) {
 }
 
 inline val Context.downloader: Downloader get() = Downloader.getInstance(this)
-fun Context.downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(image: ByteArray) -> Unit = {}, downloadNow: Boolean = true, cache: Boolean = true) = Downloader.getInstance(this).downloadImage(url, id, doAfter, downloadNow, cache)
+fun Context.downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(res: Resource) -> Unit = {}, downloadNow: Boolean = true, cache: Boolean = true) = Downloader.getInstance(this).downloadImage(url, id, doAfter, downloadNow, cache)
 
 
-private class Download(val url: String, val id: String, val cache: Boolean, val doAfter: suspend CoroutineScope.(image: ByteArray) -> Unit = {})
+private class Download(val url: String, val id: String, val cache: Boolean, val doAfter: suspend CoroutineScope.(res: Resource) -> Unit = {})

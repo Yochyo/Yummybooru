@@ -166,8 +166,8 @@ class PictureActivity : AppCompatActivity() {
             GlobalScope.launch {
                 try {
                     val preview = cache.getCachedFile(preview(p.id))
-                    if (preview != null) launch(Dispatchers.Main) { Glide.with(this@PictureActivity).load(preview).into(imageView) }
-                    downloadImage(p.fileSampleURL, sample(p.id), { Glide.with(this@PictureActivity).load(it).into(imageView) })
+                    if (preview != null) launch(Dispatchers.Main) { preview.loadInto(imageView) }
+                    downloadImage(p.fileSampleURL, sample(p.id), { it.loadInto(imageView); println(it.type) })
                 }catch (e: Exception){
                     e.printStackTrace()
                 }

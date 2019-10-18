@@ -3,6 +3,7 @@ package de.yochyo.yummybooru.utils
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.yummybooru.api.Post
+import de.yochyo.yummybooru.api.downloads.Resource
 import de.yochyo.yummybooru.api.downloads.cache
 import de.yochyo.yummybooru.api.downloads.downloadImage
 import de.yochyo.yummybooru.api.entities.Server
@@ -14,18 +15,18 @@ import kotlinx.coroutines.withContext
 object FileUtils {
     suspend fun writeOrDownloadFile(context: Context, post: Post, id: String, url: String, server: Server, source: Int = SafeFileEvent.DEFAULT) {
         withContext(Dispatchers.IO) {
-            val f = context.cache.getCachedFile(id)
-            if (f != null) writeFile(context, post, f, server, source)
+            val res = context.cache.getCachedFile(id)
+            if (res != null) writeFile(context, post, res, server, source)
             else context.downloadImage(url, id, { writeFile(context, post, it, server, source) }, cache = false)
         }
     }
 
-    suspend fun writeFile(context: Context, post: Post, image: ByteArray, server: Server, source: Int = SafeFileEvent.DEFAULT) {
+    suspend fun writeFile(context: Context, post: Post, res: Resource, server: Server, source: Int = SafeFileEvent.DEFAULT) {
         withContext(Dispatchers.IO) {
             val file = createFileToWrite(context, post, server)
             if (file != null) {
                 try {
-                    context.contentResolver.openOutputStream(file.uri).write(image)
+                    context.contentResolver.openOutputStream(file.uri).write(res.resource)
                     withContext(Dispatchers.Main) { SafeFileEvent.trigger(SafeFileEvent(context, file, post, source)) }
                 } catch (e: Exception) {
                     Logger.log(e)

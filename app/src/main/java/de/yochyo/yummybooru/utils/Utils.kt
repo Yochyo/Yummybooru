@@ -71,7 +71,7 @@ fun ByteArray.toBitmap() = BitmapFactory.decodeByteArray(this, 0, this.size)
 val String.mimeType: String?
 get(){
     val lastIndex = lastIndexOf(".")
-    return if(lastIndex != -1) substring(lastIndexOf("."))
+    return if(lastIndex != -1) substring(lastIndexOf(".")+1)
     else null
 }
 

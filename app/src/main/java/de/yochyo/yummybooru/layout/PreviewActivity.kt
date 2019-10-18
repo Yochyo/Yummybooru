@@ -178,7 +178,7 @@ open class PreviewActivity : AppCompatActivity() {
             val p = m.posts[holder.adapterPosition]
             downloadImage(p.filePreviewURL, preview(p.id), {
                 if (pos == holder.adapterPosition)
-                    holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it.toBitmap())
+                    it.loadInto(holder.layout.findViewById<ImageView>(R.id.preview_picture))
             }, isScrolling)
         }
 

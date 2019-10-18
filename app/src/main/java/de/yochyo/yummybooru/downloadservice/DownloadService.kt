@@ -9,12 +9,12 @@ import androidx.core.app.NotificationManagerCompat
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.downloads.Manager
+import de.yochyo.yummybooru.api.downloads.Resource
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
 import de.yochyo.yummybooru.utils.App
 import de.yochyo.yummybooru.utils.FileUtils
-import de.yochyo.yummybooru.utils.mimeType
 import de.yochyo.yummybooru.utils.network.DownloadUtils
 import de.yochyo.yummybooru.utils.toTagString
 import kotlinx.coroutines.*
@@ -48,7 +48,7 @@ class DownloadService : Service() {
             var pair = getNextElement()
             while (pair != null && isActive) {
                 val url = if (db.downloadOriginal) pair.first.fileURL else pair.first.fileSampleURL
-                val image = DownloadUtils.downloadByteArray(url)
+                val image = DownloadUtils.downloadResource(url)
                 if (image != null) FileUtils.writeFile(this@DownloadService, pair.first, image, pair.second, SafeFileEvent.SILENT)
                 pair = getNextElement()
             }

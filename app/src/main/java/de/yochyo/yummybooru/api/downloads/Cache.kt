@@ -17,20 +17,20 @@ abstract class Cache(context: Context) {
     }
 
     private val directory = context.cacheDir
-    private val notYetCached = ConcurrentHashMap<String, ByteArray>()
+    private val notYetCached = ConcurrentHashMap<String, Resource>()
 
     init {
         directory.mkdirs()
     }
 
-    suspend fun cacheFile(id: String, image: ByteArray) {
+    suspend fun cacheFile(id: String, res: Resource) {
         withContext(Dispatchers.IO) {
             try {
                 val f = File(directory, id)
                 if (!f.exists()) {
-                    notYetCached[id] = image
+                    notYetCached[id] = res
                     f.createNewFile()
-                    f.writeBytes(image)
+                    res.loadInto(f)
                     notYetCached.remove(id)
                 }
             } catch (e: Exception) {
@@ -40,15 +40,11 @@ abstract class Cache(context: Context) {
         }
     }
 
-    suspend fun getCachedFile(id: String): ByteArray? {
+    suspend fun getCachedFile(id: String): Resource? {
         return withContext(Dispatchers.IO) {
             val f = File(directory, id)
-            if (f.exists() && f.length() != 0L) {
-                val stream = f.inputStream()
-                val byteArray = stream.readBytes()
-                stream.close()
-                byteArray
-            } else notYetCached[id]
+            return@withContext if (f.exists() && f.length() != 0L) Resource.fromFile(f)
+            else notYetCached[id]
         }
     }
 

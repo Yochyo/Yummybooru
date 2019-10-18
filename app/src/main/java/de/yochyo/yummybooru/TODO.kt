@@ -1,6 +1,10 @@
 package de.yochyo.yummybooru
 
+//Momentan
+//TODO selected tags sind falsch markiert
+
 //Features
+//TODO support animated_png
 //TODO Tests einfügen
 //TODO multiselect pictureactivity kann auch einen tag hinzufügen (elsword eve_(elsword) oder so)
 //TODO gifs und videos
@@ -18,13 +22,11 @@ package de.yochyo.yummybooru
 //TODO Tags und subs vereinen?
 //TODO Normale Downloads auch über nen service? zumindest wenn die app geschlossen wird, downloads umlagern
 //TODO Doppelklick auf image in previewactivity lädt das bild herunter
-//TODO in Previewactivity einen favorite button für den Tag hinuzfügen
+//TODO in Previewactivity einen favorite und add Tag  button für den Tag hinuzfügen
 //TODO SeveralTagsPreviewLayout -< siehe unten
 //Optimizations
 //TODO muss hashCode() methode überschrieben werden?
-//TODO parentFile nicht überschreiben sondern konstante speichern
 //TODO on Long click für info was ein menü button in der actionbar macht macht
-//TODO TOOOOOOOOOOOOOOOOODOOOOOOOOOOOOoo select all -> download all and add author
 //TODO updateMissingSubs/Tags überarbeiten
 //TODO Tag.getCorrectTagType besser einbetten
 //TODO statt Tga.compareTo dem TreeSet einen eigenen Comparator geben
@@ -40,11 +42,13 @@ package de.yochyo.yummybooru
 //TODO zu viele logs verbrauchen doch gut speicherplatz
 //TODO moebooru tag reinfolge ist glaub noch falsch
 //TODO discord schauen
-//TODO es kann passieren, dass ein bild größer als 25MB ist, oder nicht in den heap passt
 //TODO downloadservice geht nicht
-//TODO speicherordner resettet sich
 //TODO Icons sind nicht ganz stimmig, fehlen bei der Nofication und wenn man auf die AppÜbersicht geht - round icon fehlt glaub //TODO icon updaten, unter anderem bei discord... sieht es komisch aus
 //TODO Toolbar menu aktualisiert sich noch nicht immer?
+
+//Wahrscheinlich gefixt
+//TODO speicherordner resettet sich
+//TODO es kann passieren, dass ein bild größer als 25MB ist, oder nicht in den heap passt
 
 //TODO SeveraltagsPreviewLayout
 //  Zeigt mehrere tags an

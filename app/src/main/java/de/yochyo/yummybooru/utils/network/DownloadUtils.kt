@@ -1,7 +1,6 @@
 package de.yochyo.yummybooru.utils.network
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import de.yochyo.yummybooru.api.downloads.Resource
 import de.yochyo.yummybooru.utils.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,21 +12,6 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object DownloadUtils {
-
-    suspend fun getUrlInputStream(url: String): InputStream? {
-        return withContext(Dispatchers.IO) {
-            return@withContext try {
-                val conn = URL(url).openConnection() as HttpURLConnection
-                conn.addRequestProperty("User-Agent", "Mozilla/5.00")
-                conn.requestMethod = "GET"
-                conn.inputStream
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Logger.log(e, url)
-                null
-            }
-        }
-    }
 
     suspend fun getUrlLines(urlToRead: String): Collection<String> {
         return withContext(Dispatchers.IO) {
@@ -63,22 +47,14 @@ object DownloadUtils {
         return array
     }
 
-    suspend fun downloadBitmap(url: String): Bitmap? {
-        return withContext(Dispatchers.IO) {
-            val byteArray = downloadByteArray(url)
-            if (byteArray != null) BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-            else null
-        }
-    }
-
-    suspend fun downloadByteArray(url: String): ByteArray? {
+    suspend fun downloadResource(url: String, type: Int = Resource.getTypeFromURL(url)): Resource? {
         return withContext(Dispatchers.IO) {
             try {
                 val stream = DownloadUtils.getUrlInputStream(url)
                 if (stream != null) {
-                    val byteArray = stream.readBytes()
+                    val res = Resource(stream.readBytes(), type)
                     stream.close()
-                    return@withContext byteArray
+                    return@withContext res
                 }
             } catch (e: Exception) {
                 Logger.log(e, url)
@@ -88,5 +64,18 @@ object DownloadUtils {
         }
     }
 
-    //TODO Api weiter optimieren, loggs schreiben, DownloadUtils verkürzen
+    private suspend fun getUrlInputStream(url: String): InputStream? {
+        return withContext(Dispatchers.IO) {
+            return@withContext try {
+                val conn = URL(url).openConnection() as HttpURLConnection
+                conn.addRequestProperty("User-Agent", "Mozilla/5.00")
+                conn.requestMethod = "GET"
+                conn.inputStream
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Logger.log(e, url)
+                null
+            }
+        }
+    }
 }

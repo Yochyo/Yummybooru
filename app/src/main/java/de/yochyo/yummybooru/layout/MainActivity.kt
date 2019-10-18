@@ -181,6 +181,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             check.setOnClickListener {
                 onClick()
             }
+
             toolbar.setOnMenuItemClickListener {
                 val tag = currentFilter.elementAt(adapterPosition)
                 when (it.itemId) {

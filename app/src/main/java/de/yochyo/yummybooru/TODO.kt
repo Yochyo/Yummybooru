@@ -25,6 +25,7 @@ package de.yochyo.yummybooru
 //TODO in Previewactivity einen favorite und add Tag  button für den Tag hinuzfügen
 //TODO SeveralTagsPreviewLayout -< siehe unten
 //Optimizations
+//TODO datenbank immer mit mutex, normale methoden addTagWithoutMutex... umbennenen
 //TODO muss hashCode() methode überschrieben werden?
 //TODO on Long click für info was ein menü button in der actionbar macht macht
 //TODO updateMissingSubs/Tags überarbeiten
@@ -38,6 +39,7 @@ package de.yochyo.yummybooru
 //TODO beim Profiler ist die CPU belastung heavy
 //TODO Code Kommentieren, neu anordnen
 //Bugs
+//TODO tag 6+girls geht nicht
 //TODO wenn man kein Internet hat kann es passieren, dass die EndOfManager Fehlermeldung kommt
 //TODO zu viele logs verbrauchen doch gut speicherplatz
 //TODO moebooru tag reinfolge ist glaub noch falsch

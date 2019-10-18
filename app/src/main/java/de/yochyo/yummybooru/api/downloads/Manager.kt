@@ -16,6 +16,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 class Manager(val tags: Array<String>) {
+    val tagString: String = tags.toTagString()
     companion object {
         var current: Manager = Manager("*".toTagArray())
     }
@@ -97,7 +98,7 @@ class Manager(val tags: Array<String>) {
 
     override fun equals(other: Any?): Boolean {
         return if (other != null && other is Manager)
-            tags.toTagString() == other.tags.toTagString()
+            tagString == other.tagString
         else false
     }
 }

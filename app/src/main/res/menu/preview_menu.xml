@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/favorite"
+          android:title="Favorite"
+          android:icon="@drawable/unfavorite"
+          app:showAsAction="ifRoom"/>
+    <item android:id="@+id/add_tag"
+          android:title="Add tag"
+          android:icon="@drawable/remove"
+          app:showAsAction="ifRoom"/>
     <item android:id="@+id/download_all"
           android:title="@string/download_all"
           android:icon="@drawable/search"

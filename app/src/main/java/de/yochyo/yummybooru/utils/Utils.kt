@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Environment
 import android.view.MotionEvent
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.yummybooru.api.entities.Server
 import java.io.File
@@ -69,11 +70,13 @@ fun documentFile(context: Context, path: String): DocumentFile {
 
 fun ByteArray.toBitmap() = BitmapFactory.decodeByteArray(this, 0, this.size)
 val String.mimeType: String?
-get(){
-    val lastIndex = lastIndexOf(".")
-    return if(lastIndex != -1) substring(lastIndexOf(".")+1)
-    else null
-}
+    get() {
+        val lastIndex = lastIndexOf(".")
+        return if (lastIndex != -1) substring(lastIndexOf(".") + 1)
+        else null
+    }
+
+fun Context.drawable(id: Int) = ContextCompat.getDrawable(this, id)
 
 object Fling {
     fun getDirection(e1: MotionEvent, e2: MotionEvent): Direction {

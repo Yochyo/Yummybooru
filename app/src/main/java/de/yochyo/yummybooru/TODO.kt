@@ -34,20 +34,14 @@ package de.yochyo.yummybooru
 //TODO CPU leistung optimieren Code Kommentieren und übersichtlicher gestalten
 //TODO preloading besser gestalten, sodass ladezeiten besser sind
 //Bugs
-//TODO wenn das internet weg ist, lädt die manager seite nicht weiter runter
-//TODO list is empty bei absturz fixen
 //TODO tag 6+girls geht nicht
-//TODO wenn man kein Internet hat kann es passieren, dass die EndOfManager Fehlermeldung kommt
 //TODO zu viele logs verbrauchen doch gut speicherplatz
 //TODO moebooru tag reinfolge ist glaub noch falsch
 //TODO discord schauen
-//TODO downloadservice geht nicht
 //TODO Icons sind nicht ganz stimmig, fehlen bei der Nofication und wenn man auf die AppÜbersicht geht - round icon fehlt glaub //TODO icon updaten, unter anderem bei discord... sieht es komisch aus
 //TODO Toolbar menu aktualisiert sich noch nicht immer?
-
-//Wahrscheinlich gefixt
-//TODO speicherordner resettet sich
 //TODO es kann passieren, dass ein bild größer als 25MB ist, oder nicht in den heap passt
+//Wahrscheinlich gefixt
 
 //TODO SeveraltagsPreviewLayout
 //  Zeigt mehrere tags an

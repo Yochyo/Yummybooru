@@ -37,7 +37,16 @@ class MoebooruApi(url: String) : Api(url) {
                 private var tags: List<Tag>? = null
                 override suspend fun getTags(): List<Tag> {
                     if (tags == null)
-                        tags = parseTagsfromURL(DownloadUtils.getUrlLines("${Server.currentServer.url}post/show/$id"))
+                        tags = parseTagsfromURL(DownloadUtils.getUrlLines("${Server.currentServer.url}post/show/$id")).sortedBy {
+                            when(it.type){
+                                Tag.ARTIST -> 0
+                                Tag.COPYPRIGHT -> 1
+                                Tag.CHARACTER -> 2
+                                Tag.GENERAL -> 3
+                                Tag.META -> 4
+                                else -> 5
+                            }
+                        }
                     return tags!!
                 }
             }

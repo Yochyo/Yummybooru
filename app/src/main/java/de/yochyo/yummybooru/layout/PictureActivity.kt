@@ -86,7 +86,7 @@ class PictureActivity : AppCompatActivity() {
         currentTags.clear()
         tagRecyclerView.adapter?.notifyDataSetChanged()
         GlobalScope.launch {
-            val tags = getTags() as ArrayList<Tag>
+            val tags = getTags()
             launch(Dispatchers.Main) {
                 if (wasCurrentPosition == m.position) {
                     currentTags += tags

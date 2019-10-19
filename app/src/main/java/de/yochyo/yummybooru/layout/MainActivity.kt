@@ -54,7 +54,12 @@ import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private val filteredTags = ArrayList<Pair<EventCollection<Tag>, String>>()
-    private val currentFilter get() = filteredTags.last().first
+        get() {
+            if(field.isEmpty()) field += Pair(db.tags, "")
+            return field
+        }
+    private val currentFilter: EventCollection<Tag> get() = filteredTags.last().first
+
     private val filterMutex = Mutex()
     suspend fun filter(name: String) {
         withContext(Dispatchers.Default) {
@@ -131,7 +136,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     fun initData() {
         GlobalScope.launch { cache.clearCache() }
         Database.initDatabase(this)
-        filteredTags += Pair(db.tags, "")
 
         UpdateTagsEvent.registerListener { tagAdapter.notifyDataSetChanged() }
         UpdateServersEvent.registerListener { serverAdapter.notifyDataSetChanged() }
@@ -143,6 +147,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         Changelog.showChangelogIfChanges(this)
         AutoUpdater().autoUpdate(this)
+
     }
 
     private fun initDrawerButtons(addButton: Button, searchButton: Button) {

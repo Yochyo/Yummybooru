@@ -24,7 +24,6 @@ package de.yochyo.yummybooru
 //TODO SeveralTagsPreviewLayout -< siehe unten
 //Optimizations
 //TODO datenbank immer mit mutex, normale methoden addTagWithoutMutex... umbennenen
-//TODO muss hashCode() methode überschrieben werden?
 //TODO on Long click für info was ein menü button in der actionbar macht macht
 //TODO updateMissingSubs/Tags überarbeiten
 //TODO Tag.getCorrectTagType besser einbetten
@@ -33,7 +32,10 @@ package de.yochyo.yummybooru
 //TODO Selection-Actionmode hinzufügen, statt alles einzeln zu machen
 //TODO logs in data abspeichern -- werden zu einem server geschickt
 //TODO CPU leistung optimieren Code Kommentieren und übersichtlicher gestalten
+//TODO preloading besser gestalten, sodass ladezeiten besser sind
 //Bugs
+//TODO wenn das internet weg ist, lädt die manager seite nicht weiter runter
+//TODO list is empty bei absturz fixen
 //TODO tag 6+girls geht nicht
 //TODO wenn man kein Internet hat kann es passieren, dass die EndOfManager Fehlermeldung kommt
 //TODO zu viele logs verbrauchen doch gut speicherplatz

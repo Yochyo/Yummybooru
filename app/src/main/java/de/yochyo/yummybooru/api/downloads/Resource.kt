@@ -15,7 +15,6 @@ class Resource(val resource: ByteArray, val type: Int) : Serializable {
 
         fun getTypeFromURL(url: String): Int {
             val mimeType = url.mimeType
-            println("Mime: $mimeType")
             if (mimeType != null) {
                 return when(mimeType){
                     "gif" -> ANIMATED

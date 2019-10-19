@@ -30,7 +30,6 @@ object DownloadUtils {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                Logger.log(e, "URL: $urlToRead")
             }
             result
         }
@@ -42,7 +41,6 @@ object DownloadUtils {
             array = JSONArray(getUrlLines(urlToRead).joinToString(""))
         } catch (e: Exception) {
             e.printStackTrace()
-            Logger.log(e, "URL: $urlToRead")
         }
         return array
     }
@@ -57,7 +55,6 @@ object DownloadUtils {
                     return@withContext res
                 }
             } catch (e: Exception) {
-                Logger.log(e, url)
                 e.printStackTrace()
             }
             null
@@ -73,7 +70,6 @@ object DownloadUtils {
                 conn.inputStream
             } catch (e: Exception) {
                 e.printStackTrace()
-                Logger.log(e, url)
                 null
             }
         }

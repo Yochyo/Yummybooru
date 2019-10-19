@@ -54,7 +54,6 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         }
         findPreference("changelogs").setOnPreferenceClickListener {
             Changelog.showChangelogs(this)
-            println("show changelogs")
             true
         }
 

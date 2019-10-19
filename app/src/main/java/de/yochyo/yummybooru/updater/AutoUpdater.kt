@@ -115,8 +115,6 @@ class AutoUpdater {
                 `is`.close()
                 return@withContext url
             } catch (e: Exception) {
-                e.printStackTrace()
-                Logger.log(e, "Error when updating")
             }
             return@withContext null
         }

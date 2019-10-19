@@ -47,7 +47,7 @@ abstract class Api(var url: String) {
             return Tag(name, if (Tag.isSpecialTag(name)) Tag.SPECIAL else Tag.UNKNOWN)
         }
 
-        suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = db.limit): List<Post> {
+        suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = db.limit): List<Post>? {
             val posts = ArrayList<Post>(limit)
             val urlBuilder = StringBuilder().append(api.urlGetPosts(page, tags, limit))
             if (tags.isNotEmpty()) {
@@ -63,7 +63,7 @@ abstract class Api(var url: String) {
                     val post = api.getPostFromJson(json.getJSONObject(i))
                     if (post != null) posts += post
                 }
-            }
+            } else return null
             return if (Server.currentServer.enableR18Filter) posts.filter { it.rating == "s" }
             else posts
         }

@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
-import com.bumptech.glide.Glide
 import com.github.chrisbanes.photoview.OnSingleFlingListener
 import com.github.chrisbanes.photoview.PhotoView
 import com.google.android.material.snackbar.Snackbar
@@ -31,10 +30,7 @@ import de.yochyo.yummybooru.layout.res.Menus
 import de.yochyo.yummybooru.utils.*
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 
 class PictureActivity : AppCompatActivity() {
@@ -84,15 +80,6 @@ class PictureActivity : AppCompatActivity() {
         }
     }
 
-    fun loadNextPage(page: Int) {
-        GlobalScope.launch {
-            m.downloadPage(page)
-            launch(Dispatchers.Main) {
-                m.loadPage(this@PictureActivity, page)
-            }
-        }
-    }
-
     private fun Post.updateCurrentTags(wasCurrentPosition: Int) {
         supportActionBar?.title = id.toString()
 
@@ -126,11 +113,14 @@ class PictureActivity : AppCompatActivity() {
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
         override fun getCount(): Int = m.posts.size
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
-            if (position + 3 >= m.posts.size - 1) GlobalScope.launch {
-                for (p in m.downloadPage(m.currentPage + 1))
-                    downloadImage(p.filePreviewURL, preview(p.id), {}, downloadNow = false)
+            if (position + 3 >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage(this@PictureActivity) }
+            if (position == m.posts.size - 1) {
+                GlobalScope.launch {
+                    val posts = m.loadNextPage(this@PictureActivity)
+                    if (posts != null)
+                        for (p in posts) downloadImage(p.filePreviewURL, preview(p.id), {}, downloadNow = false)
+                }
             }
-            if (position == m.posts.size - 1) loadNextPage(m.currentPage + 1)
             val imageView = layoutInflater.inflate(R.layout.picture_item_view, container, false) as PhotoView
             imageView.setAllowParentInterceptOnEdge(true)
             imageView.setOnSingleFlingListener(object : OnSingleFlingListener {
@@ -167,8 +157,8 @@ class PictureActivity : AppCompatActivity() {
                 try {
                     val preview = cache.getCachedFile(preview(p.id))
                     if (preview != null) launch(Dispatchers.Main) { preview.loadInto(imageView) }
-                    downloadImage(p.fileSampleURL, sample(p.id), { it.loadInto(imageView); println(it.type) })
-                }catch (e: Exception){
+                    downloadImage(p.fileSampleURL, sample(p.id), { it.loadInto(imageView) })
+                } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }

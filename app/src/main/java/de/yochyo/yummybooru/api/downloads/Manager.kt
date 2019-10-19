@@ -14,19 +14,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.util.concurrent.LinkedBlockingQueue
 
 class Manager(val tags: Array<String>) {
     val tagString: String = tags.toTagString()
+
     companion object {
         var current: Manager = Manager("*".toTagArray())
     }
 
-    private val mutex = Mutex()
-
     val downloadManagerPageEvent = EventHandler<DownloadManagerPageEvent>()
     val loadManagerPageEvent = EventHandler<LoadManagerPageEvent>()
 
-    private val pageStatus = SparseArray<PageStatus>()
     private val pages = SparseArray<List<Post>>()
     val posts = EventCollection<Post>(ArrayList())
 
@@ -35,51 +34,63 @@ class Manager(val tags: Array<String>) {
         private set
     var position = -1
 
-    suspend fun downloadPage(page: Int): List<Post> {
-        return withContext(Dispatchers.Default) {
-            val status = pageStatus[page]
-            var p = pages[page]
-            if (status == null) {
-                pageStatus.append(page, PageStatus.DOWNLOADING)
-                p = Api.getPosts(page, tags).filterNewPosts()
-                pages.append(page, p)
-                downloadManagerPageEvent.trigger(DownloadManagerPageEvent(page, p))
-            } else
-                if (status == PageStatus.DOWNLOADING) p = awaitPage(page)
-            pageStatus.append(page, PageStatus.DOWNLOADED)
-            return@withContext p
+    private val downloading = LinkedBlockingQueue<Int>()
+
+    suspend fun downloadNextPage(context: Context) = downloadPage(context, currentPage + 1)
+    suspend fun downloadPage(context: Context, page: Int): List<Post>? {
+        println("Download $page")
+        return withContext(Dispatchers.IO) {
+            val p = pages[page]
+            if (p == null) {
+                if (downloading.contains(page)) return@withContext awaitPage(page)
+
+                downloading += page
+                val posts = Api.getPosts(page, tags)
+                if (posts != null) {
+                    pages.put(page, posts)
+                    downloadManagerPageEvent.trigger(DownloadManagerPageEvent(context, page, posts))
+                }
+                downloading.remove(page)
+            }
+            pages[page]
         }
     }
 
-    suspend fun loadPage(context: Context, page: Int): List<Post>? {
-        val p = pages[page]
-        mutex.withLock {
-            if (pageStatus[page] == PageStatus.DOWNLOADED && p != null) {
-                if (page > currentPage) {
-                    currentPage = page
-                    posts += p
-                }
-                pageStatus.append(page, PageStatus.LOADED)
-                withContext(Dispatchers.Main) {
-                    loadManagerPageEvent.trigger(LoadManagerPageEvent(context, p))
+    private val loadingMutex = Mutex()
+    suspend fun loadNextPage(context: Context): List<Post>? {
+        val page = currentPage + 1
+        loadingMutex.withLock {
+            println("Load ${currentPage + 1}")
+            var p = pages[currentPage + 1]
+            withContext(Dispatchers.IO) {
+                if (p == null) p = downloadPage(context, currentPage + 1)
+                if (p != null) {
+                    ++currentPage
+                    val filtered = p.filterNewPosts()
+                    withContext(Dispatchers.Main) {
+                        posts += filtered
+                        loadManagerPageEvent.trigger(LoadManagerPageEvent(context, p))
+                    }
                 }
             }
         }
-        return p
+        return pages[page]
     }
 
-    private suspend fun awaitPage(page: Int): List<Post> {
+    private suspend fun awaitPage(page: Int): List<Post>? {
         var list: List<Post>? = null
-        downloadManagerPageEvent.registerListener {
+        val listener = downloadManagerPageEvent.registerListener {
             if (it.page == page) {
                 list = it.posts
                 it.deleteListener = true
             }
         }
         return withContext(Dispatchers.IO) {
-            while (list == null)
+            val timeout = System.currentTimeMillis()
+            while (list == null && System.currentTimeMillis() - timeout < 3000)
                 delay(50)
-            list!!
+            downloadManagerPageEvent.removeListener(listener)
+            list
         }
     }
 
@@ -89,7 +100,6 @@ class Manager(val tags: Array<String>) {
     }
 
     suspend fun reset() {
-        pageStatus.clear()
         pages.clear()
         position = -1
         currentPage = 0
@@ -103,9 +113,5 @@ class Manager(val tags: Array<String>) {
     }
 }
 
-class DownloadManagerPageEvent(val page: Int, val posts: List<Post>) : Event()
+class DownloadManagerPageEvent(val context: Context, val page: Int, val posts: List<Post>) : Event()
 class LoadManagerPageEvent(val context: Context, val newPage: List<Post>) : Event()
-
-private enum class PageStatus {
-    DOWNLOADING, DOWNLOADED, LOADED
-}

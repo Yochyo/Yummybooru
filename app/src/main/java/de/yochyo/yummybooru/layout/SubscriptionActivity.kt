@@ -9,7 +9,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,8 +21,7 @@ import de.yochyo.yummybooru.events.events.UpdateSubsEvent
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.layout.res.Menus
-import de.yochyo.yummybooru.layout.views.SelectableRecyclerViewAdapter
-import de.yochyo.yummybooru.layout.views.SelectableViewHolder
+import de.yochyo.yummybooru.layout.views.*
 import de.yochyo.yummybooru.utils.setColor
 import de.yochyo.yummybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_subscription.*
@@ -41,44 +39,6 @@ class SubscriptionActivity : AppCompatActivity() {
     private lateinit var adapter: SubscribedTagAdapter
     private lateinit var layoutManager: LinearLayoutManager
 
-    protected var actionmode: ActionMode? = null
-    protected val actionModeCallback = object : ActionMode.Callback {
-        override fun onCreateActionMode(p0: ActionMode, p1: Menu): Boolean {
-            p0.menuInflater.inflate(R.menu.subscription_activity_selection_menu, p1)
-            p0.title = "${adapter.selected.size}/${db.subs.size}"
-            return true
-        }
-
-        override fun onActionItemClicked(p0: ActionMode, p1: MenuItem): Boolean {
-            when (p1.itemId) {
-                R.id.select_all -> if (adapter.selected.size == db.subs.size) adapter.unselectAll() else adapter.selectAll()
-                R.id.open_selected -> {
-                    Toast.makeText(this@SubscriptionActivity, "Not yet implemented", Toast.LENGTH_SHORT).show()
-                    adapter.unselectAll()
-                }
-                R.id.update_subs -> {
-                    ConfirmDialog {
-                        GlobalScope.launch {
-                            val id = Api.newestID()
-                            for (selected in adapter.selected.getSelected(db.subs)) {
-                                val tag = Api.getTag(selected.name)
-                                db.changeSubscription(this@SubscriptionActivity, selected.copy(lastCount = tag.count, lastID = id))
-                            }
-                        }
-                    }.withTitle("Update selected subs?").build(this@SubscriptionActivity)
-                }
-                else -> return false
-            }
-            return true
-        }
-
-        override fun onDestroyActionMode(p0: ActionMode) {
-            adapter.unselectAll()
-        }
-
-        override fun onPrepareActionMode(p0: ActionMode?, p1: Menu?) = false
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_subscription)
@@ -89,6 +49,7 @@ class SubscriptionActivity : AppCompatActivity() {
             recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity).apply { layoutManager = this }
 
             recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
+
             listener = UpdateSubsEvent.registerListener { adapter.updateSubs() }
             subs_swipe_refresh_layout.setOnRefreshListener {
                 subs_swipe_refresh_layout.isRefreshing = false
@@ -107,7 +68,44 @@ class SubscriptionActivity : AppCompatActivity() {
         return true
     }
 
-    private inner class SubscribedTagAdapter : SelectableRecyclerViewAdapter<SubscribedTagViewHolder>() {
+    private inner class SubscribedTagAdapter : SelectableRecyclerViewAdapter<SubscribedTagViewHolder>(this, R.menu.subscription_activity_selection_menu) {
+        private val startSelectionListener = object : Listener<StartSelectingEvent>() {
+            override fun onEvent(e: StartSelectingEvent) {
+                adapter.actionmode?.title = "${adapter.selected.size}/${db.subs.size}"
+            }
+        }
+        private val updateSelectionListener = object : Listener<UpdateSelectionEvent>() {
+            override fun onEvent(e: UpdateSelectionEvent) {
+                adapter.actionmode?.title = "${selected.size}/${db.subs.size}"
+            }
+        }
+
+        init {
+            onStartSelection.registerListener(startSelectionListener)
+            onUpdateSelection.registerListener(updateSelectionListener)
+
+            onClickMenuItem.registerListener {
+                when (it.menuItem.itemId) {
+                    R.id.select_all -> if (adapter.selected.size == db.subs.size) adapter.unselectAll() else adapter.selectAll()
+                    R.id.open_selected -> {
+                        Toast.makeText(this@SubscriptionActivity, "Not yet implemented", Toast.LENGTH_SHORT).show()
+                        adapter.unselectAll()
+                    }
+                    R.id.update_subs -> {
+                        ConfirmDialog {
+                            GlobalScope.launch {
+                                val id = Api.newestID()
+                                for (selected in adapter.selected.getSelected(db.subs)) {
+                                    val tag = Api.getTag(selected.name)
+                                    db.changeSubscription(this@SubscriptionActivity, selected.copy(lastCount = tag.count, lastID = id))
+                                }
+                            }
+                        }.withTitle("Update selected subs?").build(this@SubscriptionActivity)
+                    }
+                }
+            }
+        }
+
         fun updateSubs() {
             adapter.notifyDataSetChanged()
         }
@@ -120,29 +118,16 @@ class SubscriptionActivity : AppCompatActivity() {
             PreviewActivity.startActivity(this@SubscriptionActivity, sub.toString())
         }
 
+
         override fun setListeners(holder: SubscribedTagViewHolder) {
             val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
-            toolbar.setOnClickListener { onClick(holder) }
-            toolbar.setOnLongClickListener { onSelectItem(holder); true }
+            toolbar.setOnClickListener { onClickHolder(holder) }
+            toolbar.setOnLongClickListener { onSelectHolder(holder); true }
         }
+
 
         override fun createViewHolder(parent: ViewGroup): SubscribedTagViewHolder {
             return SubscribedTagViewHolder(layoutInflater.inflate(R.layout.subscription_item_layout, parent, false) as FrameLayout)
-        }
-
-        override fun onStartSelecting() {
-            if (actionmode == null) {
-                actionmode = startSupportActionMode(actionModeCallback)
-            }
-        }
-
-        override fun onStopSelecting() {
-            actionmode?.finish()
-            actionmode = null
-        }
-
-        override fun onUpdate() {
-            actionmode?.title = "${selected.size}/${db.subs.size}"
         }
 
         private fun deleteSubDialog(sub: Subscription) {

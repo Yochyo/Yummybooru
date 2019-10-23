@@ -10,7 +10,6 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.ActionMode
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.eventmanager.Listener
@@ -28,8 +27,7 @@ import de.yochyo.yummybooru.events.events.AddTagEvent
 import de.yochyo.yummybooru.events.events.ChangeTagEvent
 import de.yochyo.yummybooru.events.events.DeleteTagEvent
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
-import de.yochyo.yummybooru.layout.views.SelectableRecyclerViewAdapter
-import de.yochyo.yummybooru.layout.views.SelectableViewHolder
+import de.yochyo.yummybooru.layout.views.*
 import de.yochyo.yummybooru.utils.drawable
 import de.yochyo.yummybooru.utils.preview
 import de.yochyo.yummybooru.utils.toTagArray
@@ -46,7 +44,6 @@ open class PreviewActivity : AppCompatActivity() {
             context.startActivity(Intent(context, PreviewActivity::class.java))
         }
     }
-
     private lateinit var actionBarListener: ActionBarListener
     private var isLoadingView = false
     private var isScrolling = false
@@ -62,46 +59,6 @@ open class PreviewActivity : AppCompatActivity() {
 
 
     private lateinit var m: Manager
-
-    protected var actionmode: ActionMode? = null
-    protected val actionModeCallback = object : ActionMode.Callback {
-        override fun onCreateActionMode(p0: ActionMode, p1: Menu): Boolean {
-            p0.menuInflater.inflate(R.menu.preview_activity_selection_menu, p1)
-            p0.title = "${previewAdapter.selected.size}/${m.posts.size}"
-            return true
-        }
-
-        override fun onActionItemClicked(p0: ActionMode, p1: MenuItem): Boolean {
-            when (p1.itemId) {
-                R.id.select_all -> if (previewAdapter.selected.size == m.posts.size) previewAdapter.unselectAll() else previewAdapter.selectAll()
-                R.id.download_selected -> {
-                    val posts = previewAdapter.selected.getSelected(m.posts)
-                    DownloadService.startService(this@PreviewActivity, m.tagString, posts, Server.currentServer)
-                    previewAdapter.unselectAll()
-                }
-                R.id.download_and_add_authors_selected -> {
-                    val posts = previewAdapter.selected.getSelected(m.posts)
-                    GlobalScope.launch {
-                        for (post in posts) {
-                            for (tag in post.getTags()) {
-                                if (tag.type == Tag.ARTIST) db.addTag(this@PreviewActivity, tag)
-                            }
-                        }
-                    }
-                    DownloadService.startService(this@PreviewActivity, m.tagString, posts, Server.currentServer)
-                    previewAdapter.unselectAll()
-                }
-                else -> return false
-            }
-            return true
-        }
-
-        override fun onDestroyActionMode(p0: ActionMode) {
-            previewAdapter.unselectAll()
-        }
-
-        override fun onPrepareActionMode(p0: ActionMode?, p1: Menu?) = false
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -124,7 +81,7 @@ open class PreviewActivity : AppCompatActivity() {
         GlobalScope.launch {
             m.loadNextPage(this@PreviewActivity)
             isLoadingView = false
-            launch { m.downloadPage(this@PreviewActivity, m.currentPage+1) }
+            launch { m.downloadPage(this@PreviewActivity, m.currentPage + 1) }
         }
     }
 
@@ -145,7 +102,7 @@ open class PreviewActivity : AppCompatActivity() {
     fun initSwipeRefreshLayout() {
         swipeRefreshLayout.setOnRefreshListener {
             swipeRefreshLayout.isRefreshing = false
-            if (actionmode == null) {
+            if (previewAdapter.actionmode == null) {
                 GlobalScope.launch {
                     m.reset()
                     loadNextPage()
@@ -159,7 +116,52 @@ open class PreviewActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
-    protected inner class PreviewAdapter : SelectableRecyclerViewAdapter<PreviewViewHolder>() {
+    protected inner class PreviewAdapter : SelectableRecyclerViewAdapter<PreviewViewHolder>(this, R.menu.preview_activity_selection_menu) {
+        private val startSelectionListener = object : Listener<StartSelectingEvent>() {
+            override fun onEvent(e: StartSelectingEvent) {
+                m.loadManagerPageEvent.registerListener(loadManagerPageUpdateActionModeListener)
+                previewAdapter.actionmode?.title = "${selected.size}/${m.posts.size}"
+            }
+        }
+        private val stopSelectionListener = object : Listener<StopSelectingEvent>() {
+            override fun onEvent(e: StopSelectingEvent) {
+                m.loadManagerPageEvent.removeListener(loadManagerPageUpdateActionModeListener)
+            }
+        }
+        private val updateSelectionListener = object: Listener<UpdateSelectionEvent>(){
+            override fun onEvent(e: UpdateSelectionEvent) {
+                previewAdapter.actionmode?.title = "${selected.size}/${m.posts.size}"
+            }
+        }
+
+        init {
+            onStartSelection.registerListener(startSelectionListener)
+            onStopSelection.registerListener(stopSelectionListener)
+            onUpdateSelection.registerListener(updateSelectionListener)
+            onClickMenuItem.registerListener {
+                when(it.menuItem.itemId){
+                    R.id.select_all -> if (previewAdapter.selected.size == m.posts.size) previewAdapter.unselectAll() else previewAdapter.selectAll()
+                    R.id.download_selected -> {
+                        val posts = previewAdapter.selected.getSelected(m.posts)
+                        DownloadService.startService(this@PreviewActivity, m.tagString, posts, Server.currentServer)
+                        previewAdapter.unselectAll()
+                    }
+                    R.id.download_and_add_authors_selected -> {
+                        val posts = previewAdapter.selected.getSelected(m.posts)
+                        GlobalScope.launch {
+                            for (post in posts) {
+                                for (tag in post.getTags()) {
+                                    if (tag.type == Tag.ARTIST) db.addTag(this@PreviewActivity, tag)
+                                }
+                            }
+                        }
+                        DownloadService.startService(this@PreviewActivity, m.tagString, posts, Server.currentServer)
+                        previewAdapter.unselectAll()
+                    }
+                }
+            }
+        }
+
         fun updatePosts(newPage: Collection<Post>) {
             if (newPage.isNotEmpty())
                 if (m.posts.size > newPage.size) notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
@@ -191,26 +193,9 @@ open class PreviewActivity : AppCompatActivity() {
             holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(null)
         }
 
-
-        override fun onStartSelecting() {
-            if (actionmode == null) {
-                actionmode = startSupportActionMode(actionModeCallback)
-                m.loadManagerPageEvent.registerListener(loadManagerPageUpdateActionModeListener)
-            }
-        }
-
-        override fun onStopSelecting() {
-            actionmode?.finish()
-            actionmode = null
-            m.loadManagerPageEvent.removeListener(loadManagerPageUpdateActionModeListener)
-        }
-
-        override fun onUpdate() {
-            actionmode?.title = "${selected.size}/${m.posts.size}"
-        }
-
         override fun getItemCount(): Int = m.posts.size
     }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -254,25 +239,26 @@ open class PreviewActivity : AppCompatActivity() {
 
     private val loadManagerPageUpdateActionModeListener = object : Listener<LoadManagerPageEvent>() {
         override fun onEvent(e: LoadManagerPageEvent) {
-            actionmode?.title = "${previewAdapter.selected.size}/${m.posts.size}"
+            previewAdapter.actionmode?.title = "${previewAdapter.selected.size}/${m.posts.size}"
         }
     }
 
     inner class PreviewViewHolder(layout: FrameLayout) : SelectableViewHolder(layout)
 }
 
-private class ActionBarListener(val context: Context, tag: String, menu: Menu){
+private class ActionBarListener(val context: Context, tag: String, menu: Menu) {
     private var registered: Boolean = false
-    fun registerListeners(){
-        if(!registered){
+    fun registerListeners() {
+        if (!registered) {
             registered = true
             AddTagEvent.registerListener(addTagListener)
             DeleteTagEvent.registerListener(removeTagListener)
             ChangeTagEvent.registerListener(favoriteTagListener)
         }
     }
-    fun unregisterListeners(){
-        if(registered){
+
+    fun unregisterListeners() {
+        if (registered) {
             registered = false
             AddTagEvent.removeListener(addTagListener)
             DeleteTagEvent.removeListener(removeTagListener)
@@ -280,27 +266,27 @@ private class ActionBarListener(val context: Context, tag: String, menu: Menu){
         }
     }
 
-    private val addTagListener = object: Listener<AddTagEvent>(){
+    private val addTagListener = object : Listener<AddTagEvent>() {
         override fun onEvent(e: AddTagEvent) {
-            if(e.tag.name == tag) {
+            if (e.tag.name == tag) {
                 menu.findItem(R.id.add_tag).icon = context.drawable(R.drawable.remove)
-                if(e.tag.isFavorite) menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.favorite)
+                if (e.tag.isFavorite) menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.favorite)
             }
 
         }
     }
-    private val removeTagListener = object: Listener<DeleteTagEvent>(){
+    private val removeTagListener = object : Listener<DeleteTagEvent>() {
         override fun onEvent(e: DeleteTagEvent) {
-            if(e.tag.name == tag) {
+            if (e.tag.name == tag) {
                 menu.findItem(R.id.add_tag).icon = context.drawable(R.drawable.add)
                 menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.unfavorite)
             }
         }
     }
-    private val favoriteTagListener = object: Listener<ChangeTagEvent>(){
+    private val favoriteTagListener = object : Listener<ChangeTagEvent>() {
         override fun onEvent(e: ChangeTagEvent) {
-            if(e.newTag.name == tag){
-                if(e.newTag.isFavorite) menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.favorite)
+            if (e.newTag.name == tag) {
+                if (e.newTag.isFavorite) menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.favorite)
                 else menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.unfavorite)
             }
         }

@@ -60,7 +60,7 @@ class MoebooruApi(url: String) : Api(url) {
     override fun getTagFromJson(json: JSONObject): Tag? {
         return try {
             val name = json.getString("name")
-            Tag(name, Tag.getCorrectTagType(name, json.getInt("type")), count = json.getInt("count"))
+            Tag(name, json.getInt("type"), count = json.getInt("count"))
         } catch (e: Exception) {
             e.printStackTrace()
             Logger.log(e, json.toString())

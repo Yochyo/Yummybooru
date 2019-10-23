@@ -6,8 +6,7 @@ import de.yochyo.yummybooru.database.db
 import java.util.*
 
 @Entity(tableName = "tags", primaryKeys = ["name", "serverID"])
-data class Tag(val name: String, val type: Int, val isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID, val count: Int = 0) : Comparable<Tag> {
-
+data class Tag(val name: String,val type: Int, val isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID, val count: Int = 0) : Comparable<Tag> {
     companion object {
         const val GENERAL = 0
         const val CHARACTER = 4
@@ -21,8 +20,8 @@ data class Tag(val name: String, val type: Int, val isFavorite: Boolean = false,
             return name == "*" || name.startsWith("height") || name.startsWith("width") || name.startsWith("order") || name.startsWith("rating") || name.contains(" ")
         }
 
-        fun getCorrectTagType(tagName: String, id: Int): Int {
-            return if (id in 0..1 || id in 3..5) id
+        fun getCorrectTagType(tagName: String, type: Int): Int {
+            return if (type in 0..1 || type in 3..5) type
             else if (isSpecialTag(tagName)) SPECIAL
             else UNKNOWN
         }
@@ -30,13 +29,13 @@ data class Tag(val name: String, val type: Int, val isFavorite: Boolean = false,
 
     val color: Int
         get() {
-            when (type) {
-                GENERAL -> return R.color.blue
-                CHARACTER -> return R.color.green
-                COPYPRIGHT -> return R.color.violet
-                ARTIST -> return R.color.dark_red
-                META -> return R.color.orange
-                else -> return R.color.white
+            return when (type) {
+                GENERAL -> R.color.blue
+                CHARACTER -> R.color.green
+                COPYPRIGHT -> R.color.violet
+                ARTIST -> R.color.dark_red
+                META -> R.color.orange
+                else -> R.color.white
             }
         }
 

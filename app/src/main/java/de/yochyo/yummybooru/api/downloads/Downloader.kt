@@ -22,7 +22,7 @@ abstract class Downloader(context: Context) {
             GlobalScope.launch(Dispatchers.IO) {
                 while (true) {
                     if (downloads.isNotEmpty()) {
-                        var download: Download? = null
+                        var download: Download?
                         try {
                             download = downloads.takeLast()
                             var res = context.cache.getCachedFile(download.id)

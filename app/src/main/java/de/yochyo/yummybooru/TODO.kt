@@ -25,7 +25,6 @@ package de.yochyo.yummybooru
 //TODO datenbank immer mit mutex, normale methoden addTagWithoutMutex... umbennenen
 //TODO on Long click für info was ein menü button in der actionbar macht macht
 //TODO updateMissingSubs/Tags überarbeiten
-//TODO Tag.getCorrectTagType besser einbetten
 //TODO statt Tga.compareTo dem TreeSet einen eigenen Comparator geben
 //TODO Selection-Actionmode hinzufügen, statt alles einzeln zu machen
 //TODO logs in data abspeichern -- werden zu einem server geschickt
@@ -41,6 +40,8 @@ package de.yochyo.yummybooru
 //TODO Icons sind nicht ganz stimmig, fehlen bei der Nofication und wenn man auf die AppÜbersicht geht - round icon fehlt glaub //TODO icon updaten, unter anderem bei discord... sieht es komisch aus
 //TODO Toolbar menu aktualisiert sich noch nicht immer?
 //Wahrscheinlich gefixt
+//TODO Tag.getCorrectTagType besser einbetten
+
 
 //TODO SeveraltagsPreviewLayout
 //  Zeigt mehrere tags an

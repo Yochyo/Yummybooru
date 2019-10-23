@@ -52,8 +52,7 @@ class PictureActivity : AppCompatActivity() {
         setContentView(R.layout.activity_picture)
         setSupportActionBar(toolbar_picture)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        val manager = Manager.current
-        if (manager != null) m = manager else finish()
+        m = Manager.current
         nav_view_picture.bringToFront()
 
         tagRecyclerView = nav_view_picture.findViewById(R.id.recycle_view_info)

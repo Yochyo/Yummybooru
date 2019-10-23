@@ -285,7 +285,7 @@ abstract class Database : RoomDatabase() {
             }
         }
 
-    var saveFile: DocumentFile = documentFile(context, prefs.getString("savePath", createDefaultSavePath()))
+    var saveFile: DocumentFile = documentFile(context, prefs.getString("savePath", createDefaultSavePath())!!)
     set(v){
         field = v
         with(prefs.edit()){

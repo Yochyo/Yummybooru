@@ -13,7 +13,6 @@ object Logger {
     }
 
     fun log(message: String) {
-        val files = directory.listFiles().sorted()
         val logFile = File(directory, "logcat ${System.currentTimeMillis()}.txt")
         logFile.createNewFile()
         logFile.writeText(message)

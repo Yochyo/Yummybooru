@@ -11,6 +11,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.layout.PreviewActivity
+import de.yochyo.yummybooru.utils.setColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -35,15 +36,14 @@ class AddTagDialog(val runOnPositive: (editText: AutoCompleteTextView) -> Unit) 
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val tag = getItem(position)
                 val textView = super.getView(position, convertView, parent) as TextView
-                if (tag != null) {
-                    if (Build.VERSION.SDK_INT > 22) textView.setTextColor(context.getColor(tag.color))
-                    else textView.setTextColor(context.resources.getColor(tag.color))
-                }
+                if (tag != null)
+                    textView.setColor(tag.color)
+
                 return textView
             }
 
         }
-        editText.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id -> clickedDropdown = true }
+        editText.onItemClickListener = AdapterView.OnItemClickListener { _,_,_,_ -> clickedDropdown = true }
         editText.setAdapter(arrayAdapter)
         editText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable) {

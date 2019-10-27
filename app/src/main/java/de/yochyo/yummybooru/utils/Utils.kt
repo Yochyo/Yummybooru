@@ -7,7 +7,9 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.view.MotionEvent
+import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.yummybooru.api.entities.Server
@@ -56,7 +58,7 @@ fun parseURL(url: String): String {
         b.append("/")
     return b.toString()
 }
-
+fun Boolean.toInt() = if(this) 1 else 0
 fun createDefaultSavePath(): String {
     val f = File("${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_PICTURES}/Yummybooru/")
     f.mkdirs()

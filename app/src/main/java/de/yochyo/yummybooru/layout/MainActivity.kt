@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         Database.initDatabase(this)
 
         UpdateTagsEvent.registerListener { tagAdapter.notifyDataSetChanged() }
-        UpdateServersEvent.registerListener { serverAdapter.notifyDataSetChanged() }
+        UpdateServersEvent.registerListener { println(db.servers.size);serverAdapter.notifyDataSetChanged() }
 
         tagAdapter = SearchTagAdapter().apply { tagRecyclerView.adapter = this }
         val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
@@ -230,7 +230,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 when (i) {
                     0 -> editServerDialog(server)
                     1 -> {
-                        if (!server.isSelected) ConfirmDialog { server.deleteServer(this@MainActivity) }.withTitle(getString(R.string.delete)).build(this@MainActivity)
+                        if (!server.isSelected) ConfirmDialog { server.deleteServer(this@MainActivity) }.withTitle(getString(R.string.delete) + " [${server.name}]").build(this@MainActivity)
                         else Toast.makeText(this@MainActivity, getString(R.string.cannot_delete_server), Toast.LENGTH_SHORT).show()
                     }
                 }

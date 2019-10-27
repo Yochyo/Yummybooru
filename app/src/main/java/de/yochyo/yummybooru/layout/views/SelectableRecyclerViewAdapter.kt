@@ -112,7 +112,6 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
     }
 
 }
-
 class StopSelectingEvent(val activity: AppCompatActivity) : Event()
 class StartSelectingEvent(val activity: AppCompatActivity) : Event()
 class UpdateSelectionEvent(val activity: AppCompatActivity) : Event()

@@ -50,11 +50,9 @@ open class PreviewActivity : AppCompatActivity() {
 
     private lateinit var layoutManager: GridLayoutManager
     private lateinit var previewAdapter: PreviewAdapter
-    private val managerListener = object : Listener<LoadManagerPageEvent>() {
-        override fun onEvent(e: LoadManagerPageEvent) {
-            if (e.newPage.isNotEmpty()) previewAdapter.updatePosts(e.newPage)
-            else Toast.makeText(this@PreviewActivity, "End", Toast.LENGTH_SHORT).show()
-        }
+    private val managerListener = Listener.create<LoadManagerPageEvent> {
+        if (it.newPage.isNotEmpty()) previewAdapter.updatePosts(it.newPage)
+        else Toast.makeText(this@PreviewActivity, "End", Toast.LENGTH_SHORT).show()
     }
 
 
@@ -117,20 +115,36 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     protected inner class PreviewAdapter : SelectableRecyclerViewAdapter<PreviewViewHolder>(this, R.menu.preview_activity_selection_menu) {
-        private val startSelectionListener = object : Listener<StartSelectingEvent>() {
-            override fun onEvent(e: StartSelectingEvent) {
-                m.loadManagerPageEvent.registerListener(loadManagerPageUpdateActionModeListener)
-                previewAdapter.actionmode?.title = "${selected.size}/${m.posts.size}"
-            }
+        private val startSelectionListener = Listener.create<StartSelectingEvent> {
+            m.loadManagerPageEvent.registerListener(loadManagerPageUpdateActionModeListener)
+            previewAdapter.actionmode?.title = "${selected.size}/${m.posts.size}"
         }
-        private val stopSelectionListener = object : Listener<StopSelectingEvent>() {
-            override fun onEvent(e: StopSelectingEvent) {
-                m.loadManagerPageEvent.removeListener(loadManagerPageUpdateActionModeListener)
-            }
+        private val stopSelectionListener = Listener.create<StopSelectingEvent> {
+            m.loadManagerPageEvent.removeListener(loadManagerPageUpdateActionModeListener)
         }
-        private val updateSelectionListener = object: Listener<UpdateSelectionEvent>(){
-            override fun onEvent(e: UpdateSelectionEvent) {
-                previewAdapter.actionmode?.title = "${selected.size}/${m.posts.size}"
+        private val updateSelectionListener = Listener.create<UpdateSelectionEvent> {
+            previewAdapter.actionmode?.title = "${selected.size}/${m.posts.size}"
+        }
+        private val clickMenuItemListener = Listener.create<ActionModeClickEvent> {
+            when(it.menuItem.itemId){
+                R.id.select_all -> if (previewAdapter.selected.size == m.posts.size) previewAdapter.unselectAll() else previewAdapter.selectAll()
+                R.id.download_selected -> {
+                    val posts = previewAdapter.selected.getSelected(m.posts)
+                    DownloadService.startService(this@PreviewActivity, m.tagString, posts, Server.currentServer)
+                    previewAdapter.unselectAll()
+                }
+                R.id.download_and_add_authors_selected -> {
+                    val posts = previewAdapter.selected.getSelected(m.posts)
+                    GlobalScope.launch {
+                        for (post in posts) {
+                            for (tag in post.getTags()) {
+                                if (tag.type == Tag.ARTIST) db.addTag(this@PreviewActivity, tag)
+                            }
+                        }
+                    }
+                    DownloadService.startService(this@PreviewActivity, m.tagString, posts, Server.currentServer)
+                    previewAdapter.unselectAll()
+                }
             }
         }
 
@@ -138,28 +152,7 @@ open class PreviewActivity : AppCompatActivity() {
             onStartSelection.registerListener(startSelectionListener)
             onStopSelection.registerListener(stopSelectionListener)
             onUpdateSelection.registerListener(updateSelectionListener)
-            onClickMenuItem.registerListener {
-                when(it.menuItem.itemId){
-                    R.id.select_all -> if (previewAdapter.selected.size == m.posts.size) previewAdapter.unselectAll() else previewAdapter.selectAll()
-                    R.id.download_selected -> {
-                        val posts = previewAdapter.selected.getSelected(m.posts)
-                        DownloadService.startService(this@PreviewActivity, m.tagString, posts, Server.currentServer)
-                        previewAdapter.unselectAll()
-                    }
-                    R.id.download_and_add_authors_selected -> {
-                        val posts = previewAdapter.selected.getSelected(m.posts)
-                        GlobalScope.launch {
-                            for (post in posts) {
-                                for (tag in post.getTags()) {
-                                    if (tag.type == Tag.ARTIST) db.addTag(this@PreviewActivity, tag)
-                                }
-                            }
-                        }
-                        DownloadService.startService(this@PreviewActivity, m.tagString, posts, Server.currentServer)
-                        previewAdapter.unselectAll()
-                    }
-                }
-            }
+            onClickMenuItem.registerListener(clickMenuItemListener)
         }
 
         fun updatePosts(newPage: Collection<Post>) {
@@ -237,10 +230,8 @@ open class PreviewActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private val loadManagerPageUpdateActionModeListener = object : Listener<LoadManagerPageEvent>() {
-        override fun onEvent(e: LoadManagerPageEvent) {
-            previewAdapter.actionmode?.title = "${previewAdapter.selected.size}/${m.posts.size}"
-        }
+    private val loadManagerPageUpdateActionModeListener = Listener.create<LoadManagerPageEvent> {
+        previewAdapter.actionmode?.title = "${previewAdapter.selected.size}/${m.posts.size}"
     }
 
     inner class PreviewViewHolder(layout: FrameLayout) : SelectableViewHolder(layout)
@@ -266,29 +257,22 @@ private class ActionBarListener(val context: Context, tag: String, menu: Menu) {
         }
     }
 
-    private val addTagListener = object : Listener<AddTagEvent>() {
-        override fun onEvent(e: AddTagEvent) {
-            if (e.tag.name == tag) {
-                menu.findItem(R.id.add_tag).icon = context.drawable(R.drawable.remove)
-                if (e.tag.isFavorite) menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.favorite)
-            }
-
+    private val addTagListener = Listener.create<AddTagEvent> {
+        if (it.tag.name == tag) {
+            menu.findItem(R.id.add_tag).icon = context.drawable(R.drawable.remove)
+            if (it.tag.isFavorite) menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.favorite)
         }
     }
-    private val removeTagListener = object : Listener<DeleteTagEvent>() {
-        override fun onEvent(e: DeleteTagEvent) {
-            if (e.tag.name == tag) {
-                menu.findItem(R.id.add_tag).icon = context.drawable(R.drawable.add)
-                menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.unfavorite)
-            }
+    private val removeTagListener = Listener.create<DeleteTagEvent> {
+        if (it.tag.name == tag) {
+            menu.findItem(R.id.add_tag).icon = context.drawable(R.drawable.add)
+            menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.unfavorite)
         }
     }
-    private val favoriteTagListener = object : Listener<ChangeTagEvent>() {
-        override fun onEvent(e: ChangeTagEvent) {
-            if (e.newTag.name == tag) {
-                if (e.newTag.isFavorite) menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.favorite)
-                else menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.unfavorite)
-            }
+    private val favoriteTagListener = Listener.create<ChangeTagEvent> {
+        if (it.newTag.name == tag) {
+            if (it.newTag.isFavorite) menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.favorite)
+            else menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.unfavorite)
         }
     }
 }

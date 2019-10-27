@@ -20,7 +20,9 @@ data class Server(var name: String, var api: String, var url: String, var userNa
         private var _currentServer: Server? = null
         val currentServer: Server
             get() {
-                if (_currentServer == null || _currentServer!!.id != db.currentServerID) _currentServer = db.getServer(db.currentServerID)!!
+                if (_currentServer == null || _currentServer!!.id != db.currentServerID) {
+                    _currentServer = db.getServer(db.currentServerID) ?: db.servers.first()
+                }
                 return _currentServer!!
             }
 
@@ -43,9 +45,9 @@ data class Server(var name: String, var api: String, var url: String, var userNa
 
     @Ignore
     val urlHost: String = try {
+        println("URL: $url")
         URL(url).host!!
     } catch (e: Exception) {
-        Logger.log(e)
         e.printStackTrace()
         ""
     }

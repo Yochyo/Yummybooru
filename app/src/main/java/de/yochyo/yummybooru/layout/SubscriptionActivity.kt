@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class SubscriptionActivity : AppCompatActivity() {
-    private lateinit var listener: Listener<UpdateSubsEvent>
+    private val listener = Listener.create<UpdateSubsEvent>{ adapter.updateSubs() }
     private var onClickedData: SubData? = null
 
     private lateinit var recyclerView: RecyclerView
@@ -50,7 +50,7 @@ class SubscriptionActivity : AppCompatActivity() {
 
             recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
 
-            listener = UpdateSubsEvent.registerListener { adapter.updateSubs() }
+            UpdateSubsEvent.registerListener(listener)
             subs_swipe_refresh_layout.setOnRefreshListener {
                 subs_swipe_refresh_layout.isRefreshing = false
                 clear()
@@ -69,15 +69,11 @@ class SubscriptionActivity : AppCompatActivity() {
     }
 
     private inner class SubscribedTagAdapter : SelectableRecyclerViewAdapter<SubscribedTagViewHolder>(this, R.menu.subscription_activity_selection_menu) {
-        private val startSelectionListener = object : Listener<StartSelectingEvent>() {
-            override fun onEvent(e: StartSelectingEvent) {
-                adapter.actionmode?.title = "${adapter.selected.size}/${db.subs.size}"
-            }
+        private val startSelectionListener = Listener.create<StartSelectingEvent> {
+            adapter.actionmode?.title = "${adapter.selected.size}/${db.subs.size}"
         }
-        private val updateSelectionListener = object : Listener<UpdateSelectionEvent>() {
-            override fun onEvent(e: UpdateSelectionEvent) {
-                adapter.actionmode?.title = "${selected.size}/${db.subs.size}"
-            }
+        private val updateSelectionListener = Listener.create<UpdateSelectionEvent> {
+            adapter.actionmode?.title = "${selected.size}/${db.subs.size}"
         }
 
         init {

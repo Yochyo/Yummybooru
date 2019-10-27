@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.widget.TextView
+import android.widget.Toast
 import android.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -44,7 +45,7 @@ class PictureActivity : AppCompatActivity() {
     private lateinit var tagRecyclerView: RecyclerView
     private lateinit var adapter: PageAdapter
     private val currentTags = ArrayList<Tag>()
-    lateinit var managerListener: Listener<LoadManagerPageEvent>
+    private val managerListener = Listener.create<LoadManagerPageEvent>{this@PictureActivity.adapter.updatePosts()}
     lateinit var m: Manager
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +62,7 @@ class PictureActivity : AppCompatActivity() {
         with(view_pager) {
             adapter = PageAdapter().apply { this@PictureActivity.adapter = this }
 
-            managerListener = m.loadManagerPageEvent.registerListener { this@PictureActivity.adapter.updatePosts() }
+            m.loadManagerPageEvent.registerListener(managerListener)
             this@PictureActivity.adapter.updatePosts()
             m.currentPost?.updateCurrentTags(m.position)
 

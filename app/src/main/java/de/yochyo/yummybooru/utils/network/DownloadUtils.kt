@@ -1,7 +1,7 @@
 package de.yochyo.yummybooru.utils.network
 
+import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.downloads.Resource
-import de.yochyo.yummybooru.utils.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -12,6 +12,12 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object DownloadUtils {
+    fun getUrlResponseCode(url: String): Int {
+        val u = URL(Api.instance!!.urlGetPosts(1, arrayOf("*"), 1))
+        val conn = u.openConnection() as HttpURLConnection
+        conn.addRequestProperty("User-Agent", "Mozilla/5.00");conn.requestMethod = "GET"
+        return conn.responseCode
+    }
 
     suspend fun getUrlLines(urlToRead: String): Collection<String> {
         return withContext(Dispatchers.IO) {

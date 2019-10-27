@@ -7,20 +7,19 @@ import android.widget.*
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.entities.Server
+import de.yochyo.yummybooru.utils.network.DownloadUtils
 import de.yochyo.yummybooru.utils.network.ResponseCodes
 import de.yochyo.yummybooru.utils.parseURL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.net.HttpURLConnection
-import java.net.URL
 
 class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
-    var s = Server("", "", "", "", "", false, -1)
+    var server = Server("", "", "", "", "", false)
     var title = "Add server"
 
-    fun withServer(server: Server) = apply { s = server }
+    fun withServer(server: Server) = apply { this.server = server }
     fun withTitle(s: String) = apply { title = s }
 
     fun build(context: Context) {
@@ -29,37 +28,50 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
         builder.setView(layout)
         val spinner = layout.findViewById<Spinner>(R.id.add_server_api)
         val adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1)
+        adapter.add("Auto")
         adapter.addAll(Api.apis.map { it.name })
         spinner.adapter = adapter
         builder.setMessage(context.getString(R.string.add_server))
 
-        val name = layout.findViewById<TextView>(R.id.add_server_name).apply { text = s.name }
+        val name = layout.findViewById<TextView>(R.id.add_server_name).apply { text = server.name }
         val apiSpinner = layout.findViewById<Spinner>(R.id.add_server_api).apply {
+            //Falls ein Server übergeben wurde
             for (spin in 0 until this.adapter.count)
-                if ((this.adapter.getItem(spin) as String).equals(s.api, true)) {
+                if ((this.adapter.getItem(spin) as String).equals(server.api, true)) {
                     this.setSelection(spin)
                     break
                 }
         }
-        val r18 = layout.findViewById<CheckBox>(R.id.server_enable_r18_filter).apply { isChecked = s.enableR18Filter }
-        val url = layout.findViewById<TextView>(R.id.add_server_url).apply { text = s.url }
-        val username = layout.findViewById<TextView>(R.id.add_server_username).apply { text = s.userName }
-        val password = layout.findViewById<TextView>(R.id.add_server_password).apply { text = s.password }
+        val r18 = layout.findViewById<CheckBox>(R.id.server_enable_r18_filter).apply { isChecked = server.enableR18Filter }
+        val url = layout.findViewById<TextView>(R.id.add_server_url).apply { text = server.url }
+        val username = layout.findViewById<TextView>(R.id.add_server_username).apply { text = server.userName }
+        val password = layout.findViewById<TextView>(R.id.add_server_password).apply { text = server.password }
 
 
 
         builder.setPositiveButton(context.getString(R.string.ok)) { _, _ ->
-            val s = Server(name.text.toString(), apiSpinner.selectedItem.toString(), parseURL(url.text.toString()), username.text.toString(),
-                    password.text.toString(), id = s.id, enableR18Filter = r18.isChecked)
-            runOnPositive(s)
             GlobalScope.launch(Dispatchers.IO) {
-                val u = URL(Api.instance!!.urlGetPosts(1, arrayOf("*"), 1))
-                val conn = u.openConnection() as HttpURLConnection
-                conn.addRequestProperty("User-Agent", "Mozilla/5.00");conn.requestMethod = "GET"
-                if (conn.responseCode == ResponseCodes.Unauthorized)
-                    withContext(Dispatchers.Main) { Toast.makeText(context, "Probably bad login", Toast.LENGTH_SHORT).show() }
+                try {
+                    val s = Server(name.text.toString(), apiSpinner.selectedItem.toString(), parseURL(url.text.toString()), username.text.toString(),
+                            password.text.toString(), enableR18Filter = r18.isChecked)
+                    if(s.api == "Auto") s.api = getCorrectApi(s)
+                    if (DownloadUtils.getUrlResponseCode(Api.instance!!.urlGetPosts(1, arrayOf("*"), 1)) == ResponseCodes.Unauthorized)
+                        withContext(Dispatchers.Main) { Toast.makeText(context, "Probably bad login", Toast.LENGTH_SHORT).show() }
+                    withContext(Dispatchers.Main){runOnPositive(s)}
+                }catch(e: Exception){
+                    e.printStackTrace()
+                }
             }
         }
         builder.show()
+    }
+
+
+    private suspend fun getCorrectApi(s: Server): String {
+        for (api in Api.apis) {
+            Api.selectApi(api.name, s.url)
+            if (Api.newestID() != 0) return api.name
+        }
+        return ""
     }
 }

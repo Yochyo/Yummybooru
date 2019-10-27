@@ -5,17 +5,27 @@ import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import java.util.*
 
 object TagBackup : BackupableEntity<Tag> {
-    override fun toString(e: Tag, context: Context): String {
-        return "${e.name};${e.type};${e.isFavorite};${e.creation.time};${e.serverID};${e.count}"
+    override fun toJSONObject(e: Tag, context: Context): JSONObject {
+        val json = JSONObject()
+        json.put("name", e.name)
+        json.put("type", e.type)
+        json.put("isFavorite", e.isFavorite)
+        json.put("creation", e.creation.time)
+        json.put("serverID", e.serverID)
+        json.put("count", e.count)
+        return json
     }
 
-    override fun toEntity(s: String, context: Context) {
-        val split = s.split(";")
-        val iter = split.iterator()
-        GlobalScope.launch { db.tagDao.insert(Tag(iter.next(), iter.next().toInt(), iter.next().toBoolean(), Date(iter.next().toLong()), iter.next().toInt(), iter.next().toInt())) }
+    override fun toEntity(json: JSONObject, context: Context) {
+        GlobalScope.launch {
+            db.tagDao.insert(
+                    Tag(json.getString("name"), json.getInt("type"), json.getBoolean("isFavorite"),
+                            Date(json.getLong("creation")), json.getInt("serverID"), json.getInt("count")))
+        }
     }
 
 }

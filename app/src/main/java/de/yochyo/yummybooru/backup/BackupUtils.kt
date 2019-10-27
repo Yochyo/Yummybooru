@@ -7,6 +7,8 @@ import de.yochyo.yummybooru.utils.configPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 
 object BackupUtils {
@@ -21,54 +23,38 @@ object BackupUtils {
     fun createBackup(context: Context) {
         GlobalScope.launch(Dispatchers.IO) {
             val f = createBackupFile()
-            val builder = StringBuilder()
-            builder.append("--Tag--\n")
+            val json = JSONObject()
+            val tagArray = JSONArray()
+            val subArray = JSONArray()
+            val serverArray = JSONArray()
             for (tag in db.tagDao.getAllTags())
-                builder.append(TagBackup.toString(tag, context) + "\n")
-            builder.append("--Sub--\n")
+                tagArray.put(TagBackup.toJSONObject(tag, context))
             for (sub in db.subDao.getAllSubscriptions())
-                builder.append(SubscriptionBackup.toString(sub, context) + "\n")
-            builder.append("--Server--\n")
+                subArray.put(SubscriptionBackup.toJSONObject(sub, context))
             for (server in db.serverDao.getAllServers())
-                builder.append(ServerBackup.toString(server, context) + "\n")
-            builder.append("--Preferences--\n")
-            builder.append(PreferencesBackup.toString("", context) + "\n")
-            f.writeBytes(builder.toString().toByteArray())
+                serverArray.put(ServerBackup.toJSONObject(server, context))
+            json.put("tags", tagArray)
+            json.put("subs", subArray)
+            json.put("servers", serverArray)
+            f.writeBytes(json.toString().toByteArray())
+            json.put("preferences", PreferencesBackup.toJSONObject("", context))
         }
     }
 
     suspend fun restoreBackup(byteArray: ByteArray, context: Context) {
-        fun restore(type: String, line: String) {
-            when (type) {
-                "Tag" -> TagBackup.toEntity(line, context)
-                "Sub" -> SubscriptionBackup.toEntity(line, context)
-                "Server" -> ServerBackup.toEntity(line, context)
-                "Preferences" -> PreferencesBackup.toEntity(line, context)
-                else -> throw Exception("type [$type] does not exist")
-            }
-        }
         try {
-            val map = HashMap<String, ArrayList<String>>()//type, lines
-            val s = String(byteArray)
-            val lines = s.split("\n")
-            var currentType = "-1"
-            for (line in lines) {
-                if (line.startsWith("--") && line.endsWith("--")) {
-                    currentType = line.substring(2, line.length - 2)
-                    continue
-                }
-                if (line != "") {
-                    if (map[currentType] == null)
-                        map[currentType] = ArrayList(50)
-                    map[currentType]!!.add(line)
-                }
-            }
-            //Wenn es keine Fehler gibt, wiederherstellen
             db.deleteEverything()
-            for (entry in map) {
-                for (v in entry.value)
-                    restore(entry.key, v)
-            }
+            val obj = JSONObject(String(byteArray))
+            val tags = obj["tags"] as JSONArray
+            val subs = obj["subs"] as JSONArray
+            val servers = obj["servers"] as JSONArray
+            for (i in 0 until tags.length())
+                TagBackup.toEntity(tags[i] as JSONObject, context)
+            for (i in 0 until subs.length())
+                SubscriptionBackup.toEntity(subs[i] as JSONObject, context)
+            for (i in 0 until servers.length())
+                ServerBackup.toEntity(servers[i] as JSONObject, context)
+            PreferencesBackup.toEntity(obj["preferences"] as JSONObject, context)
         } catch (e: Exception) {
             Logger.log(e)
         }

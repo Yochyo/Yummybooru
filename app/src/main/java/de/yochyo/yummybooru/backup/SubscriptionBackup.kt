@@ -5,16 +5,28 @@ import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.database.db
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import java.util.*
 
 object SubscriptionBackup : BackupableEntity<Subscription> {
-    override fun toString(e: Subscription, context: Context): String {
-        return "${e.name};${e.type};${e.lastID};${e.lastCount};${e.isFavorite};${e.creation.time};${e.serverID}"
+    override fun toJSONObject(e: Subscription, context: Context): JSONObject {
+        val json = JSONObject()
+        json.put("name", e.name)
+        json.put("type", e.type)
+        json.put("lastID", e.lastID)
+        json.put("lastCount", e.lastCount)
+        json.put("isFavorite", e.isFavorite)
+        json.put("creation", e.creation.time)
+        json.put("serverID", e.serverID)
+        return json
     }
 
-    override fun toEntity(s: String, context: Context) {
-        val split = s.split(";")
-        val iter = split.iterator()
-        GlobalScope.launch { db.subDao.insert(Subscription(iter.next(), iter.next().toInt(), iter.next().toInt(), iter.next().toInt(), iter.next().toBoolean(), Date(iter.next().toLong()), iter.next().toInt())) }
+    override fun toEntity(json: JSONObject, context: Context) {
+
+        GlobalScope.launch {
+            db.subDao.insert(
+                    Subscription(json.getString("name"), json.getInt("type"), json.getInt("lastID"), json.getInt("lastCount"),
+                            json.getBoolean("isFavorite"), Date(json.getLong("creation")), json.getInt("serverID")))
+        }
     }
 }

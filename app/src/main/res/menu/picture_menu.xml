@@ -6,7 +6,7 @@
           android:icon="@drawable/share"
           app:showAsAction="ifRoom"/>
     <item android:id="@+id/save"
-          android:title="@string/save"
+          android:title="Save image"
           android:icon="@drawable/save"
           app:showAsAction="ifRoom"/>
     <item android:id="@+id/show_info"

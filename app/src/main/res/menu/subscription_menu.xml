@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/update_subs"
-          android:title="Update all subs"
+          android:title="Update selected subs"
           android:icon="@drawable/sync"
           app:showAsAction="ifRoom"/>
     <item android:id="@+id/add_subscription"
-          android:title="@string/add_subscription"
+          android:title="Add sub"
           android:icon="@drawable/add"
           app:showAsAction="ifRoom"/>
 </menu>

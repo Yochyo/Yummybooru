@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/download_and_add_authors_selected"
-          android:title="Download + add artists"
+          android:title="Download all + add artists"
           android:icon="@drawable/library_add"
           app:showAsAction="ifRoom"/>
     <item android:id="@+id/download_selected"
-          android:title="Download"
+          android:title="Download selected"
           android:icon="@drawable/download"
           app:showAsAction="ifRoom"/>
     <item android:id="@+id/select_all"

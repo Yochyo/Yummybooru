@@ -21,7 +21,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -104,14 +103,15 @@ abstract class Database : RoomDatabase() {
 
     fun getServer(id: Int) = servers.find { it.id == id }
 
-    suspend fun addServerWithMutex(context: Context, server: Server, id: Int = nextServerID++) = lock.withLock { addServer(context, server, id) }
-    suspend fun addServer(context: Context, server: Server, id: Int = nextServerID++) {
+    suspend fun addServerWithMutex(context: Context, server: Server) = lock.withLock { addServer(context, server) }
+    suspend fun addServer(context: Context, server: Server) {
         withContext(Dispatchers.Default) {
             val s = getServer(server.id)
             if (s == null) {
-                servers.add(server.copy(id = id))
-                serverDao.insert(server)
-                withContext(Dispatchers.Main) { AddServerEvent.trigger(AddServerEvent(context, server)) }
+                val serverCopy = server.copy(id = nextServerID)
+                servers.add(serverCopy)
+                serverDao.insert(serverCopy)
+                withContext(Dispatchers.Main) { AddServerEvent.trigger(AddServerEvent(context, serverCopy)) }
             }
         }
     }
@@ -223,16 +223,6 @@ abstract class Database : RoomDatabase() {
         }
     }
 
-    var nextServerID = prefs.getInt("nextServerID", DefaultServerExeq.all.size)
-        set(v) {
-            field = v
-            with(prefs.edit()) {
-                putInt("nextServerID", v)
-                apply()
-            }
-        }
-
-
     var limit = prefs.getInt("limit", 30)
         set(value) {
             field = value
@@ -255,6 +245,20 @@ abstract class Database : RoomDatabase() {
             field = v
             with(prefs.edit()) {
                 putInt("lastVersion", v)
+                apply()
+            }
+        }
+
+    var nextServerID = prefs.getInt("nextServerID", 10) //10 because of potential default server
+        get() {
+            val i = field
+            nextServerID = i+1
+            return i
+        }
+        set(v) {
+            field = v
+            with(prefs.edit()) {
+                putInt("nextServerID", v)
                 apply()
             }
         }
@@ -286,13 +290,13 @@ abstract class Database : RoomDatabase() {
         }
 
     var saveFile: DocumentFile = documentFile(context, prefs.getString("savePath", createDefaultSavePath())!!)
-    set(v){
-        field = v
-        with(prefs.edit()){
-            putString("savePath", v.uri.toString())
-            apply()
+        set(v) {
+            field = v
+            with(prefs.edit()) {
+                putString("savePath", v.uri.toString())
+                apply()
+            }
         }
-    }
 
     var sortTagsByFavorite: Boolean
         get() = sortTags.first() == '1'
@@ -346,7 +350,6 @@ private object Migrations {
         }
     }
 
-
     val all = arrayOf(MIGRATION_1_2)
 }
 
@@ -354,8 +357,8 @@ object DefaultServerExeq {
     val all = ArrayList<String>()
 
     init {
-        all += "INSERT INTO servers (name,api,url,userName,password,enableR18Filter,id) VALUES ('Danbooru', 'danbooru', 'https://danbooru.donmai.us/', '', '', 0, 0);"
-        all += "INSERT INTO servers (name,api,url,userName,password,enableR18Filter,id) VALUES ('Konachan', 'moebooru', 'https://konachan.com/', '', '', 0, 1);"
-        all += "INSERT INTO servers (name,api,url,userName,password,enableR18Filter,id) VALUES ('Yande.re', 'moebooru', 'https://yande.re/', '', '', 0, 2);"
+        all += "INSERT INTO servers (name,api,url,userName,password,enableR18Filter) VALUES ('Danbooru', 'danbooru', 'https://danbooru.donmai.us/', '', '', 0);"
+        all += "INSERT INTO servers (name,api,url,userName,password,enableR18Filter) VALUES ('Konachan', 'moebooru', 'https://konachan.com/', '', '', 0);"
+        all += "INSERT INTO servers (name,api,url,userName,password,enableR18Filter) VALUES ('Yande.re', 'moebooru', 'https://yande.re/', '', '', 0);"
     }
 }

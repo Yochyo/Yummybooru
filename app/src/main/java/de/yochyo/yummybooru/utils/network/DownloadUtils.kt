@@ -13,10 +13,14 @@ import java.net.URL
 
 object DownloadUtils {
     fun getUrlResponseCode(url: String): Int {
-        val u = URL(Api.instance!!.urlGetPosts(1, arrayOf("*"), 1))
-        val conn = u.openConnection() as HttpURLConnection
-        conn.addRequestProperty("User-Agent", "Mozilla/5.00");conn.requestMethod = "GET"
-        return conn.responseCode
+        return try{
+            val u = URL(Api.instance!!.urlGetPosts(1, arrayOf("*"), 1))
+            val conn = u.openConnection() as HttpURLConnection
+            conn.addRequestProperty("User-Agent", "Mozilla/5.00");conn.requestMethod = "GET"
+            conn.responseCode
+        }catch (e: Exception){
+            ResponseCodes.Unauthorized
+        }
     }
 
     suspend fun getUrlLines(urlToRead: String): Collection<String> {

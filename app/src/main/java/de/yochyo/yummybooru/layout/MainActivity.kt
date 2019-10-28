@@ -19,6 +19,7 @@ import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
 import de.yochyo.eventmanager.EventCollection
 import de.yochyo.subeventcollection.SubEventCollection
 import de.yochyo.yummybooru.R
@@ -240,7 +241,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         private fun editServerDialog(server: Server) {
             AddServerDialog {
-                GlobalScope.launch { db.changeServer(this@MainActivity, it) }
+                GlobalScope.launch { db.changeServer(this@MainActivity, it)
+                withContext(Dispatchers.Main){Snackbar.make(drawer_layout, "Edit [${it.name}]", Snackbar.LENGTH_SHORT).show()}}
             }.withServer(server).withTitle(getString(R.string.edit_server)).build(this@MainActivity)
         }
 
@@ -278,7 +280,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_add_server -> AddServerDialog {
-                GlobalScope.launch { db.addServer(this@MainActivity, it) }
+                GlobalScope.launch { db.addServer(this@MainActivity, it)
+                withContext(Dispatchers.Main){Snackbar.make(drawer_layout, "Add server [${it.name}]", Snackbar.LENGTH_SHORT).show()}}
             }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
         }

@@ -52,12 +52,13 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
                 try {
                     val s = Server(name.text.toString(), apiSpinner.selectedItem.toString(), parseURL(url.text.toString()), username.text.toString(),
                             password.text.toString(), r18.isChecked, server.id)
-                    if(s.api == "Auto") s.api = getCorrectApi(s)
+                    if (s.api == "Auto") s.api = getCorrectApi(s)
                     if (DownloadUtils.getUrlResponseCode(Api.instance!!.urlGetPosts(1, arrayOf("*"), 1)) == ResponseCodes.Unauthorized)
-                        withContext(Dispatchers.Main) { Toast.makeText(context, "Probably bad login", Toast.LENGTH_SHORT).show() }
-                    withContext(Dispatchers.Main){runOnPositive(s)}
-                }catch(e: Exception){
+                        withContext(Dispatchers.Main) { Toast.makeText(context, "(Probably) bad login", Toast.LENGTH_LONG).show() }
+                    withContext(Dispatchers.Main) { runOnPositive(s);println(5) }
+                } catch (e: Exception) {
                     e.printStackTrace()
+                    withContext(Dispatchers.Main) { Toast.makeText(context, "Url is wrong or not supported", Toast.LENGTH_LONG).show() }
                 }
             }
         }
@@ -70,6 +71,6 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
             Api.selectApi(api.name, s.url)
             if (Api.newestID() != 0) return api.name
         }
-        return ""
+        return Api.apis.first().name
     }
 }

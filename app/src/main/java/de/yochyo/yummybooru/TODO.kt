@@ -34,10 +34,8 @@ package de.yochyo.yummybooru
 //TODO discord schauen
 //TODO Icons sind nicht ganz stimmig, fehlen bei der Nofication und wenn man auf die AppÜbersicht geht - round icon fehlt glaub //TODO icon updaten, unter anderem bei discord... sieht es komisch aus
 //TODO Toolbar menu aktualisiert sich noch nicht immer?
-//TODO Server adden und so buggt
 //Wahrscheinlich gefixt
 //TODO nachschauen der downloadservice richtig runterlädt...
-//TODO Auto mode bei server hinzufügen
 //TODO updateMissingSubs/Tags überarbeiten //kann man es auch einfach so lassen (überprüfen ob es gerade funktioniert)
 //TODO Tag.getCorrectTagType besser einbetten
 

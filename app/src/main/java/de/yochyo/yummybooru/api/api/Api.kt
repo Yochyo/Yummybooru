@@ -6,6 +6,7 @@ import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.network.DownloadUtils
 import org.json.JSONObject
+import java.net.URLEncoder
 
 abstract class Api(var url: String) {
 
@@ -53,7 +54,7 @@ abstract class Api(var url: String) {
             if (tags.isNotEmpty()) {
                 urlBuilder.append("&tags=")
                 for (tag in tags)
-                    urlBuilder.append("$tag ")
+                    urlBuilder.append("${URLEncoder.encode(tag, "UTF-8")} ")
                 urlBuilder.deleteCharAt(urlBuilder.lastIndex)
             }
 

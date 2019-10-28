@@ -30,14 +30,12 @@ package de.yochyo.yummybooru
 //Bugs
 //TODO default save path funktioniert nicht immer? nochmal probieren, lag vllt. daran, dass die preferences nicht gelöscht wurden
 //TODO Selectableview when man beim auswählen auf ein Menu (Toolbar) klickt, kann man es immer aktivieren
-//TODO tag 6+girls geht nicht
 //TODO discord schauen
 //TODO Icons sind nicht ganz stimmig, fehlen bei der Nofication und wenn man auf die AppÜbersicht geht - round icon fehlt glaub //TODO icon updaten, unter anderem bei discord... sieht es komisch aus
 //TODO Toolbar menu aktualisiert sich noch nicht immer?
 //Wahrscheinlich gefixt
 //TODO nachschauen der downloadservice richtig runterlädt...
 //TODO updateMissingSubs/Tags überarbeiten //kann man es auch einfach so lassen (überprüfen ob es gerade funktioniert)
-//TODO Tag.getCorrectTagType besser einbetten
 
 
 //TODO SeveraltagsPreviewLayout

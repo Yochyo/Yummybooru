@@ -33,11 +33,11 @@ data class Server(var name: String, var api: String, var url: String, var userNa
     private var cachedPassword = password
 
     @Ignore
-    var passwordHash: String = passwordToHash(password)
+    var passwordHash: String = if(cachedPassword == "") "" else passwordToHash(password)
         get() {
             if (cachedPassword != password) {
                 cachedPassword = password
-                field = passwordToHash(password)
+                field = if(cachedPassword == "") "" else passwordToHash(password)
             }
             return field
         }

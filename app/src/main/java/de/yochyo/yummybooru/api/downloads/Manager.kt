@@ -38,7 +38,6 @@ class Manager(val tags: Array<String>) {
 
     suspend fun downloadNextPage(context: Context) = downloadPage(context, currentPage + 1)
     suspend fun downloadPage(context: Context, page: Int): List<Post>? {
-        println("Download $page")
         return withContext(Dispatchers.IO) {
             val p = pages[page]
             if (p == null) {
@@ -60,7 +59,6 @@ class Manager(val tags: Array<String>) {
     suspend fun loadNextPage(context: Context): List<Post>? {
         val page = currentPage + 1
         loadingMutex.withLock {
-            println("Load ${currentPage + 1}")
             var p = pages[currentPage + 1]
             withContext(Dispatchers.IO) {
                 if (p == null) p = downloadPage(context, currentPage + 1)

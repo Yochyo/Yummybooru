@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         Database.initDatabase(this)
 
         UpdateTagsEvent.registerListener { tagAdapter.notifyDataSetChanged() }
-        UpdateServersEvent.registerListener { println(db.servers.size);serverAdapter.notifyDataSetChanged() }
+        UpdateServersEvent.registerListener { serverAdapter.notifyDataSetChanged() }
 
         tagAdapter = SearchTagAdapter().apply { tagRecyclerView.adapter = this }
         val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)

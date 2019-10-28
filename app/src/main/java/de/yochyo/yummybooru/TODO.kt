@@ -28,10 +28,7 @@ package de.yochyo.yummybooru
 //TODO CPU leistung optimieren Code Kommentieren und übersichtlicher gestalten || preloading besser gestalten, sodass ladezeiten besser sind
 //TODO mp4 implementieren
 //Bugs
-//TODO backups versionsabhänhih machen
-//TODO server adden sicherer machen
 //TODO default save path funktioniert nicht immer? nochmal probieren, lag vllt. daran, dass die preferences nicht gelöscht wurden
-//TODO danbooru geht nicht ohne logindaten, da "" als leeres password gehasht wird
 //TODO Selectableview when man beim auswählen auf ein Menu (Toolbar) klickt, kann man es immer aktivieren
 //TODO tag 6+girls geht nicht
 //TODO discord schauen

@@ -45,8 +45,8 @@ data class Server(var name: String, var api: String, var url: String, var userNa
 
     @Ignore
     val urlHost: String = try {
-        println("URL: $url")
-        URL(url).host!!
+        if(url == "") ""
+        else URL(url).host
     } catch (e: Exception) {
         e.printStackTrace()
         ""

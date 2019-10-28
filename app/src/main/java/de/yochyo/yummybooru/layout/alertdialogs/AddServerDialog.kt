@@ -47,13 +47,11 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
         val username = layout.findViewById<TextView>(R.id.add_server_username).apply { text = server.userName }
         val password = layout.findViewById<TextView>(R.id.add_server_password).apply { text = server.password }
 
-
-
         builder.setPositiveButton(context.getString(R.string.ok)) { _, _ ->
             GlobalScope.launch(Dispatchers.IO) {
                 try {
                     val s = Server(name.text.toString(), apiSpinner.selectedItem.toString(), parseURL(url.text.toString()), username.text.toString(),
-                            password.text.toString(), enableR18Filter = r18.isChecked)
+                            password.text.toString(), r18.isChecked, server.id)
                     if(s.api == "Auto") s.api = getCorrectApi(s)
                     if (DownloadUtils.getUrlResponseCode(Api.instance!!.urlGetPosts(1, arrayOf("*"), 1)) == ResponseCodes.Unauthorized)
                         withContext(Dispatchers.Main) { Toast.makeText(context, "Probably bad login", Toast.LENGTH_SHORT).show() }

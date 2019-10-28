@@ -1,6 +1,7 @@
 package de.yochyo.yummybooru.backup
 
 import android.content.Context
+import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.Logger
 import de.yochyo.yummybooru.utils.configPath
@@ -38,6 +39,7 @@ object BackupUtils {
             json.put("servers", serverArray)
             f.writeBytes(json.toString().toByteArray())
             json.put("preferences", PreferencesBackup.toJSONObject("", context))
+            json.put("version", BuildConfig.VERSION_CODE)
         }
     }
 

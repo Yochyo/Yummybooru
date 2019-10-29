@@ -37,7 +37,6 @@
             android:key="restore_backup"
             android:title="Restore backup"
             android:enabled="true"/>
-    <Preference/>
     <Preference
             android:key="updates"
             android:title="Check updates"

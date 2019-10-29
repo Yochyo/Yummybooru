@@ -55,7 +55,7 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
                     if (s.api == "Auto") s.api = getCorrectApi(s)
                     if (DownloadUtils.getUrlResponseCode(Api.instance!!.urlGetPosts(1, arrayOf("*"), 1)) == ResponseCodes.Unauthorized)
                         withContext(Dispatchers.Main) { Toast.makeText(context, "(Probably) bad login", Toast.LENGTH_LONG).show() }
-                    withContext(Dispatchers.Main) { runOnPositive(s);println(5) }
+                    withContext(Dispatchers.Main) { runOnPositive(s) }
                 } catch (e: Exception) {
                     e.printStackTrace()
                     withContext(Dispatchers.Main) { Toast.makeText(context, "Url is wrong or not supported", Toast.LENGTH_LONG).show() }

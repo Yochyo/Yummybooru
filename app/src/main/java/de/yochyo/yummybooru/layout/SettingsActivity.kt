@@ -50,6 +50,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         }
         findPreference("updates").setOnPreferenceClickListener {
             AutoUpdater().autoUpdate(this)
+            Toast.makeText(this, "Checking for updates", Toast.LENGTH_SHORT).show()
             true
         }
         findPreference("changelogs").setOnPreferenceClickListener {
@@ -121,7 +122,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
                     BackupUtils.restoreBackup(bytes, this@SettingsActivity)
                     withContext(Dispatchers.Main) {
                         Toast.makeText(this@SettingsActivity, "Restored backup", Toast.LENGTH_LONG).show()
-                        db.loadServer(this@SettingsActivity)
+                        db.loadServers()
                     }
                 }
             }

@@ -5,5 +5,5 @@ import org.json.JSONObject
 
 interface BackupableEntity<E> {
     fun toJSONObject(e: E, context: Context): JSONObject
-    fun toEntity(json: JSONObject, context: Context)
+    suspend fun restoreEntity(json: JSONObject, context: Context)
 }

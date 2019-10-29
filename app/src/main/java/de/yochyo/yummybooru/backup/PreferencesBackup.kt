@@ -13,16 +13,16 @@ object PreferencesBackup : BackupableEntity<String> {
         json.put("sortTags", db.sortTags)
         json.put("sortSubs", db.sortSubs)
         json.put("downloadOriginal", db.downloadOriginal)
-        json.put("saveFile", db.saveFile.uri)
+        json.put("savePath", db.saveFile.uri)
         return json
     }
 
-    override fun toEntity(json: JSONObject, context: Context) {
+    override suspend fun restoreEntity(json: JSONObject, context: Context) {
         db.limit = json.getInt("limit")
         db.currentServerID = json.getInt("currentServerID")
         db.sortTags = json["sortTags"].toString()
         db.sortSubs = json["sortSubs"].toString()
         db.downloadOriginal = json.getBoolean("downloadOriginal")
-        db.saveFile = documentFile(context, json["saveFile"].toString())
+        db.saveFile = documentFile(context, json["savePath"].toString())
     }
 }

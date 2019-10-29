@@ -3,9 +3,9 @@ package de.yochyo.yummybooru.backup
 import android.content.Context
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import de.yochyo.yummybooru.utils.Logger
 import org.json.JSONObject
+import java.lang.Exception
 import java.util.*
 
 object TagBackup : BackupableEntity<Tag> {
@@ -20,11 +20,14 @@ object TagBackup : BackupableEntity<Tag> {
         return json
     }
 
-    override fun toEntity(json: JSONObject, context: Context) {
-        GlobalScope.launch {
+    override suspend fun restoreEntity(json: JSONObject, context: Context) {
+        try{
             db.tagDao.insert(
                     Tag(json.getString("name"), json.getInt("type"), json.getBoolean("isFavorite"),
                             Date(json.getLong("creation")), json.getInt("serverID"), json.getInt("count")))
+        }catch(e: Exception){
+            e.printStackTrace()
+            Logger.log(e)
         }
     }
 

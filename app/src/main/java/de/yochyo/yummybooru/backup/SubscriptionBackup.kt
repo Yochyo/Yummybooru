@@ -3,8 +3,7 @@ package de.yochyo.yummybooru.backup
 import android.content.Context
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.database.db
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import de.yochyo.yummybooru.utils.Logger
 import org.json.JSONObject
 import java.util.*
 
@@ -21,12 +20,14 @@ object SubscriptionBackup : BackupableEntity<Subscription> {
         return json
     }
 
-    override fun toEntity(json: JSONObject, context: Context) {
-
-        GlobalScope.launch {
+    override suspend fun restoreEntity(json: JSONObject, context: Context) {
+        try{
             db.subDao.insert(
                     Subscription(json.getString("name"), json.getInt("type"), json.getInt("lastID"), json.getInt("lastCount"),
                             json.getBoolean("isFavorite"), Date(json.getLong("creation")), json.getInt("serverID")))
+        }catch(e: Exception){
+            e.printStackTrace()
+            Logger.log(e)
         }
     }
 }

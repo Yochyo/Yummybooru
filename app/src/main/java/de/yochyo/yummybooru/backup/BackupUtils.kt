@@ -1,6 +1,7 @@
 package de.yochyo.yummybooru.backup
 
 import android.content.Context
+import android.widget.Toast
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.Logger
@@ -37,9 +38,11 @@ object BackupUtils {
             json.put("tags", tagArray)
             json.put("subs", subArray)
             json.put("servers", serverArray)
-            f.writeBytes(json.toString().toByteArray())
             json.put("preferences", PreferencesBackup.toJSONObject("", context))
             json.put("version", BuildConfig.VERSION_CODE)
+
+
+            f.writeBytes(json.toString().toByteArray())
         }
     }
 
@@ -50,15 +53,16 @@ object BackupUtils {
             val tags = obj["tags"] as JSONArray
             val subs = obj["subs"] as JSONArray
             val servers = obj["servers"] as JSONArray
-            for (i in 0 until tags.length())
-                TagBackup.toEntity(tags[i] as JSONObject, context)
-            for (i in 0 until subs.length())
-                SubscriptionBackup.toEntity(subs[i] as JSONObject, context)
+            PreferencesBackup.restoreEntity(obj["preferences"] as JSONObject, context)
             for (i in 0 until servers.length())
-                ServerBackup.toEntity(servers[i] as JSONObject, context)
-            PreferencesBackup.toEntity(obj["preferences"] as JSONObject, context)
+                ServerBackup.restoreEntity(servers[i] as JSONObject, context)
+            for (i in 0 until tags.length())
+                TagBackup.restoreEntity(tags[i] as JSONObject, context)
+            for (i in 0 until subs.length())
+                SubscriptionBackup.restoreEntity(subs[i] as JSONObject, context)
         } catch (e: Exception) {
             Logger.log(e)
+            e.printStackTrace()
         }
     }
 

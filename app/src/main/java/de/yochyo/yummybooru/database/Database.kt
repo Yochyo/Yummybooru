@@ -64,7 +64,7 @@ abstract class Database : RoomDatabase() {
     val servers: EventCollection<Server> = EventCollection(TreeSet())
     val tags: EventCollection<Tag> = EventCollection(TreeSet())
     val subs: EventCollection<Subscription> = EventCollection(TreeSet())
-    private suspend fun loadServers() {
+    suspend fun loadServers() {
         withContext(Dispatchers.Default) {
             val se: List<Server> = serverDao.getAllServers()
             servers.clear()

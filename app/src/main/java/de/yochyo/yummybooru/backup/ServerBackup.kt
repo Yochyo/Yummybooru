@@ -3,9 +3,7 @@ package de.yochyo.yummybooru.backup
 import android.content.Context
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.utils.parseURL
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import de.yochyo.yummybooru.utils.Logger
 import org.json.JSONObject
 
 object ServerBackup : BackupableEntity<Server> {
@@ -13,18 +11,23 @@ object ServerBackup : BackupableEntity<Server> {
         val json = JSONObject()
         json.put("name", e.name)
         json.put("api", e.api)
-        json.put("urlHost", e.urlHost)
+        json.put("url", e.url)
         json.put("userName", e.userName)
         json.put("password", e.password)
         json.put("enableR18Filter", e.enableR18Filter)
+        json.put("id", e.id)
         return json
     }
 
-    override fun toEntity(json: JSONObject, context: Context) {
-        val server = Server(json.getString("name"), json.getString("api"),
-                json.getString("urlHost"), json.getString("userName"), json.getString("password"),
-                json.getBoolean("enableR18Filter"))
-        GlobalScope.launch { db.addServer(context, server) }
+    override suspend fun restoreEntity(json: JSONObject, context: Context) {
+        try{
+            val server = Server(json.getString("name"), json.getString("api"),
+                    json.getString("url"), json.getString("userName"), json.getString("password"),
+                    json.getBoolean("enableR18Filter"), json.getInt("id"))
+            db.serverDao.insert(server)
+        }catch (e: Exception){
+            Logger.log(e)
+            e.printStackTrace()
+        }
     }
-
 }

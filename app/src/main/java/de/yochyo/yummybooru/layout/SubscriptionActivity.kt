@@ -75,10 +75,14 @@ class SubscriptionActivity : AppCompatActivity() {
         private val updateSelectionListener = Listener.create<UpdateSelectionEvent> {
             adapter.actionmode?.title = "${selected.size}/${db.subs.size}"
         }
+        private val disableMenuClick = Listener.create<StartSelectingEvent> { notifyDataSetChanged() }
+        private val reEnableMenuClick = Listener.create<StopSelectingEvent> { notifyDataSetChanged() }
 
         init {
             onStartSelection.registerListener(startSelectionListener)
             onUpdateSelection.registerListener(updateSelectionListener)
+            onStartSelection.registerListener(disableMenuClick)
+            onStopSelection.registerListener(reEnableMenuClick)
 
             onClickMenuItem.registerListener {
                 when (it.menuItem.itemId) {
@@ -166,6 +170,7 @@ class SubscriptionActivity : AppCompatActivity() {
             text1.underline(sub.isFavorite)
             text2.text = getString(R.string.number_of_new_pictures)
             Menus.initSubscriptionMenu(toolbar.menu, db.subs.elementAt(position))
+            toolbar.menu.setGroupEnabled(0, selected.isEmpty()) //Cannot access menu when selecting items
             GlobalScope.launch {
                 val tag = Api.getTag(sub.name)
                 var countDifference = tag.count - sub.lastCount

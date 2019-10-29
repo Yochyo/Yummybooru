@@ -54,7 +54,6 @@ abstract class Database : RoomDatabase() {
                 instance!!.subs.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateSubsEvent.trigger(UpdateSubsEvent(context, instance!!.subs)) } }
                 GlobalScope.launch {
                     instance!!.loadServers()
-                    Server.currentServer.select(context)
                 }
             }
             return instance!!
@@ -69,6 +68,7 @@ abstract class Database : RoomDatabase() {
             val se: List<Server> = serverDao.getAllServers()
             servers.clear()
             servers.addAll(se)
+            Server.currentServer.select(context)
         }
     }
 

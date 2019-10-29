@@ -21,7 +21,9 @@ data class Server(var name: String, var api: String, var url: String, var userNa
         val currentServer: Server
             get() {
                 if (_currentServer == null || _currentServer!!.id != db.currentServerID) {
-                    _currentServer = db.getServer(db.currentServerID) ?: db.servers.first()
+                    _currentServer = db.getServer(db.currentServerID) ?:
+                            if(db.servers.isNotEmpty()) db.servers.first()
+                            else Server("", "", "", "", "") //In case no server exist because of whatever bug may happened
                 }
                 return _currentServer!!
             }

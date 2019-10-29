@@ -177,12 +177,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
 
             fun onClick() {
-                if (check.isChecked) selectedTags.remove(toolbar.findViewById<TextView>(R.id.search_textview).text)
-                else selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
+                println("click")
+                if (check.isChecked) selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
+                else selectedTags.remove(toolbar.findViewById<TextView>(R.id.search_textview).text)
             }
             toolbar.setOnClickListener {
-                onClick()
                 check.isChecked = !check.isChecked
+                onClick()
             }
             check.setOnClickListener {
                 onClick()

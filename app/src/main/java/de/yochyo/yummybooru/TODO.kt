@@ -4,37 +4,35 @@ package de.yochyo.yummybooru
 //TODO selected tags sind falsch markiert
 
 //Features
+//TODO Show translations of images
+//TODO allow to swipe through images in Pictureactivity
 //TODO support animated_png
-//TODO Tests einfügen
-//TODO multiselect pictureactivity kann auch einen tag hinzufügen (elsword eve_(elsword) oder so)
-//TODO folder in taglist einfügen
-//TODO einen width/height/order button (wie bei mbooru) hinzufügen
-//TODO Mainactivity unselect all einfügen
-//TODO suchfeld bei sub liste
-//TODO Mainactiviy mom. ausgewählte tags anzeigen
+//TODO add tests
+//TODO multiselect pictureactivity can add tags like elsword eve_(elsword)
+//TODO Taglists add folders
+//TODO add a width/height/order button
+//TODO Mainactivity add unselect all
+//TODO searchfield in SubscriptionActivity
+//TODO Mainactiviy show currently selected tags
 //TODO pixiv
-//TODO Tags in png metadata Speichern
-//TODO developer mode app flags setzen können
-//TODO Suchen nach id in mainactiity
-//TODO Tags und subs vereinen?
-//TODO Normale Downloads auch über nen service? zumindest wenn die app geschlossen wird, downloads umlagern
-//TODO SeveralTagsPreviewLayout -< siehe unten
-//TODO backuputils versionunabhängig machen
+//TODO safe Tags in png metadata
+//TODO developer mode set app flags
+//TODO combine Tags and Subs in one class
+//TODO download images over service, at least when app is closed
+//TODO SeveralTagsPreviewLayout -< look at bottom
+//TODO backuputils independently of version
 //Optimizations
-//TODO backups erstellen muss mit verschiedenen versionen kompatibel sein
-//TODO strings in string.xml nutzen
-//TODO statt Tga.compareTo dem TreeSet einen eigenen Comparator geben
-//TODO logs in data abspeichern -- werden zu einem server geschickt
-//TODO CPU leistung optimieren Code Kommentieren und übersichtlicher gestalten || preloading besser gestalten, sodass ladezeiten besser sind
-//TODO mp4 implementieren
+//TODO add constrains to database
+//TODO add foreign key constraint to favorite database
+//TODO use strings from string.xml
+//TODO use Comparator in Treeset instead of Tag.compareTo
+//TODO send logs to a server, too many logs fill up space
+//TODO Optimize CPU performance, make code more readable | optimize preloading of app
+//TODO implement mp4
 //Bugs
-//TODO default save path funktioniert nicht immer? nochmal probieren, lag vllt. daran, dass die preferences nicht gelöscht wurden
-//TODO discord schauen
 //TODO Icons sind nicht ganz stimmig, fehlen bei der Nofication und wenn man auf die AppÜbersicht geht - round icon fehlt glaub //TODO icon updaten, unter anderem bei discord... sieht es komisch aus
 //TODO Toolbar menu aktualisiert sich noch nicht immer?
 //Wahrscheinlich gefixt
-//TODO nachschauen der downloadservice richtig runterlädt...
-//TODO updateMissingSubs/Tags überarbeiten //kann man es auch einfach so lassen (überprüfen ob es gerade funktioniert)
 
 
 //TODO SeveraltagsPreviewLayout

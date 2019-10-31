@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.widget.TextView
-import android.widget.Toast
 import android.widget.Toolbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -45,7 +44,7 @@ class PictureActivity : AppCompatActivity() {
     private lateinit var tagRecyclerView: RecyclerView
     private lateinit var adapter: PageAdapter
     private val currentTags = ArrayList<Tag>()
-    private val managerListener = Listener.create<LoadManagerPageEvent>{this@PictureActivity.adapter.updatePosts()}
+    private val managerListener = Listener.create<LoadManagerPageEvent> { this@PictureActivity.adapter.updatePosts() }
     lateinit var m: Manager
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -182,26 +181,33 @@ class PictureActivity : AppCompatActivity() {
                 when (it.itemId) {
                     R.id.picture_info_item_add_history -> GlobalScope.launch { db.addTag(this@PictureActivity, Tag(tag.name, tag.type)) }
                     R.id.picture_info_item_add_favorite -> {
-                        if (db.getTag(tag.name) == null) GlobalScope.launch { db.addTag(this@PictureActivity, Tag(tag.name, tag.type, true)) }
-                        else GlobalScope.launch { db.changeTag(this@PictureActivity, tag.copy(isFavorite = true)) }
+                        GlobalScope.launch {
+                            val t = db.getTag(tag.name)
+                            if (t == null) db.addTag(this@PictureActivity, Tag(tag.name, tag.type, true))
+                            else db.changeTag(this@PictureActivity, tag.copy(isFavorite = !t.isFavorite))
+                            withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
+                        }
                     }
                     R.id.picture_info_item_subscribe -> {
-                        if (db.getSubscription(tag.name) == null) GlobalScope.launch { db.addSubscription(this@PictureActivity, Subscription.fromTag(tag)) }
-                        else GlobalScope.launch { db.deleteSubscription(this@PictureActivity, tag.name) }
+                        GlobalScope.launch {
+                            if (db.getSubscription(tag.name) == null) db.addSubscription(this@PictureActivity, Subscription.fromTag(tag))
+                            else db.deleteSubscription(this@PictureActivity, tag.name)
+                            withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
+                        }
                     }
                 }
-                notifyItemChanged(adapterPosition)
-                drawer_picture.closeDrawer(GravityCompat.END)
                 true
             }
         }
 
         override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
             val tag = currentTags[position]
+            val tagInDatabase = db.tags.find { it.name == tag.name }
             val textView = holder.toolbar.findViewById<TextView>(R.id.info_textview)
             textView.text = tag.name
             textView.setColor(tag.color)
-            Menus.initPictureInfoTagMenu(holder.toolbar.menu, tag)
+            textView.underline(tagInDatabase?.isFavorite ?: false)
+            Menus.initPictureInfoTagMenu(holder.toolbar.menu, tagInDatabase ?: tag)
         }
 
         override fun getItemCount(): Int = currentTags.size

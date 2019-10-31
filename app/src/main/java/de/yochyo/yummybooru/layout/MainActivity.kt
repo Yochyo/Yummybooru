@@ -56,7 +56,7 @@ import kotlin.collections.ArrayList
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private val filteredTags = ArrayList<Pair<EventCollection<Tag>, String>>()
         get() {
-            if(field.isEmpty()) field += Pair(db.tags, "")
+            if (field.isEmpty()) field += Pair(db.tags, "")
             return field
         }
     private val currentFilter: EventCollection<Tag> get() = filteredTags.last().first
@@ -177,7 +177,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
 
             fun onClick() {
-                println("click")
                 if (check.isChecked) selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
                 else selectedTags.remove(toolbar.findViewById<TextView>(R.id.search_textview).text)
             }
@@ -195,16 +194,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     R.id.main_search_favorite_tag -> GlobalScope.launch {
                         val copy = tag.copy(isFavorite = !tag.isFavorite)
                         db.changeTag(this@MainActivity, copy)
-                        withContext(Dispatchers.Main) { tagLayoutManager.scrollToPositionWithOffset(currentFilter.indexOf(copy), 0) }
                     }
                     R.id.main_search_subscribe_tag -> {
-                        if (db.getSubscription(tag.name) == null) GlobalScope.launch { db.addSubscription(this@MainActivity, Subscription.fromTag(tag)) }
-                        else GlobalScope.launch { db.deleteSubscription(this@MainActivity, tag.name) }
-                        notifyItemChanged(adapterPosition)
+                        GlobalScope.launch {
+                            if (db.getSubscription(tag.name) == null) db.addSubscription(this@MainActivity, Subscription.fromTag(tag))
+                            else db.deleteSubscription(this@MainActivity, tag.name)
+                            withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
+                        }
                     }
                     R.id.main_search_delete_tag -> {
-                        GlobalScope.launch { db.deleteTag(this@MainActivity, tag.name) }
-                        selectedTags.remove(tag.name)
+                        GlobalScope.launch {
+                            selectedTags.remove(tag.name)
+                            db.deleteTag(this@MainActivity, tag.name)
+                        }
                     }
                 }
                 true
@@ -242,8 +244,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         private fun editServerDialog(server: Server) {
             AddServerDialog {
-                GlobalScope.launch { db.changeServer(this@MainActivity, it)
-                withContext(Dispatchers.Main){Snackbar.make(drawer_layout, "Edit [${it.name}]", Snackbar.LENGTH_SHORT).show()}}
+                GlobalScope.launch {
+                    db.changeServer(this@MainActivity, it)
+                    withContext(Dispatchers.Main) { Snackbar.make(drawer_layout, "Edit [${it.name}]", Snackbar.LENGTH_SHORT).show() }
+                }
             }.withServer(server).withTitle(getString(R.string.edit_server)).build(this@MainActivity)
         }
 
@@ -281,8 +285,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_add_server -> AddServerDialog {
-                GlobalScope.launch { db.addServer(this@MainActivity, it)
-                withContext(Dispatchers.Main){Snackbar.make(drawer_layout, "Add server [${it.name}]", Snackbar.LENGTH_SHORT).show()}}
+                GlobalScope.launch {
+                    db.addServer(this@MainActivity, it)
+                    withContext(Dispatchers.Main) { Snackbar.make(drawer_layout, "Add server [${it.name}]", Snackbar.LENGTH_SHORT).show() }
+                }
             }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
         }

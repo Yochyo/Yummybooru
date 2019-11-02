@@ -28,8 +28,9 @@ package de.yochyo.yummybooru
 //TODO send logs to a server, too many logs fill up space
 //TODO Optimize CPU performance, make code more readable | optimize preloading of app
 //TODO implement mp4
+//TODO use a wrapper for SubscriptionActivity's count values
 //Bugs
-//some times are saved two times with (1) at the end of their name
+//TODO some times are saved two times with (1) at the end of their name
 //TODO Icons sind nicht ganz stimmig, fehlen bei der Nofication und wenn man auf die AppÜbersicht geht - round icon fehlt glaub //TODO icon updaten, unter anderem bei discord... sieht es komisch aus
 //Wahrscheinlich gefixt
 

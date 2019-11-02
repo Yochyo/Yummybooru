@@ -118,6 +118,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
                 GlobalScope.launch(Dispatchers.IO) {
                     val bytes = stream.readBytes()
                     stream.close()
+                    Toast.makeText(this@SettingsActivity, "Please wait until the backup is restored", Toast.LENGTH_LONG).show()
                     BackupUtils.restoreBackup(bytes, this@SettingsActivity)
                     withContext(Dispatchers.Main) {
                         Toast.makeText(this@SettingsActivity, "Restored backup", Toast.LENGTH_LONG).show()

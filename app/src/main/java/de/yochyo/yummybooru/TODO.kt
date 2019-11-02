@@ -18,9 +18,8 @@ package de.yochyo.yummybooru
 //TODO safe Tags in png metadata
 //TODO developer mode set app flags
 //TODO combine Tags and Subs in one class
-//TODO download images over service, at least when app is closed
 //TODO SeveralTagsPreviewLayout -< look at bottom
-//TODO backuputils independently of version
+//TODO backuputils independent of version
 //Optimizations
 //TODO add constrains to database
 //TODO add foreign key constraint to favorite database
@@ -30,8 +29,8 @@ package de.yochyo.yummybooru
 //TODO Optimize CPU performance, make code more readable | optimize preloading of app
 //TODO implement mp4
 //Bugs
+//some times are saved two times with (1) at the end of their name
 //TODO Icons sind nicht ganz stimmig, fehlen bei der Nofication und wenn man auf die AppÜbersicht geht - round icon fehlt glaub //TODO icon updaten, unter anderem bei discord... sieht es komisch aus
-//TODO Toolbar menu aktualisiert sich noch nicht immer?
 //Wahrscheinlich gefixt
 
 

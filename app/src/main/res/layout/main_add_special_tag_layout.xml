@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:padding="16dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:weightSum="10">
+        <TextView android:text="height" android:textSize="16sp" android:layout_width="0dp" android:layout_height="wrap_content"
+                  android:id="@+id/height" android:layout_weight="2"/>
+        <Spinner android:layout_width="0dp" android:layout_height="wrap_content"
+                 android:id="@+id/height_spinner" android:entries="@array/tag_filter" android:layout_weight="4"/>
+        <EditText android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="4"
+                  android:id="@+id/height_edittext" android:hint="1000" android:inputType="numberDecimal" android:maxLines="1"/>
+        <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:id="@+id/height_add" android:layout_gravity="center_vertical"
+                android:background="@drawable/add_circle" android:backgroundTint="@color/dark_grey"/>
+    </LinearLayout>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:weightSum="10">
+        <TextView android:text="width" android:textSize="16sp" android:layout_width="0dp" android:layout_height="wrap_content"
+                  android:id="@+id/width" android:layout_weight="2"/>
+        <Spinner android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="4"
+                 android:id="@+id/width_spinner" android:entries="@array/tag_filter"/>
+        <EditText android:layout_width="0dp" android:layout_height="wrap_content"  android:layout_weight="4"
+                  android:id="@+id/width_edittext" android:hint="1000" android:inputType="numberDecimal" android:maxLines="1"/>
+        <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:id="@+id/width_add" android:layout_gravity="center_vertical"
+                android:background="@drawable/add_circle" android:backgroundTint="@color/dark_grey"/>
+    </LinearLayout>
+</LinearLayout>

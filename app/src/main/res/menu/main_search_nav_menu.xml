@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/add_special_tag"
+          android:title="Add special tag"
+          android:icon="@drawable/playlist_add"
+          app:showAsAction="always"/>
+    <item android:id="@+id/add_tag"
+          android:title="Add Tag"
+          android:icon="@drawable/add"
+          app:showAsAction="always"/>
+    <item android:id="@+id/search"
+          android:title="Start search"
+          android:icon="@drawable/search"
+          app:showAsAction="always"/>
+</menu>

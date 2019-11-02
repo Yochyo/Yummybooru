@@ -33,6 +33,7 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.UpdateServersEvent
 import de.yochyo.yummybooru.events.events.UpdateTagsEvent
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
+import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.layout.res.Menus
@@ -61,37 +62,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     private val currentFilter: EventCollection<Tag> get() = filteredTags.last().first
 
-    private val filterMutex = Mutex()
-    suspend fun filter(name: String) {
-        withContext(Dispatchers.Default) {
-            filterMutex.withLock {
-                var addChild: EventCollection<Tag>
-                if (name == "") {
-                    for (item in filteredTags) {
-                        val list = item.first
-                        if (list is SubEventCollection) list.destroy()
-                    }
-                    filteredTags.clear()
-                    addChild = db.tags
-                } else {
-                    for (i in filteredTags.indices.reversed()) {
-                        if (name.startsWith(filteredTags[i].second)) {
-                            val subCollection = SubEventCollection(TreeSet(), filteredTags[i].first) { it.name.contains(name) }
-                            addChild = subCollection
-                            break
-                        }
-                    }
-                    addChild = SubEventCollection(TreeSet(), db.tags) { it.name.contains(name) }
-                }
-                withContext(Dispatchers.Main) {
-                    tagLayoutManager.scrollToPosition(0)
-                    tagAdapter.notifyDataSetChanged()
-                    filteredTags += Pair(addChild, name)
-                }
-            }
-        }
-    }
-
     companion object {
         val selectedTags = ArrayList<String>()
     }
@@ -112,7 +82,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         toggle.syncState()
         nav_view.setNavigationItemSelectedListener(this)
         val navLayout = nav_search.findViewById<LinearLayout>(R.id.nav_search_layout)
-        initDrawerButtons(navLayout.findViewById(R.id.add_search), navLayout.findViewById(R.id.start_search))
+        initDrawerToolbar(navLayout.findViewById(R.id.search_toolbar))
         tagRecyclerView = navLayout.findViewById(R.id.recycler_view_search)
         tagRecyclerView.layoutManager = LinearLayoutManager(this).apply { tagLayoutManager = this }
         tag_filter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -151,24 +121,33 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     }
 
-    private fun initDrawerButtons(addButton: Button, searchButton: Button) {
-        addButton.setOnClickListener {
-            AddTagDialog {
-                GlobalScope.launch {
-                    val tag = Api.getTag(it.text.toString())
-                    val t = db.addTag(this@MainActivity, tag)
-                    launch(Dispatchers.Main) {
-                        tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(t), 0)
+    private fun initDrawerToolbar(toolbar: androidx.appcompat.widget.Toolbar) {
+        toolbar.inflateMenu(R.menu.main_search_nav_menu)
+            toolbar.setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.search -> {
+                        drawer_layout.closeDrawer(GravityCompat.END)
+                        PreviewActivity.startActivity(this, if (selectedTags.isEmpty()) "*" else selectedTags.toTagString())
                     }
+                    R.id.add_tag -> {
+                        AddTagDialog {
+                            GlobalScope.launch {
+                                val tag = Api.getTag(it.text.toString())
+                                val t = db.addTag(this@MainActivity, tag)
+                                withContext(Dispatchers.Main) {
+                                    tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(t), 0)
+                                }
+                            }
+                        }.build(this)
+                    }
+                    R.id.add_special_tag -> {
+                        AddSpecialTagDialog().build(this)
+                    }
+                    else -> return@setOnMenuItemClickListener false
                 }
-            }.build(this)
-        }
+                return@setOnMenuItemClickListener true
+            }
 
-        searchButton.setOnClickListener {
-            drawer_layout.closeDrawer(GravityCompat.END)
-            if (selectedTags.isEmpty()) PreviewActivity.startActivity(this, "*")
-            else PreviewActivity.startActivity(this, selectedTags.toTagString())
-        }
     }
 
     private inner class SearchTagAdapter : RecyclerView.Adapter<SearchTagViewHolder>() {
@@ -279,6 +258,37 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             else text1.setColor(R.color.violet)
             layout.findViewById<TextView>(R.id.server_text2).text = server.api
             layout.findViewById<TextView>(R.id.server_text3).text = server.userName
+        }
+    }
+
+    private val filterMutex = Mutex()
+    suspend fun filter(name: String) {
+        withContext(Dispatchers.Default) {
+            filterMutex.withLock {
+                var addChild: EventCollection<Tag>
+                if (name == "") {
+                    for (item in filteredTags) {
+                        val list = item.first
+                        if (list is SubEventCollection) list.destroy()
+                    }
+                    filteredTags.clear()
+                    addChild = db.tags
+                } else {
+                    for (i in filteredTags.indices.reversed()) {
+                        if (name.startsWith(filteredTags[i].second)) {
+                            val subCollection = SubEventCollection(TreeSet(), filteredTags[i].first) { it.name.contains(name) }
+                            addChild = subCollection
+                            break
+                        }
+                    }
+                    addChild = SubEventCollection(TreeSet(), db.tags) { it.name.contains(name) }
+                }
+                withContext(Dispatchers.Main) {
+                    tagLayoutManager.scrollToPosition(0)
+                    tagAdapter.notifyDataSetChanged()
+                    filteredTags += Pair(addChild, name)
+                }
+            }
         }
     }
 

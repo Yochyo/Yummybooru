@@ -41,27 +41,10 @@
                 android:orientation="vertical"
                 android:paddingTop="24dp">
 
-            <LinearLayout
+            <androidx.appcompat.widget.Toolbar
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:weightSum="2">
-                <Button
-                        android:id="@+id/add_search"
-                        android:layout_width="0dp"
-                        android:text="@string/add"
-                        android:background="@color/very_dark_grey"
-                        android:textColor="@color/white"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"/>
-                <Button
-                        android:id="@+id/start_search"
-                        android:layout_width="0dp"
-                        android:background="@color/very_dark_grey"
-                        android:text="@string/search"
-                        android:textColor="@color/white"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"/>
-            </LinearLayout>
+                    android:id="@+id/search_toolbar"/>
 
             <androidx.coordinatorlayout.widget.CoordinatorLayout
                     android:layout_width="match_parent"

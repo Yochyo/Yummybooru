@@ -40,7 +40,7 @@ class DownloadService : Service() {
     override fun onCreate() {
         super.onCreate()
         notificationManager = NotificationManagerCompat.from(this)
-        notificationBuilder = NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.mipmap.ybooru_icon).setContentTitle("Downloading")
+        notificationBuilder = NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.drawable.notification_icon).setContentTitle("Downloading")
                 .setOngoing(true).setLocalOnly(true).setProgress(100, 0, false)
 
         startForeground(1, notificationBuilder.build())

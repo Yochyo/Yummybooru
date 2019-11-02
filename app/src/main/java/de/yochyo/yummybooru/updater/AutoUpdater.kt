@@ -40,7 +40,7 @@ class AutoUpdater {
 
     private fun throwUpdateNotification(context: Context, file: File) {
         val builder = NotificationCompat.Builder(context, App.CHANNEL_ID).setContentTitle("Update now to version ${file.name.subSequence(0, file.name.lastIndex - 3)}")
-                .setSmallIcon(R.mipmap.ybooru_icon).setAutoCancel(true)
+                .setSmallIcon(R.drawable.notification_icon).setAutoCancel(true)
         val intent = installIntent(context, file)
         builder.setContentIntent(PendingIntent.getActivity(context, 2, intent, 0))
         with(NotificationManagerCompat.from(context)) {

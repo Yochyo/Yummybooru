@@ -15,7 +15,6 @@ import de.yochyo.yummybooru.backup.BackupUtils
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
-import de.yochyo.yummybooru.utils.documentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -111,7 +110,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         if (resultCode == RESULT_OK && data != null) {
             if (requestCode == savePathCode) { //Speicherpfad ändern
                 val file = DocumentFile.fromTreeUri(this, data.data)
-                db.saveFile = file!!
+                db.saveFolder = file!!
                 setSavePathSummary()
             }
             if (requestCode == restoreDataCode) { //Daten wiederherstellen
@@ -131,7 +130,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
 
     private fun setSavePathSummary() {
         val pref = findPreference("savePath")
-        val file = db.saveFile
+        val file = db.saveFolder
         pref.summary = file.name
     }
 }

@@ -13,7 +13,7 @@ object PreferencesBackup : BackupableEntity<String> {
         json.put("sortTags", db.sortTags)
         json.put("sortSubs", db.sortSubs)
         json.put("downloadOriginal", db.downloadOriginal)
-        json.put("savePath", db.saveFile.uri)
+        json.put("savePath", db.saveFolder.uri)
         return json
     }
 
@@ -23,6 +23,6 @@ object PreferencesBackup : BackupableEntity<String> {
         db.sortTags = json["sortTags"].toString()
         db.sortSubs = json["sortSubs"].toString()
         db.downloadOriginal = json.getBoolean("downloadOriginal")
-        db.saveFile = documentFile(context, json["savePath"].toString())
+        db.saveFolder = documentFile(context, json["savePath"].toString())
     }
 }

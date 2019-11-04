@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import de.yochyo.eventmanager.EventCollection
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
@@ -26,36 +27,33 @@ import de.yochyo.yummybooru.utils.setColor
 import de.yochyo.yummybooru.utils.underline
 import kotlinx.android.synthetic.main.activity_subscription.*
 import kotlinx.android.synthetic.main.content_subscription.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 class SubscriptionActivity : AppCompatActivity() {
-    private val listener = Listener.create<UpdateSubsEvent>{ adapter.updateSubs() }
+    private val updateSubsListener = Listener.create<UpdateSubsEvent> { adapter.notifyDataSetChanged() }
     private var onClickedData: SubData? = null
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: SubscribedTagAdapter
     private lateinit var layoutManager: LinearLayoutManager
 
+    private val countWrapper = CountWrapper(db.subs)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_subscription)
         setSupportActionBar(toolbar_subs)
-        GlobalScope.launch(Dispatchers.Main) {
-            supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            recyclerView = subs_recycler
-            recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity).apply { layoutManager = this }
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        recyclerView = subs_recycler
+        recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity).apply { layoutManager = this }
 
-            recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this }
+        recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this;countWrapper.adapter = this }
 
-            UpdateSubsEvent.registerListener(listener)
-            subs_swipe_refresh_layout.setOnRefreshListener {
-                subs_swipe_refresh_layout.isRefreshing = false
-                clear()
-                adapter.notifyDataSetChanged()
-            }
+        UpdateSubsEvent.registerListener(updateSubsListener)
+        subs_swipe_refresh_layout.setOnRefreshListener {
+            subs_swipe_refresh_layout.isRefreshing = false
+            clear()
+            adapter.notifyDataSetChanged()
         }
     }
 
@@ -104,10 +102,6 @@ class SubscriptionActivity : AppCompatActivity() {
                     }
                 }
             }
-        }
-
-        fun updateSubs() {
-            adapter.notifyDataSetChanged()
         }
 
         override val onClickLayout = { holder: SubscribedTagViewHolder ->
@@ -168,23 +162,16 @@ class SubscriptionActivity : AppCompatActivity() {
             text1.text = sub.name
             text1.setColor(sub.color)
             text1.underline(sub.isFavorite)
-            text2.text = getString(R.string.number_of_new_pictures)
+            text2.text = "${getString(R.string.number_of_new_pictures)} ${countWrapper.getCount(holder.adapterPosition)}"
             Menus.initSubscriptionMenu(toolbar.menu, db.subs.elementAt(position))
             toolbar.menu.setGroupEnabled(0, selected.isEmpty()) //Cannot access menu when selecting items
-            GlobalScope.launch {
-                val tag = Api.getTag(sub.name)
-                var countDifference = tag.count - sub.lastCount
-                if (countDifference < 0) countDifference = 0
-                launch(Dispatchers.Main) {
-                    text2.text = "${getString(R.string.number_of_new_pictures)}$countDifference"
-                }
-            }
         }
     }
 
 
     override fun onResume() {
         super.onResume()
+        countWrapper.paused = false
         if (onClickedData != null) {
             val sub = db.subs[onClickedData!!.clickedSub]
             val builder = AlertDialog.Builder(this)
@@ -198,6 +185,11 @@ class SubscriptionActivity : AppCompatActivity() {
             }
             builder.show()
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        countWrapper.paused = true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -234,10 +226,79 @@ class SubscriptionActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        UpdateSubsEvent.removeListener(listener)
+        UpdateSubsEvent.removeListener(updateSubsListener)
+        countWrapper.close()
     }
 
-    private inner class SubscribedTagViewHolder(layout: FrameLayout) : SelectableViewHolder(layout)
+    inner class SubscribedTagViewHolder(layout: FrameLayout) : SelectableViewHolder(layout)
+}
+
+private class CountWrapper(val subs: EventCollection<Subscription>) {
+    var adapter: RecyclerView.Adapter<SubscriptionActivity.SubscribedTagViewHolder>? = null
+    private val counts = HashMap<String, Int>()
+    private val mutex = Any()
+
+    var paused = false
+    private val job = GlobalScope.launch(Dispatchers.IO) {
+        var i = 0
+        while (isActive) {
+            if (!paused) {
+                if (i in subs.indices) {
+                    cacheCount(i)
+                    ++i
+                } else i = 0
+            } else {
+                delay(100)
+                i = 0
+            }
+        }
+    }
+
+    private val onAddElementListener = Listener.create<EventCollection<Subscription>.OnAddElementEvent> { GlobalScope.launch { cacheCount(it.collection.indexOf(it.element)) } }
+
+    init {
+        subs.onAddElement.registerListener(onAddElementListener)
+    }
+
+    fun getCount(index: Int): Int {
+        GlobalScope.launch { cacheCount(index) }
+        val sub = subs[index]
+        val countDifference = (getRawCount(sub.name) ?: 0) - sub.lastCount
+        return if (countDifference > 0) countDifference else 0
+    }
+
+    private suspend fun cacheCount(index: Int) {
+        withContext(Dispatchers.IO){
+            try {
+                val sub = subs[index]
+                val oldValue = getRawCount(sub.name)
+
+                val tag = Api.getTag(sub.name)
+                setCount(sub.name, tag.count)
+                if (oldValue != tag.count)
+                    withContext(Dispatchers.Main) { adapter?.notifyItemChanged(index) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun setCount(name: String, count: Int) {
+        synchronized(mutex) {
+            counts[name] = count
+        }
+    }
+
+    private fun getRawCount(name: String): Int? {
+        return synchronized(mutex) {
+            counts[name]
+        }
+    }
+
+    fun close() {
+        subs.onAddElement.removeListener(onAddElementListener)
+        job.cancel()
+    }
 }
 
 private class SubData(val clickedSub: Int, val idWhenClicked: Int, val countWhenClicked: Int)

@@ -21,17 +21,17 @@ package de.yochyo.yummybooru
 //TODO SeveralTagsPreviewLayout -< look at bottom
 //TODO backuputils independent of version
 //Optimizations
+//TODO countWrapper add prioritisation for automatic caching
 //TODO add constrains to database
-//TODO add foreign key constraint to favorite database
+//TODO add foreign key constraint to favorite database (soon to be added)
 //TODO use strings from string.xml
 //TODO use Comparator in Treeset instead of Tag.compareTo
 //TODO send logs to a server, too many logs fill up space
 //TODO Optimize CPU performance, make code more readable | optimize preloading of app
 //TODO implement mp4
-//TODO use a wrapper for SubscriptionActivity's count values
+//TODO github update screenshots
 //Bugs
-//TODO some times are saved two times with (1) at the end of their name
-//TODO Icons sind nicht ganz stimmig, fehlen bei der Nofication und wenn man auf die AppÜbersicht geht - round icon fehlt glaub //TODO icon updaten, unter anderem bei discord... sieht es komisch aus
+//TODO files are sometimes saved with (1) at the end of their mimetype
 //Wahrscheinlich gefixt
 
 

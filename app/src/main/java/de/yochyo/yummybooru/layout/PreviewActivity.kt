@@ -20,12 +20,11 @@ import de.yochyo.yummybooru.api.downloads.LoadManagerPageEvent
 import de.yochyo.yummybooru.api.downloads.Manager
 import de.yochyo.yummybooru.api.downloads.downloadImage
 import de.yochyo.yummybooru.api.entities.Server
+import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.DownloadService
-import de.yochyo.yummybooru.events.events.AddTagEvent
-import de.yochyo.yummybooru.events.events.ChangeTagEvent
-import de.yochyo.yummybooru.events.events.DeleteTagEvent
+import de.yochyo.yummybooru.events.events.*
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
 import de.yochyo.yummybooru.layout.views.*
 import de.yochyo.yummybooru.utils.drawable
@@ -205,6 +204,16 @@ open class PreviewActivity : AppCompatActivity() {
                 if (tag == null) GlobalScope.launch { db.addTag(this@PreviewActivity, Api.getTag(m.tagString)) }
                 else GlobalScope.launch { db.deleteTag(this@PreviewActivity, tag.name) }
             }
+            R.id.subscribe -> {
+                GlobalScope.launch {
+                    val sub = db.subs.find { it.name == m.tagString }
+                    if(sub != null) db.deleteSubscription(this@PreviewActivity, sub.name)
+                    else {
+                        val tag = db.tags.find { it.name == m.tagString } ?: Api.getTag(m.tagString)
+                        db.addSubscription(this@PreviewActivity, Subscription.fromTag(tag))
+                    }
+                }
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -212,9 +221,11 @@ open class PreviewActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.preview_menu, menu)
         val tag = db.tags.find { it.name == m.tagString }
+        val sub = db.subs.find { it.name == m.tagString }
         if (tag == null)
             menu.findItem(R.id.add_tag).icon = drawable(R.drawable.add)
         else if (tag.isFavorite) menu.findItem(R.id.favorite).icon = drawable(R.drawable.favorite)
+        if(sub != null) menu.findItem(R.id.subscribe).icon = drawable(R.drawable.star)
         actionBarListener = ActionBarListener(this, m.tagString, menu).apply { registerListeners() }
         return true
     }
@@ -245,6 +256,8 @@ private class ActionBarListener(val context: Context, tag: String, menu: Menu) {
             AddTagEvent.registerListener(addTagListener)
             DeleteTagEvent.registerListener(removeTagListener)
             ChangeTagEvent.registerListener(favoriteTagListener)
+            AddSubEvent.registerListener(addSubListener)
+            DeleteSubEvent.registerListener(deleteSubListener)
         }
     }
 
@@ -254,6 +267,8 @@ private class ActionBarListener(val context: Context, tag: String, menu: Menu) {
             AddTagEvent.removeListener(addTagListener)
             DeleteTagEvent.removeListener(removeTagListener)
             ChangeTagEvent.removeListener(favoriteTagListener)
+            AddSubEvent.removeListener(addSubListener)
+            DeleteSubEvent.removeListener(deleteSubListener)
         }
     }
 
@@ -273,6 +288,16 @@ private class ActionBarListener(val context: Context, tag: String, menu: Menu) {
         if (it.newTag.name == tag) {
             if (it.newTag.isFavorite) menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.favorite)
             else menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.unfavorite)
+        }
+    }
+    private val addSubListener = Listener.create<AddSubEvent> {
+        if(it.sub.name == tag){
+            menu.findItem(R.id.subscribe).icon = context.drawable(R.drawable.star)
+        }
+    }
+    private val deleteSubListener = Listener.create<DeleteSubEvent> {
+        if(it.sub.name == tag){
+            menu.findItem(R.id.subscribe).icon = context.drawable(R.drawable.star_empty)
         }
     }
 }

@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/subscribe"
+          android:title="Subscribe tag"
+          android:icon="@drawable/star_empty"
+          app:showAsAction="always"/>
     <item android:id="@+id/favorite"
           android:title="Favorite tag"
           android:icon="@drawable/unfavorite"
-          app:showAsAction="ifRoom"/>
+          app:showAsAction="always"/>
     <item android:id="@+id/add_tag"
           android:title="Add tag"
           android:icon="@drawable/remove"
-          app:showAsAction="ifRoom"/>
+          app:showAsAction="always"/>
     <item android:id="@+id/download_all"
           android:title="@string/download_all"
           android:icon="@drawable/search"

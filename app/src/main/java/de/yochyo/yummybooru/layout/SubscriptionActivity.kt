@@ -268,15 +268,17 @@ private class CountWrapper(val subs: EventCollection<Subscription>) {
     }
 
     private suspend fun cacheCount(index: Int) {
-        withContext(Dispatchers.IO){
+        withContext(Dispatchers.IO) {
             try {
                 val sub = subs[index]
                 val oldValue = getRawCount(sub.name)
-
                 val tag = Api.getTag(sub.name)
                 setCount(sub.name, tag.count)
-                if (oldValue != tag.count)
-                    withContext(Dispatchers.Main) { adapter?.notifyItemChanged(index) }
+                if (oldValue != tag.count) {
+                    val newIndex = subs.indexOf(sub)
+                    if (index >= 0)
+                        withContext(Dispatchers.Main) { adapter?.notifyItemChanged(newIndex) }
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }

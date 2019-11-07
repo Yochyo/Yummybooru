@@ -3,7 +3,7 @@ package de.yochyo.yummybooru.api.downloads
 import android.content.Context
 import android.util.SparseArray
 import de.yochyo.eventmanager.Event
-import de.yochyo.eventmanager.EventCollection
+import de.yochyo.eventcollection.EventCollection
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.api.Api

@@ -20,8 +20,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import de.yochyo.eventmanager.EventCollection
-import de.yochyo.subeventcollection.SubEventCollection
+import de.yochyo.eventcollection.EventCollection
+import de.yochyo.eventcollection.SubEventCollection
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.downloads.cache

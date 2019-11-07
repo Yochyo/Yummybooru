@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import de.yochyo.eventmanager.EventCollection
+import de.yochyo.eventcollection.EventCollection
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.api.entities.*
 import de.yochyo.yummybooru.database.converter.DateConverter

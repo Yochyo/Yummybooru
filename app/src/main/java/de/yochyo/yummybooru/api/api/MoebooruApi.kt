@@ -113,7 +113,7 @@ class MoebooruApi(url: String) : Api(url) {
                     tags += Tag(name, type)
                 }
             } catch (e: Exception) {
-                Logger.log(e)
+                e.printStackTrace()
             }
         }
         return tags

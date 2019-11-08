@@ -21,6 +21,7 @@ package de.yochyo.yummybooru
 //TODO SeveralTagsPreviewLayout -< look at bottom
 //TODO backuputils independent of version
 //Optimizations
+//TODO recreate saveFolder if it is deleted
 //TODO countWrapper add prioritisation for automatic caching
 //TODO add constrains to database
 //TODO add foreign key constraint to favorite database (soon to be added)

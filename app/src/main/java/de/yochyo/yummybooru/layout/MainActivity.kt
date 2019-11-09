@@ -123,30 +123,30 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun initDrawerToolbar(toolbar: androidx.appcompat.widget.Toolbar) {
         toolbar.inflateMenu(R.menu.main_search_nav_menu)
-            toolbar.setOnMenuItemClickListener {
-                when (it.itemId) {
-                    R.id.search -> {
-                        drawer_layout.closeDrawer(GravityCompat.END)
-                        PreviewActivity.startActivity(this, if (selectedTags.isEmpty()) "*" else selectedTags.toTagString())
-                    }
-                    R.id.add_tag -> {
-                        AddTagDialog {
-                            GlobalScope.launch {
-                                val tag = Api.getTag(it.text.toString())
-                                val t = db.addTag(this@MainActivity, tag)
-                                withContext(Dispatchers.Main) {
-                                    tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(t), 0)
-                                }
-                            }
-                        }.build(this)
-                    }
-                    R.id.add_special_tag -> {
-                        AddSpecialTagDialog().build(this)
-                    }
-                    else -> return@setOnMenuItemClickListener false
+        toolbar.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.search -> {
+                    drawer_layout.closeDrawer(GravityCompat.END)
+                    PreviewActivity.startActivity(this, if (selectedTags.isEmpty()) "*" else selectedTags.toTagString())
                 }
-                return@setOnMenuItemClickListener true
+                R.id.add_tag -> {
+                    AddTagDialog {
+                        GlobalScope.launch {
+                            val tag = Api.getTag(it.text.toString())
+                            val t = db.addTag(this@MainActivity, tag)
+                            withContext(Dispatchers.Main) {
+                                tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(t), 0)
+                            }
+                        }
+                    }.build(this)
+                }
+                R.id.add_special_tag -> {
+                    AddSpecialTagDialog().build(this)
+                }
+                else -> return@setOnMenuItemClickListener false
             }
+            return@setOnMenuItemClickListener true
+        }
 
     }
 
@@ -182,10 +182,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         }
                     }
                     R.id.main_search_delete_tag -> {
-                        GlobalScope.launch {
-                            selectedTags.remove(tag.name)
-                            db.deleteTag(this@MainActivity, tag.name)
-                        }
+                        ConfirmDialog {
+                            GlobalScope.launch {
+                                selectedTags.remove(tag.name)
+                                db.deleteTag(this@MainActivity, tag.name)
+                            }
+                        }.withTitle("Delete").withMessage("Delete tag ${tag.name}").build(this@MainActivity)
                     }
                 }
                 true

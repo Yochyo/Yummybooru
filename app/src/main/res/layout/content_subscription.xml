@@ -11,10 +11,10 @@
         android:id="@+id/subs_swipe_refresh_layout"
         tools:context="de.yochyo.yummybooru.layout.SubscriptionActivity">
 
-    <androidx.recyclerview.widget.RecyclerView
+    <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
             android:id="@+id/subs_recycler"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-    </androidx.recyclerview.widget.RecyclerView>
+    </com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView>
 
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

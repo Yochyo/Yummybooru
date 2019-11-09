@@ -1,8 +1,5 @@
 package de.yochyo.yummybooru
 
-//Momentan
-//TODO selected tags sind falsch markiert
-
 //Features
 //TODO Show translations of images
 //TODO allow to swipe through images in Pictureactivity
@@ -15,11 +12,13 @@ package de.yochyo.yummybooru
 //TODO searchfield in SubscriptionActivity
 //TODO Mainactiviy show currently selected tags
 //TODO pixiv
-//TODO safe Tags in png metadata
+//TODO safe Tags in png metadatay
 //TODO developer mode set app flags
 //TODO combine Tags and Subs in one class
 //TODO SeveralTagsPreviewLayout -< look at bottom
 //TODO backuputils independent of version
+//TODO show amounts of pages you have to scroll through
+//TODO download all
 //Optimizations
 //TODO recreate saveFolder if it is deleted
 //TODO countWrapper add prioritisation for automatic caching
@@ -32,8 +31,9 @@ package de.yochyo.yummybooru
 //TODO implement mp4
 //TODO github update screenshots
 //Bugs
+//TODO fastscrollrecyclerview needs MeasurableAdapter
 //TODO files are sometimes saved with (1) at the end of their mimetype
-//Wahrscheinlich gefixt
+//Probably fixed
 
 
 //TODO SeveraltagsPreviewLayout

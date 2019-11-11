@@ -72,12 +72,11 @@
                                 android:inputType="text"/>
                     </androidx.appcompat.widget.Toolbar>
                 </com.google.android.material.appbar.AppBarLayout>
-                <com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
+                <androidx.recyclerview.widget.RecyclerView
                         app:layout_behavior="@string/appbar_scrolling_view_behavior"
                         android:id="@+id/recycler_view_search"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                />
+                        android:layout_height="match_parent"/>
             </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
         </LinearLayout>

@@ -12,7 +12,7 @@ package de.yochyo.yummybooru
 //TODO searchfield in SubscriptionActivity
 //TODO Mainactiviy show currently selected tags
 //TODO pixiv
-//TODO safe Tags in png metadatay
+//TODO save Tags in png metadatay
 //TODO developer mode set app flags
 //TODO combine Tags and Subs in one class
 //TODO SeveralTagsPreviewLayout -< look at bottom
@@ -30,6 +30,7 @@ package de.yochyo.yummybooru
 //TODO Optimize CPU performance, make code more readable | optimize preloading of app
 //TODO implement mp4
 //TODO github update screenshots
+//TODO scrollbar smooth scrolling
 //Bugs
 //TODO fastscrollrecyclerview needs MeasurableAdapter
 //TODO files are sometimes saved with (1) at the end of their mimetype

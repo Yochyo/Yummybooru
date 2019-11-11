@@ -43,6 +43,7 @@ open class PreviewActivity : AppCompatActivity() {
             context.startActivity(Intent(context, PreviewActivity::class.java))
         }
     }
+
     private lateinit var actionBarListener: ActionBarListener
     private var isLoadingView = false
     private var isScrolling = false
@@ -65,7 +66,15 @@ open class PreviewActivity : AppCompatActivity() {
         initToolbar()
 
         m.loadManagerPageEvent.registerListener(managerListener)
-        recycler_view.layoutManager = GridLayoutManager(this, 3).apply { layoutManager = this }
+        recycler_view.layoutManager = object : GridLayoutManager(this, 3) {
+            override fun onLayoutChildren(recycler: RecyclerView.Recycler?, state: RecyclerView.State?) {
+                try {
+                    super.onLayoutChildren(recycler, state)
+                } catch (e: java.lang.Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }.apply { layoutManager = this }
         recycler_view.adapter = PreviewAdapter().apply { previewAdapter = this }
         initSwipeRefreshLayout()
         initScrollView()
@@ -125,7 +134,7 @@ open class PreviewActivity : AppCompatActivity() {
             previewAdapter.actionmode?.title = "${selected.size}/${m.posts.size}"
         }
         private val clickMenuItemListener = Listener.create<ActionModeClickEvent> {
-            when(it.menuItem.itemId){
+            when (it.menuItem.itemId) {
                 R.id.select_all -> if (previewAdapter.selected.size == m.posts.size) previewAdapter.unselectAll() else previewAdapter.selectAll()
                 R.id.download_selected -> {
                     val posts = previewAdapter.selected.getSelected(m.posts)
@@ -155,9 +164,7 @@ open class PreviewActivity : AppCompatActivity() {
         }
 
         fun updatePosts(newPage: Collection<Post>) {
-            if (newPage.isNotEmpty())
-                if (m.posts.size > newPage.size) notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
-                else notifyDataSetChanged()
+            notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
         }
 
         override val onClickLayout = { holder: PreviewViewHolder ->
@@ -207,7 +214,7 @@ open class PreviewActivity : AppCompatActivity() {
             R.id.subscribe -> {
                 GlobalScope.launch {
                     val sub = db.subs.find { it.name == m.tagString }
-                    if(sub != null) db.deleteSubscription(this@PreviewActivity, sub.name)
+                    if (sub != null) db.deleteSubscription(this@PreviewActivity, sub.name)
                     else {
                         val tag = db.tags.find { it.name == m.tagString } ?: Api.getTag(m.tagString)
                         db.addSubscription(this@PreviewActivity, Subscription.fromTag(tag))
@@ -225,7 +232,7 @@ open class PreviewActivity : AppCompatActivity() {
         if (tag == null)
             menu.findItem(R.id.add_tag).icon = drawable(R.drawable.add)
         else if (tag.isFavorite) menu.findItem(R.id.favorite).icon = drawable(R.drawable.favorite)
-        if(sub != null) menu.findItem(R.id.subscribe).icon = drawable(R.drawable.star)
+        if (sub != null) menu.findItem(R.id.subscribe).icon = drawable(R.drawable.star)
         actionBarListener = ActionBarListener(this, m.tagString, menu).apply { registerListeners() }
         return true
     }
@@ -291,12 +298,12 @@ private class ActionBarListener(val context: Context, tag: String, menu: Menu) {
         }
     }
     private val addSubListener = Listener.create<AddSubEvent> {
-        if(it.sub.name == tag){
+        if (it.sub.name == tag) {
             menu.findItem(R.id.subscribe).icon = context.drawable(R.drawable.star)
         }
     }
     private val deleteSubListener = Listener.create<DeleteSubEvent> {
-        if(it.sub.name == tag){
+        if (it.sub.name == tag) {
             menu.findItem(R.id.subscribe).icon = context.drawable(R.drawable.star_empty)
         }
     }

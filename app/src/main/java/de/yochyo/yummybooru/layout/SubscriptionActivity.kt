@@ -23,8 +23,8 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.layout.res.Menus
 import de.yochyo.yummybooru.layout.views.*
-import de.yochyo.yummybooru.utils.setColor
-import de.yochyo.yummybooru.utils.underline
+import de.yochyo.yummybooru.utils.general.setColor
+import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.android.synthetic.main.activity_subscription.*
 import kotlinx.android.synthetic.main.content_subscription.*
 import kotlinx.coroutines.*

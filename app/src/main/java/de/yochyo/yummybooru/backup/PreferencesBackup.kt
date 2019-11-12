@@ -2,7 +2,7 @@ package de.yochyo.yummybooru.backup
 
 import android.content.Context
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.utils.documentFile
+import de.yochyo.yummybooru.utils.general.documentFile
 import org.json.JSONObject
 
 object PreferencesBackup : BackupableEntity<String> {

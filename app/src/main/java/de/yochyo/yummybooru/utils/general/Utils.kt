@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.utils
+package de.yochyo.yummybooru.utils.general
 
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -7,9 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.view.MotionEvent
-import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.yummybooru.api.entities.Server

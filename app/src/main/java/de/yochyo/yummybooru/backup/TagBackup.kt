@@ -3,7 +3,7 @@ package de.yochyo.yummybooru.backup
 import android.content.Context
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.utils.Logger
+import de.yochyo.yummybooru.utils.general.Logger
 import org.json.JSONObject
 import java.lang.Exception
 import java.util.*

@@ -16,9 +16,9 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.api.downloads.LoadManagerPageEvent
-import de.yochyo.yummybooru.api.downloads.Manager
-import de.yochyo.yummybooru.api.downloads.downloadImage
+import de.yochyo.yummybooru.utils.LoadManagerPageEvent
+import de.yochyo.yummybooru.utils.Manager
+import de.yochyo.yummybooru.utils.network.downloadImage
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
@@ -27,9 +27,9 @@ import de.yochyo.yummybooru.downloadservice.DownloadService
 import de.yochyo.yummybooru.events.events.*
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
 import de.yochyo.yummybooru.layout.views.*
-import de.yochyo.yummybooru.utils.drawable
-import de.yochyo.yummybooru.utils.preview
-import de.yochyo.yummybooru.utils.toTagArray
+import de.yochyo.yummybooru.utils.general.drawable
+import de.yochyo.yummybooru.utils.general.preview
+import de.yochyo.yummybooru.utils.general.toTagArray
 import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*
 import kotlinx.coroutines.GlobalScope

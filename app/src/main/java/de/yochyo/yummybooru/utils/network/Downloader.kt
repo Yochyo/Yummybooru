@@ -1,7 +1,8 @@
-package de.yochyo.yummybooru.api.downloads
+package de.yochyo.yummybooru.utils.network
 
 import android.content.Context
-import de.yochyo.yummybooru.utils.network.DownloadUtils
+import de.yochyo.yummybooru.api.entities.Resource
+import de.yochyo.yummybooru.utils.general.cache
 import kotlinx.coroutines.*
 import java.util.concurrent.LinkedBlockingDeque
 

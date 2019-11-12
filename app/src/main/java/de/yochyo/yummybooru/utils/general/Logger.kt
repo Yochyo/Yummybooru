@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.utils
+package de.yochyo.yummybooru.utils.general
 
 import java.io.File
 import java.io.PrintWriter

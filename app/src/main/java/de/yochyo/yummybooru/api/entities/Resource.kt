@@ -1,10 +1,10 @@
-package de.yochyo.yummybooru.api.downloads
+package de.yochyo.yummybooru.api.entities
 
 import android.widget.ImageView
 import com.bumptech.glide.Glide
-import de.yochyo.yummybooru.utils.Logger
-import de.yochyo.yummybooru.utils.mimeType
-import de.yochyo.yummybooru.utils.toBitmap
+import de.yochyo.yummybooru.utils.general.Logger
+import de.yochyo.yummybooru.utils.general.mimeType
+import de.yochyo.yummybooru.utils.general.toBitmap
 import java.io.*
 
 class Resource(val resource: ByteArray, val type: Int) : Serializable {

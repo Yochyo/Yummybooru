@@ -1,14 +1,13 @@
-package de.yochyo.yummybooru.utils
+package de.yochyo.yummybooru.utils.general
 
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.yummybooru.api.Post
-import de.yochyo.yummybooru.api.downloads.Resource
-import de.yochyo.yummybooru.api.downloads.cache
-import de.yochyo.yummybooru.api.downloads.downloadImage
+import de.yochyo.yummybooru.api.entities.Resource
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
+import de.yochyo.yummybooru.utils.network.downloadImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

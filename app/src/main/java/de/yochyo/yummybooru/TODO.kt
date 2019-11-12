@@ -20,7 +20,6 @@ package de.yochyo.yummybooru
 //TODO show amounts of pages you have to scroll through
 //TODO download all
 //Optimizations
-//TODO recreate saveFolder if it is deleted
 //TODO countWrapper add prioritisation for automatic caching
 //TODO add constrains to database
 //TODO add foreign key constraint to favorite database (soon to be added)
@@ -30,7 +29,7 @@ package de.yochyo.yummybooru
 //TODO Optimize CPU performance, make code more readable | optimize preloading of app
 //TODO implement mp4
 //TODO github update screenshots
-//TODO scrollbar smooth scrolling
+//TODO scrollbar fast scrolling
 //Bugs
 //TODO fastscrollrecyclerview needs MeasurableAdapter
 //TODO files are sometimes saved with (1) at the end of their mimetype

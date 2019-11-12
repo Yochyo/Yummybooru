@@ -8,15 +8,14 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
-import de.yochyo.yummybooru.api.downloads.Manager
-import de.yochyo.yummybooru.api.downloads.Resource
+import de.yochyo.yummybooru.utils.Manager
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
-import de.yochyo.yummybooru.utils.App
-import de.yochyo.yummybooru.utils.FileUtils
+import de.yochyo.yummybooru.utils.app.App
+import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.network.DownloadUtils
-import de.yochyo.yummybooru.utils.toTagString
+import de.yochyo.yummybooru.utils.general.toTagString
 import kotlinx.coroutines.*
 import java.util.*
 

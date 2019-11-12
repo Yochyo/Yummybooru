@@ -1,11 +1,10 @@
 package de.yochyo.yummybooru.backup
 
 import android.content.Context
-import android.widget.Toast
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.utils.Logger
-import de.yochyo.yummybooru.utils.configPath
+import de.yochyo.yummybooru.utils.general.Logger
+import de.yochyo.yummybooru.utils.general.configPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

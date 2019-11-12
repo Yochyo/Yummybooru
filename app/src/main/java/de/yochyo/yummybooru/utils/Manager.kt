@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.api.downloads
+package de.yochyo.yummybooru.utils
 
 import android.content.Context
 import android.util.SparseArray
@@ -7,8 +7,8 @@ import de.yochyo.eventcollection.EventCollection
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.utils.toTagArray
-import de.yochyo.yummybooru.utils.toTagString
+import de.yochyo.yummybooru.utils.general.toTagArray
+import de.yochyo.yummybooru.utils.general.toTagString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex

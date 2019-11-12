@@ -3,7 +3,7 @@ package de.yochyo.yummybooru.layout.alertdialogs
 import android.app.AlertDialog
 import android.content.Context
 import android.widget.Toast
-import de.yochyo.yummybooru.api.downloads.Manager
+import de.yochyo.yummybooru.utils.Manager
 
 class DownloadPostsAlertdialog(context: Context, manager: Manager) {
     init {

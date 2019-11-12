@@ -24,7 +24,7 @@ import de.yochyo.eventcollection.EventCollection
 import de.yochyo.eventcollection.SubEventCollection
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.api.downloads.cache
+import de.yochyo.yummybooru.utils.general.cache
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
@@ -39,9 +39,9 @@ import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.layout.res.Menus
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
-import de.yochyo.yummybooru.utils.setColor
-import de.yochyo.yummybooru.utils.toTagString
-import de.yochyo.yummybooru.utils.underline
+import de.yochyo.yummybooru.utils.general.setColor
+import de.yochyo.yummybooru.utils.general.toTagString
+import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.coroutines.Dispatchers

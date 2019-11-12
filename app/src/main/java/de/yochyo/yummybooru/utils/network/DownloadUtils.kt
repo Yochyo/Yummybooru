@@ -1,7 +1,7 @@
 package de.yochyo.yummybooru.utils.network
 
 import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.api.downloads.Resource
+import de.yochyo.yummybooru.api.entities.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -71,7 +71,7 @@ object DownloadUtils {
         }
     }
 
-    private suspend fun getUrlInputStream(url: String): InputStream? {
+    suspend fun getUrlInputStream(url: String): InputStream? {
         return withContext(Dispatchers.IO) {
             return@withContext try {
                 val conn = URL(url).openConnection() as HttpURLConnection

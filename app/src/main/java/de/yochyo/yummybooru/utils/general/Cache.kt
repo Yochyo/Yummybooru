@@ -1,7 +1,7 @@
-package de.yochyo.yummybooru.api.downloads
+package de.yochyo.yummybooru.utils.general
 
 import android.content.Context
-import de.yochyo.yummybooru.utils.Logger
+import de.yochyo.yummybooru.api.entities.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

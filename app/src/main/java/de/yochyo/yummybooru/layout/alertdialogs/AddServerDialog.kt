@@ -9,7 +9,7 @@ import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.utils.network.DownloadUtils
 import de.yochyo.yummybooru.utils.network.ResponseCodes
-import de.yochyo.yummybooru.utils.parseURL
+import de.yochyo.yummybooru.utils.general.parseURL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

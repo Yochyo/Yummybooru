@@ -13,8 +13,8 @@ import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.api.entities.*
 import de.yochyo.yummybooru.database.converter.DateConverter
 import de.yochyo.yummybooru.events.events.*
-import de.yochyo.yummybooru.utils.createDefaultSavePath
-import de.yochyo.yummybooru.utils.documentFile
+import de.yochyo.yummybooru.utils.general.createDefaultSavePath
+import de.yochyo.yummybooru.utils.general.documentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

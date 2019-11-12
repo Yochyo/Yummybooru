@@ -8,9 +8,10 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.utils.App
-import de.yochyo.yummybooru.utils.Logger
-import de.yochyo.yummybooru.utils.configPath
+import de.yochyo.yummybooru.utils.app.App
+import de.yochyo.yummybooru.utils.general.Logger
+import de.yochyo.yummybooru.utils.general.configPath
+import de.yochyo.yummybooru.utils.network.DownloadUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -69,13 +70,13 @@ class AutoUpdater {
                 if (!file.exists()) {
                     val url = newestDownloadUrl()
                     if (url != null) {
-                        val conn = URL(url).openConnection()
-                        conn.addRequestProperty("User-Agent", "Mozilla/5.00")
-                        val stream = conn.getInputStream()
-                        val byteArray = stream.readBytes()
-                        stream.close()
-                        file.createNewFile()
-                        file.writeBytes(byteArray)
+                        val stream = DownloadUtils.getUrlInputStream(url)
+                        if(stream != null){
+                            val byteArray = stream.readBytes()
+                            stream.close()
+                            file.createNewFile()
+                            file.writeBytes(byteArray)
+                        }
                     }
                 }
                 if (file.exists()) return@withContext file

@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.utils
+package de.yochyo.yummybooru.utils.app
 
 import android.app.Application
 import android.app.NotificationChannel
@@ -9,6 +9,7 @@ import de.yochyo.yummybooru.api.api.DanbooruApi
 import de.yochyo.yummybooru.api.api.MoebooruApi
 import de.yochyo.yummybooru.events.events.*
 import de.yochyo.yummybooru.events.listeners.*
+import de.yochyo.yummybooru.utils.general.ThreadExceptionHandler
 
 class App : Application() {
     companion object {

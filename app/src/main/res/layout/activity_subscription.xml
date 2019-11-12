@@ -19,7 +19,19 @@
                 android:background="?attr/colorPrimary"
                 app:popupTheme="@style/AppTheme.PopupOverlay"
                 app:layout_scrollFlags="scroll|enterAlwaysCollapsed|enterAlways">
+            <androidx.appcompat.widget.SearchView
+                    android:id="@+id/sub_filter"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:maxLines="1"
+                    app:queryHint="Search"
+                    app:iconifiedByDefault="false"
+                    app:searchIcon="@null"
+                    android:inputType="text"/>
         </androidx.appcompat.widget.Toolbar>
+
 
     </com.google.android.material.appbar.AppBarLayout>
 

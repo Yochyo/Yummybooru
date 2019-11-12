@@ -9,10 +9,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.eventcollection.EventCollection
+import de.yochyo.eventcollection.SubEventCollection
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
@@ -28,8 +30,20 @@ import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.android.synthetic.main.activity_subscription.*
 import kotlinx.android.synthetic.main.content_subscription.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class SubscriptionActivity : AppCompatActivity() {
+    private val filteredSubs = ArrayList<Pair<EventCollection<Subscription>, String>>()
+        get() {
+            if (field.isEmpty()) field += Pair(db.subs, "")
+            return field
+        }
+    private val currentFilter: EventCollection<Subscription> get() = filteredSubs.last().first
+
     private val updateSubsListener = Listener.create<UpdateSubsEvent> { adapter.notifyDataSetChanged() }
     private var onClickedData: SubData? = null
 
@@ -37,7 +51,7 @@ class SubscriptionActivity : AppCompatActivity() {
     private lateinit var adapter: SubscribedTagAdapter
     private lateinit var layoutManager: LinearLayoutManager
 
-    private val countWrapper = CountWrapper(db.subs)
+    private val countWrapper = CountWrapper()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,7 +62,15 @@ class SubscriptionActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity).apply { layoutManager = this }
 
         recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this;countWrapper.adapter = this }
+        sub_filter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextChange(newText: String?): Boolean {
+                println(newText)
+                if (newText != null) GlobalScope.launch { filter(newText) }
+                return true
+            }
 
+            override fun onQueryTextSubmit(query: String?) = true
+        })
         UpdateSubsEvent.registerListener(updateSubsListener)
         subs_swipe_refresh_layout.setOnRefreshListener {
             subs_swipe_refresh_layout.isRefreshing = false
@@ -66,12 +88,43 @@ class SubscriptionActivity : AppCompatActivity() {
         return true
     }
 
+    private val filterMutex = Mutex()
+    suspend fun filter(name: String) {
+        withContext(Dispatchers.Default) {
+            filterMutex.withLock {
+                var addChild: EventCollection<Subscription>
+                if (name == "") {
+                    for (item in filteredSubs) {
+                        val list = item.first
+                        if (list is SubEventCollection) list.destroy()
+                    }
+                    filteredSubs.clear()
+                    addChild = db.subs
+                } else {
+                    for (i in filteredSubs.indices.reversed()) {
+                        if (name.startsWith(filteredSubs[i].second)) {
+                            val subCollection = SubEventCollection(TreeSet(), filteredSubs[i].first) { it.name.contains(name) }
+                            addChild = subCollection
+                            break
+                        }
+                    }
+                    addChild = SubEventCollection(TreeSet(), db.subs) { it.name.contains(name) }
+                }
+                withContext(Dispatchers.Main) {
+                    layoutManager.scrollToPosition(0)
+                    adapter.notifyDataSetChanged()
+                    filteredSubs += Pair(addChild, name)
+                }
+            }
+        }
+    }
+
     private inner class SubscribedTagAdapter : SelectableRecyclerViewAdapter<SubscribedTagViewHolder>(this, R.menu.subscription_activity_selection_menu) {
         private val startSelectionListener = Listener.create<StartSelectingEvent> {
-            adapter.actionmode?.title = "${adapter.selected.size}/${db.subs.size}"
+            adapter.actionmode?.title = "${adapter.selected.size}/${currentFilter.size}"
         }
         private val updateSelectionListener = Listener.create<UpdateSelectionEvent> {
-            adapter.actionmode?.title = "${selected.size}/${db.subs.size}"
+            adapter.actionmode?.title = "${selected.size}/${currentFilter.size}"
         }
         private val disableMenuClick = Listener.create<StartSelectingEvent> { notifyDataSetChanged() }
         private val reEnableMenuClick = Listener.create<StopSelectingEvent> { notifyDataSetChanged() }
@@ -84,7 +137,7 @@ class SubscriptionActivity : AppCompatActivity() {
 
             onClickMenuItem.registerListener {
                 when (it.menuItem.itemId) {
-                    R.id.select_all -> if (adapter.selected.size == db.subs.size) adapter.unselectAll() else adapter.selectAll()
+                    R.id.select_all -> if (adapter.selected.size == currentFilter.size) adapter.unselectAll() else adapter.selectAll()
                     R.id.open_selected -> {
                         Toast.makeText(this@SubscriptionActivity, "Not yet implemented", Toast.LENGTH_SHORT).show()
                         adapter.unselectAll()
@@ -93,7 +146,7 @@ class SubscriptionActivity : AppCompatActivity() {
                         ConfirmDialog {
                             GlobalScope.launch {
                                 val id = Api.newestID()
-                                for (selected in adapter.selected.getSelected(db.subs)) {
+                                for (selected in adapter.selected.getSelected(currentFilter)) {
                                     val tag = Api.getTag(selected.name)
                                     db.changeSubscription(this@SubscriptionActivity, selected.copy(lastCount = tag.count, lastID = id))
                                 }
@@ -105,7 +158,7 @@ class SubscriptionActivity : AppCompatActivity() {
         }
 
         override val onClickLayout = { holder: SubscribedTagViewHolder ->
-            val sub = db.subs.elementAt(holder.adapterPosition)
+            val sub = currentFilter.elementAt(holder.adapterPosition)
             GlobalScope.launch {
                 onClickedData = SubData(holder.adapterPosition, Api.newestID(), Api.getTag(sub.name).count)
             }
@@ -133,18 +186,18 @@ class SubscriptionActivity : AppCompatActivity() {
             b.show()
         }
 
-        override fun getItemCount(): Int = db.subs.size
+        override fun getItemCount(): Int = currentFilter.size
         override fun onCreateViewHolder(parent: ViewGroup, position: Int): SubscribedTagViewHolder {
             val holder = super.onCreateViewHolder(parent, position)
             val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
             toolbar.inflateMenu(R.menu.activity_subscription_item_menu)
             toolbar.setOnMenuItemClickListener {
-                val sub = db.subs.elementAt(holder.adapterPosition)
+                val sub = currentFilter.elementAt(holder.adapterPosition)
                 when (it.itemId) {
                     R.id.subscription_set_favorite -> GlobalScope.launch {
                         val copy = sub.copy(isFavorite = !sub.isFavorite)
                         db.changeSubscription(this@SubscriptionActivity, copy)
-                        withContext(Dispatchers.Main) { layoutManager.scrollToPositionWithOffset(db.subs.indexOf(copy), 0) }
+                        withContext(Dispatchers.Main) { layoutManager.scrollToPositionWithOffset(currentFilter.indexOf(copy), 0) }
                     }
                     R.id.subscription_delete -> deleteSubDialog(sub)
                 }
@@ -158,12 +211,12 @@ class SubscriptionActivity : AppCompatActivity() {
             val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
             val text1 = toolbar.findViewById<TextView>(android.R.id.text1)
             val text2 = toolbar.findViewById<TextView>(android.R.id.text2)
-            val sub = db.subs.elementAt(position)
+            val sub = currentFilter.elementAt(position)
             text1.text = sub.name
             text1.setColor(sub.color)
             text1.underline(sub.isFavorite)
-            text2.text = "${getString(R.string.number_of_new_pictures)} ${countWrapper.getCount(holder.adapterPosition)}"
-            Menus.initSubscriptionMenu(toolbar.menu, db.subs.elementAt(position))
+            text2.text = "${getString(R.string.number_of_new_pictures)} ${countWrapper.getCount(sub)}"
+            Menus.initSubscriptionMenu(toolbar.menu, sub)
             toolbar.menu.setGroupEnabled(0, selected.isEmpty()) //Cannot access menu when selecting items
         }
     }
@@ -231,75 +284,69 @@ class SubscriptionActivity : AppCompatActivity() {
     }
 
     inner class SubscribedTagViewHolder(layout: FrameLayout) : SelectableViewHolder(layout)
-}
+    private inner class CountWrapper {
+        var adapter: RecyclerView.Adapter<SubscribedTagViewHolder>? = null
+        private val counts = HashMap<String, Int>()
+        private val mutex = Any()
 
-private class CountWrapper(val subs: EventCollection<Subscription>) {
-    var adapter: RecyclerView.Adapter<SubscriptionActivity.SubscribedTagViewHolder>? = null
-    private val counts = HashMap<String, Int>()
-    private val mutex = Any()
-
-    var paused = false
-    private val job = GlobalScope.launch(Dispatchers.IO) {
-        var i = 0
-        while (isActive) {
-            if (!paused) {
-                if (i in subs.indices) {
-                    cacheCount(i)
-                    ++i
-                } else i = 0
-            } else {
-                delay(100)
-                i = 0
-            }
-        }
-    }
-
-    private val onAddElementListener = Listener.create<EventCollection<Subscription>.OnAddElementEvent> { GlobalScope.launch { cacheCount(it.collection.indexOf(it.element)) } }
-
-    init {
-        subs.onAddElement.registerListener(onAddElementListener)
-    }
-
-    fun getCount(index: Int): Int {
-        GlobalScope.launch { cacheCount(index) }
-        val sub = subs[index]
-        val countDifference = (getRawCount(sub.name) ?: 0) - sub.lastCount
-        return if (countDifference > 0) countDifference else 0
-    }
-
-    private suspend fun cacheCount(index: Int) {
-        withContext(Dispatchers.IO) {
-            try {
-                val sub = subs[index]
-                val oldValue = getRawCount(sub.name)
-                val tag = Api.getTag(sub.name)
-                setCount(sub.name, tag.count)
-                if (oldValue != tag.count) {
-                    val newIndex = subs.indexOf(sub)
-                    if (index >= 0)
-                        withContext(Dispatchers.Main) { adapter?.notifyItemChanged(newIndex) }
+        var paused = false
+        private val job = GlobalScope.launch(Dispatchers.IO) {
+            var i = 0
+            while (isActive) {
+                try {
+                    if (!paused) cacheCount(currentFilter[i++].name)
+                    else delay(100)
+                } catch (e: Exception) {
+                    i = 0
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
         }
-    }
 
-    private fun setCount(name: String, count: Int) {
-        synchronized(mutex) {
-            counts[name] = count
+        private val onAddElementListener = Listener.create<EventCollection<Subscription>.OnAddElementEvent> { event -> GlobalScope.launch { cacheCount(event.element.name) } }
+
+        init {
+            db.subs.onAddElement.registerListener(onAddElementListener)
         }
-    }
 
-    private fun getRawCount(name: String): Int? {
-        return synchronized(mutex) {
-            counts[name]
+        fun getCount(sub: Subscription): Int {
+            GlobalScope.launch { cacheCount(sub.name) }
+            val countDifference = (getRawCount(sub.name) ?: 0) - sub.lastCount
+            return if (countDifference > 0) countDifference else 0
         }
-    }
 
-    fun close() {
-        subs.onAddElement.removeListener(onAddElementListener)
-        job.cancel()
+        private suspend fun cacheCount(name: String) {
+            withContext(Dispatchers.IO) {
+                try {
+                    val oldValue = getRawCount(name)
+                    val tag = Api.getTag(name)
+                    setCount(name, tag.count)
+                    if (oldValue != tag.count) {
+                        val newIndex = currentFilter.indexOfFirst { it.name == name }
+                        if (newIndex >= 0)
+                            withContext(Dispatchers.Main) { adapter?.notifyItemChanged(newIndex) }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        private fun setCount(name: String, count: Int) {
+            synchronized(mutex) {
+                counts[name] = count
+            }
+        }
+
+        private fun getRawCount(name: String): Int? {
+            return synchronized(mutex) {
+                counts[name]
+            }
+        }
+
+        fun close() {
+            db.subs.onAddElement.removeListener(onAddElementListener)
+            job.cancel()
+        }
     }
 }
 

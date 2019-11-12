@@ -226,7 +226,7 @@ class SubscriptionActivity : AppCompatActivity() {
         super.onResume()
         countWrapper.paused = false
         if (onClickedData != null) {
-            val sub = db.subs[onClickedData!!.clickedSub]
+            val sub = currentFilter[onClickedData!!.clickedSub]
             val builder = AlertDialog.Builder(this)
             builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
             builder.setNegativeButton(R.string.no) { _, _ -> }
@@ -256,7 +256,7 @@ class SubscriptionActivity : AppCompatActivity() {
                             val sub = Subscription.fromTag(tag)
                             db.addSubscription(this@SubscriptionActivity, sub)
                             withContext(Dispatchers.Main) {
-                                layoutManager.scrollToPositionWithOffset(db.subs.indexOf(sub), 0)
+                                layoutManager.scrollToPositionWithOffset(currentFilter.indexOf(sub), 0)
                             }
                         }
                     }
@@ -266,7 +266,7 @@ class SubscriptionActivity : AppCompatActivity() {
                 ConfirmDialog {
                     GlobalScope.launch {
                         val id = Api.newestID()
-                        for (sub in db.subs) {
+                        for (sub in currentFilter) {
                             val tag = Api.getTag(sub.name)
                             db.changeSubscription(this@SubscriptionActivity, sub.copy(lastCount = tag.count, lastID = id))
                         }

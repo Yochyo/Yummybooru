@@ -24,7 +24,6 @@ import de.yochyo.eventcollection.EventCollection
 import de.yochyo.eventcollection.SubEventCollection
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.utils.general.cache
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
@@ -39,9 +38,7 @@ import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.layout.res.Menus
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
-import de.yochyo.yummybooru.utils.general.setColor
-import de.yochyo.yummybooru.utils.general.toTagString
-import de.yochyo.yummybooru.utils.general.underline
+import de.yochyo.yummybooru.utils.general.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.coroutines.Dispatchers
@@ -123,6 +120,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun initDrawerToolbar(toolbar: androidx.appcompat.widget.Toolbar) {
         toolbar.inflateMenu(R.menu.main_search_nav_menu)
+        toolbar.setNavigationIcon(R.drawable.clear)
+        toolbar.navigationContentDescription = "Unselect all tags"
+        toolbar.setNavigationOnClickListener {
+            selectedTags.clear()
+            Toast.makeText(this, "Unselected all tags", Toast.LENGTH_SHORT).show()
+            tagAdapter.notifyDataSetChanged()
+        }
+
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.search -> {

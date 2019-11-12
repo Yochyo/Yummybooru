@@ -8,9 +8,6 @@ package de.yochyo.yummybooru
 //TODO multiselect pictureactivity can add tags like elsword eve_(elsword)
 //TODO Taglists add folders
 //TODO add a width/height/order button
-//TODO Mainactivity add unselect all
-//TODO searchfield in SubscriptionActivity
-//TODO Mainactiviy show currently selected tags
 //TODO pixiv
 //TODO save Tags in png metadatay
 //TODO developer mode set app flags

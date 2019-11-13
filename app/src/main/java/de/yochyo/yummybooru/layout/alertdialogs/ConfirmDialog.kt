@@ -14,7 +14,7 @@ class ConfirmDialog(val runOnPositive: () -> Unit) {
     fun build(context: Context) {
         val builder = AlertDialog.Builder(context)
         builder.setTitle(title)
-        builder.setMessage(message)
+        if(message != "") builder.setMessage(message)
 
         builder.setPositiveButton(context.getString(R.string.ok)) { _, _ ->
             runOnPositive()

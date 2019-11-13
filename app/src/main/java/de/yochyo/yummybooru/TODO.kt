@@ -1,6 +1,7 @@
 package de.yochyo.yummybooru
 
 //Features
+//Events isCanceled entfernen und Und richtig implementieren
 //TODO Show translations of images
 //TODO allow to swipe through images in Pictureactivity
 //TODO support animated_png

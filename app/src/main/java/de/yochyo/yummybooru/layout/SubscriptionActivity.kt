@@ -64,7 +64,6 @@ class SubscriptionActivity : AppCompatActivity() {
         recyclerView.adapter = SubscribedTagAdapter().apply { adapter = this;countWrapper.adapter = this }
         sub_filter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
-                println(newText)
                 if (newText != null) GlobalScope.launch { filter(newText) }
                 return true
             }
@@ -291,13 +290,13 @@ class SubscriptionActivity : AppCompatActivity() {
 
         var paused = false
         private val job = GlobalScope.launch(Dispatchers.IO) {
-            var i = 0
             while (isActive) {
                 try {
-                    if (!paused) cacheCount(currentFilter[i++].name)
-                    else delay(100)
-                } catch (e: Exception) {
-                    i = 0
+                    for (i in layoutManager.findFirstVisibleItemPosition()..layoutManager.findLastVisibleItemPosition()) {
+                        val sub = currentFilter[i]
+                        cacheCount(sub.name)
+                    }
+                } catch (e: java.lang.Exception) {
                 }
             }
         }
@@ -310,17 +309,19 @@ class SubscriptionActivity : AppCompatActivity() {
 
         fun getCount(sub: Subscription): Int {
             GlobalScope.launch { cacheCount(sub.name) }
-            val countDifference = (getRawCount(sub.name) ?: 0) - sub.lastCount
+            val countDifference = getRawCount(sub.name) - sub.lastCount
             return if (countDifference > 0) countDifference else 0
         }
 
-        private suspend fun cacheCount(name: String) {
-            withContext(Dispatchers.IO) {
+        private suspend fun cacheCount(name: String): Int {
+            return withContext(Dispatchers.IO) {
+                var newCount = 0
                 try {
                     val oldValue = getRawCount(name)
                     val tag = Api.getTag(name)
-                    setCount(name, tag.count)
-                    if (oldValue != tag.count) {
+                    newCount = tag.count
+                    setCount(name, newCount)
+                    if (oldValue != newCount) {
                         val newIndex = currentFilter.indexOfFirst { it.name == name }
                         if (newIndex >= 0)
                             withContext(Dispatchers.Main) { adapter?.notifyItemChanged(newIndex) }
@@ -328,6 +329,7 @@ class SubscriptionActivity : AppCompatActivity() {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
+                newCount
             }
         }
 
@@ -337,9 +339,9 @@ class SubscriptionActivity : AppCompatActivity() {
             }
         }
 
-        private fun getRawCount(name: String): Int? {
+        private fun getRawCount(name: String): Int {
             return synchronized(mutex) {
-                counts[name]
+                counts[name] ?: 0
             }
         }
 

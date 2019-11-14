@@ -8,7 +8,6 @@ package de.yochyo.yummybooru
 //TODO add tests
 //TODO multiselect pictureactivity can add tags like elsword eve_(elsword)
 //TODO Taglists add folders
-//TODO add a width/height/order button
 //TODO pixiv
 //TODO save Tags in png metadatay
 //TODO developer mode set app flags
@@ -18,7 +17,6 @@ package de.yochyo.yummybooru
 //TODO show amounts of pages you have to scroll through
 //TODO download all
 //Optimizations
-//TODO countWrapper add prioritisation for automatic caching
 //TODO add constrains to database
 //TODO add foreign key constraint to favorite database (soon to be added)
 //TODO use strings from string.xml
@@ -29,7 +27,6 @@ package de.yochyo.yummybooru
 //TODO github update screenshots
 //TODO scrollbar fast scrolling
 //Bugs
-//TODO fastscrollrecyclerview needs MeasurableAdapter
 //TODO files are sometimes saved with (1) at the end of their mimetype
 //Probably fixed
 

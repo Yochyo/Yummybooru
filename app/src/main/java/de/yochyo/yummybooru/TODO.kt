@@ -1,7 +1,9 @@
 package de.yochyo.yummybooru
 
 //Features
-//Events isCanceled entfernen und Und richtig implementieren
+//TODO Gelbooru alphacoders.com
+//TODO Events isCanceled entfernen und Und richtig implementieren
+//TODO search with OR and AND
 //TODO Show translations of images
 //TODO allow to swipe through images in Pictureactivity
 //TODO support animated_png
@@ -29,6 +31,7 @@ package de.yochyo.yummybooru
 //Bugs
 //TODO files are sometimes saved with (1) at the end of their mimetype
 //Probably fixed
+//TODO can all data types be downloaded even if they cant be displayed
 
 
 //TODO SeveraltagsPreviewLayout

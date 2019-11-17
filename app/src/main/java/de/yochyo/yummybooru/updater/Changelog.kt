@@ -43,6 +43,7 @@ class Changelog(val versionName: String, val version: Int, val description: Stri
                     "- Fixed the bug where the app crashed while scrolling through images\n" +
                     "- A lot of bug fixes and small changes\n" +
                     "- New icon")
+            logs += Changelog("2.01", 7, "- Small bug fixes")
         }
 
         fun showChangelogs(context: Context) {
@@ -56,7 +57,6 @@ class Changelog(val versionName: String, val version: Int, val description: Stri
             }
         }
 
-        fun changeLogs(): List<Changelog> = changeLogs(0, BuildConfig.VERSION_CODE)
-        fun changeLogs(first: Int, last: Int): List<Changelog> = logs.subList(first, last)
+        fun changeLogs(): List<Changelog> = logs
     }
 }

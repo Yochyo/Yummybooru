@@ -30,6 +30,7 @@ package de.yochyo.yummybooru
 //TODO scrollbar fast scrolling
 //Bugs
 //TODO files are sometimes saved with (1) at the end of their mimetype
+//TODO changelogs are not displayed on an update
 //Probably fixed
 //TODO can all data types be downloaded even if they cant be displayed
 

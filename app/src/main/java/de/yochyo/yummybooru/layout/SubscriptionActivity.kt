@@ -25,8 +25,7 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.layout.res.Menus
 import de.yochyo.yummybooru.layout.views.*
-import de.yochyo.yummybooru.utils.general.setColor
-import de.yochyo.yummybooru.utils.general.underline
+import de.yochyo.yummybooru.utils.general.*
 import kotlinx.android.synthetic.main.activity_subscription.*
 import kotlinx.android.synthetic.main.content_subscription.*
 import kotlinx.coroutines.*
@@ -291,12 +290,11 @@ class SubscriptionActivity : AppCompatActivity() {
         var paused = false
         private val job = GlobalScope.launch(Dispatchers.IO) {
             while (isActive) {
-                try {
+                tryCatchSuspended {
                     for (i in layoutManager.findFirstVisibleItemPosition()..layoutManager.findLastVisibleItemPosition()) {
                         val sub = currentFilter[i]
                         cacheCount(sub.name)
                     }
-                } catch (e: java.lang.Exception) {
                 }
             }
         }
@@ -316,7 +314,7 @@ class SubscriptionActivity : AppCompatActivity() {
         private suspend fun cacheCount(name: String): Int {
             return withContext(Dispatchers.IO) {
                 var newCount = 0
-                try {
+                tryCatchSuspended {
                     val oldValue = getRawCount(name)
                     val tag = Api.getTag(name)
                     newCount = tag.count
@@ -326,8 +324,6 @@ class SubscriptionActivity : AppCompatActivity() {
                         if (newIndex >= 0)
                             withContext(Dispatchers.Main) { adapter?.notifyItemChanged(newIndex) }
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
                 }
                 newCount
             }

@@ -77,7 +77,6 @@ val String.mimeType: String?
     }
 
 fun Context.drawable(id: Int) = ContextCompat.getDrawable(this, id)
-
 object Fling {
     fun getDirection(e1: MotionEvent, e2: MotionEvent): Direction {
         val x1 = e1.x

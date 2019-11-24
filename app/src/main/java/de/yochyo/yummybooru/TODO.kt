@@ -31,9 +31,9 @@ package de.yochyo.yummybooru
 //Bugs
 //TODO files are sometimes saved with (1) at the end of their mimetype
 //TODO changelogs are not displayed on an update
+//TODO update old screenshot on github
 //Probably fixed
-//TODO can all data types be downloaded even if they cant be displayed
-
+//TODO app crashes if gif was not fully loaded
 
 //TODO SeveraltagsPreviewLayout
 //  Zeigt mehrere tags an

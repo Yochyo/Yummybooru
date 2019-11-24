@@ -5,6 +5,7 @@ import com.bumptech.glide.Glide
 import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.mimeType
 import de.yochyo.yummybooru.utils.general.toBitmap
+import de.yochyo.yummybooru.utils.general.tryCatch
 import java.io.*
 
 class Resource(val resource: ByteArray, val type: Int) : Serializable {
@@ -16,7 +17,7 @@ class Resource(val resource: ByteArray, val type: Int) : Serializable {
         fun getTypeFromURL(url: String): Int {
             val mimeType = url.mimeType
             if (mimeType != null) {
-                return when(mimeType){
+                return when (mimeType) {
                     "gif" -> ANIMATED
                     "mp4", "webm" -> VIDEO
                     else -> IMAGE
@@ -45,7 +46,7 @@ class Resource(val resource: ByteArray, val type: Int) : Serializable {
 
         when (type) {
             IMAGE -> imageView.setImageBitmap(resource.toBitmap())
-            ANIMATED -> Glide.with(imageView).load(resource).into(imageView)
+            ANIMATED -> tryCatch { Glide.with(imageView).load(resource).into(imageView) }
         }
     }
 

@@ -3,7 +3,7 @@ package de.yochyo.yummybooru.api.api
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
-import de.yochyo.yummybooru.utils.general.Logger
+import de.yochyo.yummybooru.utils.general.tryCatch
 import de.yochyo.yummybooru.utils.network.DownloadUtils
 import org.json.JSONObject
 
@@ -20,11 +20,11 @@ class MoebooruApi(url: String) : Api(url) {
     }
 
     override fun getPostFromJson(json: JSONObject): Post? {
-        try {
+        return tryCatch {
             val fileURL = json.getString("file_url")
             val id = json.getInt("id")
 
-            return object : Post() {
+            object : Post() {
                 override val id = id
                 override val width = json.getInt("jpeg_width")
                 override val height = json.getInt("jpeg_height")
@@ -38,7 +38,7 @@ class MoebooruApi(url: String) : Api(url) {
                 override suspend fun getTags(): List<Tag> {
                     if (tags == null)
                         tags = parseTagsfromURL(DownloadUtils.getUrlLines("${Server.currentServer.url}post/show/$id")).sortedBy {
-                            when(it.type){
+                            when (it.type) {
                                 Tag.ARTIST -> 0
                                 Tag.COPYPRIGHT -> 1
                                 Tag.CHARACTER -> 2
@@ -50,22 +50,15 @@ class MoebooruApi(url: String) : Api(url) {
                     return tags!!
                 }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Logger.log(e, json.toString())
-            return null
-        }
+        }.stackTrace().log(json.toString()).value
     }
 
+
     override fun getTagFromJson(json: JSONObject): Tag? {
-        return try {
+        return tryCatch {
             val name = json.getString("name")
             Tag(name, json.getInt("type"), count = json.getInt("count"))
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Logger.log(e, json.toString())
-            null
-        }
+        }.stackTrace().log(json.toString()).value
     }
 
     private fun parseTagsfromURL(lines: Collection<String>): List<Tag> {

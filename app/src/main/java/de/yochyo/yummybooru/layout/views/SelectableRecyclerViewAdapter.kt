@@ -22,7 +22,7 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
             return true
         }
 
-        override fun onActionItemClicked(p0: ActionMode, p1: MenuItem) = ActionModeClickEvent(p0, p1).apply { onClickMenuItem.trigger(this) }.isCanceled
+        override fun onActionItemClicked(p0: ActionMode, p1: MenuItem) = true.apply { onClickMenuItem.trigger(ActionModeClickEvent(p0, p1)) }
         override fun onDestroyActionMode(p0: ActionMode) = unselectAll()
         override fun onPrepareActionMode(p0: ActionMode?, p1: Menu?) = false
     }

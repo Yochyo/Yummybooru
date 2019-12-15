@@ -3,10 +3,10 @@ package de.yochyo.yummybooru
 //Features
 //TODO Gelbooru alphacoders.com
 //TODO Events isCanceled entfernen und Und richtig implementieren
-//TODO search with OR and AND
+//TODO search with OR and AND or NOT
 //TODO Show translations of images
 //TODO allow to swipe through images in Pictureactivity
-//TODO support animated_png
+//TODO support animated_png, implement mp4
 //TODO add tests
 //TODO multiselect pictureactivity can add tags like elsword eve_(elsword)
 //TODO Taglists add folders
@@ -18,16 +18,17 @@ package de.yochyo.yummybooru
 //TODO backuputils independent of version
 //TODO show amounts of pages you have to scroll through
 //TODO download all
+//TODO Pictureactivity, Longclick allows to swipe through children of an image by scrolling up/down
+//TODO reuse old icon?
 //Optimizations
-//TODO add constrains to database
 //TODO add foreign key constraint to favorite database (soon to be added)
 //TODO use strings from string.xml
 //TODO use Comparator in Treeset instead of Tag.compareTo
 //TODO send logs to a server, too many logs fill up space
 //TODO Optimize CPU performance, make code more readable | optimize preloading of app
-//TODO implement mp4
 //TODO github update screenshots
 //TODO scrollbar fast scrolling
+//TODO seperate gui in smaller classes
 //Bugs
 //TODO files are sometimes saved with (1) at the end of their mimetype
 //TODO changelogs are not displayed on an update

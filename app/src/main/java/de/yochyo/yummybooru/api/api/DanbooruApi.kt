@@ -45,7 +45,7 @@ class DanbooruApi(url: String) : Api(url) {
                 override val filePreviewURL = json.getString("preview_file_url")
                 override suspend fun getTags() = tags
             }
-        }.stackTrace().log(json.toString()).value
+        }.stackTrace().value
     }
 
     override fun getTagFromJson(json: JSONObject): Tag? {

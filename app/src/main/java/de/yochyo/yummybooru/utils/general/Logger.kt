@@ -12,23 +12,23 @@ object Logger {
         directory.mkdirs()
     }
 
-    fun log(message: String) {
-        val logFile = File(directory, "logcat ${System.currentTimeMillis()}.txt")
+    fun log(message: String, filePrefix: String = "logcat") {
+        val logFile = File(directory, "$filePrefix ${System.currentTimeMillis()}.txt")
         logFile.createNewFile()
         logFile.writeText(message)
     }
 
-    fun log(e: Throwable, info: String = "") {
+    fun log(e: Throwable, info: String = "", filePrefix: String = "logcat") {
         val errors = StringWriter()
         e.printStackTrace(PrintWriter(errors))
-        log("$info\n$errors")
+        log("$info\n$errors", filePrefix)
     }
 }
 
 class ThreadExceptionHandler : Thread.UncaughtExceptionHandler {
     override fun uncaughtException(t: Thread?, e: Throwable?) {
         if (e != null)
-            Logger.log(e)
+            Logger.log(e, filePrefix = "crash")
         exitProcess(10)
     }
 }

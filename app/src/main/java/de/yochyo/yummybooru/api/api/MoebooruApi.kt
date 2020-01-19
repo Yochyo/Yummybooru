@@ -50,7 +50,7 @@ class MoebooruApi(url: String) : Api(url) {
                     return tags!!
                 }
             }
-        }.stackTrace().log(json.toString()).value
+        }.stackTrace().value
     }
 
 

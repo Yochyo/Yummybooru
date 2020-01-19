@@ -46,7 +46,6 @@ dependencies {
 
     implementation "de.yochyo.eventcollection:EventCollection:1.1"
     implementation "de.yochyo.eventmanager:EventManager:1.4"
-    implementation "de.yochyo.objectserializer:ObjectSerializer:1.0"
     implementation 'com.github.bumptech.glide:glide:4.10.0'
 
     implementation "org.jetbrains.anko:anko-sqlite:$anko_version"

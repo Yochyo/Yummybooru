@@ -92,6 +92,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         })
         if (hasPermission)
             initData()
+
+        println()
     }
 
 

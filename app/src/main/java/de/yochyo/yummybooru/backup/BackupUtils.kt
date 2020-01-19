@@ -13,6 +13,7 @@ import org.json.JSONObject
 import java.io.File
 
 object BackupUtils {
+    //TODO ObjectSerializer benutzen, Eine Preferences Klasse schreiben
     val directory = "$configPath/backup"
 
     val dir = File(directory)
@@ -28,11 +29,11 @@ object BackupUtils {
             val tagArray = JSONArray()
             val subArray = JSONArray()
             val serverArray = JSONArray()
-            for (tag in db.tagDao.getAllTags())
+            for (tag in db.tagDao.selectAll())
                 tagArray.put(TagBackup.toJSONObject(tag, context))
-            for (sub in db.subDao.getAllSubscriptions())
+            for (sub in db.subDao.selectAll())
                 subArray.put(SubscriptionBackup.toJSONObject(sub, context))
-            for (server in db.serverDao.getAllServers())
+            for (server in db.serverDao.selectAll())
                 serverArray.put(ServerBackup.toJSONObject(server, context))
             json.put("tags", tagArray)
             json.put("subs", subArray)

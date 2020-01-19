@@ -1,11 +1,9 @@
 package de.yochyo.yummybooru.api.entities
 
-import androidx.room.*
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import java.util.*
 
-@Entity(tableName = "tags", primaryKeys = ["name", "serverID"])
 data class Tag(val name: String,val type: Int, val isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID, val count: Int = 0) : Comparable<Tag> {
     companion object {
         const val GENERAL = 0
@@ -51,19 +49,4 @@ data class Tag(val name: String,val type: Int, val isFavorite: Boolean = false, 
         if (db.sortTagsByAlphabet) return name.compareTo(other.name)
         return creation.compareTo(other.creation)
     }
-}
-
-@Dao
-interface TagDao {
-    @Insert
-    fun insert(tag: Tag)
-
-    @Query("SELECT * FROM tags")
-    fun getAllTags(): List<Tag>
-
-    @Delete
-    fun delete(tag: Tag)
-
-    @Update
-    fun update(tag: Tag)
 }

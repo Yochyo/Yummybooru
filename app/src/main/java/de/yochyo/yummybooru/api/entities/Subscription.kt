@@ -1,12 +1,10 @@
 package de.yochyo.yummybooru.api.entities
 
-import androidx.room.*
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.database.db
 import java.util.*
 
-@Entity(tableName = "subs", primaryKeys = ["name", "serverID"])
 data class Subscription(val name: String, val type: Int, val lastID: Int, val lastCount: Int, val isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID) : Comparable<Subscription> {
     companion object {
         suspend fun fromTag(tag: Tag): Subscription {
@@ -38,19 +36,4 @@ data class Subscription(val name: String, val type: Int, val lastID: Int, val la
         if (db.sortSubsByAlphabet) return name.compareTo(other.name)
         return creation.compareTo(other.creation)
     }
-}
-
-@Dao
-interface SubscriptionDao {
-    @Insert
-    fun insert(sub: Subscription)
-
-    @Query("SELECT * FROM subs")
-    fun getAllSubscriptions(): List<Subscription>
-
-    @Delete
-    fun delete(sub: Subscription)
-
-    @Update
-    fun update(sub: Subscription)
 }

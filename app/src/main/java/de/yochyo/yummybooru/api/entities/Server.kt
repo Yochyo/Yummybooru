@@ -1,7 +1,6 @@
 package de.yochyo.yummybooru.api.entities
 
 import android.content.Context
-import androidx.room.*
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SelectServerEvent
@@ -12,8 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URL
 
-@Entity(tableName = "servers")
-data class Server(var name: String, var api: String, var url: String, var userName: String = "", var password: String = "", var enableR18Filter: Boolean = false, @PrimaryKey val id: Int = -1) : Comparable<Server> {
+data class Server(var name: String, var api: String, var url: String, var userName: String = "", var password: String = "", var enableR18Filter: Boolean = false, val id: Int = -1) : Comparable<Server> {
 
     companion object {
         private var _currentServer: Server? = null
@@ -30,10 +28,8 @@ data class Server(var name: String, var api: String, var url: String, var userNa
         val currentID: Int get() = currentServer.id
     }
 
-    @Ignore
     private var cachedPassword = password
 
-    @Ignore
     var passwordHash: String = if(cachedPassword == "") "" else passwordToHash(password)
         get() {
             if (cachedPassword != password) {
@@ -44,7 +40,6 @@ data class Server(var name: String, var api: String, var url: String, var userNa
         }
         private set
 
-    @Ignore
     val urlHost: String = try {
         if(url == "") ""
         else URL(url).host
@@ -123,19 +118,4 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             }
         }
     }
-}
-
-@Dao
-interface ServerDao {
-    @Insert
-    fun insert(server: Server)
-
-    @Delete
-    fun delete(server: Server)
-
-    @Update
-    fun update(server: Server)
-
-    @Query("SELECT * FROM servers")
-    fun getAllServers(): List<Server>
 }

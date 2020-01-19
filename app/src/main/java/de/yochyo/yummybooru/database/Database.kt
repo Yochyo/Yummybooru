@@ -2,16 +2,15 @@ package de.yochyo.yummybooru.database
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.database.sqlite.SQLiteDatabase
 import androidx.documentfile.provider.DocumentFile
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 import de.yochyo.eventcollection.EventCollection
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.api.entities.*
-import de.yochyo.yummybooru.database.converter.DateConverter
+import de.yochyo.yummybooru.database.dao.ServerDao
+import de.yochyo.yummybooru.database.dao.SubDao
+import de.yochyo.yummybooru.database.dao.TagDao
+import de.yochyo.yummybooru.database.utils.Upgrade
 import de.yochyo.yummybooru.events.events.*
 import de.yochyo.yummybooru.utils.general.createDefaultSavePath
 import de.yochyo.yummybooru.utils.general.documentFile
@@ -21,13 +20,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import org.jetbrains.anko.db.ManagedSQLiteOpenHelper
+import org.jetbrains.anko.db.dropTable
 import java.util.*
-import kotlin.collections.ArrayList
 
 
-@androidx.room.Database(entities = [Tag::class, Subscription::class, Server::class], version = 2)
-@TypeConverters(DateConverter::class)
-abstract class Database : RoomDatabase() {
+class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 2) {
     private val lock = Mutex()
 
     companion object {
@@ -40,15 +38,7 @@ abstract class Database : RoomDatabase() {
             this.context = context
             if (instance == null) {
                 _prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
-                instance = Room.databaseBuilder(context.applicationContext,
-                        Database::class.java, "db")
-                        .addCallback(object : RoomDatabase.Callback() {
-                            override fun onCreate(db: SupportSQLiteDatabase) {
-                                super.onCreate(db)
-                                for (s in DefaultServerExeq.all)
-                                    db.execSQL(s)
-                            }
-                        }).addMigrations(*Migrations.all).build()
+                instance = Database(context)
                 instance!!.servers.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateServersEvent.trigger(UpdateServersEvent(context, instance!!.servers)) } }
                 instance!!.tags.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateTagsEvent.trigger(UpdateTagsEvent(context, instance!!.tags)) } }
                 instance!!.subs.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateSubsEvent.trigger(UpdateSubsEvent(context, instance!!.subs)) } }
@@ -60,12 +50,26 @@ abstract class Database : RoomDatabase() {
         }
     }
 
+    override fun onCreate(db: SQLiteDatabase) {
+        tagDao.createTable()
+        subDao.createTable()
+        serverDao.createTable()
+
+        db.rawQuery("INSERT INTO servers (name,api,url,userName,password,enableR18Filter) VALUES ('Danbooru', 'danbooru', 'https://danbooru.donmai.us/', '', '', 0);", emptyArray())
+        db.rawQuery("INSERT INTO servers (name,api,url,userName,password,enableR18Filter) VALUES ('Konachan', 'moebooru', 'https://konachan.com/', '', '', 0);", emptyArray())
+        db.rawQuery("INSERT INTO servers (name,api,url,userName,password,enableR18Filter) VALUES ('Yande.re', 'moebooru', 'https://yande.re/', '', '', 0);", emptyArray())
+    }
+
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        Upgrade.upgradeFromTo(db, oldVersion, newVersion)
+    }
+
     val servers: EventCollection<Server> = EventCollection(TreeSet())
     val tags: EventCollection<Tag> = EventCollection(TreeSet())
     val subs: EventCollection<Subscription> = EventCollection(TreeSet())
     suspend fun loadServers() {
         withContext(Dispatchers.Default) {
-            val se: List<Server> = serverDao.getAllServers()
+            val se: List<Server> = serverDao.selectAll()
             servers.clear()
             servers.addAll(se)
             Server.currentServer.select(context)
@@ -84,7 +88,7 @@ abstract class Database : RoomDatabase() {
     suspend fun loadTagsWithMutex(context: Context, serverID: Int) = lock.withLock { loadTags(context, serverID) }
     suspend fun loadTags(context: Context, serverID: Int) {
         withContext(Dispatchers.Default) {
-            val t = tagDao.getAllTags().filter { it.serverID == serverID }
+            val t = tagDao.selectWhereID(serverID)
             withContext(Dispatchers.Main) {
                 tags.clear()
                 tags.addAll(t)
@@ -95,7 +99,7 @@ abstract class Database : RoomDatabase() {
     suspend fun loadSubscriptionsWithMutex(context: Context, serverID: Int) = lock.withLock { loadSubscriptions(context, serverID) }
     suspend fun loadSubscriptions(context: Context, serverID: Int) {
         withContext(Dispatchers.Default) {
-            val s = subDao.getAllSubscriptions().filter { it.serverID == serverID }
+            val s = subDao.selectWhereID(serverID)
             subs.clear()
             subs.addAll(s)
         }
@@ -123,8 +127,8 @@ abstract class Database : RoomDatabase() {
             if (s != null && !s.isSelected) {
                 servers.remove(s)
                 serverDao.delete(s)
-                for (tag in tagDao.getAllTags().filter { it.serverID == s.id }) tagDao.delete(tag)
-                for (sub in subDao.getAllSubscriptions().filter { it.serverID == s.id }) subDao.delete(sub)
+                for (tag in tagDao.selectWhereID(s.id)) tagDao.delete(tag)
+                for (sub in subDao.selectWhereID(s.id)) subDao.delete(sub)
                 withContext(Dispatchers.Main) { DeleteServerEvent.trigger(DeleteServerEvent(context, s)) }
             }
         }
@@ -252,7 +256,7 @@ abstract class Database : RoomDatabase() {
     var nextServerID = prefs.getInt("nextServerID", 10) //10 because of potential default server
         get() {
             val i = field
-            nextServerID = i+1
+            nextServerID = i + 1
             return i
         }
         set(v) {
@@ -292,9 +296,9 @@ abstract class Database : RoomDatabase() {
     private var _savePathTested = false
     var saveFolder: DocumentFile = documentFile(context, prefs.getString("savePath", createDefaultSavePath())!!)
         get() {
-            if(!_savePathTested){
+            if (!_savePathTested) {
                 _savePathTested = true
-                if(!field.exists()) saveFolder = documentFile(context, createDefaultSavePath())
+                if (!field.exists()) saveFolder = documentFile(context, createDefaultSavePath())
             }
             return field
         }
@@ -330,7 +334,11 @@ abstract class Database : RoomDatabase() {
 
     suspend fun deleteEverything() {
         withContext(Dispatchers.Default) {
-            clearAllTables()
+            use {
+                dropTable("tags", true)
+                dropTable("subs", true)
+                dropTable("servers", true)
+            }
             withContext(Dispatchers.Main) {
                 servers.clear()
                 tags.clear()
@@ -344,29 +352,9 @@ abstract class Database : RoomDatabase() {
         }
     }
 
-    abstract val subDao: SubscriptionDao
-    abstract val tagDao: TagDao
-    abstract val serverDao: ServerDao
+    val tagDao = TagDao(this)
+    val subDao = SubDao(this)
+    val serverDao = ServerDao(this)
 }
 
 val db: Database get() = Database.instance!!
-
-
-private object Migrations {
-    val MIGRATION_1_2 = object : Migration(1, 2) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-        }
-    }
-
-    val all = arrayOf(MIGRATION_1_2)
-}
-
-object DefaultServerExeq {
-    val all = ArrayList<String>()
-
-    init {
-        all += "INSERT INTO servers (name,api,url,userName,password,enableR18Filter) VALUES ('Danbooru', 'danbooru', 'https://danbooru.donmai.us/', '', '', 0);"
-        all += "INSERT INTO servers (name,api,url,userName,password,enableR18Filter) VALUES ('Konachan', 'moebooru', 'https://konachan.com/', '', '', 0);"
-        all += "INSERT INTO servers (name,api,url,userName,password,enableR18Filter) VALUES ('Yande.re', 'moebooru', 'https://yande.re/', '', '', 0);"
-    }
-}

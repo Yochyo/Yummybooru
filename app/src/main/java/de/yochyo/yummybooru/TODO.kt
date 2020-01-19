@@ -9,6 +9,7 @@ package de.yochyo.yummybooru
 //TODO support animated_png, implement mp4
 //TODO add tests
 //TODO multiselect pictureactivity can add tags like elsword eve_(elsword)
+//TODO update target sdk
 //TODO Taglists add folders
 //TODO pixiv
 //TODO save Tags in png metadatay
@@ -29,6 +30,7 @@ package de.yochyo.yummybooru
 //TODO github update screenshots
 //TODO scrollbar fast scrolling
 //TODO seperate gui in smaller classes
+//TODO Use View-Design-Pattern or something like that where the data is stored in a Model and only called by the view
 //Bugs
 //TODO files are sometimes saved with (1) at the end of their mimetype
 //TODO changelogs are not displayed on an update

@@ -57,8 +57,9 @@ object DownloadUtils {
 
     suspend fun downloadResource(url: String, type: Int = Resource.getTypeFromURL(url)): Resource? {
         return withContext(Dispatchers.IO) {
+            var stream: InputStream? = null
             try {
-                val stream = DownloadUtils.getUrlInputStream(url)
+                stream = getUrlInputStream(url)
                 if (stream != null) {
                     val res = Resource(stream.readBytes(), type)
                     stream.close()
@@ -66,6 +67,7 @@ object DownloadUtils {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                stream?.close()
             }
             null
         }

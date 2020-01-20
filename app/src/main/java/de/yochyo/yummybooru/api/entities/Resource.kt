@@ -52,15 +52,15 @@ class Resource(val resource: ByteArray, val type: Int) : Serializable {
 
     fun loadInto(file: File) {
         val outputStream = ByteArrayOutputStream()
+        val objStream = ObjectOutputStream(outputStream)
         try {
-            val objStream = ObjectOutputStream(outputStream)
             objStream.writeObject(this)
             file.writeBytes(outputStream.toByteArray())
-            objStream.close()
         } catch (e: Exception) {
             e.printStackTrace()
             Logger.log(e, file.name)
         } finally {
+            objStream.close()
             outputStream.close()
         }
     }

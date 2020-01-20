@@ -2,6 +2,7 @@ package de.yochyo.yummybooru.utils.network
 
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.entities.Resource
+import de.yochyo.yummybooru.utils.general.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -13,12 +14,12 @@ import java.net.URL
 
 object DownloadUtils {
     fun getUrlResponseCode(url: String): Int {
-        return try{
+        return try {
             val u = URL(Api.instance!!.urlGetPosts(1, arrayOf("*"), 1))
             val conn = u.openConnection() as HttpURLConnection
             conn.addRequestProperty("User-Agent", "Mozilla/5.00");conn.requestMethod = "GET"
             conn.responseCode
-        }catch (e: Exception){
+        } catch (e: Exception) {
             ResponseCodes.Unauthorized
         }
     }
@@ -68,6 +69,8 @@ object DownloadUtils {
             } catch (e: Exception) {
                 e.printStackTrace()
                 stream?.close()
+            } catch (error: OutOfMemoryError) {
+                Logger.log(error, filePrefix = "OutOfMemory")
             }
             null
         }

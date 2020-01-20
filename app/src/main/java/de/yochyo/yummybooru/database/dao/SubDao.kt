@@ -49,7 +49,7 @@ class SubDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
                     LAST_ID to sub.lastID,
                     LAST_COUNT to sub.lastCount,
                     IS_FAVORITE to ConvertBoolean.toInteger(sub.isFavorite),
-                    CREATION to sub.creation,
+                    CREATION to ConvertDate.toTimestamp(sub.creation),
                     SERVER_ID to sub.serverID)
         }
     }

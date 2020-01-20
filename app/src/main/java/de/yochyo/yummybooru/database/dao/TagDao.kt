@@ -47,7 +47,7 @@ class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
                     NAME to tag.name,
                     TYPE to tag.type,
                     IS_FAVORITE to ConvertBoolean.toInteger(tag.isFavorite),
-                    CREATION to tag.creation,
+                    CREATION to ConvertDate.toTimestamp(tag.creation),
                     SERVER_ID to tag.serverID,
                     COUNT to tag.count)
         }

@@ -20,7 +20,16 @@ class Manager(val tags: Array<String>) {
     val tagString: String = tags.toTagString()
 
     companion object {
-        var current: Manager = Manager("*".toTagArray())
+        var _current: Manager? = null
+        var current: Manager
+        get() {
+            val v = if (_current == null) Manager("*".toTagArray()) else _current
+            _current = null
+            return v!!
+        }
+        set(value) {
+            _current = value
+        }
     }
 
     val downloadManagerPageEvent = EventHandler<DownloadManagerPageEvent>()

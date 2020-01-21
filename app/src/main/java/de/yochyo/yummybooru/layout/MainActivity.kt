@@ -338,6 +338,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return super.onCreateOptionsMenu(menu)
     }
 
+    override fun onResume() {
+        super.onResume()
+        GlobalScope.launch { cache.clearCache() }
+    }
+
     private inner class ServerViewHolder(val layout: LinearLayout) : RecyclerView.ViewHolder(layout)
     private inner class SearchTagViewHolder(val toolbar: Toolbar) : RecyclerView.ViewHolder(toolbar)
 }

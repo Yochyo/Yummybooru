@@ -79,8 +79,7 @@ class SubDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
                     LAST_ID to sub.lastID,
                     LAST_COUNT to sub.lastCount,
                     IS_FAVORITE to ConvertBoolean.toInteger(sub.isFavorite),
-                    /*.whereArgs("$NAME = {$NAME} AND $SERVER_ID = {$SERVER_ID}", NAME to sub.name, SERVER_ID to sub.serverID).exec()*/
-                    CREATION to sub.creation).whereArgs("$NAME = {$NAME} AND $SERVER_ID = {$SERVER_ID}", NAME to sub.name, SERVER_ID to sub.serverID).exec()
+                    CREATION to ConvertDate.toTimestamp(sub.creation)).whereArgs("$NAME = {$NAME} AND $SERVER_ID = {$SERVER_ID}", NAME to sub.name, SERVER_ID to sub.serverID).exec()
         }
     }
 }

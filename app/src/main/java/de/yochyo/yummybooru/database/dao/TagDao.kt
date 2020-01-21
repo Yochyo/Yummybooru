@@ -69,7 +69,7 @@ class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
             update(TABLE_NAME,
                     TYPE to tag.type,
                     IS_FAVORITE to ConvertBoolean.toInteger(tag.isFavorite),
-                    CREATION to tag.creation,
+                    CREATION to ConvertDate.toTimestamp(tag.creation),
                     COUNT to tag.count).whereArgs("$NAME = {$NAME} AND $SERVER_ID = {$SERVER_ID}", NAME to tag.name, SERVER_ID to tag.serverID).exec()
         }
     }

@@ -7,18 +7,18 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
-abstract class Cache(path: String) {
-    private val directory = File(path)
+class Cache(context: Context) {
+    private val directory = context.cacheDir
 
     var cachedFiles = HashMap<String, Boolean>()
     private val notYetCached = ConcurrentHashMap<String, Resource>()
 
     companion object {
         private var _instance: Cache? = null
-        fun getInstance(path: String): Cache {
-            if (_instance == null) _instance = object : Cache(path) {}
-            return _instance!!
+        fun initCache(context: Context){
+            _instance = Cache(context)
         }
+        fun getInstance() = _instance!!
     }
 
     init {
@@ -85,4 +85,4 @@ abstract class Cache(path: String) {
 
 }
 
-val Context.cache: Cache get() = Cache.getInstance(cacheDir.absolutePath)
+val cache: Cache get() = Cache.getInstance()

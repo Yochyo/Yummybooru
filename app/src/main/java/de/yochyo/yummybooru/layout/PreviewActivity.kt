@@ -16,9 +16,6 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.utils.LoadManagerPageEvent
-import de.yochyo.yummybooru.utils.Manager
-import de.yochyo.yummybooru.utils.network.downloadImage
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
@@ -27,11 +24,15 @@ import de.yochyo.yummybooru.downloadservice.DownloadService
 import de.yochyo.yummybooru.events.events.*
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
 import de.yochyo.yummybooru.layout.views.*
+import de.yochyo.yummybooru.utils.LoadManagerPageEvent
+import de.yochyo.yummybooru.utils.Manager
 import de.yochyo.yummybooru.utils.general.drawable
 import de.yochyo.yummybooru.utils.general.preview
 import de.yochyo.yummybooru.utils.general.toTagArray
+import de.yochyo.yummybooru.utils.network.downloader
 import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -173,13 +174,14 @@ open class PreviewActivity : AppCompatActivity() {
         }
 
         override fun createViewHolder(parent: ViewGroup) = PreviewViewHolder((layoutInflater.inflate(R.layout.preview_image_view, parent, false) as FrameLayout))
+
         override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
             val pos = holder.adapterPosition
             val p = m.posts[holder.adapterPosition]
-            downloadImage(p.filePreviewURL, preview(p.id), {
+            downloader.downloadAndCache(this@PreviewActivity, p.filePreviewURL, {
                 if (pos == holder.adapterPosition)
-                    it.loadInto(holder.layout.findViewById<ImageView>(R.id.preview_picture))
-            }, isScrolling)
+                    GlobalScope.launch(Dispatchers.Main) { it.loadInto(holder.layout.findViewById<ImageView>(R.id.preview_picture)) }
+            }, isScrolling, preview(p.id))
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, position: Int): PreviewViewHolder {

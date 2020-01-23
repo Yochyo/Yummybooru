@@ -1,59 +1,35 @@
 package de.yochyo.yummybooru.utils.network
 
 import android.content.Context
+import de.yochyo.downloader.RegulatingDownloader
 import de.yochyo.yummybooru.api.entities.Resource
+import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.cache
-import kotlinx.coroutines.*
-import java.util.concurrent.LinkedBlockingDeque
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.io.InputStream
 
-abstract class Downloader(context: Context) {
-    companion object {
-        private var _instance: Downloader? = null
-        fun getInstance(context: Context): Downloader {
-            if (_instance == null) _instance = object : Downloader(context) {}
-            return _instance!!
-        }
-
+class CacheableDownloader(maxThreads: Int) : RegulatingDownloader<Resource>(maxThreads) {
+    override fun toResource(inputStream: InputStream, data: Any): Resource {
+        return Resource(inputStream.readBytes(), data as Int)
     }
 
-    private val downloads = LinkedBlockingDeque<Download>()
-
-    init {
-        for (i in 1..5) {
-            GlobalScope.launch(Dispatchers.IO) {
-                while (true) {
-                    if (downloads.isNotEmpty()) {
-                        var download: Download?
-                        try {
-                            download = downloads.takeLast()
-                            var res = context.cache.getCachedFile(download.id)
-                            if (res == null) {
-                                res = DownloadUtils.downloadResource(download.url)!! //throws exception when null
-                                if (download.cache) GlobalScope.launch { context.cache.cacheFile(download.id, res) }
-                            }
-                            launch(Dispatchers.Main) { download.doAfter.invoke(this, res) }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                        delay(5)
-                    } else
-                        delay(50)
-                }
-            }
+    override fun download(url: String, callback: suspend (e: Resource) -> Unit, downloadFirst: Boolean, data: Any) {
+        try {
+            super.download(url, callback, downloadFirst, Resource.getTypeFromURL(url))
+        } catch (e: OutOfMemoryError) {
+            e.printStackTrace()
+            Logger.log(e, filePrefix = "OutOfMemory")
         }
     }
 
-    fun downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(res: Resource) -> Unit = {}, downloadNow: Boolean = true, cache: Boolean = true) {
-        if (downloads.none { it.url == url }) {
-            val download = Download(url, id, cache, doAfter)
-            if (downloadNow) downloads.putLast(download)
-            else downloads.putFirst(download)
-        }
+    fun downloadAndCache(context: Context, url: String, callback: suspend (e: Resource) -> Unit, downloadFirst: Boolean, id: String) {
+        download(url, {
+            GlobalScope.launch { context.cache.cacheFile(id, it) }
+            callback(it)
+        }, downloadFirst)
     }
 }
 
-inline val Context.downloader: Downloader get() = Downloader.getInstance(this)
-fun Context.downloadImage(url: String, id: String, doAfter: suspend CoroutineScope.(res: Resource) -> Unit = {}, downloadNow: Boolean = true, cache: Boolean = true) = Downloader.getInstance(this).downloadImage(url, id, doAfter, downloadNow, cache)
+val downloader = CacheableDownloader(5)
 
-
-private class Download(val url: String, val id: String, val cache: Boolean, val doAfter: suspend CoroutineScope.(res: Resource) -> Unit = {})

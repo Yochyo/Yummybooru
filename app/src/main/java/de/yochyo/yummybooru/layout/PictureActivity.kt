@@ -18,15 +18,15 @@ import com.google.android.material.snackbar.Snackbar
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
-import de.yochyo.yummybooru.utils.LoadManagerPageEvent
-import de.yochyo.yummybooru.utils.Manager
-import de.yochyo.yummybooru.utils.network.downloadImage
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.res.Menus
+import de.yochyo.yummybooru.utils.LoadManagerPageEvent
+import de.yochyo.yummybooru.utils.Manager
 import de.yochyo.yummybooru.utils.general.*
+import de.yochyo.yummybooru.utils.network.downloader
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.*
@@ -116,7 +116,8 @@ class PictureActivity : AppCompatActivity() {
                 GlobalScope.launch {
                     val posts = m.loadNextPage(this@PictureActivity)
                     if (posts != null)
-                        for (p in posts) downloadImage(p.filePreviewURL, preview(p.id), {}, downloadNow = false)
+                        for (p in posts)
+                            downloader.downloadAndCache(this@PictureActivity, p.filePreviewURL, {}, false, preview(p.id))
                 }
             }
             val imageView = layoutInflater.inflate(R.layout.picture_item_view, container, false) as PhotoView
@@ -155,7 +156,7 @@ class PictureActivity : AppCompatActivity() {
                 try {
                     val preview = cache.getCachedFile(preview(p.id))
                     if (preview != null) launch(Dispatchers.Main) { preview.loadInto(imageView) }
-                    downloadImage(p.fileSampleURL, sample(p.id), { it.loadInto(imageView) })
+                    downloader.downloadAndCache(this@PictureActivity, p.fileSampleURL, { GlobalScope.launch(Dispatchers.Main) { it.loadInto(imageView) } }, true, sample(p.id))
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

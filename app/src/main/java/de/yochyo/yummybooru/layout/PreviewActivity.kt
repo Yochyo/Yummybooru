@@ -29,7 +29,7 @@ import de.yochyo.yummybooru.utils.Manager
 import de.yochyo.yummybooru.utils.general.drawable
 import de.yochyo.yummybooru.utils.general.preview
 import de.yochyo.yummybooru.utils.general.toTagArray
-import de.yochyo.yummybooru.utils.network.downloader
+import de.yochyo.yummybooru.utils.network.download
 import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*
 import kotlinx.coroutines.Dispatchers
@@ -178,10 +178,10 @@ open class PreviewActivity : AppCompatActivity() {
         override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
             val pos = holder.adapterPosition
             val p = m.posts[holder.adapterPosition]
-            downloader.downloadAndCache(this@PreviewActivity, p.filePreviewURL, {
+            download(p.filePreviewURL, preview(p.id), {
                 if (pos == holder.adapterPosition)
                     GlobalScope.launch(Dispatchers.Main) { it.loadInto(holder.layout.findViewById<ImageView>(R.id.preview_picture)) }
-            }, isScrolling, preview(p.id))
+            }, isScrolling, true)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, position: Int): PreviewViewHolder {

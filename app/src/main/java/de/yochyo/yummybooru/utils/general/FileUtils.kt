@@ -7,16 +7,16 @@ import de.yochyo.yummybooru.api.entities.Resource
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
-import de.yochyo.yummybooru.utils.network.downloader
+import de.yochyo.yummybooru.utils.network.download
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 object FileUtils {
     suspend fun writeOrDownloadFile(context: Context, post: Post, id: String, url: String, server: Server, source: Int = SafeFileEvent.DEFAULT) {
         withContext(Dispatchers.IO) {
-            val res = context.cache.getCachedFile(id)
+            val res = cache.getCachedFile(id)
             if (res != null) writeFile(context, post, res, server, source)
-            else downloader.download(url, { writeFile(context, post, it, server, source) })
+            else download(url, id, { writeFile(context, post, it, server, source) })
         }
     }
 

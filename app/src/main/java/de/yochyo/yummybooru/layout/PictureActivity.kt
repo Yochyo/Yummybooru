@@ -26,6 +26,7 @@ import de.yochyo.yummybooru.layout.res.Menus
 import de.yochyo.yummybooru.utils.LoadManagerPageEvent
 import de.yochyo.yummybooru.utils.Manager
 import de.yochyo.yummybooru.utils.general.*
+import de.yochyo.yummybooru.utils.network.download
 import de.yochyo.yummybooru.utils.network.downloader
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
@@ -108,55 +109,66 @@ class PictureActivity : AppCompatActivity() {
             view_pager.currentItem = m.position
         }
 
+        fun loadPreview(position: Int){
+            fun downloadPreview(index: Int){
+                if(index in 0 until m.posts.size){
+                    val p = m.posts[index]
+                    download(p.filePreviewURL, preview(p.id), {}, false, true)
+                }
+            }
+            downloadPreview(position-1)
+            downloadPreview(position+1)
+        }
+
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
         override fun getCount(): Int = m.posts.size
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
             if (position + 3 >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage(this@PictureActivity) }
             if (position == m.posts.size - 1) {
                 GlobalScope.launch {
-                    val posts = m.loadNextPage(this@PictureActivity)
-                    if (posts != null)
-                        for (p in posts)
-                            downloader.downloadAndCache(this@PictureActivity, p.filePreviewURL, {}, false, preview(p.id))
+                    m.loadNextPage(this@PictureActivity)
                 }
             }
             val imageView = layoutInflater.inflate(R.layout.picture_item_view, container, false) as PhotoView
             imageView.setAllowParentInterceptOnEdge(true)
             imageView.setOnSingleFlingListener(object : OnSingleFlingListener {
                 private var lastSwipeUp = 0L
+
+                fun onFlingUp(position: Int) {
+                    val time = System.currentTimeMillis()
+                    val p = m.posts.elementAt(position)
+                    if (time - lastSwipeUp > 400L) { //download
+                        downloadOriginalPicture(p)
+                        val snack = Snackbar.make(view_pager, getString(R.string.download), Snackbar.LENGTH_SHORT)
+                        snack.show()
+                        GlobalScope.launch(Dispatchers.Main) {
+                            delay(150)
+                            snack.dismiss()
+                        }
+                    } else { //add to history
+                        GlobalScope.launch {
+                            for (tag in p.getTags().filter { it.type == Tag.ARTIST })
+                                db.addTag(this@PictureActivity, tag)
+                        }
+                    }
+                    lastSwipeUp = time
+                }
                 override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
                     when (Fling.getDirection(e1, e2)) {
                         Fling.Direction.DOWN -> finish()
-                        Fling.Direction.UP -> {
-                            val time = System.currentTimeMillis()
-                            val p = m.posts.elementAt(position)
-                            if (time - lastSwipeUp > 400L) { //download
-                                downloadOriginalPicture(p)
-                                val snack = Snackbar.make(view_pager, getString(R.string.download), Snackbar.LENGTH_SHORT)
-                                snack.show()
-                                GlobalScope.launch(Dispatchers.Main) {
-                                    delay(150)
-                                    snack.dismiss()
-                                }
-                            } else { //add to history
-                                GlobalScope.launch {
-                                    for (tag in p.getTags().filter { it.type == Tag.ARTIST })
-                                        db.addTag(this@PictureActivity, tag)
-                                }
-                            }
-                            lastSwipeUp = time
-                        }
+                        Fling.Direction.UP -> onFlingUp(position)
                         else -> return false
                     }
                     return true
                 }
             })
             val p = m.posts.elementAt(position)
+            loadPreview(position)
             GlobalScope.launch {
                 try {
                     val preview = cache.getCachedFile(preview(p.id))
                     if (preview != null) launch(Dispatchers.Main) { preview.loadInto(imageView) }
-                    downloader.downloadAndCache(this@PictureActivity, p.fileSampleURL, { GlobalScope.launch(Dispatchers.Main) { it.loadInto(imageView) } }, true, sample(p.id))
+                    download(p.fileSampleURL, sample(p.id), { GlobalScope.launch(Dispatchers.Main) { it.loadInto(imageView) } }, downloadFirst = true, cacheFile = true)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

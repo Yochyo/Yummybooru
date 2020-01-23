@@ -104,8 +104,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun initData() {
+        Cache.initCache(this)
         GlobalScope.launch { cache.clearCache() }
         Database.initDatabase(this)
+
 
         UpdateTagsEvent.registerListener { tagAdapter.notifyDataSetChanged() }
         UpdateServersEvent.registerListener { serverAdapter.notifyDataSetChanged() }

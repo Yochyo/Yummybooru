@@ -27,7 +27,6 @@ import de.yochyo.yummybooru.utils.LoadManagerPageEvent
 import de.yochyo.yummybooru.utils.Manager
 import de.yochyo.yummybooru.utils.general.*
 import de.yochyo.yummybooru.utils.network.download
-import de.yochyo.yummybooru.utils.network.downloader
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.*
@@ -98,8 +97,9 @@ class PictureActivity : AppCompatActivity() {
 
     private fun downloadOriginalPicture(p: Post) {
         GlobalScope.launch {
-            if (db.downloadOriginal) FileUtils.writeOrDownloadFile(this@PictureActivity, p, original(p.id), p.fileURL, Server.currentServer)
-            else FileUtils.writeOrDownloadFile(this@PictureActivity, p, sample(p.id), p.fileSampleURL, Server.currentServer)
+            download(if (db.downloadOriginal) p.fileURL else p.fileSampleURL, if (db.downloadOriginal) original(p.id) else sample(p.id), {
+                FileUtils.writeFile(this@PictureActivity, p, it, Server.currentServer)
+            })
         }
     }
 
@@ -109,15 +109,15 @@ class PictureActivity : AppCompatActivity() {
             view_pager.currentItem = m.position
         }
 
-        fun loadPreview(position: Int){
-            fun downloadPreview(index: Int){
-                if(index in 0 until m.posts.size){
+        fun loadPreview(position: Int) {
+            fun downloadPreview(index: Int) {
+                if (index in 0 until m.posts.size) {
                     val p = m.posts[index]
                     download(p.filePreviewURL, preview(p.id), {}, false, true)
                 }
             }
-            downloadPreview(position-1)
-            downloadPreview(position+1)
+            downloadPreview(position - 1)
+            downloadPreview(position + 1)
         }
 
         override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
@@ -153,6 +153,7 @@ class PictureActivity : AppCompatActivity() {
                     }
                     lastSwipeUp = time
                 }
+
                 override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
                     when (Fling.getDirection(e1, e2)) {
                         Fling.Direction.DOWN -> finish()

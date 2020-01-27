@@ -12,13 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 object FileUtils {
-    suspend fun writeOrDownloadFile(context: Context, post: Post, id: String, url: String, server: Server, source: Int = SafeFileEvent.DEFAULT) {
-        withContext(Dispatchers.IO) {
-            val res = cache.getCachedFile(id)
-            if (res != null) writeFile(context, post, res, server, source)
-            else download(url, id, { writeFile(context, post, it, server, source) })
-        }
-    }
 
     suspend fun writeFile(context: Context, post: Post, res: Resource, server: Server, source: Int = SafeFileEvent.DEFAULT) {
         withContext(Dispatchers.IO) {

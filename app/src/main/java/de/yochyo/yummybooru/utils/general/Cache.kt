@@ -15,10 +15,13 @@ class Cache(context: Context) {
 
     companion object {
         private var _instance: Cache? = null
-        fun initCache(context: Context){
-            _instance = Cache(context)
+        private val cacheLock = Any()
+        fun getCache(context: Context): Cache{
+            synchronized(cacheLock){
+                _instance = Cache(context)
+            }
+            return _instance!!
         }
-        fun getInstance() = _instance!!
     }
 
     init {
@@ -85,4 +88,4 @@ class Cache(context: Context) {
 
 }
 
-val cache: Cache get() = Cache.getInstance()
+val Context.cache: Cache get() = Cache.getCache(this)

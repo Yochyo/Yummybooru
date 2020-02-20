@@ -37,8 +37,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 open class PreviewActivity : AppCompatActivity() {
+    private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit / 2
     companion object {
-        private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit / 2
         fun startActivity(context: Context, tags: String) {
             Manager.current = Manager(tags.toTagArray())
             context.startActivity(Intent(context, PreviewActivity::class.java))
@@ -139,7 +139,7 @@ open class PreviewActivity : AppCompatActivity() {
                 R.id.select_all -> if (previewAdapter.selected.size == m.posts.size) previewAdapter.unselectAll() else previewAdapter.selectAll()
                 R.id.download_selected -> {
                     val posts = previewAdapter.selected.getSelected(m.posts)
-                    DownloadService.startService(this@PreviewActivity, m.tagString, posts, Server.currentServer)
+                    DownloadService.startService(this@PreviewActivity, m.tagString, posts, Server.getCurrentServer(this@PreviewActivity))
                     previewAdapter.unselectAll()
                 }
                 R.id.download_and_add_authors_selected -> {
@@ -151,7 +151,7 @@ open class PreviewActivity : AppCompatActivity() {
                             }
                         }
                     }
-                    DownloadService.startService(this@PreviewActivity, m.tagString, posts, Server.currentServer)
+                    DownloadService.startService(this@PreviewActivity, m.tagString, posts, Server.getCurrentServer(this@PreviewActivity))
                     previewAdapter.unselectAll()
                 }
             }
@@ -178,7 +178,7 @@ open class PreviewActivity : AppCompatActivity() {
         override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
             val pos = holder.adapterPosition
             val p = m.posts[holder.adapterPosition]
-            download(p.filePreviewURL, preview(p.id), {
+            download(this@PreviewActivity, p.filePreviewURL, preview(p.id), {
                 if (pos == holder.adapterPosition)
                     GlobalScope.launch(Dispatchers.Main) { it.loadInto(holder.layout.findViewById<ImageView>(R.id.preview_picture)) }
             }, isScrolling, true)
@@ -205,12 +205,12 @@ open class PreviewActivity : AppCompatActivity() {
             R.id.select_all -> previewAdapter.selectAll()
             R.id.favorite -> {
                 val tag = db.tags.find { it.name == m.tagString }
-                if (tag == null) GlobalScope.launch { db.addTag(this@PreviewActivity, Api.getTag(m.tagString).copy(isFavorite = true)) }
+                if (tag == null) GlobalScope.launch { db.addTag(this@PreviewActivity, Api.getTag(this@PreviewActivity, m.tagString).copy(isFavorite = true)) }
                 else GlobalScope.launch { db.changeTag(this@PreviewActivity, tag.copy(isFavorite = !tag.isFavorite)) }
             }
             R.id.add_tag -> {
                 val tag = db.tags.find { it.name == m.tagString }
-                if (tag == null) GlobalScope.launch { db.addTag(this@PreviewActivity, Api.getTag(m.tagString)) }
+                if (tag == null) GlobalScope.launch { db.addTag(this@PreviewActivity, Api.getTag(this@PreviewActivity, m.tagString)) }
                 else GlobalScope.launch { db.deleteTag(this@PreviewActivity, tag.name) }
             }
             R.id.subscribe -> {
@@ -218,8 +218,8 @@ open class PreviewActivity : AppCompatActivity() {
                     val sub = db.subs.find { it.name == m.tagString }
                     if (sub != null) db.deleteSubscription(this@PreviewActivity, sub.name)
                     else {
-                        val tag = db.tags.find { it.name == m.tagString } ?: Api.getTag(m.tagString)
-                        db.addSubscription(this@PreviewActivity, Subscription.fromTag(tag))
+                        val tag = db.tags.find { it.name == m.tagString } ?: Api.getTag(this@PreviewActivity, m.tagString)
+                        db.addSubscription(this@PreviewActivity, Subscription.fromTag(this@PreviewActivity, tag))
                     }
                 }
             }

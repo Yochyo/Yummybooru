@@ -97,8 +97,8 @@ class PictureActivity : AppCompatActivity() {
 
     private fun downloadOriginalPicture(p: Post) {
         GlobalScope.launch {
-            download(if (db.downloadOriginal) p.fileURL else p.fileSampleURL, if (db.downloadOriginal) original(p.id) else sample(p.id), {
-                FileUtils.writeFile(this@PictureActivity, p, it, Server.currentServer)
+            download(this@PictureActivity, if (db.downloadOriginal) p.fileURL else p.fileSampleURL, if (db.downloadOriginal) original(p.id) else sample(p.id), {
+                FileUtils.writeFile(this@PictureActivity, p, it, Server.getCurrentServer(this@PictureActivity))
             })
         }
     }
@@ -113,7 +113,7 @@ class PictureActivity : AppCompatActivity() {
             fun downloadPreview(index: Int) {
                 if (index in 0 until m.posts.size) {
                     val p = m.posts[index]
-                    download(p.filePreviewURL, preview(p.id), {}, false, true)
+                    download(this@PictureActivity, p.filePreviewURL, preview(p.id), {}, false, true)
                 }
             }
             downloadPreview(position - 1)
@@ -169,7 +169,7 @@ class PictureActivity : AppCompatActivity() {
                 try {
                     val preview = cache.getCachedFile(preview(p.id))
                     if (preview != null) launch(Dispatchers.Main) { preview.loadInto(imageView) }
-                    download(p.fileSampleURL, sample(p.id), { GlobalScope.launch(Dispatchers.Main) { it.loadInto(imageView) } }, downloadFirst = true, cacheFile = true)
+                    download(this@PictureActivity, p.fileSampleURL, sample(p.id), { GlobalScope.launch(Dispatchers.Main) { it.loadInto(imageView) } }, downloadFirst = true, cacheFile = true)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -192,18 +192,18 @@ class PictureActivity : AppCompatActivity() {
             toolbar.setOnMenuItemClickListener {
                 val tag = currentTags[adapterPosition]
                 when (it.itemId) {
-                    R.id.picture_info_item_add_history -> GlobalScope.launch { db.addTag(this@PictureActivity, Tag(tag.name, tag.type)) }
+                    R.id.picture_info_item_add_history -> GlobalScope.launch { db.addTag(this@PictureActivity, Tag(this@PictureActivity, tag.name, tag.type)) }
                     R.id.picture_info_item_add_favorite -> {
                         GlobalScope.launch {
                             val t = db.getTag(tag.name)
-                            if (t == null) db.addTag(this@PictureActivity, Tag(tag.name, tag.type, true))
+                            if (t == null) db.addTag(this@PictureActivity, Tag(this@PictureActivity, tag.name, tag.type, true))
                             else db.changeTag(this@PictureActivity, tag.copy(isFavorite = !t.isFavorite))
                             withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
                         }
                     }
                     R.id.picture_info_item_subscribe -> {
                         GlobalScope.launch {
-                            if (db.getSubscription(tag.name) == null) db.addSubscription(this@PictureActivity, Subscription.fromTag(tag))
+                            if (db.getSubscription(tag.name) == null) db.addSubscription(this@PictureActivity, Subscription.fromTag(this@PictureActivity, tag))
                             else db.deleteSubscription(this@PictureActivity, tag.name)
                             withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
                         }
@@ -220,7 +220,7 @@ class PictureActivity : AppCompatActivity() {
             textView.text = tag.name
             textView.setColor(tag.color)
             textView.underline(tagInDatabase?.isFavorite ?: false)
-            Menus.initPictureInfoTagMenu(holder.toolbar.menu, tagInDatabase ?: tag)
+            Menus.initPictureInfoTagMenu(this@PictureActivity, holder.toolbar.menu, tagInDatabase ?: tag)
         }
 
         override fun getItemCount(): Int = currentTags.size

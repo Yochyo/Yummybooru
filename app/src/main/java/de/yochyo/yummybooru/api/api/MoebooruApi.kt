@@ -1,5 +1,6 @@
 package de.yochyo.yummybooru.api.api
 
+import android.content.Context
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
@@ -10,16 +11,16 @@ import org.json.JSONObject
 class MoebooruApi(url: String) : Api(url) {
 
     override val name: String = "moebooru"
-    override fun urlGetTag(name: String): String = "${url}tag.json?name=$name*"
-    override fun urlGetTags(beginSequence: String): String {
+    override fun urlGetTag(context: Context, name: String): String = "${url}tag.json?name=$name*"
+    override fun urlGetTags(context: Context, beginSequence: String): String {
         return "${url}tag.json?name=$beginSequence*&limit=$searchTagLimit&search[order]=count"
     }
 
-    override fun urlGetPosts(page: Int, tags: Array<String>, limit: Int): String {
-        return "${url}post.json?limit=$limit&page=$page&login=${Server.currentServer.userName}&password_hash=${Server.currentServer.passwordHash}"
+    override fun urlGetPosts(context: Context, page: Int, tags: Array<String>, limit: Int): String {
+        return "${url}post.json?limit=$limit&page=$page&login=${Server.getCurrentServer(context).userName}&password_hash=${Server.getCurrentServer(context).passwordHash}"
     }
 
-    override fun getPostFromJson(json: JSONObject): Post? {
+    override fun getPostFromJson(context: Context, json: JSONObject): Post? {
         return tryCatch {
             val fileURL = json.getString("file_url")
             val id = json.getInt("id")
@@ -37,7 +38,7 @@ class MoebooruApi(url: String) : Api(url) {
                 private var tags: List<Tag>? = null
                 override suspend fun getTags(): List<Tag> {
                     if (tags == null)
-                        tags = parseTagsfromURL(DownloadUtils.getUrlLines("${Server.currentServer.url}post/show/$id")).sortedBy {
+                        tags = parseTagsfromURL(context, DownloadUtils.getUrlLines("${Server.getCurrentServer(context).url}post/show/$id")).sortedBy {
                             when (it.type) {
                                 Tag.ARTIST -> 0
                                 Tag.COPYPRIGHT -> 1
@@ -54,14 +55,14 @@ class MoebooruApi(url: String) : Api(url) {
     }
 
 
-    override fun getTagFromJson(json: JSONObject): Tag? {
+    override fun getTagFromJson(context: Context, json: JSONObject): Tag? {
         return tryCatch {
             val name = json.getString("name")
-            Tag(name, json.getInt("type"), count = json.getInt("count"))
+            Tag(context, name, json.getInt("type"), count = json.getInt("count"))
         }.stackTrace().log(json.toString()).value
     }
 
-    private fun parseTagsfromURL(lines: Collection<String>): List<Tag> {
+    private fun parseTagsfromURL(context: Context, lines: Collection<String>): List<Tag> {
         val tags = ArrayList<Tag>()
         fun getCurrentTagType(type: String): Int {
             if (type.contains("tag-type-general")) return Tag.GENERAL
@@ -103,7 +104,7 @@ class MoebooruApi(url: String) : Api(url) {
                 if (type != Tag.UNKNOWN) {
                     val nameSubstring = subStringType.substring(subStringType.indexOf("href=\"/post?") + 12)
                     val name = nameSubstring.substring(nameSubstring.indexOf(">") + 1, nameSubstring.indexOf("<")).replace(" ", "_")
-                    tags += Tag(name, type)
+                    tags += Tag(context, name, type)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

@@ -1,5 +1,6 @@
 package de.yochyo.yummybooru.api.api
 
+import android.content.Context
 import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
@@ -11,22 +12,22 @@ class DanbooruApi(url: String) : Api(url) {
 
 
     override val name = "danbooru"
-    override fun urlGetTag(name: String): String = "${url}tags.json?search[name_matches]=$name"
-    override fun urlGetTags(beginSequence: String): String {
+    override fun urlGetTag(context: Context, name: String): String = "${url}tags.json?search[name_matches]=$name"
+    override fun urlGetTags(context: Context, beginSequence: String): String {
         return "${url}tags.json?search[name_matches]=$beginSequence*&limit=$searchTagLimit&search[order]=count"
     }
 
-    override fun urlGetPosts(page: Int, tags: Array<String>, limit: Int): String {
-        return "${url}posts.json?limit=$limit&page=$page&login=${Server.currentServer.userName}&password_hash=${Server.currentServer.passwordHash}"
+    override fun urlGetPosts(context: Context, page: Int, tags: Array<String>, limit: Int): String {
+        return "${url}posts.json?limit=$limit&page=$page&login=${Server.getCurrentServer(context).userName}&password_hash=${Server.getCurrentServer(context).passwordHash}"
     }
 
-    override fun getPostFromJson(json: JSONObject): Post? {
+    override fun getPostFromJson(context: Context, json: JSONObject): Post? {
         return tryCatch {
-            val tagsGeneral = json.getString("tag_string_general").split(" ").map { Tag(it, Tag.GENERAL) }.filter { it.name != "" }
-            val tagsCharacter = json.getString("tag_string_character").split(" ").map { Tag(it, Tag.CHARACTER) }.filter { it.name != "" }
-            val tagsCopyright = json.getString("tag_string_copyright").split(" ").map { Tag(it, Tag.COPYPRIGHT) }.filter { it.name != "" }
-            val tagsArtist = json.getString("tag_string_artist").split(" ").map { Tag(it, Tag.ARTIST) }.filter { it.name != "" }
-            val tagsMeta = json.getString("tag_string_meta").split(" ").map { Tag(it, Tag.META) }.filter { it.name != "" }
+            val tagsGeneral = json.getString("tag_string_general").split(" ").map { Tag(context, it, Tag.GENERAL) }.filter { it.name != "" }
+            val tagsCharacter = json.getString("tag_string_character").split(" ").map { Tag(context, it, Tag.CHARACTER) }.filter { it.name != "" }
+            val tagsCopyright = json.getString("tag_string_copyright").split(" ").map { Tag(context, it, Tag.COPYPRIGHT) }.filter { it.name != "" }
+            val tagsArtist = json.getString("tag_string_artist").split(" ").map { Tag(context, it, Tag.ARTIST) }.filter { it.name != "" }
+            val tagsMeta = json.getString("tag_string_meta").split(" ").map { Tag(context, it, Tag.META) }.filter { it.name != "" }
             val tags = ArrayList<Tag>(tagsGeneral.size + tagsCharacter.size + tagsCopyright.size + tagsArtist.size + tagsMeta.size)
             tags += tagsArtist
             tags += tagsCopyright
@@ -48,10 +49,10 @@ class DanbooruApi(url: String) : Api(url) {
         }.stackTrace().value
     }
 
-    override fun getTagFromJson(json: JSONObject): Tag? {
+    override fun getTagFromJson(context: Context, json: JSONObject): Tag? {
         return try {
             val name = json.getString("name")
-            Tag(name, json.getInt("category"), count = json.getInt("post_count"))
+            Tag(context, name, json.getInt("category"), count = json.getInt("post_count"))
         } catch (e: Exception) {
             Logger.log(e, json.toString())
             e.printStackTrace()

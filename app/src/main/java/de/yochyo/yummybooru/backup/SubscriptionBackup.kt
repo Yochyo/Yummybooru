@@ -22,8 +22,8 @@ object SubscriptionBackup : BackupableEntity<Subscription> {
 
     override suspend fun restoreEntity(json: JSONObject, context: Context) {
         try{
-            db.subDao.insert(
-                    Subscription(json.getString("name"), json.getInt("type"), json.getInt("lastID"), json.getInt("lastCount"),
+            context.db.subDao.insert(
+                    Subscription(context, json.getString("name"), json.getInt("type"), json.getInt("lastID"), json.getInt("lastCount"),
                             json.getBoolean("isFavorite"), Date(json.getLong("creation")), json.getInt("serverID")))
         }catch(e: Exception){
             e.printStackTrace()

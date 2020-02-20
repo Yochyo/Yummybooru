@@ -36,7 +36,19 @@ package de.yochyo.yummybooru
 //TODO files are sometimes saved with (1) at the end of their mimetype
 //TODO changelogs are not displayed on an update
 //TODO update old screenshot on github
+//TODO delete old sorting preferences when updating database (in onUpgrade)
 //Probably fixed
+
+/*
+//TODO wird initListener
+
+        //TODO schauen ob die app verdrängungssicher ist
+        //TODO schauen ob man savedInstanceState nutzen kann um die app wiederherzustellen
+        //TODO speicherorder fehler beheben
+        //TODO release raushauen
+        //TODO code optimieren
+        //TODO Api Library Tag classe muss einen TagString haben, damit beim runterladen nicht immer durch getString die Tags runtergeladen werden
+ */
 
 //TODO SeveraltagsPreviewLayout
 //  Zeigt mehrere tags an

@@ -68,7 +68,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
 
     companion object {
         private val sBindPreferenceSummaryToValueListener = Preference.OnPreferenceChangeListener { preference, value ->
-            val database = db
+            val database = preference.context.db
             when (preference.key) {
                 "limit" -> database.limit = value.toString().toInt()
                 "sortSubs" -> database.sortSubs = value.toString()
@@ -110,7 +110,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         if (resultCode == RESULT_OK && data != null) {
             if (requestCode == savePathCode) { //Speicherpfad ändern
                 val file = DocumentFile.fromTreeUri(this, data.data)
-                db.saveFolder = file!!
+                db.setSaveFolder(file!!)
                 setSavePathSummary()
             }
             if (requestCode == restoreDataCode) { //Daten wiederherstellen
@@ -122,7 +122,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
                     BackupUtils.restoreBackup(bytes, this@SettingsActivity)
                     withContext(Dispatchers.Main) {
                         Toast.makeText(this@SettingsActivity, "Restored backup", Toast.LENGTH_LONG).show()
-                        db.loadServers()
+                        db.loadServers(this@SettingsActivity)
                     }
                 }
             }
@@ -131,7 +131,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
 
     private fun setSavePathSummary() {
         val pref = findPreference("savePath")
-        val file = db.saveFolder
+        val file = db.getSaveFolder(this)
         pref.summary = file.name
     }
 }

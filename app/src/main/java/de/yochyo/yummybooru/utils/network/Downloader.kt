@@ -1,5 +1,6 @@
 package de.yochyo.yummybooru.utils.network
 
+import android.content.Context
 import de.yochyo.downloader.RegulatingDownloader
 import de.yochyo.yummybooru.api.entities.Resource
 import de.yochyo.yummybooru.utils.general.Logger
@@ -15,16 +16,16 @@ class CacheableDownloader(maxThreads: Int) {
         }
     }
 
-    fun download(url: String, id: String, callback: suspend (e: Resource) -> Unit, downloadFirst: Boolean = false, cacheFile: Boolean = false) {
+    fun download(context: Context, url: String, id: String, callback: suspend (e: Resource) -> Unit, downloadFirst: Boolean = false, cacheFile: Boolean = false) {
         suspend fun doAfter(res: Resource?) {
             if (res != null) {
-                if (cacheFile) GlobalScope.launch { cache.cacheFile(id, res) }
+                if (cacheFile) GlobalScope.launch { context.cache.cacheFile(id, res) }
                 callback(res)
             }
         }
         try {
             GlobalScope.launch {
-                val res = cache.getCachedFile(id)
+                val res = context.cache.getCachedFile(id)
                 if (res != null) doAfter(res)
                 else dl.download(url, { doAfter(it) }, downloadFirst, Resource.getTypeFromURL(url))
             }
@@ -36,5 +37,5 @@ class CacheableDownloader(maxThreads: Int) {
 }
 
 val downloader = CacheableDownloader(5)
-fun download(url: String, id: String, callback: suspend (e: Resource) -> Unit, downloadFirst: Boolean = false, cacheFile: Boolean = false) = downloader.download(url, id, callback, downloadFirst, cacheFile)
+fun download(context: Context, url: String, id: String, callback: suspend (e: Resource) -> Unit, downloadFirst: Boolean = false, cacheFile: Boolean = false) = downloader.download(context, url, id, callback, downloadFirst, cacheFile)
 

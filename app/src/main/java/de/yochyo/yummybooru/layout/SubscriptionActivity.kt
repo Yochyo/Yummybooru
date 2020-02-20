@@ -143,9 +143,9 @@ class SubscriptionActivity : AppCompatActivity() {
                     R.id.update_subs -> {
                         ConfirmDialog {
                             GlobalScope.launch {
-                                val id = Api.newestID()
+                                val id = Api.newestID(this@SubscriptionActivity)
                                 for (selected in adapter.selected.getSelected(currentFilter)) {
-                                    val tag = Api.getTag(selected.name)
+                                    val tag = Api.getTag(this@SubscriptionActivity, selected.name)
                                     db.changeSubscription(this@SubscriptionActivity, selected.copy(lastCount = tag.count, lastID = id))
                                 }
                             }
@@ -158,7 +158,7 @@ class SubscriptionActivity : AppCompatActivity() {
         override val onClickLayout = { holder: SubscribedTagViewHolder ->
             val sub = currentFilter.elementAt(holder.adapterPosition)
             GlobalScope.launch {
-                onClickedData = SubData(holder.adapterPosition, Api.newestID(), Api.getTag(sub.name).count)
+                onClickedData = SubData(holder.adapterPosition, Api.newestID(this@SubscriptionActivity), Api.getTag(this@SubscriptionActivity, sub.name).count)
             }
             PreviewActivity.startActivity(this@SubscriptionActivity, sub.toString())
         }
@@ -250,8 +250,8 @@ class SubscriptionActivity : AppCompatActivity() {
                 AddTagDialog {
                     if (db.getSubscription(it.text.toString()) == null) {
                         GlobalScope.launch {
-                            val tag = Api.getTag(it.text.toString())
-                            val sub = Subscription.fromTag(tag)
+                            val tag = Api.getTag(this@SubscriptionActivity, it.text.toString())
+                            val sub = Subscription.fromTag(this@SubscriptionActivity, tag)
                             db.addSubscription(this@SubscriptionActivity, sub)
                             withContext(Dispatchers.Main) {
                                 layoutManager.scrollToPositionWithOffset(currentFilter.indexOf(sub), 0)
@@ -263,9 +263,9 @@ class SubscriptionActivity : AppCompatActivity() {
             R.id.update_subs -> {
                 ConfirmDialog {
                     GlobalScope.launch {
-                        val id = Api.newestID()
+                        val id = Api.newestID(this@SubscriptionActivity)
                         for (sub in currentFilter) {
-                            val tag = Api.getTag(sub.name)
+                            val tag = Api.getTag(this@SubscriptionActivity, sub.name)
                             db.changeSubscription(this@SubscriptionActivity, sub.copy(lastCount = tag.count, lastID = id))
                         }
                     }
@@ -316,7 +316,7 @@ class SubscriptionActivity : AppCompatActivity() {
                 var newCount = 0
                 tryCatchSuspended {
                     val oldValue = getRawCount(name)
-                    val tag = Api.getTag(name)
+                    val tag = Api.getTag(this@SubscriptionActivity, name)
                     newCount = tag.count
                     setCount(name, newCount)
                     if (oldValue != newCount) {

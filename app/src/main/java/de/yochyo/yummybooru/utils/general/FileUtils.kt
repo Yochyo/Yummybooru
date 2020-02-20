@@ -7,7 +7,6 @@ import de.yochyo.yummybooru.api.entities.Resource
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
-import de.yochyo.yummybooru.utils.network.download
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -30,7 +29,7 @@ object FileUtils {
 
     private suspend fun createFileToWrite(context: Context, post: Post, server: Server, mimeType: String = post.extension): DocumentFile? {
         return withContext(Dispatchers.IO) {
-            val folder = getOrCreateFolder(db.saveFolder, server.urlHost)
+            val folder = getOrCreateFolder(context.db.getSaveFolder(context), server.urlHost)
             if (folder != null) createFileOrNull(folder, postToFilename(post, mimeType, server), mimeType) else null
         }
 

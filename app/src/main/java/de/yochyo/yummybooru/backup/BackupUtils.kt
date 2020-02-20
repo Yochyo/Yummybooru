@@ -29,11 +29,11 @@ object BackupUtils {
             val tagArray = JSONArray()
             val subArray = JSONArray()
             val serverArray = JSONArray()
-            for (tag in db.tagDao.selectAll())
+            for (tag in context.db.tagDao.selectAll())
                 tagArray.put(TagBackup.toJSONObject(tag, context))
-            for (sub in db.subDao.selectAll())
+            for (sub in context.db.subDao.selectAll())
                 subArray.put(SubscriptionBackup.toJSONObject(sub, context))
-            for (server in db.serverDao.selectAll())
+            for (server in context.db.serverDao.selectAll())
                 serverArray.put(ServerBackup.toJSONObject(server, context))
             json.put("tags", tagArray)
             json.put("subs", subArray)
@@ -48,7 +48,7 @@ object BackupUtils {
 
     suspend fun restoreBackup(byteArray: ByteArray, context: Context) {
         try {
-            db.deleteEverything()
+            context.db.deleteEverything()
             val obj = JSONObject(String(byteArray))
             val tags = obj["tags"] as JSONArray
             val subs = obj["subs"] as JSONArray

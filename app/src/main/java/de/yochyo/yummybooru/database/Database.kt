@@ -1,12 +1,13 @@
 package de.yochyo.yummybooru.database
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.eventcollection.EventCollection
 import de.yochyo.yummybooru.BuildConfig
-import de.yochyo.yummybooru.api.entities.*
+import de.yochyo.yummybooru.api.entities.Server
+import de.yochyo.yummybooru.api.entities.Subscription
+import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.dao.ServerDao
 import de.yochyo.yummybooru.database.dao.SubDao
 import de.yochyo.yummybooru.database.dao.TagDao
@@ -27,23 +28,21 @@ import java.util.*
 
 class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 2) {
     private val lock = Mutex()
+    private val prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
 
     companion object {
-        private lateinit var context: Context
-        private var _prefs: SharedPreferences? = null
-        val prefs: SharedPreferences get() = _prefs!!
-
-        var instance: Database? = null
-        fun initDatabase(context: Context): Database {
-            this.context = context
-            if (instance == null) {
-                _prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
-                instance = Database(context)
-                instance!!.servers.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateServersEvent.trigger(UpdateServersEvent(context, instance!!.servers)) } }
-                instance!!.tags.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateTagsEvent.trigger(UpdateTagsEvent(context, instance!!.tags)) } }
-                instance!!.subs.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateSubsEvent.trigger(UpdateSubsEvent(context, instance!!.subs)) } }
-                GlobalScope.launch {
-                    instance!!.loadServers()
+        private var instance: Database? = null
+        private val dbLock = Any()
+        fun getDatabase(context: Context): Database {
+            synchronized(dbLock) {
+                if (instance == null) {
+                    instance = Database(context)
+                    instance!!.servers.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateServersEvent.trigger(UpdateServersEvent(context, instance!!.servers)) } }
+                    instance!!.tags.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateTagsEvent.trigger(UpdateTagsEvent(context, instance!!.tags)) } }
+                    instance!!.subs.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateSubsEvent.trigger(UpdateSubsEvent(context, instance!!.subs)) } }
+                    GlobalScope.launch {
+                        instance!!.loadServers(context)
+                    }
                 }
             }
             return instance!!
@@ -67,19 +66,19 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
     val servers: EventCollection<Server> = EventCollection(TreeSet())
     val tags: EventCollection<Tag> = EventCollection(TreeSet())
     val subs: EventCollection<Subscription> = EventCollection(TreeSet())
-    suspend fun loadServers() {
+    suspend fun loadServers(context: Context) {
         withContext(Dispatchers.Default) {
             val se: List<Server> = serverDao.selectAll()
             servers.clear()
             servers.addAll(se)
-            Server.currentServer.select(context)
+            Server.getCurrentServer(context).select(context)
         }
     }
 
     suspend fun loadServerWithMutex(context: Context) = lock.withLock { loadServer(context) }
     suspend fun loadServer(context: Context) {
         withContext(Dispatchers.Default) {
-            val server = Server.currentServer
+            val server = Server.getCurrentServer(context)
             loadTags(context, server.id)
             loadSubscriptions(context, server.id)
         }
@@ -124,7 +123,7 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
     suspend fun deleteServer(context: Context, id: Int) {
         withContext(Dispatchers.Default) {
             val s = servers.find { id == it.id }
-            if (s != null && !s.isSelected) {
+            if (s != null && !s.isSelected(context)) {
                 servers.remove(s)
                 serverDao.delete(s)
                 for (tag in tagDao.selectWhereID(s.id)) tagDao.delete(tag)
@@ -139,7 +138,7 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
         withContext(Dispatchers.Default) {
             val s = servers.find { it.id == changedServer.id }
             if (s != null) {
-                val wasCurrentServer = Server.currentServer == changedServer
+                val wasCurrentServer = Server.getCurrentServer(context) == changedServer
                 servers.remove(s)
                 servers.add(changedServer)
                 if (wasCurrentServer) changedServer.select(context)
@@ -294,21 +293,21 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
         }
 
     private var _savePathTested = false
-    var saveFolder: DocumentFile = documentFile(context, prefs.getString("savePath", createDefaultSavePath())!!)
-        get() {
-            if (!_savePathTested) {
-                _savePathTested = true
-                if (!field.exists()) saveFolder = documentFile(context, createDefaultSavePath())
-            }
-            return field
+    private var _saveFolder: DocumentFile = documentFile(context, prefs.getString("savePath", createDefaultSavePath())!!)
+    fun getSaveFolder(context: Context): DocumentFile{
+        if (!_savePathTested) {
+            _savePathTested = true
+            if (!_saveFolder.exists()) _saveFolder = documentFile(context, createDefaultSavePath())
         }
-        set(v) {
-            field = v
-            with(prefs.edit()) {
-                putString("savePath", v.uri.toString())
-                apply()
-            }
+        return _saveFolder
+    }
+    fun setSaveFolder(file: DocumentFile){
+        _saveFolder = file
+        with(prefs.edit()) {
+            putString("savePath", file.uri.toString())
+            apply()
         }
+    }
 
     var sortTagsByFavorite: Boolean
         get() = sortTags.first() == '1'
@@ -352,9 +351,9 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
         }
     }
 
-    val tagDao = TagDao(this)
-    val subDao = SubDao(this)
+    val tagDao = TagDao(context, this)
+    val subDao = SubDao(context, this)
     val serverDao = ServerDao(this)
 }
 
-val db: Database get() = Database.instance!!
+val Context.db: Database get() = Database.getDatabase(this)

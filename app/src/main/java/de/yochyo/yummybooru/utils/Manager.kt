@@ -38,7 +38,10 @@ class Manager(val tags: Array<String>) {
     private val pages = SparseArray<List<Post>>()
     val posts = EventCollection<Post>(ArrayList())
 
-    val currentPost: Post? get() = posts[position]
+    val currentPost: Post? get(){
+        if(position in 0 until posts.size) return posts[position]
+        else return null
+    }
     var currentPage = 0
         private set
     var position = -1
@@ -53,7 +56,7 @@ class Manager(val tags: Array<String>) {
                 if (downloading.contains(page)) return@withContext awaitPage(page)
 
                 downloading += page
-                val posts = Api.getPosts(page, tags)
+                val posts = Api.getPosts(context, page, tags)
                 if (posts != null) {
                     pages.put(page, posts)
                     downloadManagerPageEvent.trigger(DownloadManagerPageEvent(context, page, posts))

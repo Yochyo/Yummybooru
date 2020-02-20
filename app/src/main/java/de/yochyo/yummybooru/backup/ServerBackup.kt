@@ -24,7 +24,7 @@ object ServerBackup : BackupableEntity<Server> {
             val server = Server(json.getString("name"), json.getString("api"),
                     json.getString("url"), json.getString("userName"), json.getString("password"),
                     json.getBoolean("enableR18Filter"), json.getInt("id"))
-            db.serverDao.insert(server)
+            context.db.serverDao.insert(server)
         }catch (e: Exception){
             Logger.log(e)
             e.printStackTrace()

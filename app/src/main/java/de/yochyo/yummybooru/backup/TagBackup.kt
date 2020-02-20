@@ -22,8 +22,8 @@ object TagBackup : BackupableEntity<Tag> {
 
     override suspend fun restoreEntity(json: JSONObject, context: Context) {
         try{
-            db.tagDao.insert(
-                    Tag(json.getString("name"), json.getInt("type"), json.getBoolean("isFavorite"),
+            context.db.tagDao.insert(
+                    Tag(context, json.getString("name"), json.getInt("type"), json.getBoolean("isFavorite"),
                             Date(json.getLong("creation")), json.getInt("serverID"), json.getInt("count")))
         }catch(e: Exception){
             e.printStackTrace()

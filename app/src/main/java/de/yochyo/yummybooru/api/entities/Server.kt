@@ -15,17 +15,15 @@ data class Server(var name: String, var api: String, var url: String, var userNa
 
     companion object {
         private var _currentServer: Server? = null
-        val currentServer: Server
-            get() {
-                if (_currentServer == null || _currentServer!!.id != db.currentServerID) {
-                    _currentServer = db.getServer(db.currentServerID) ?:
-                            if(db.servers.isNotEmpty()) db.servers.first()
-                            else Server("", "", "", "", "") //In case no server exist because of whatever bug may happened
-                }
-                return _currentServer!!
+        fun getCurrentServer(context: Context): Server{
+            if (_currentServer == null || _currentServer!!.id != context.db.currentServerID) {
+                _currentServer = context.db.getServer(context.db.currentServerID) ?:
+                        if(context.db.servers.isNotEmpty()) context.db.servers.first()
+                        else Server("", "", "", "", "") //In case no server exist because of whatever bug may happened
             }
-
-        val currentID: Int get() = currentServer.id
+            return _currentServer!!
+        }
+        fun getCurrentServerID(context: Context): Int = getCurrentServer(context).id
     }
 
     private var cachedPassword = password
@@ -48,16 +46,16 @@ data class Server(var name: String, var api: String, var url: String, var userNa
         ""
     }
 
-    val isSelected: Boolean get() = currentServer.id == id
+    fun isSelected(context: Context): Boolean = getCurrentServerID(context) == id
 
     suspend fun select(context: Context) {
         withContext(Dispatchers.Main) {
-            if (currentServer != this@Server)
-                SelectServerEvent.trigger(SelectServerEvent(context, currentServer, this@Server))
-            db.currentServerID = id
+            if (getCurrentServer(context) != this@Server)
+                SelectServerEvent.trigger(SelectServerEvent(context, getCurrentServer(context), this@Server))
+            context.db.currentServerID = id
             Api.selectApi(api, url)
-            db.loadServerWithMutex(context)
-            db.servers.notifyChange()
+            context.db.loadServerWithMutex(context)
+            context.db.servers.notifyChange()
             updateMissingTypeTags(context)
             updateMissingTypeSubs(context)
         }
@@ -72,25 +70,25 @@ data class Server(var name: String, var api: String, var url: String, var userNa
     }
 
     fun deleteServer(context: Context) {
-        GlobalScope.launch { db.deleteServer(context, id) }
+        GlobalScope.launch { context.db.deleteServer(context, id) }
     }
 
     private fun updateMissingTypeTags(context: Context) {
         GlobalScope.launch {
-            val current = currentServer
-            val oldTags = db.tags.toCollection(ArrayList())
+            val current = getCurrentServer(context)
+            val oldTags = context.db.tags.toCollection(ArrayList())
             val newTags = ArrayList<Tag>()
             for (tag in oldTags) { //Tags updaten
                 if (tag.type == Tag.UNKNOWN) {
-                    val t = Api.getTag(tag.name)
+                    val t = Api.getTag(context, tag.name)
                     newTags += t.copy(isFavorite = tag.isFavorite, creation = tag.creation, serverID = tag.serverID)
                 }
             }
             for (tag in newTags) { //Tags ersetzen
-                if (currentServer == current) {
+                if (getCurrentServer(context) == current) {
                     if (tag.type != Tag.UNKNOWN) {
-                        db.deleteTag(context, tag.name)
-                        db.addTag(context, tag)
+                        context.db.deleteTag(context, tag.name)
+                        context.db.addTag(context, tag)
                     }
                 } else break
             }
@@ -99,20 +97,20 @@ data class Server(var name: String, var api: String, var url: String, var userNa
 
     private fun updateMissingTypeSubs(context: Context) {
         GlobalScope.launch {
-            val current = currentServer
-            val oldSubs = db.subs.toCollection(ArrayList())
+            val current = getCurrentServer(context)
+            val oldSubs = context.db.subs.toCollection(ArrayList())
             val newSubs = ArrayList<Subscription>()
             for (sub in oldSubs) { //Tags updaten
                 if (sub.type == Tag.UNKNOWN) {
-                    val s = Subscription.fromTag(Api.getTag(sub.name))
+                    val s = Subscription.fromTag(context, Api.getTag(context, sub.name))
                     newSubs += s.copy(isFavorite = sub.isFavorite, creation = sub.creation, serverID = sub.serverID)
                 }
             }
             for (sub in newSubs) { //Tags ersetzen
-                if (current == currentServer) {
+                if (current == getCurrentServer(context)) {
                     if (sub.type != Tag.UNKNOWN) {
-                        db.deleteSubscription(context, sub.name)
-                        db.addSubscription(context, sub)
+                        context.db.deleteSubscription(context, sub.name)
+                        context.db.addSubscription(context, sub)
                     }
                 } else break
             }

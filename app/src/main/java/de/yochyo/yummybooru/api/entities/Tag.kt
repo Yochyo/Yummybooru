@@ -1,10 +1,10 @@
 package de.yochyo.yummybooru.api.entities
 
+import android.content.Context
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.database.db
 import java.util.*
 
-data class Tag(val name: String,val type: Int, val isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.currentID, val count: Int = 0) : Comparable<Tag> {
+data class Tag(val context: Context, val name: String, val type: Int, val isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.getCurrentServerID(context), val count: Int = 0) : Comparable<Tag> {
     companion object {
         const val GENERAL = 0
         const val CHARACTER = 4
@@ -40,13 +40,10 @@ data class Tag(val name: String,val type: Int, val isFavorite: Boolean = false, 
     override fun toString(): String = name
 
     override fun compareTo(other: Tag): Int {
-        if (db.sortTagsByFavorite) {
-            if (isFavorite && !other.isFavorite)
-                return -1
-            if (!isFavorite && other.isFavorite)
-                return 1
-        }
-        if (db.sortTagsByAlphabet) return name.compareTo(other.name)
-        return creation.compareTo(other.creation)
+        if (isFavorite && !other.isFavorite)
+            return -1
+        if (!isFavorite && other.isFavorite)
+            return 1
+        return name.compareTo(other.name)
     }
 }

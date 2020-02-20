@@ -6,10 +6,11 @@ import android.view.LayoutInflater
 import android.widget.*
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
+import de.yochyo.yummybooru.api.api.api
 import de.yochyo.yummybooru.api.entities.Server
+import de.yochyo.yummybooru.utils.general.parseURL
 import de.yochyo.yummybooru.utils.network.DownloadUtils
 import de.yochyo.yummybooru.utils.network.ResponseCodes
-import de.yochyo.yummybooru.utils.general.parseURL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -52,8 +53,8 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
                 try {
                     val s = Server(name.text.toString(), apiSpinner.selectedItem.toString(), parseURL(url.text.toString()), username.text.toString(),
                             password.text.toString(), r18.isChecked, server.id)
-                    if (s.api == "Auto") s.api = getCorrectApi(s)
-                    if (DownloadUtils.getUrlResponseCode(Api.instance!!.urlGetPosts(1, arrayOf("*"), 1)) == ResponseCodes.Unauthorized)
+                    if (s.api == "Auto") s.api = getCorrectApi(context, s)
+                    if (DownloadUtils.getUrlResponseCode(context, context.api.urlGetPosts(context, 1, arrayOf("*"), 1)) == ResponseCodes.Unauthorized)
                         withContext(Dispatchers.Main) { Toast.makeText(context, "(Probably) bad login", Toast.LENGTH_LONG).show() }
                     withContext(Dispatchers.Main) { runOnPositive(s) }
                 } catch (e: Exception) {
@@ -66,10 +67,10 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
     }
 
 
-    private suspend fun getCorrectApi(s: Server): String {
+    private suspend fun getCorrectApi(context: Context, s: Server): String {
         for (api in Api.apis) {
             Api.selectApi(api.name, s.url)
-            if (Api.newestID() != 0) return api.name
+            if (Api.newestID(context) != 0) return api.name
         }
         return Api.apis.first().name
     }

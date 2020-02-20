@@ -1,11 +1,19 @@
 package de.yochyo.yummybooru.database.dao
 
+import android.content.Context
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.converter.ConvertBoolean
 import de.yochyo.yummybooru.database.converter.ConvertDate
 import org.jetbrains.anko.db.*
 
-class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
+class TagDao(context: Context, database: ManagedSQLiteOpenHelper) : Dao(database) {
+    val parser = object : RowParser<Tag> {
+        override fun parseRow(columns: Array<Any?>): Tag {
+            return Tag(context, columns[0] as String, (columns[1] as Long).toInt(), ConvertBoolean.toBoolean((columns[2] as Long).toInt()),
+                    ConvertDate.toDate(columns[3] as Long), (columns[4] as Long).toInt(), (columns[5] as Long).toInt())
+        }
+    }
+
     private companion object {
         const val TABLE_NAME = "tags"
         const val NAME = "name"
@@ -15,12 +23,7 @@ class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
         const val SERVER_ID = "serverID"
         const val COUNT = "count"
 
-        val parser = object : RowParser<Tag> {
-            override fun parseRow(columns: Array<Any?>): Tag {
-                return Tag(columns[0] as String, (columns[1] as Long).toInt(), ConvertBoolean.toBoolean((columns[2] as Long).toInt()),
-                        ConvertDate.toDate(columns[3] as Long), (columns[4] as Long).toInt(), (columns[5] as Long).toInt())
-            }
-        }
+
     }
 
     override fun createTable() {
@@ -58,6 +61,7 @@ class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
             select(TABLE_NAME).whereArgs("$SERVER_ID = {$SERVER_ID}", SERVER_ID to serverID).exec { parseList(parser) }
         }
     }
+
     fun selectAll(): List<Tag> {
         return database.use {
             select(TABLE_NAME).exec { parseList(parser) }

@@ -1,11 +1,19 @@
 package de.yochyo.yummybooru.database.dao
 
+import android.content.Context
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.database.converter.ConvertBoolean
 import de.yochyo.yummybooru.database.converter.ConvertDate
 import org.jetbrains.anko.db.*
 
-class SubDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
+class SubDao(context: Context, database: ManagedSQLiteOpenHelper) : Dao(database) {
+    val parser = object : RowParser<Subscription> {
+        override fun parseRow(columns: Array<Any?>): Subscription {
+            return Subscription(context, columns[0] as String, (columns[1] as Long).toInt(), (columns[2] as Long).toInt(), (columns[3] as Long).toInt(),
+                    ConvertBoolean.toBoolean((columns[4] as Long).toInt()),
+                    ConvertDate.toDate(columns[5] as Long), (columns[6] as Long).toInt())
+        }
+    }
 
     private companion object {
         const val TABLE_NAME = "subs"
@@ -18,13 +26,6 @@ class SubDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
         const val SERVER_ID = "serverID"
 
 
-        val parser = object : RowParser<Subscription> {
-            override fun parseRow(columns: Array<Any?>): Subscription {
-                return Subscription(columns[0] as String, (columns[1] as Long).toInt(), (columns[2] as Long).toInt(), (columns[3] as Long).toInt(),
-                        ConvertBoolean.toBoolean((columns[4] as Long).toInt()),
-                        ConvertDate.toDate(columns[5] as Long), (columns[6] as Long).toInt())
-            }
-        }
     }
 
     override fun createTable() {

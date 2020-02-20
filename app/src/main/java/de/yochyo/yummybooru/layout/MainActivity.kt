@@ -93,7 +93,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (hasPermission)
             initData()
 
-        println()
     }
 
 
@@ -104,11 +103,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun initData() {
-        Cache.initCache(this)
         GlobalScope.launch { cache.clearCache() }
-        Database.initDatabase(this)
-
-
         UpdateTagsEvent.registerListener { tagAdapter.notifyDataSetChanged() }
         UpdateServersEvent.registerListener { serverAdapter.notifyDataSetChanged() }
 
@@ -141,7 +136,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 R.id.add_tag -> {
                     AddTagDialog {
                         GlobalScope.launch {
-                            val tag = Api.getTag(it.text.toString())
+                            val tag = Api.getTag(this@MainActivity, it.text.toString())
                             val t = db.addTag(this@MainActivity, tag)
                             withContext(Dispatchers.Main) {
                                 tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(t), 0)
@@ -185,7 +180,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
                     R.id.main_search_subscribe_tag -> {
                         GlobalScope.launch {
-                            if (db.getSubscription(tag.name) == null) db.addSubscription(this@MainActivity, Subscription.fromTag(tag))
+                            if (db.getSubscription(tag.name) == null) db.addSubscription(this@MainActivity, Subscription.fromTag(this@MainActivity, tag))
                             else db.deleteSubscription(this@MainActivity, tag.name)
                             withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
                         }
@@ -208,7 +203,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox).isChecked = selectedTags.contains(tag.name)
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
             textView.text = tag.name;textView.setColor(tag.color);textView.underline(tag.isFavorite)
-            Menus.initMainSearchTagMenu(holder.toolbar.menu, tag)
+            Menus.initMainSearchTagMenu(this@MainActivity, holder.toolbar.menu, tag)
         }
 
         override fun getItemCount(): Int = currentFilter.size
@@ -224,7 +219,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 when (i) {
                     0 -> editServerDialog(server)
                     1 -> {
-                        if (!server.isSelected) ConfirmDialog { server.deleteServer(this@MainActivity) }.withTitle(getString(R.string.delete) + " [${server.name}]").build(this@MainActivity)
+                        if (!server.isSelected(this@MainActivity)) ConfirmDialog { server.deleteServer(this@MainActivity) }.withTitle(getString(R.string.delete) + " [${server.name}]").build(this@MainActivity)
                         else Toast.makeText(this@MainActivity, getString(R.string.cannot_delete_server), Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -259,7 +254,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         override fun onBindViewHolder(holder: ServerViewHolder, position: Int) {
             val server = db.servers.elementAt(position)
-            fillServerLayoutFields(holder.layout, server, server.isSelected)
+            fillServerLayoutFields(holder.layout, server, server.isSelected(this@MainActivity))
         }
 
         fun fillServerLayoutFields(layout: LinearLayout, server: Server, isSelected: Boolean = false) {

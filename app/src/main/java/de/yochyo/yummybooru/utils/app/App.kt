@@ -20,8 +20,6 @@ class App : Application() {
         Thread.setDefaultUncaughtExceptionHandler(ThreadExceptionHandler())
         super.onCreate()
         initListeners()
-        Api.addApi(DanbooruApi(""))
-        Api.addApi(MoebooruApi(""))
         createNotificationChannel()
     }
 

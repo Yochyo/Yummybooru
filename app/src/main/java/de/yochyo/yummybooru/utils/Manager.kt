@@ -49,6 +49,9 @@ class Manager(val tags: Array<String>) {
     private val downloading = LinkedBlockingQueue<Int>()
 
     suspend fun downloadNextPage(context: Context) = downloadPage(context, currentPage + 1)
+    /**
+     * @return returns null on networks error, empty list on end
+     */
     suspend fun downloadPage(context: Context, page: Int): List<Post>? {
         return withContext(Dispatchers.IO) {
             val p = pages[page]

@@ -196,7 +196,6 @@ class SubscriptionActivity : AppCompatActivity() {
                     R.id.subscription_set_favorite -> GlobalScope.launch {
                         val copy = sub.copy(isFavorite = !sub.isFavorite)
                         db.changeSubscription(this@SubscriptionActivity, copy)
-                        withContext(Dispatchers.Main) { layoutManager.scrollToPositionWithOffset(currentFilter.indexOf(copy), 0) }
                     }
                     R.id.subscription_delete -> deleteSubDialog(sub)
                 }

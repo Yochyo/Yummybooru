@@ -149,6 +149,7 @@ class SubscriptionActivity : AppCompatActivity() {
                                     db.changeSubscription(this@SubscriptionActivity, selected.copy(lastCount = tag.count, lastID = id))
                                 }
                             }
+                            adapter.unselectAll()
                         }.withTitle("Update selected subs?").build(this@SubscriptionActivity)
                     }
                 }

@@ -5,6 +5,7 @@ import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.utils.general.parseUrlCharacters
 import de.yochyo.yummybooru.utils.network.DownloadUtils
 import org.json.JSONObject
 import java.net.URLEncoder
@@ -42,7 +43,7 @@ abstract class Api(var url: String) {
 
         suspend fun getTags(context: Context, beginSequence: String): List<Tag> {
             val array = ArrayList<Tag>(searchTagLimit)
-            val json = DownloadUtils.getJson(context.api.urlGetTags(context, beginSequence))
+            val json = DownloadUtils.getJson(context.api.urlGetTags(context, parseUrlCharacters(beginSequence)))
             if (json != null) {
                 for (i in 0 until json.length()) {
                     val tag = context.api.getTagFromJson(context, json.getJSONObject(i))
@@ -54,7 +55,7 @@ abstract class Api(var url: String) {
 
         suspend fun getTag(context: Context, name: String): Tag {
             if (name == "*") return Tag(context, name, Tag.SPECIAL, count = newestID(context))
-            val json = DownloadUtils.getJson(context.api.urlGetTag(context, name))
+            val json = DownloadUtils.getJson(context.api.urlGetTag(context, parseUrlCharacters(name)))
             if (json != null && json.length() > 0) {
                 val tag = context.api.getTagFromJson(context, json.getJSONObject(0))
                 if (tag != null) return tag

@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.yummybooru.api.entities.Server
 import java.io.File
+import java.net.URLEncoder
 import java.security.MessageDigest
 import kotlin.math.atan2
 
@@ -56,7 +57,8 @@ fun parseURL(url: String): String {
         b.append("/")
     return b.toString()
 }
-fun Boolean.toInt() = if(this) 1 else 0
+
+fun Boolean.toInt() = if (this) 1 else 0
 fun createDefaultSavePath(): String {
     val f = File("${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_PICTURES}/Yummybooru/")
     f.mkdirs()
@@ -77,6 +79,11 @@ val String.mimeType: String?
     }
 
 fun Context.drawable(id: Int) = ContextCompat.getDrawable(this, id)
+
+fun parseUrlCharacters(urlStr: String): String {
+    return URLEncoder.encode(urlStr, "UTF-8")
+}
+
 object Fling {
     fun getDirection(e1: MotionEvent, e2: MotionEvent): Direction {
         val x1 = e1.x

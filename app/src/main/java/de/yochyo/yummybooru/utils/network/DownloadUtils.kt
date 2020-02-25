@@ -15,7 +15,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object DownloadUtils {
-    fun getUrlResponseCode(context: Context, url: String): Int {
+    fun getUrlResponseCode(context: Context): Int {
         return try {
             val u = URL(context.api.urlGetPosts(context, 1, arrayOf("*"), 1))
             val conn = u.openConnection() as HttpURLConnection

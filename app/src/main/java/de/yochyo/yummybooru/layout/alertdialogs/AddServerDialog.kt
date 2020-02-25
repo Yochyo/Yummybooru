@@ -54,7 +54,7 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
                     val s = Server(name.text.toString(), apiSpinner.selectedItem.toString(), parseURL(url.text.toString()), username.text.toString(),
                             password.text.toString(), r18.isChecked, server.id)
                     if (s.api == "Auto") s.api = getCorrectApi(context, s)
-                    if (DownloadUtils.getUrlResponseCode(context, context.api.urlGetPosts(context, 1, arrayOf("*"), 1)) == ResponseCodes.Unauthorized)
+                    if (DownloadUtils.getUrlResponseCode(context) == ResponseCodes.Unauthorized)
                         withContext(Dispatchers.Main) { Toast.makeText(context, "(Probably) bad login", Toast.LENGTH_LONG).show() }
                     withContext(Dispatchers.Main) { runOnPositive(s) }
                 } catch (e: Exception) {

@@ -29,6 +29,7 @@ import de.yochyo.yummybooru.utils.Manager
 import de.yochyo.yummybooru.utils.general.drawable
 import de.yochyo.yummybooru.utils.general.preview
 import de.yochyo.yummybooru.utils.general.toTagArray
+import de.yochyo.yummybooru.downloadservice.saveDownload
 import de.yochyo.yummybooru.utils.network.download
 import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*

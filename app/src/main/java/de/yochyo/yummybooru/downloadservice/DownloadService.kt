@@ -6,20 +6,28 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import de.yochyo.downloader.RegulatingDownloader
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Post
-import de.yochyo.yummybooru.utils.Manager
+import de.yochyo.yummybooru.api.entities.Resource
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
+import de.yochyo.yummybooru.utils.Manager
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
-import de.yochyo.yummybooru.utils.network.DownloadUtils
 import de.yochyo.yummybooru.utils.general.toTagString
 import kotlinx.coroutines.*
+import java.io.InputStream
 import java.util.*
 
 class DownloadService : Service() {
+    private val downloader = object : RegulatingDownloader<Resource>(1) {
+        override fun toResource(inputStream: InputStream, context: Any): Resource {
+            return Resource(inputStream.readBytes(), context as Int)
+        }
+    }
+
     var job: Job? = null
     lateinit var notificationManager: NotificationManagerCompat
     lateinit var notificationBuilder: NotificationCompat.Builder
@@ -47,7 +55,7 @@ class DownloadService : Service() {
             var pair = getNextElement()
             while (pair != null && isActive) {
                 val url = if (db.downloadOriginal) pair.first.fileURL else pair.first.fileSampleURL
-                val image = DownloadUtils.downloadResource(url)
+                val image = downloader.downloadSync(url, this)
                 if (image != null) FileUtils.writeFile(this@DownloadService, pair.first, image, pair.second, SafeFileEvent.SILENT)
                 pair = getNextElement()
             }

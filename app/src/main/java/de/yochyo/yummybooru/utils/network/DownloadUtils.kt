@@ -58,26 +58,6 @@ object DownloadUtils {
         return array
     }
 
-    suspend fun downloadResource(url: String, type: Int = Resource.getTypeFromURL(url)): Resource? {
-        return withContext(Dispatchers.IO) {
-            var stream: InputStream? = null
-            try {
-                stream = getUrlInputStream(url)
-                if (stream != null) {
-                    val res = Resource(stream.readBytes(), type)
-                    stream.close()
-                    return@withContext res
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                stream?.close()
-            } catch (error: OutOfMemoryError) {
-                Logger.log(error, filePrefix = "OutOfMemory")
-            }
-            null
-        }
-    }
-
     suspend fun getUrlInputStream(url: String): InputStream? {
         return withContext(Dispatchers.IO) {
             return@withContext try {

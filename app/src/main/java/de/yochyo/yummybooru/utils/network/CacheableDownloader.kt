@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import java.io.InputStream
 
 class CacheableDownloader(maxThreads: Int) {
-    private val dl = object : RegulatingDownloader<Resource>(maxThreads) {
+    val dl = object : RegulatingDownloader<Resource>(maxThreads) {
         override fun toResource(inputStream: InputStream, context: Any): Resource {
             return Resource(inputStream.readBytes(), context as Int)
         }

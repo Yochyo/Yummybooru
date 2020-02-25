@@ -26,6 +26,7 @@ import de.yochyo.yummybooru.layout.res.Menus
 import de.yochyo.yummybooru.utils.LoadManagerPageEvent
 import de.yochyo.yummybooru.utils.Manager
 import de.yochyo.yummybooru.utils.general.*
+import de.yochyo.yummybooru.downloadservice.saveDownload
 import de.yochyo.yummybooru.utils.network.download
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
@@ -97,9 +98,7 @@ class PictureActivity : AppCompatActivity() {
 
     private fun downloadOriginalPicture(p: Post) {
         GlobalScope.launch {
-            download(this@PictureActivity, if (db.downloadOriginal) p.fileURL else p.fileSampleURL, if (db.downloadOriginal) original(p.id) else sample(p.id), {
-                FileUtils.writeFile(this@PictureActivity, p, it, Server.getCurrentServer(this@PictureActivity))
-            })
+            saveDownload(this@PictureActivity, if (db.downloadOriginal) p.fileURL else p.fileSampleURL, if (db.downloadOriginal) original(p.id) else sample(p.id), p)
         }
     }
 

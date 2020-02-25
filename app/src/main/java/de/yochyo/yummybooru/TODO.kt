@@ -1,6 +1,9 @@
 package de.yochyo.yummybooru
 
 //Features
+//TODO display amount of open downloads and/or move image download to background when closing app
+//TODO extract zip files and show as pixiv history
+//TODO display several colors on tags with several tags in them
 //TODO Gelbooru alphacoders.com
 //TODO Events isCanceled entfernen und Und richtig implementieren
 //TODO search with OR and AND or NOT
@@ -21,6 +24,15 @@ package de.yochyo.yummybooru
 //TODO download all
 //TODO Pictureactivity, Longclick allows to swipe through children of an image by scrolling up/down
 //TODO reuse old icon?
+//TODO create AI with image recommendations
+//TODO workaround for people without danbooru premium to enter more than 2 tags
+//TODO readd r18 filter
+//TODO add something to recognise a tag is suscribed
+//TODO add filter for favorite tags/not favorite tags ...
+//TODO geldbooru api
+//TODO SubscriptionAcitivty: Sort by amount of new images
+//TODO Downloader is slow, should create a new coroutine
+//TODO writing on SD card gets reeeaallly slow when too many images are in the folder
 //Optimizations
 //TODO add foreign key constraint to favorite database (soon to be added)
 //TODO use strings from string.xml
@@ -31,11 +43,16 @@ package de.yochyo.yummybooru
 //TODO scrollbar fast scrolling
 //TODO seperate gui in smaller classes
 //TODO Use View-Design-Pattern or something like that where the data is stored in a Model and only called by the view
+//TODO SubscriptionActivity: Dont scroll to element when favoriting it
 //Bugs
+//TODO reset selected subs does not undo the selection
+//TODO remove useless sorting preferences
+//TODO create issues in github instead of in todo file
 //TODO resets save path sometimes
 //TODO files are sometimes saved with (1) at the end of their mimetype
 //TODO changelogs are not displayed on an update
 //TODO update old screenshot on github
+//TODO "100%" is not recognised as tag
 //TODO delete old sorting preferences when updating database (in onUpgrade)
 //Probably fixed
 

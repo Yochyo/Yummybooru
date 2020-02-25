@@ -58,8 +58,6 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         }
 
         bindPreferenceSummaryToValue(findPreference("limit"))
-        bindPreferenceSummaryToValue(findPreference("sortSubs"))
-        bindPreferenceSummaryToValue(findPreference("sortTags"))
         bindPreferenceSummaryToValue(findPreference("downloadOriginal"))
         bindPreferenceSummaryToValue(findPreference("savePath"))
         bindPreferenceSummaryToValue(findPreference("updates"))
@@ -71,8 +69,6 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             val database = preference.context.db
             when (preference.key) {
                 "limit" -> database.limit = value.toString().toInt()
-                "sortSubs" -> database.sortSubs = value.toString()
-                "sortTags" -> database.sortTags = value.toString()
                 "downloadOriginal" -> database.downloadOriginal = value.toString().toBoolean()
                 //Add here
             }

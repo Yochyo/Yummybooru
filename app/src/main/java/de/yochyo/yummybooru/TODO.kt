@@ -49,7 +49,6 @@ package de.yochyo.yummybooru
 //TODO remove useless sorting preferences
 //TODO create issues in github instead of in todo file
 //TODO resets save path sometimes
-//TODO files are sometimes saved with (1) at the end of their mimetype
 //TODO changelogs are not displayed on an update
 //TODO update old screenshot on github
 //TODO "100%" is not recognised as tag

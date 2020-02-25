@@ -10,8 +10,6 @@ object PreferencesBackup : BackupableEntity<String> {
         val json = JSONObject()
         json.put("limit", context.db.limit)
         json.put("currentServerID", context.db.currentServerID)
-        json.put("sortTags", context.db.sortTags)
-        json.put("sortSubs", context.db.sortSubs)
         json.put("downloadOriginal", context.db.downloadOriginal)
         json.put("savePath", context.db.getSaveFolder(context).uri)
         return json
@@ -20,8 +18,6 @@ object PreferencesBackup : BackupableEntity<String> {
     override suspend fun restoreEntity(json: JSONObject, context: Context) {
         context.db.limit = json.getInt("limit")
         context.db.currentServerID = json.getInt("currentServerID")
-        context.db.sortTags = json["sortTags"].toString()
-        context.db.sortSubs = json["sortSubs"].toString()
         context.db.downloadOriginal = json.getBoolean("downloadOriginal")
         context.db.setSaveFolder(documentFile(context, json["savePath"].toString()))
     }

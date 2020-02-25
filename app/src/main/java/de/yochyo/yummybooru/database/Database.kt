@@ -267,22 +267,6 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
         }
 
 
-    var sortTags = prefs.getString("sortTags", "00")!!
-        set(value) {
-            field = value
-            with(prefs.edit()) {
-                putString("sortTags", value)
-                apply()
-            }
-        }
-    var sortSubs = prefs.getString("sortSubs", "00")!!
-        set(value) {
-            field = value
-            with(prefs.edit()) {
-                putString("sortSubs", value)
-                apply()
-            }
-        }
     var downloadOriginal = prefs.getBoolean("downloadOriginal", true)
         set(v) {
             field = v
@@ -294,42 +278,21 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
 
     private var _savePathTested = false
     private var _saveFolder: DocumentFile = documentFile(context, prefs.getString("savePath", createDefaultSavePath())!!)
-    fun getSaveFolder(context: Context): DocumentFile{
+    fun getSaveFolder(context: Context): DocumentFile {
         if (!_savePathTested) {
             _savePathTested = true
             if (!_saveFolder.exists()) _saveFolder = documentFile(context, createDefaultSavePath())
         }
         return _saveFolder
     }
-    fun setSaveFolder(file: DocumentFile){
+
+    fun setSaveFolder(file: DocumentFile) {
         _saveFolder = file
         with(prefs.edit()) {
             putString("savePath", file.uri.toString())
             apply()
         }
     }
-
-    var sortTagsByFavorite: Boolean
-        get() = sortTags.first() == '1'
-        set(v) {
-            sortTags = "${sortTags.first()}$v"
-        }
-    var sortTagsByAlphabet: Boolean
-        get() = sortTags.last() == '1'
-        set(v) {
-            sortTags = "$v${sortTags.last()}"
-        }
-
-    var sortSubsByFavorite: Boolean
-        get() = sortSubs.first() == '1'
-        set(v) {
-            sortSubs = "${sortSubs.first()}$v"
-        }
-    var sortSubsByAlphabet: Boolean
-        get() = sortSubs.last() == '1'
-        set(v) {
-            sortSubs = "$v${sortSubs.last()}"
-        }
 
     suspend fun deleteEverything() {
         withContext(Dispatchers.Default) {

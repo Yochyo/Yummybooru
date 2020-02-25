@@ -15,20 +15,6 @@
             android:defaultValue="30"
             android:entries="@array/post_limit"
             android:entryValues="@array/post_limit"/>
-    <ListPreference
-            android:key="sortTags"
-            android:title="Sort tags by"
-            android:summary="Sort tags in Subscription Activity."
-            android:defaultValue="11"
-            android:entries="@array/tags_sort_entries"
-            android:entryValues="@array/tags_sort_values"/>
-    <ListPreference
-            android:key="sortSubs"
-            android:title="Sort subs by"
-            android:summary="Sort subs in Subscription Activity."
-            android:defaultValue="11"
-            android:entries="@array/subs_sort_entries"
-            android:entryValues="@array/subs_sort_values"/>
     <Preference
             android:key="create_backup"
             android:title="Create Backup"

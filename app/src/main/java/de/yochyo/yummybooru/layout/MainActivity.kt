@@ -27,7 +27,6 @@ import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
-import de.yochyo.yummybooru.database.Database
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.UpdateServersEvent
 import de.yochyo.yummybooru.events.events.UpdateTagsEvent
@@ -38,7 +37,10 @@ import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.layout.res.Menus
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
-import de.yochyo.yummybooru.utils.general.*
+import de.yochyo.yummybooru.utils.general.cache
+import de.yochyo.yummybooru.utils.general.setColor
+import de.yochyo.yummybooru.utils.general.toTagString
+import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.coroutines.Dispatchers
@@ -137,7 +139,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     AddTagDialog {
                         GlobalScope.launch {
                             val tag = Api.getTag(this@MainActivity, it.text.toString())
-                            val t = db.addTag(this@MainActivity, tag)
+                            val t = db.addTag(tag)
                             withContext(Dispatchers.Main) {
                                 tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(t), 0)
                             }
@@ -176,12 +178,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 when (it.itemId) {
                     R.id.main_search_favorite_tag -> GlobalScope.launch {
                         val copy = tag.copy(isFavorite = !tag.isFavorite)
-                        db.changeTag(this@MainActivity, copy)
+                        db.changeTag(copy)
                     }
                     R.id.main_search_subscribe_tag -> {
                         GlobalScope.launch {
-                            if (db.getSubscription(tag.name) == null) db.addSubscription(this@MainActivity, Subscription.fromTag(this@MainActivity, tag))
-                            else db.deleteSubscription(this@MainActivity, tag.name)
+                            if (db.getSubscription(tag.name) == null) db.addSubscription(Subscription.fromTag(this@MainActivity, tag))
+                            else db.deleteSubscription(tag.name)
                             withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
                         }
                     }
@@ -189,7 +191,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         ConfirmDialog {
                             GlobalScope.launch {
                                 selectedTags.remove(tag.name)
-                                db.deleteTag(this@MainActivity, tag.name)
+                                db.deleteTag(tag.name)
                             }
                         }.withTitle("Delete").withMessage("Delete tag ${tag.name}").build(this@MainActivity)
                     }
@@ -230,7 +232,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         private fun editServerDialog(server: Server) {
             AddServerDialog {
                 GlobalScope.launch {
-                    db.changeServer(this@MainActivity, it)
+                    db.changeServer(it)
                     withContext(Dispatchers.Main) { Snackbar.make(drawer_layout, "Edit [${it.name}]", Snackbar.LENGTH_SHORT).show() }
                 }
             }.withServer(server).withTitle(getString(R.string.edit_server)).build(this@MainActivity)
@@ -302,7 +304,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             R.id.action_add_server -> AddServerDialog {
                 GlobalScope.launch {
-                    db.addServer(this@MainActivity, it)
+                    db.addServer(it)
                     withContext(Dispatchers.Main) { Snackbar.make(drawer_layout, "Add server [${it.name}]", Snackbar.LENGTH_SHORT).show() }
                 }
             }.build(this)

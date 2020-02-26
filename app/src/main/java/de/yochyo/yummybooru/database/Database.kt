@@ -26,7 +26,7 @@ import org.jetbrains.anko.db.dropTable
 import java.util.*
 
 
-class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 2) {
+class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 2) {
     private val lock = Mutex()
     private val prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
 
@@ -75,17 +75,17 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
         }
     }
 
-    suspend fun loadServerWithMutex(context: Context) = lock.withLock { loadServer(context) }
-    suspend fun loadServer(context: Context) {
+    suspend fun loadServerWithMutex() = lock.withLock { loadServer() }
+    suspend fun loadServer() {
         withContext(Dispatchers.Default) {
             val server = Server.getCurrentServer(context)
-            loadTags(context, server.id)
-            loadSubscriptions(context, server.id)
+            loadTags(server.id)
+            loadSubscriptions(server.id)
         }
     }
 
-    suspend fun loadTagsWithMutex(context: Context, serverID: Int) = lock.withLock { loadTags(context, serverID) }
-    suspend fun loadTags(context: Context, serverID: Int) {
+    suspend fun loadTagsWithMutex(serverID: Int) = lock.withLock { loadTags(serverID) }
+    suspend fun loadTags(serverID: Int) {
         withContext(Dispatchers.Default) {
             val t = tagDao.selectWhereID(serverID)
             withContext(Dispatchers.Main) {
@@ -95,8 +95,8 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
         }
     }
 
-    suspend fun loadSubscriptionsWithMutex(context: Context, serverID: Int) = lock.withLock { loadSubscriptions(context, serverID) }
-    suspend fun loadSubscriptions(context: Context, serverID: Int) {
+    suspend fun loadSubscriptionsWithMutex(serverID: Int) = lock.withLock { loadSubscriptions(serverID) }
+    suspend fun loadSubscriptions(serverID: Int) {
         withContext(Dispatchers.Default) {
             val s = subDao.selectWhereID(serverID)
             subs.clear()
@@ -106,8 +106,8 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
 
     fun getServer(id: Int) = servers.find { it.id == id }
 
-    suspend fun addServerWithMutex(context: Context, server: Server) = lock.withLock { addServer(context, server) }
-    suspend fun addServer(context: Context, server: Server) {
+    suspend fun addServerWithMutex(server: Server) = lock.withLock { addServer(server) }
+    suspend fun addServer(server: Server) {
         withContext(Dispatchers.Default) {
             val s = getServer(server.id)
             if (s == null) {
@@ -119,8 +119,8 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
         }
     }
 
-    suspend fun deleteServerWithMutex(context: Context, id: Int) = lock.withLock { deleteServer(context, id) }
-    suspend fun deleteServer(context: Context, id: Int) {
+    suspend fun deleteServerWithMutex(id: Int) = lock.withLock { deleteServer(id) }
+    suspend fun deleteServer(id: Int) {
         withContext(Dispatchers.Default) {
             val s = servers.find { id == it.id }
             if (s != null && !s.isSelected(context)) {
@@ -133,8 +133,8 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
         }
     }
 
-    suspend fun changeServerWithMutex(context: Context, changedServer: Server) = lock.withLock { changeServer(context, changedServer) }
-    suspend fun changeServer(context: Context, changedServer: Server) {
+    suspend fun changeServerWithMutex(changedServer: Server) = lock.withLock { changeServer(changedServer) }
+    suspend fun changeServer(changedServer: Server) {
         withContext(Dispatchers.Default) {
             val s = servers.find { it.id == changedServer.id }
             if (s != null) {
@@ -150,8 +150,8 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
 
     fun getTag(name: String) = tags.find { it.name == name }
 
-    suspend fun addTagWithMutex(context: Context, tag: Tag) = lock.withLock { addTag(context, tag) }
-    suspend fun addTag(context: Context, tag: Tag): Tag {
+    suspend fun addTagWithMutex(tag: Tag) = lock.withLock { addTag(tag) }
+    suspend fun addTag(tag: Tag): Tag {
         return withContext(Dispatchers.Default) {
             val t = getTag(tag.name)
             if (t == null) {
@@ -163,8 +163,8 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
         }
     }
 
-    suspend fun deleteTagWithMutex(context: Context, name: String) = lock.withLock { deleteTag(context, name) }
-    suspend fun deleteTag(context: Context, name: String) {
+    suspend fun deleteTagWithMutex(name: String) = lock.withLock { deleteTag(name) }
+    suspend fun deleteTag(name: String) {
         withContext(Dispatchers.Default) {
             val tag = tags.find { it.name == name }
             if (tag != null) {
@@ -175,8 +175,8 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
         }
     }
 
-    suspend fun changeTagWithMutex(context: Context, changedTag: Tag) = lock.withLock { changeTag(context, changedTag) }
-    suspend fun changeTag(context: Context, changedTag: Tag) {
+    suspend fun changeTagWithMutex(changedTag: Tag) = lock.withLock { changeTag(changedTag) }
+    suspend fun changeTag(changedTag: Tag) {
         withContext(Dispatchers.Default) {
             val tag = tags.find { it.name == changedTag.name }
             if (tag != null) {
@@ -190,8 +190,8 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
 
     fun getSubscription(name: String) = subs.find { it.name == name }
 
-    suspend fun addSubscriptionWithMutex(context: Context, sub: Subscription) = lock.withLock { addSubscription(context, sub) }
-    suspend fun addSubscription(context: Context, sub: Subscription) {
+    suspend fun addSubscriptionWithMutex(sub: Subscription) = lock.withLock { addSubscription(sub) }
+    suspend fun addSubscription(sub: Subscription) {
         withContext(Dispatchers.Default) {
             if (getSubscription(sub.name) == null) {
                 subs.add(sub)
@@ -201,8 +201,8 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
         }
     }
 
-    suspend fun deleteSubscriptionWithMutex(context: Context, name: String) = lock.withLock { deleteSubscription(context, name) }
-    suspend fun deleteSubscription(context: Context, name: String) {
+    suspend fun deleteSubscriptionWithMutex(name: String) = lock.withLock { deleteSubscription(name) }
+    suspend fun deleteSubscription(name: String) {
         withContext(Dispatchers.Default) {
             val sub = subs.find { it.name == name }
             if (sub != null) {
@@ -213,8 +213,8 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
         }
     }
 
-    suspend fun changeSubscriptionWithMutex(context: Context, changedSub: Subscription) = lock.withLock { changeSubscription(context, changedSub) }
-    suspend fun changeSubscription(context: Context, changedSub: Subscription) {
+    suspend fun changeSubscriptionWithMutex(changedSub: Subscription) = lock.withLock { changeSubscription(changedSub) }
+    suspend fun changeSubscription(changedSub: Subscription) {
         withContext(Dispatchers.Default) {
             val sub = subs.find { it.name == changedSub.name }
             if (sub != null) {
@@ -277,19 +277,18 @@ class Database(context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 
         }
 
     private var _savePathTested = false
-    private var _saveFolder: DocumentFile = documentFile(context, prefs.getString("savePath", createDefaultSavePath())!!)
-    fun getSaveFolder(context: Context): DocumentFile {
+    var saveFolder: DocumentFile = documentFile(context, prefs.getString("savePath", createDefaultSavePath())!!)
+    get() {
         if (!_savePathTested) {
             _savePathTested = true
-            if (!_saveFolder.exists()) _saveFolder = documentFile(context, createDefaultSavePath())
+            if (!field.exists()) field = documentFile(context, createDefaultSavePath())
         }
-        return _saveFolder
+        return field
     }
-
-    fun setSaveFolder(file: DocumentFile) {
-        _saveFolder = file
+    set(value) {
+        field = value
         with(prefs.edit()) {
-            putString("savePath", file.uri.toString())
+            putString("savePath", value.uri.toString())
             apply()
         }
     }

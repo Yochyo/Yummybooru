@@ -146,7 +146,7 @@ class SubscriptionActivity : AppCompatActivity() {
                                 val id = Api.newestID(this@SubscriptionActivity)
                                 for (selected in adapter.selected.getSelected(currentFilter)) {
                                     val tag = Api.getTag(this@SubscriptionActivity, selected.name)
-                                    db.changeSubscription(this@SubscriptionActivity, selected.copy(lastCount = tag.count, lastID = id))
+                                    db.changeSubscription(selected.copy(lastCount = tag.count, lastID = id))
                                 }
                             }
                             adapter.unselectAll()
@@ -181,7 +181,7 @@ class SubscriptionActivity : AppCompatActivity() {
             b.setTitle(R.string.delete)
             b.setMessage("${getString(R.string.delete)} ${getString(R.string.subscription)} ${sub.name}?")
             b.setNegativeButton(R.string.no) { _, _ -> }
-            b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { db.deleteSubscription(this@SubscriptionActivity, sub.name) } }
+            b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { db.deleteSubscription( sub.name) } }
             b.show()
         }
 
@@ -195,7 +195,7 @@ class SubscriptionActivity : AppCompatActivity() {
                 when (it.itemId) {
                     R.id.subscription_set_favorite -> GlobalScope.launch {
                         val copy = sub.copy(isFavorite = !sub.isFavorite)
-                        db.changeSubscription(this@SubscriptionActivity, copy)
+                        db.changeSubscription( copy)
                     }
                     R.id.subscription_delete -> deleteSubDialog(sub)
                 }
@@ -230,7 +230,7 @@ class SubscriptionActivity : AppCompatActivity() {
             builder.setNegativeButton(R.string.no) { _, _ -> }
             builder.setPositiveButton(R.string.yes) { _, _ ->
                 GlobalScope.launch(Dispatchers.Main) {
-                    db.changeSubscription(this@SubscriptionActivity, sub.copy(lastID = onClickedData!!.idWhenClicked, lastCount = onClickedData!!.countWhenClicked))
+                    db.changeSubscription(sub.copy(lastID = onClickedData!!.idWhenClicked, lastCount = onClickedData!!.countWhenClicked))
                     onClickedData = null
                 }
             }
@@ -252,7 +252,7 @@ class SubscriptionActivity : AppCompatActivity() {
                         GlobalScope.launch {
                             val tag = Api.getTag(this@SubscriptionActivity, it.text.toString())
                             val sub = Subscription.fromTag(this@SubscriptionActivity, tag)
-                            db.addSubscription(this@SubscriptionActivity, sub)
+                            db.addSubscription(sub)
                             withContext(Dispatchers.Main) {
                                 layoutManager.scrollToPositionWithOffset(currentFilter.indexOf(sub), 0)
                             }
@@ -266,7 +266,7 @@ class SubscriptionActivity : AppCompatActivity() {
                         val id = Api.newestID(this@SubscriptionActivity)
                         for (sub in currentFilter) {
                             val tag = Api.getTag(this@SubscriptionActivity, sub.name)
-                            db.changeSubscription(this@SubscriptionActivity, sub.copy(lastCount = tag.count, lastID = id))
+                            db.changeSubscription(sub.copy(lastCount = tag.count, lastID = id))
                         }
                     }
                 }.withTitle("Update all subs?").build(this@SubscriptionActivity)

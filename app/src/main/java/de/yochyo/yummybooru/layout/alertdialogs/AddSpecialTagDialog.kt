@@ -32,7 +32,7 @@ class AddSpecialTagDialog {
                 stringBuilder.append(layout.findViewById<Spinner>(R.id.height_spinner).selectedItem.toString())
                 stringBuilder.append(text)
                 val tag = Tag(context, stringBuilder.toString(), Tag.SPECIAL)
-                GlobalScope.launch { context.db.addTag(context, tag) }
+                GlobalScope.launch { context.db.addTag(tag) }
             }
         }
         layout.findViewById<ImageView>(R.id.width_add).setOnClickListener {
@@ -43,7 +43,7 @@ class AddSpecialTagDialog {
                 stringBuilder.append(layout.findViewById<Spinner>(R.id.width_spinner).selectedItem.toString())
                 stringBuilder.append(text)
                 val tag = Tag(context, stringBuilder.toString(), Tag.SPECIAL)
-                GlobalScope.launch { context.db.addTag(context, tag) }
+                GlobalScope.launch { context.db.addTag(tag) }
             }
         }
 

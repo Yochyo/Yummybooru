@@ -11,7 +11,7 @@ object PreferencesBackup : BackupableEntity<String> {
         json.put("limit", context.db.limit)
         json.put("currentServerID", context.db.currentServerID)
         json.put("downloadOriginal", context.db.downloadOriginal)
-        json.put("savePath", context.db.getSaveFolder(context).uri)
+        json.put("savePath", context.db.saveFolder.uri)
         return json
     }
 
@@ -19,6 +19,6 @@ object PreferencesBackup : BackupableEntity<String> {
         context.db.limit = json.getInt("limit")
         context.db.currentServerID = json.getInt("currentServerID")
         context.db.downloadOriginal = json.getBoolean("downloadOriginal")
-        context.db.setSaveFolder(documentFile(context, json["savePath"].toString()))
+        context.db.saveFolder = documentFile(context, json["savePath"].toString())
     }
 }

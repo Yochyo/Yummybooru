@@ -54,7 +54,7 @@ data class Server(var name: String, var api: String, var url: String, var userNa
                 SelectServerEvent.trigger(SelectServerEvent(context, getCurrentServer(context), this@Server))
             context.db.currentServerID = id
             Api.selectApi(api, url)
-            context.db.loadServerWithMutex(context)
+            context.db.loadServerWithMutex()
             context.db.servers.notifyChange()
             updateMissingTypeTags(context)
             updateMissingTypeSubs(context)
@@ -70,7 +70,7 @@ data class Server(var name: String, var api: String, var url: String, var userNa
     }
 
     fun deleteServer(context: Context) {
-        GlobalScope.launch { context.db.deleteServer(context, id) }
+        GlobalScope.launch { context.db.deleteServer(id) }
     }
 
     private fun updateMissingTypeTags(context: Context) {
@@ -87,8 +87,8 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             for (tag in newTags) { //Tags ersetzen
                 if (getCurrentServer(context) == current) {
                     if (tag.type != Tag.UNKNOWN) {
-                        context.db.deleteTag(context, tag.name)
-                        context.db.addTag(context, tag)
+                        context.db.deleteTag(tag.name)
+                        context.db.addTag(tag)
                     }
                 } else break
             }
@@ -109,8 +109,8 @@ data class Server(var name: String, var api: String, var url: String, var userNa
             for (sub in newSubs) { //Tags ersetzen
                 if (current == getCurrentServer(context)) {
                     if (sub.type != Tag.UNKNOWN) {
-                        context.db.deleteSubscription(context, sub.name)
-                        context.db.addSubscription(context, sub)
+                        context.db.deleteSubscription(sub.name)
+                        context.db.addSubscription(sub)
                     }
                 } else break
             }

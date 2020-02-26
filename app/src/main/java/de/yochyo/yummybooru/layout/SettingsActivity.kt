@@ -106,7 +106,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         if (resultCode == RESULT_OK && data != null) {
             if (requestCode == savePathCode) { //Speicherpfad ändern
                 val file = DocumentFile.fromTreeUri(this, data.data)
-                db.setSaveFolder(file!!)
+                db.saveFolder = file!!
                 setSavePathSummary()
             }
             if (requestCode == restoreDataCode) { //Daten wiederherstellen
@@ -127,7 +127,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
 
     private fun setSavePathSummary() {
         val pref = findPreference("savePath")
-        val file = db.getSaveFolder(this)
+        val file = db.saveFolder
         pref.summary = file.name
     }
 }

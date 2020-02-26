@@ -148,7 +148,7 @@ open class PreviewActivity : AppCompatActivity() {
                     GlobalScope.launch {
                         for (post in posts) {
                             for (tag in post.getTags()) {
-                                if (tag.type == Tag.ARTIST) db.addTag(this@PreviewActivity, tag)
+                                if (tag.type == Tag.ARTIST) db.addTag(tag)
                             }
                         }
                     }
@@ -206,21 +206,21 @@ open class PreviewActivity : AppCompatActivity() {
             R.id.select_all -> previewAdapter.selectAll()
             R.id.favorite -> {
                 val tag = db.tags.find { it.name == m.tagString }
-                if (tag == null) GlobalScope.launch { db.addTag(this@PreviewActivity, Api.getTag(this@PreviewActivity, m.tagString).copy(isFavorite = true)) }
-                else GlobalScope.launch { db.changeTag(this@PreviewActivity, tag.copy(isFavorite = !tag.isFavorite)) }
+                if (tag == null) GlobalScope.launch { db.addTag(Api.getTag(this@PreviewActivity, m.tagString).copy(isFavorite = true)) }
+                else GlobalScope.launch { db.changeTag( tag.copy(isFavorite = !tag.isFavorite)) }
             }
             R.id.add_tag -> {
                 val tag = db.tags.find { it.name == m.tagString }
-                if (tag == null) GlobalScope.launch { db.addTag(this@PreviewActivity, Api.getTag(this@PreviewActivity, m.tagString)) }
-                else GlobalScope.launch { db.deleteTag(this@PreviewActivity, tag.name) }
+                if (tag == null) GlobalScope.launch { db.addTag( Api.getTag(this@PreviewActivity, m.tagString)) }
+                else GlobalScope.launch { db.deleteTag(tag.name) }
             }
             R.id.subscribe -> {
                 GlobalScope.launch {
                     val sub = db.subs.find { it.name == m.tagString }
-                    if (sub != null) db.deleteSubscription(this@PreviewActivity, sub.name)
+                    if (sub != null) db.deleteSubscription( sub.name)
                     else {
                         val tag = db.tags.find { it.name == m.tagString } ?: Api.getTag(this@PreviewActivity, m.tagString)
-                        db.addSubscription(this@PreviewActivity, Subscription.fromTag(this@PreviewActivity, tag))
+                        db.addSubscription( Subscription.fromTag(this@PreviewActivity, tag))
                     }
                 }
             }

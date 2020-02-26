@@ -29,7 +29,7 @@ object FileUtils {
 
     private suspend fun createFileToWrite(context: Context, post: Post, server: Server, mimeType: String = post.extension): DocumentFile? {
         return withContext(Dispatchers.IO) {
-            val folder = getOrCreateFolder(context.db.getSaveFolder(context), server.urlHost)
+            val folder = getOrCreateFolder(context.db.saveFolder, server.urlHost)
             if (folder != null) createFileOrNull(folder, postToFilename(post, mimeType, server), mimeType) else null
         }
 

@@ -147,7 +147,7 @@ class PictureActivity : AppCompatActivity() {
                     } else { //add to history
                         GlobalScope.launch {
                             for (tag in p.getTags().filter { it.type == Tag.ARTIST })
-                                db.addTag(this@PictureActivity, tag)
+                                db.addTag(tag)
                         }
                     }
                     lastSwipeUp = time
@@ -191,19 +191,19 @@ class PictureActivity : AppCompatActivity() {
             toolbar.setOnMenuItemClickListener {
                 val tag = currentTags[adapterPosition]
                 when (it.itemId) {
-                    R.id.picture_info_item_add_history -> GlobalScope.launch { db.addTag(this@PictureActivity, Tag(this@PictureActivity, tag.name, tag.type)) }
+                    R.id.picture_info_item_add_history -> GlobalScope.launch { db.addTag( Tag(this@PictureActivity, tag.name, tag.type)) }
                     R.id.picture_info_item_add_favorite -> {
                         GlobalScope.launch {
                             val t = db.getTag(tag.name)
-                            if (t == null) db.addTag(this@PictureActivity, Tag(this@PictureActivity, tag.name, tag.type, true))
-                            else db.changeTag(this@PictureActivity, tag.copy(isFavorite = !t.isFavorite))
+                            if (t == null) db.addTag( Tag(this@PictureActivity, tag.name, tag.type, true))
+                            else db.changeTag( tag.copy(isFavorite = !t.isFavorite))
                             withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
                         }
                     }
                     R.id.picture_info_item_subscribe -> {
                         GlobalScope.launch {
-                            if (db.getSubscription(tag.name) == null) db.addSubscription(this@PictureActivity, Subscription.fromTag(this@PictureActivity, tag))
-                            else db.deleteSubscription(this@PictureActivity, tag.name)
+                            if (db.getSubscription(tag.name) == null) db.addSubscription( Subscription.fromTag(this@PictureActivity, tag))
+                            else db.deleteSubscription( tag.name)
                             withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
                         }
                     }

@@ -11,14 +11,17 @@ import kotlinx.coroutines.launch
 class DownloadPostsAlertdialog(context: Context, manager: Manager) {
     init {
         val builder = AlertDialog.Builder(context)
-        builder.setTitle("Download all (attention)")
+        builder.setTitle("Download all")
         builder.setMessage("Make sure you have enough storage space")
         builder.setPositiveButton("Download") { _, _ ->
             GlobalScope.launch {
-                while (manager.loadNextPage(context)?.isNotEmpty() == true) {
-
-                }
-                DownloadService.startService(context, manager, Server.getCurrentServer(context))
+                val server = Server.getCurrentServer(context)
+                DownloadService.startService(context, manager, server)
+                do {
+                    val page = manager.loadNextPage(context)
+                    if (page == null || page.isEmpty()) break
+                    else DownloadService.startService(context, manager.tagString, page, server)
+                } while (true)
             }
         }
         builder.show()

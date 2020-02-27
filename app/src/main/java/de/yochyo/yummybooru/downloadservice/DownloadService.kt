@@ -32,11 +32,15 @@ class DownloadService : Service() {
     lateinit var notificationManager: NotificationManagerCompat
     lateinit var notificationBuilder: NotificationCompat.Builder
 
+    private var position = 0
+
     companion object {
-        private var position = 0
+        private var totalSize = 0
+        private var currentPos = 0
         private val downloadPosts = LinkedList<Posts>()
 
         fun startService(context: Context, tags: String, posts: List<Post>, server: Server) {
+            totalSize += posts.size
             downloadPosts += Posts(tags, posts, server)
             context.startService(Intent(context, DownloadService::class.java))
         }
@@ -55,10 +59,12 @@ class DownloadService : Service() {
             var pair = getNextElement()
             while (pair != null && isActive) {
                 val url = if (db.downloadOriginal) pair.first.fileURL else pair.first.fileSampleURL
-                val image = downloader.downloadSync(url, this)
+                val image = downloader.downloadSync(url, Resource.getTypeFromURL(url))
+                println(image == null)
                 if (image != null) FileUtils.writeFile(this@DownloadService, pair.first, image, pair.second, SafeFileEvent.SILENT)
                 pair = getNextElement()
             }
+            totalSize = 0
             stopSelf()
         }
     }
@@ -69,12 +75,13 @@ class DownloadService : Service() {
             return if (posts.posts.size > position) {
                 val post = posts.posts[position]
                 withContext(Dispatchers.Main) {
-                    notificationBuilder.setContentTitle("Downloading $position/${posts.posts.size}")
+                    notificationBuilder.setContentTitle("Downloading $currentPos/${totalSize}")
                     notificationBuilder.setContentText(posts.tags)
-                    notificationBuilder.setProgress(posts.posts.size, position, false)
+                    notificationBuilder.setProgress(totalSize, currentPos, false)
                     notificationManager.notify(1, notificationBuilder.build())
                 }
                 ++position
+                ++currentPos
                 Pair(post, posts.server)
             } else {
                 position = 0

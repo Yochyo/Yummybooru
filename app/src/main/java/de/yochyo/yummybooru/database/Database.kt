@@ -32,17 +32,14 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     companion object {
         private var instance: Database? = null
-        private val dbLock = Any()
         fun getDatabase(context: Context): Database {
-            synchronized(dbLock) {
-                if (instance == null) {
-                    instance = Database(context)
-                    instance!!.servers.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateServersEvent.trigger(UpdateServersEvent(context, instance!!.servers)) } }
-                    instance!!.tags.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateTagsEvent.trigger(UpdateTagsEvent(context, instance!!.tags)) } }
-                    instance!!.subs.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateSubsEvent.trigger(UpdateSubsEvent(context, instance!!.subs)) } }
-                    GlobalScope.launch {
-                        instance!!.loadServers(context)
-                    }
+            if (instance == null) {
+                instance = Database(context)
+                instance!!.servers.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateServersEvent.trigger(UpdateServersEvent(context, instance!!.servers)) } }
+                instance!!.tags.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateTagsEvent.trigger(UpdateTagsEvent(context, instance!!.tags)) } }
+                instance!!.subs.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateSubsEvent.trigger(UpdateSubsEvent(context, instance!!.subs)) } }
+                GlobalScope.launch {
+                    instance!!.loadServers(context)
                 }
             }
             return instance!!
@@ -278,20 +275,20 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     private var _savePathTested = false
     var saveFolder: DocumentFile = documentFile(context, prefs.getString("savePath", createDefaultSavePath())!!)
-    get() {
-        if (!_savePathTested) {
-            _savePathTested = true
-            if (!field.exists()) field = documentFile(context, createDefaultSavePath())
+        get() {
+            if (!_savePathTested) {
+                _savePathTested = true
+                if (!field.exists()) field = documentFile(context, createDefaultSavePath())
+            }
+            return field
         }
-        return field
-    }
-    set(value) {
-        field = value
-        with(prefs.edit()) {
-            putString("savePath", value.uri.toString())
-            apply()
+        set(value) {
+            field = value
+            with(prefs.edit()) {
+                putString("savePath", value.uri.toString())
+                apply()
+            }
         }
-    }
 
     suspend fun deleteEverything() {
         withContext(Dispatchers.Default) {

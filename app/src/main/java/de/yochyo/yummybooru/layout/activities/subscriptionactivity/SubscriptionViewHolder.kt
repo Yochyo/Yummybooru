@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 
 class SubscribedTagViewHolder(val activity: SubscriptionActivity, layout: FrameLayout) : SelectableViewHolder(layout) {
     override fun onClickLayout() {
-        val sub = activity.currentFilter.elementAt(adapterPosition)
+        val sub = activity.filteringSubList.elementAt(adapterPosition)
         GlobalScope.launch {
             activity.onClickedData = SubData(adapterPosition, Api.newestID(activity), Api.getTag(activity, sub.name).count)
         }

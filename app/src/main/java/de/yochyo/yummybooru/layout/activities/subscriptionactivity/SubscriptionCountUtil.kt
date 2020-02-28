@@ -20,7 +20,7 @@ class SubscriptionCountUtil(val activity: SubscriptionActivity) {
         while (isActive) {
             tryCatchSuspended {
                 for (i in activity.layoutManager.findFirstVisibleItemPosition()..activity.layoutManager.findLastVisibleItemPosition()) {
-                    val sub = activity.currentFilter[i]
+                    val sub = activity.filteringSubList.elementAt(i)
                     cacheCount(sub.name)
                 }
             }
@@ -48,7 +48,7 @@ class SubscriptionCountUtil(val activity: SubscriptionActivity) {
                 newCount = tag.count
                 setCount(name, newCount)
                 if (oldValue != newCount) {
-                    val newIndex = activity.currentFilter.indexOfFirst { it.name == name }
+                    val newIndex = activity.filteringSubList.indexOfFirst { it.name == name }
                     if (newIndex >= 0)
                         withContext(Dispatchers.Main) { adapter?.notifyItemChanged(newIndex) }
                 }

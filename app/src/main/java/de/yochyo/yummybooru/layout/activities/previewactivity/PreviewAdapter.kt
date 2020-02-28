@@ -26,13 +26,9 @@ class PreviewAdapter(val activity: PreviewActivity, val m: Manager) : Selectable
 
     private val startSelectionListener = Listener.create<StartSelectingEvent> {
         m.loadManagerPageEvent.registerListener(loadManagerPageUpdateActionModeListener)
-        actionmode?.title = "${selected.size}/${m.posts.size}"
     }
     private val stopSelectionListener = Listener.create<StopSelectingEvent> {
         m.loadManagerPageEvent.removeListener(loadManagerPageUpdateActionModeListener)
-    }
-    private val updateSelectionListener = Listener.create<UpdateSelectionEvent> {
-        actionmode?.title = "${selected.size}/${m.posts.size}"
     }
     private val clickMenuItemListener = Listener.create<ActionModeClickEvent> {
         when (it.menuItem.itemId) {
@@ -60,7 +56,6 @@ class PreviewAdapter(val activity: PreviewActivity, val m: Manager) : Selectable
     init {
         onStartSelection.registerListener(startSelectionListener)
         onStopSelection.registerListener(stopSelectionListener)
-        onUpdateSelection.registerListener(updateSelectionListener)
         onClickMenuItem.registerListener(clickMenuItemListener)
     }
 

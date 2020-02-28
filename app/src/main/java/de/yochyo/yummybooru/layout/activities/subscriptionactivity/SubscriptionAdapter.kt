@@ -33,19 +33,10 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Sub
         notifyDataSetChanged()
     }
 
-
-    private val startSelectionListener = Listener.create<StartSelectingEvent> {
-        actionmode?.title = "${selected.size}/${subs.size}"
-    }
-    private val updateSelectionListener = Listener.create<UpdateSelectionEvent> {
-        actionmode?.title = "${selected.size}/${subs.size}"
-    }
     private val disableMenuClick = Listener.create<StartSelectingEvent> { notifyDataSetChanged() }
     private val reEnableMenuClick = Listener.create<StopSelectingEvent> { notifyDataSetChanged() }
 
     init {
-        onStartSelection.registerListener(startSelectionListener)
-        onUpdateSelection.registerListener(updateSelectionListener)
         onStartSelection.registerListener(disableMenuClick)
         onStopSelection.registerListener(reEnableMenuClick)
 

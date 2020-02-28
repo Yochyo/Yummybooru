@@ -30,8 +30,10 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
     val onStartSelection = object : EventHandler<StartSelectingEvent>() {
         override fun trigger(e: StartSelectingEvent) {
             isSelecting = true
-            if (actionmode == null)
+            if (actionmode == null) {
                 actionmode = e.activity.startSupportActionMode(actionModeCallback)
+                onUpdateSelection.trigger(UpdateSelectionEvent(activity))
+            }
             super.trigger(e)
         }
     }
@@ -43,7 +45,12 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
             super.trigger(e)
         }
     }
-    val onUpdateSelection = object : EventHandler<UpdateSelectionEvent>() {}
+    val onUpdateSelection = object : EventHandler<UpdateSelectionEvent>() {
+        override fun trigger(e: UpdateSelectionEvent) {
+            actionmode?.title = "${selected.size}/$itemCount"
+            super.trigger(e)
+        }
+    }
     val onClickMenuItem = object : EventHandler<ActionModeClickEvent>() {}
 
 
@@ -53,15 +60,15 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
         else select(pos)
     }
 
-    fun clickHolder(holder: T){
-        if(isSelecting) onSelectHolder(holder)
+    fun clickHolder(holder: T) {
+        if (isSelecting) onSelectHolder(holder)
         else holder.onClickLayout()
     }
 
     abstract fun createViewHolder(parent: ViewGroup): T
 
 
-    open fun setListeners(holder: T){
+    open fun setListeners(holder: T) {
         holder.layout.setOnClickListener { clickHolder(holder) }
         holder.layout.setOnLongClickListener { onSelectHolder(holder); true }
     }
@@ -115,6 +122,7 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
     }
 
 }
+
 class StopSelectingEvent(val activity: AppCompatActivity) : Event()
 class StartSelectingEvent(val activity: AppCompatActivity) : Event()
 class UpdateSelectionEvent(val activity: AppCompatActivity) : Event()

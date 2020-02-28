@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout
+package de.yochyo.yummybooru.layout.activities
 
 import android.content.Context
 import android.content.Intent

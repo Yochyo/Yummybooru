@@ -8,7 +8,7 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:background="@color/dark_grey"
-        tools:context=".layout.PreviewActivity">
+        tools:context=".layout.activities.previewactivity.PreviewActivity">
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"

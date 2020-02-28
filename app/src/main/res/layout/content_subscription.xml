@@ -9,7 +9,7 @@
         tools:showIn="@layout/activity_subscription"
         android:id="@+id/subs_swipe_refresh_layout"
         android:background="@color/dark_grey"
-        tools:context="de.yochyo.yummybooru.layout.SubscriptionActivity">
+        tools:context=".layout.activities.subscriptionactivity.SubscriptionActivity">
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/subs_recycler"

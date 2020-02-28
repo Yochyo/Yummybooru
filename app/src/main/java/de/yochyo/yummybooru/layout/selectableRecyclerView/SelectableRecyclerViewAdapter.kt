@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout.views
+package de.yochyo.yummybooru.layout.selectableRecyclerView
 
 import android.graphics.drawable.ColorDrawable
 import android.view.Menu
@@ -26,6 +26,7 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
         override fun onDestroyActionMode(p0: ActionMode) = unselectAll()
         override fun onPrepareActionMode(p0: ActionMode?, p1: Menu?) = false
     }
+
     val onStartSelection = object : EventHandler<StartSelectingEvent>() {
         override fun trigger(e: StartSelectingEvent) {
             isSelecting = true
@@ -46,23 +47,25 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
     val onClickMenuItem = object : EventHandler<ActionModeClickEvent>() {}
 
 
-    abstract val onClickLayout: (holder: T) -> Unit
     val onSelectHolder = { holder: T ->
         val pos = holder.adapterPosition
-        if (selected.isSelected(pos)) unselect(pos, holder)
-        else select(pos, holder)
+        if (selected.isSelected(pos)) unselect(pos)
+        else select(pos)
     }
 
-    val onClickHolder: (holder: T) -> Unit get() = if (isSelecting) onSelectHolder else onClickLayout
-
+    fun clickHolder(holder: T){
+        if(isSelecting) onSelectHolder(holder)
+        else holder.onClickLayout()
+    }
 
     abstract fun createViewHolder(parent: ViewGroup): T
 
 
     open fun setListeners(holder: T){
-        holder.layout.setOnClickListener { onClickHolder(holder) }
+        holder.layout.setOnClickListener { clickHolder(holder) }
         holder.layout.setOnLongClickListener { onSelectHolder(holder); true }
     }
+
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): T {
         val holder = createViewHolder(parent)
         setListeners(holder)
@@ -77,17 +80,17 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
     }
 
 
-    fun select(position: Int, holder: T? = null) {
+    fun select(position: Int) {
         if (selected.isEmpty()) onStartSelection.trigger(StartSelectingEvent(activity))
         selected.put(position)
-        if (holder != null) updateForeground(holder) else notifyItemChanged(position)
+        notifyItemChanged(position)
         onUpdateSelection.trigger(UpdateSelectionEvent(activity))
     }
 
-    fun unselect(position: Int, holder: T? = null) {
+    fun unselect(position: Int) {
         selected.remove(position)
         if (selected.isEmpty()) onStopSelection.trigger(StopSelectingEvent(activity))
-        if (holder != null) updateForeground(holder) else notifyItemChanged(position)
+        notifyItemChanged(position)
         onUpdateSelection.trigger(UpdateSelectionEvent(activity))
     }
 

@@ -9,7 +9,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:showIn="@layout/activity_picture"
         android:background="@color/very_dark_grey"
-        tools:context=".layout.PictureActivity"
+        tools:context=".layout.activities.pictureactivity.PictureActivity"
         tools:openDrawer="end">
 
 

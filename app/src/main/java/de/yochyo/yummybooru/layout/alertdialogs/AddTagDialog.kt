@@ -9,7 +9,7 @@ import android.widget.*
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.entities.Tag
-import de.yochyo.yummybooru.layout.PreviewActivity
+import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
 import de.yochyo.yummybooru.utils.general.setColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

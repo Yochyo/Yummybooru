@@ -9,7 +9,7 @@
         android:background="@color/light_grey"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:showIn="@layout/app_bar_main"
-        tools:context=".layout.MainActivity">
+        tools:context=".layout.activities.mainactivity.MainActivity">
     <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

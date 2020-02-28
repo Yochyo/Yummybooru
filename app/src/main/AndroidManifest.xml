@@ -30,7 +30,7 @@
         </provider>
 
         <activity
-                android:name=".layout.MainActivity"
+                android:name="de.yochyo.yummybooru.layout.activities.mainactivity.MainActivity"
                 android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -39,22 +39,22 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".layout.PreviewActivity"
+                android:name="de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity"
                 android:label=""
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-                android:name=".layout.PictureActivity"
+                android:name="de.yochyo.yummybooru.layout.activities.pictureactivity.PictureActivity"
                 android:label=""
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-                android:name=".layout.SubscriptionActivity"
+                android:name="de.yochyo.yummybooru.layout.activities.subscriptionactivity.SubscriptionActivity"
                 android:label="Subs"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-                android:name=".layout.SettingsActivity"
+                android:name=".layout.activities.SettingsActivity"
                 android:label="Settings">
         </activity>
 

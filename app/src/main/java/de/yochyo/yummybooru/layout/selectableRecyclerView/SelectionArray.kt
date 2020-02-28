@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout.views
+package de.yochyo.yummybooru.layout.selectableRecyclerView
 
 import android.util.SparseBooleanArray
 

@@ -22,19 +22,14 @@ import javax.net.ssl.HttpsURLConnection
 
 
 class AutoUpdater {
-    private val saveDirectory = File("$configPath/updates")
-
-    init {
-        saveDirectory.mkdirs()
-    }
+    private val saveDirectory = File("$configPath/updates").apply { mkdirs() }
 
     fun autoUpdate(context: Context) {
         GlobalScope.launch {
             if (!isNewestVersion()) {
                 val file = downloadNewestFile()
-                if (file != null) {
+                if (file != null)
                     throwUpdateNotification(context, file)
-                }
             }
         }
     }
@@ -44,10 +39,7 @@ class AutoUpdater {
                 .setSmallIcon(R.drawable.notification_icon).setAutoCancel(true)
         val intent = installIntent(context, file)
         builder.setContentIntent(PendingIntent.getActivity(context, 2, intent, 0))
-        with(NotificationManagerCompat.from(context)) {
-            notify(2, builder.build())
-        }
-
+        NotificationManagerCompat.from(context).notify(2, builder.build())
     }
 
     private fun installUpdate(context: Context, file: File) {
@@ -71,7 +63,7 @@ class AutoUpdater {
                     val url = newestDownloadUrl()
                     if (url != null) {
                         val stream = DownloadUtils.getUrlInputStream(url)
-                        if(stream != null){
+                        if (stream != null) {
                             val byteArray = stream.readBytes()
                             stream.close()
                             file.createNewFile()

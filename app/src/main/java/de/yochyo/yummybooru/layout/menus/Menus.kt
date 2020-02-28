@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout.res
+package de.yochyo.yummybooru.layout.menus
 
 import android.content.Context
 import android.view.Menu

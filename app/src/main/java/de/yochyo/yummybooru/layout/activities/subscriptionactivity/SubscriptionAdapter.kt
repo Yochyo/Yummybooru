@@ -22,15 +22,23 @@ import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class SubscribedTagAdapter(val activity: SubscriptionActivity) : SelectableRecyclerViewAdapter<SubscribedTagViewHolder>(activity, R.menu.subscription_activity_selection_menu) {
+class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Subscription>) : SelectableRecyclerViewAdapter<SubscribedTagViewHolder>(activity, R.menu.subscription_activity_selection_menu) {
     private val db = activity.db
     val util = SubscriptionCountUtil(activity)
 
+    private var subs: Collection<Subscription> = s
+
+    fun updateSubs(s: Collection<Subscription>){
+        subs = s
+        notifyDataSetChanged()
+    }
+
+
     private val startSelectionListener = Listener.create<StartSelectingEvent> {
-        actionmode?.title = "${selected.size}/${activity.currentFilter.size}"
+        actionmode?.title = "${selected.size}/${subs.size}"
     }
     private val updateSelectionListener = Listener.create<UpdateSelectionEvent> {
-        actionmode?.title = "${selected.size}/${activity.currentFilter.size}"
+        actionmode?.title = "${selected.size}/${subs.size}"
     }
     private val disableMenuClick = Listener.create<StartSelectingEvent> { notifyDataSetChanged() }
     private val reEnableMenuClick = Listener.create<StopSelectingEvent> { notifyDataSetChanged() }
@@ -43,7 +51,7 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity) : SelectableRecyc
 
         onClickMenuItem.registerListener {
             when (it.menuItem.itemId) {
-                R.id.select_all -> if (selected.size == activity.currentFilter.size) unselectAll() else selectAll()
+                R.id.select_all -> if (selected.size == subs.size) unselectAll() else selectAll()
                 R.id.open_selected -> {
                     Toast.makeText(activity, "Not yet implemented", Toast.LENGTH_SHORT).show()
                     unselectAll()
@@ -52,7 +60,7 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity) : SelectableRecyc
                     ConfirmDialog {
                         GlobalScope.launch {
                             val id = Api.newestID(activity)
-                            for (selected in selected.getSelected(activity.currentFilter)) {
+                            for (selected in selected.getSelected(subs)) {
                                 val tag = Api.getTag(activity, selected.name)
                                 db.changeSubscription(selected.copy(lastCount = tag.count, lastID = id))
                             }
@@ -84,13 +92,13 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity) : SelectableRecyc
         b.show()
     }
 
-    override fun getItemCount(): Int = activity.currentFilter.size
+    override fun getItemCount(): Int = subs.size
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): SubscribedTagViewHolder {
         val holder = super.onCreateViewHolder(parent, position)
         val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
         toolbar.inflateMenu(R.menu.activity_subscription_item_menu)
         toolbar.setOnMenuItemClickListener {
-            val sub = activity.currentFilter.elementAt(holder.adapterPosition)
+            val sub = subs.elementAt(holder.adapterPosition)
             when (it.itemId) {
                 R.id.subscription_set_favorite -> GlobalScope.launch {
                     val copy = sub.copy(isFavorite = !sub.isFavorite)
@@ -108,7 +116,7 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity) : SelectableRecyc
         val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
         val text1 = toolbar.findViewById<TextView>(android.R.id.text1)
         val text2 = toolbar.findViewById<TextView>(android.R.id.text2)
-        val sub = activity.currentFilter.elementAt(position)
+        val sub = subs.elementAt(position)
         text1.text = sub.name
         text1.setColor(sub.color)
         text1.underline(sub.isFavorite)

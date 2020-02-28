@@ -19,11 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import de.yochyo.eventcollection.EventCollection
-import de.yochyo.eventcollection.SubEventCollection
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.UpdateServersEvent
 import de.yochyo.yummybooru.events.events.UpdateTagsEvent
@@ -35,6 +32,7 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
+import de.yochyo.yummybooru.utils.general.FilteringEventCollection
 import de.yochyo.yummybooru.utils.general.cache
 import de.yochyo.yummybooru.utils.general.toTagString
 import kotlinx.android.synthetic.main.activity_main.*
@@ -42,48 +40,16 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.util.*
-import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-    private val currentFilter: EventCollection<Tag> get() = filteredTags.last().first
-    private val filteredTags = ArrayList<Pair<EventCollection<Tag>, String>>()
-        get() {
-            if (field.isEmpty()) field += Pair(db.tags, "")
-            return field
-        }
-
-    private val filterMutex = Mutex()
+    private val filteringTagList = FilteringEventCollection({ db.tags }, { it.name })
     suspend fun filter(name: String) {
-        withContext(Dispatchers.Default) {
-            filterMutex.withLock {
-                var result: EventCollection<Tag>? = null
-                if (name == "") { //No Filter
-                    for (item in filteredTags) {
-                        val list = item.first
-                        if (list is SubEventCollection) list.destroy()
-                    }
-                    filteredTags.clear()
-                    result = db.tags
-                } else {
-                    for (i in filteredTags.indices.reversed()) {
-                        if (name.startsWith(filteredTags[i].second)) {
-                            result = SubEventCollection(TreeSet(), filteredTags[i].first) { it.name.contains(name) }
-                            break
-                        }
-                    }
-                }
-                if (result == null) result = SubEventCollection(TreeSet(), db.tags) { it.name.contains(name) }
-                withContext(Dispatchers.Main) {
-                    tagLayoutManager.scrollToPosition(0)
-                    filteredTags += Pair(result, name)
-                    tagAdapter.update(result)
-                }
-            }
+        val result = filteringTagList.filter(name)
+        withContext(Dispatchers.Main) {
+            tagLayoutManager.scrollToPosition(0)
+            tagAdapter.update(result)
         }
     }
 
@@ -135,10 +101,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     fun initData() {
         GlobalScope.launch { cache.clearCache() }
-        UpdateTagsEvent.registerListener { tagAdapter.update(currentFilter) }
+        UpdateTagsEvent.registerListener { tagAdapter.update(filteringTagList) }
         UpdateServersEvent.registerListener { serverAdapter.notifyDataSetChanged() }
 
-        tagAdapter = TagAdapter(this, currentFilter).apply { tagRecyclerView.adapter = this }
+        tagAdapter = TagAdapter(this, filteringTagList).apply { tagRecyclerView.adapter = this }
         val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
         serverRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
         serverAdapter = ServerAdapter(this).apply { serverRecyclerView.adapter = this }

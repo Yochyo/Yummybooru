@@ -8,8 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import de.yochyo.eventcollection.EventCollection
-import de.yochyo.eventcollection.SubEventCollection
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
@@ -18,23 +16,26 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.UpdateSubsEvent
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
+import de.yochyo.yummybooru.utils.general.FilteringEventCollection
 import kotlinx.android.synthetic.main.activity_subscription.*
 import kotlinx.android.synthetic.main.content_subscription.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import java.util.*
-import kotlin.collections.ArrayList
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SubscriptionActivity : AppCompatActivity() {
-    private val filteredSubs = ArrayList<Pair<EventCollection<Subscription>, String>>()
-        get() {
-            if (field.isEmpty()) field += Pair(db.subs, "")
-            return field
+    val filteringSubList = FilteringEventCollection({ db.subs }, { it.name })
+    suspend fun filter(name: String) {
+        val result = filteringSubList.filter(name)
+        withContext(Dispatchers.Main) {
+            layoutManager.scrollToPosition(0)
+            adapter.updateSubs(result)
         }
-    val currentFilter: EventCollection<Subscription> get() = filteredSubs.last().first
+    }
 
-    private val updateSubsListener = Listener.create<UpdateSubsEvent> { adapter.notifyDataSetChanged() }
+
+    private val updateSubsListener = Listener.create<UpdateSubsEvent> { adapter.updateSubs(filteringSubList) }
     var onClickedData: SubData? = null
 
     private lateinit var recyclerView: RecyclerView
@@ -49,7 +50,7 @@ class SubscriptionActivity : AppCompatActivity() {
         recyclerView = subs_recycler
         recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity).apply { layoutManager = this }
 
-        recyclerView.adapter = SubscribedTagAdapter(this).apply { adapter = this;util.adapter = this }
+        recyclerView.adapter = SubscribedTagAdapter(this, filteringSubList).apply { adapter = this;util.adapter = this }
         sub_filter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
                 if (newText != null) GlobalScope.launch { filter(newText) }
@@ -62,7 +63,7 @@ class SubscriptionActivity : AppCompatActivity() {
         subs_swipe_refresh_layout.setOnRefreshListener {
             subs_swipe_refresh_layout.isRefreshing = false
             clear()
-            adapter.notifyDataSetChanged()
+            adapter.updateSubs(filteringSubList)
         }
     }
 
@@ -75,42 +76,12 @@ class SubscriptionActivity : AppCompatActivity() {
         return true
     }
 
-    private val filterMutex = Mutex()
-    suspend fun filter(name: String) {
-        withContext(Dispatchers.Default) {
-            filterMutex.withLock {
-                var addChild: EventCollection<Subscription>
-                if (name == "") {
-                    for (item in filteredSubs) {
-                        val list = item.first
-                        if (list is SubEventCollection) list.destroy()
-                    }
-                    filteredSubs.clear()
-                    addChild = db.subs
-                } else {
-                    for (i in filteredSubs.indices.reversed()) {
-                        if (name.startsWith(filteredSubs[i].second)) {
-                            val subCollection = SubEventCollection(TreeSet(), filteredSubs[i].first) { it.name.contains(name) }
-                            addChild = subCollection
-                            break
-                        }
-                    }
-                    addChild = SubEventCollection(TreeSet(), db.subs) { it.name.contains(name) }
-                }
-                withContext(Dispatchers.Main) {
-                    layoutManager.scrollToPosition(0)
-                    adapter.notifyDataSetChanged()
-                    filteredSubs += Pair(addChild, name)
-                }
-            }
-        }
-    }
-
     override fun onResume() {
         super.onResume()
         adapter.util.paused = false
         if (onClickedData != null) {
-            val sub = currentFilter[onClickedData!!.clickedSub]
+
+            val sub = filteringSubList.elementAt(onClickedData!!.clickedSub)
             val builder = AlertDialog.Builder(this)
             builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
             builder.setNegativeButton(R.string.no) { _, _ -> }
@@ -140,7 +111,7 @@ class SubscriptionActivity : AppCompatActivity() {
                             val sub = Subscription.fromTag(this@SubscriptionActivity, tag)
                             db.addSubscription(sub)
                             withContext(Dispatchers.Main) {
-                                layoutManager.scrollToPositionWithOffset(currentFilter.indexOf(sub), 0)
+                                layoutManager.scrollToPositionWithOffset(filteringSubList.indexOf(sub), 0)
                             }
                         }
                     }
@@ -150,7 +121,7 @@ class SubscriptionActivity : AppCompatActivity() {
                 ConfirmDialog {
                     GlobalScope.launch {
                         val id = Api.newestID(this@SubscriptionActivity)
-                        for (sub in currentFilter) {
+                        for (sub in filteringSubList) {
                             val tag = Api.getTag(this@SubscriptionActivity, sub.name)
                             db.changeSubscription(sub.copy(lastCount = tag.count, lastID = id))
                         }
@@ -166,7 +137,6 @@ class SubscriptionActivity : AppCompatActivity() {
         UpdateSubsEvent.removeListener(updateSubsListener)
         adapter.util.close()
     }
-
 
 
 }

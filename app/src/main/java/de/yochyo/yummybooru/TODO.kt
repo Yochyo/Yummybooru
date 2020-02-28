@@ -39,6 +39,8 @@ package de.yochyo.yummybooru
 //TODO Optimize CPU performance, make code more readable | optimize preloading of app
 //TODO seperate gui in smaller classes
 //TODO Use View-Design-Pattern or something like that where the data is stored in a Model and only called by the view
+
+//TODO SubscriptionActivity there are listeners taht change the amount of selected items, move this to SelectableRecyclerview
 //Bugs
 //TODO create issues in github instead of in todo file
 //TODO resets save path sometimes

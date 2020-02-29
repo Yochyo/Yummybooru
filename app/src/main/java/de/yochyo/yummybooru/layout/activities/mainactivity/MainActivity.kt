@@ -21,6 +21,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.api.Api
+import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.UpdateServersEvent
 import de.yochyo.yummybooru.events.events.UpdateTagsEvent
@@ -44,7 +45,7 @@ import kotlinx.coroutines.withContext
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-    private val filteringTagList = FilteringEventCollection({ db.tags }, { it.name })
+    private lateinit var filteringTagList: FilteringEventCollection<Tag>
     suspend fun filter(name: String) {
         val result = filteringTagList.filter(name)
         withContext(Dispatchers.Main) {
@@ -100,6 +101,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun initData() {
+        filteringTagList = FilteringEventCollection({ db.tags }, { it.name })
         GlobalScope.launch { cache.clearCache() }
         UpdateTagsEvent.registerListener { tagAdapter.update(filteringTagList) }
         UpdateServersEvent.registerListener { serverAdapter.notifyDataSetChanged() }

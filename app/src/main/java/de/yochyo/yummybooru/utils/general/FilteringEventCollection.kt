@@ -10,31 +10,31 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class FilteringEventCollection<E>(private val getUnfilteredCollection: () -> EventCollection<E>, private val filterBy: (e: E) -> String) : Collection<E> {
-    private val currentFilter: EventCollection<E> get() = eventCollections.last().first
+    private val eventCollections = ArrayList<Pair<EventCollection<E>, String>>()
     private val filterMutex = Mutex()
 
-    private val eventCollections = ArrayList<Pair<EventCollection<E>, String>>()
-        get() {
-            if (field.isEmpty()) field += Pair(getUnfilteredCollection(), "")
-            return field
-        }
+    private val currentFilter: EventCollection<E> get() = eventCollections.last().first
+
+    init {
+        eventCollections += Pair(getUnfilteredCollection(), "")
+    }
 
     suspend fun filter(name: String): EventCollection<E> {
         filterMutex.withLock {
             withContext(Dispatchers.Default) {
                 var result: EventCollection<E>? = null
-                if (name != "") {
+                if (name == "") {
                     clear()
-                    return@withContext
+                    result = getUnfilteredCollection()
                 } else {
                     for (i in eventCollections.indices.reversed()) {
                         if (name.startsWith(eventCollections[i].second)) {
-                            result = SubEventCollection(TreeSet(), eventCollections[i].first) { name == filterBy(it) }
+                            result = SubEventCollection(TreeSet(), eventCollections[i].first) { filterBy(it).contains(name) }
                             break
                         }
                     }
                 }
-                if (result == null) result = SubEventCollection(TreeSet(), getUnfilteredCollection()) { name == filterBy(it) }
+                if (result == null) result = SubEventCollection(TreeSet(), getUnfilteredCollection()) { filterBy(it).contains(name) }
                 eventCollections += Pair(result, name)
             }
         }

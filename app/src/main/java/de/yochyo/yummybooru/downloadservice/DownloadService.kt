@@ -13,10 +13,9 @@ import de.yochyo.yummybooru.api.entities.Resource
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
-import de.yochyo.yummybooru.utils.Manager
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
-import de.yochyo.yummybooru.utils.general.toTagString
+import de.yochyo.yummybooru.utils.manager.IManager
 import kotlinx.coroutines.*
 import java.io.InputStream
 import java.util.*
@@ -45,7 +44,7 @@ class DownloadService : Service() {
             context.startService(Intent(context, DownloadService::class.java))
         }
 
-        fun startService(context: Context, manager: Manager, server: Server) = startService(context, manager.tags.toTagString(), ArrayList(manager.posts), server)
+        fun startService(context: Context, manager: IManager, server: Server) = startService(context, manager.toString(), ArrayList(manager.posts), server)
     }
 
     override fun onCreate() {

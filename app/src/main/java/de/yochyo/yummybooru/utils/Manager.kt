@@ -1,3 +1,4 @@
+/*
 package de.yochyo.yummybooru.utils
 
 import android.content.Context
@@ -128,3 +129,4 @@ class Manager(val tags: Array<String>) {
 
 class DownloadManagerPageEvent(val context: Context, val page: Int, val posts: List<Post>) : Event()
 class LoadManagerPageEvent(val context: Context, val newPage: List<Post>) : Event()
+ */

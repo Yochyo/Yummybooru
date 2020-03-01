@@ -13,8 +13,8 @@ import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.saveDownload
-import de.yochyo.yummybooru.utils.Manager
 import de.yochyo.yummybooru.utils.general.*
+import de.yochyo.yummybooru.utils.manager.ManagerWrapper
 import de.yochyo.yummybooru.utils.network.download
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +22,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class PictureAdapter(val activity: AppCompatActivity, val m: Manager) : PagerAdapter() {
+class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : PagerAdapter() {
     private val db = activity.db
     fun updatePosts() {
         notifyDataSetChanged()
@@ -49,10 +49,10 @@ class PictureAdapter(val activity: AppCompatActivity, val m: Manager) : PagerAda
     override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
     override fun getCount(): Int = m.posts.size
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        if (position + 3 >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage(activity) }
+        if (position + 3 >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage(activity, db.limit) }
         if (position == m.posts.size - 1) {
             GlobalScope.launch {
-                m.loadNextPage(activity)
+                m.downloadNextPage(activity, db.limit)
             }
         }
         val imageView = activity.layoutInflater.inflate(R.layout.picture_item_view, container, false) as PhotoView

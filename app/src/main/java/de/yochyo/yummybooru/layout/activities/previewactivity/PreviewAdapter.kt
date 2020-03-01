@@ -11,31 +11,31 @@ import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.DownloadService
 import de.yochyo.yummybooru.layout.selectableRecyclerView.*
-import de.yochyo.yummybooru.utils.LoadManagerPageEvent
-import de.yochyo.yummybooru.utils.Manager
 import de.yochyo.yummybooru.utils.general.preview
+import de.yochyo.yummybooru.utils.manager.ManagerWrapper
+import de.yochyo.yummybooru.utils.manager.OnDownloadPageEvent
 import de.yochyo.yummybooru.utils.network.download
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class PreviewAdapter(val activity: PreviewActivity, val m: Manager) : SelectableRecyclerViewAdapter<PreviewViewHolder>(activity, R.menu.preview_activity_selection_menu) {
-    private val loadManagerPageUpdateActionModeListener = Listener.create<LoadManagerPageEvent> {
+class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : SelectableRecyclerViewAdapter<PreviewViewHolder>(activity, R.menu.preview_activity_selection_menu) {
+    private val loadManagerPageUpdateActionModeListener = Listener.create<OnDownloadPageEvent> {
         actionmode?.title = "${selected.size}/${m.posts.size}"
     }
 
     private val startSelectionListener = Listener.create<StartSelectingEvent> {
-        m.loadManagerPageEvent.registerListener(loadManagerPageUpdateActionModeListener)
+        m.onDownloadPageEvent.registerListener(loadManagerPageUpdateActionModeListener)
     }
     private val stopSelectionListener = Listener.create<StopSelectingEvent> {
-        m.loadManagerPageEvent.removeListener(loadManagerPageUpdateActionModeListener)
+        m.onDownloadPageEvent.removeListener(loadManagerPageUpdateActionModeListener)
     }
     private val clickMenuItemListener = Listener.create<ActionModeClickEvent> {
         when (it.menuItem.itemId) {
             R.id.select_all -> if (selected.size == m.posts.size) unselectAll() else selectAll()
             R.id.download_selected -> {
                 val posts = selected.getSelected(m.posts)
-                DownloadService.startService(activity, m.tagString, posts, Server.getCurrentServer(activity))
+                DownloadService.startService(activity, m.toString(), posts, Server.getCurrentServer(activity))
                 unselectAll()
             }
             R.id.download_and_add_authors_selected -> {
@@ -47,7 +47,7 @@ class PreviewAdapter(val activity: PreviewActivity, val m: Manager) : Selectable
                         }
                     }
                 }
-                DownloadService.startService(activity, m.tagString, posts, Server.getCurrentServer(activity))
+                DownloadService.startService(activity, m.toString(), posts, Server.getCurrentServer(activity))
                 unselectAll()
             }
         }

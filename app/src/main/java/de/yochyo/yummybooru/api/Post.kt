@@ -2,7 +2,7 @@ package de.yochyo.yummybooru.api
 
 import de.yochyo.yummybooru.api.entities.Tag
 
-abstract class Post {
+abstract class Post: Comparable<Post> {
     abstract val id: Int
     abstract val extension: String
     abstract val width: Int
@@ -15,4 +15,8 @@ abstract class Post {
 
     abstract suspend fun getTags(): List<Tag>
     override fun toString() = "[$id] [${width}x$height]\n$fileURL\n$fileSampleURL\n$filePreviewURL"
+
+    override fun compareTo(other: Post): Int {
+        return id.compareTo(other.id)
+    }
 }

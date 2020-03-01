@@ -11,6 +11,9 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.yummybooru.api.entities.Server
+import de.yochyo.yummybooru.utils.manager.IManager
+import de.yochyo.yummybooru.utils.manager.ManagerWrapper
+import de.yochyo.yummybooru.utils.manager.NewManager
 import java.io.File
 import java.net.URLEncoder
 import java.security.MessageDigest
@@ -64,7 +67,7 @@ fun createDefaultSavePath(): String {
     f.mkdirs()
     return f.absolutePath
 }
-
+class MutablePair<A, B>(var first: A, var second: B)
 fun documentFile(context: Context, path: String): DocumentFile {
     return if (path.startsWith("content")) DocumentFile.fromTreeUri(context, Uri.parse(path))!!
     else DocumentFile.fromFile(File(path))
@@ -83,6 +86,17 @@ fun Context.drawable(id: Int) = ContextCompat.getDrawable(this, id)
 fun parseUrlCharacters(urlStr: String): String {
     return URLEncoder.encode(urlStr, "UTF-8")
 }
+
+private var _currentManager: ManagerWrapper? = null
+var currentManager: ManagerWrapper
+    get() {
+        val v = if (_currentManager == null) ManagerWrapper(NewManager("*")) else _currentManager
+        _currentManager = null
+        return v!!
+    }
+    set(value) {
+        _currentManager = value
+    }
 
 object Fling {
     fun getDirection(e1: MotionEvent, e2: MotionEvent): Direction {

@@ -130,6 +130,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             when (it.itemId) {
                 R.id.search -> {
                     drawer_layout.closeDrawer(GravityCompat.END)
+                    println(selectedTags)
                     PreviewActivity.startActivity(this, if (selectedTags.isEmpty()) "*" else selectedTags.toTagString())
                 }
                 R.id.add_tag -> {

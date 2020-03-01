@@ -1,14 +1,12 @@
 package de.yochyo.yummybooru
 
 //Features
-//TODO display amount of open downloads and/or move image download to background when closing app
 //TODO extract zip files and show as pixiv history
 //TODO display several colors on tags with several tags in them
 //TODO Gelbooru alphacoders.com
 //TODO Events isCanceled entfernen und Und richtig implementieren
 //TODO search with OR and AND or NOT
 //TODO Show translations of images
-//TODO allow to swipe through images in Pictureactivity
 //TODO support animated_png, implement mp4
 //TODO add tests
 //TODO multiselect pictureactivity can add tags like elsword eve_(elsword)
@@ -21,9 +19,7 @@ package de.yochyo.yummybooru
 //TODO SeveralTagsPreviewLayout -< look at bottom
 //TODO backuputils independent of version
 //TODO show amounts of pages you have to scroll through
-//TODO download all
 //TODO Pictureactivity, Longclick allows to swipe through children of an image by scrolling up/down
-//TODO reuse old icon?
 //TODO create AI with image recommendations
 //TODO workaround for people without danbooru premium to enter more than 2 tags
 //TODO readd r18 filter
@@ -37,8 +33,6 @@ package de.yochyo.yummybooru
 //TODO use Comparator in Treeset instead of Tag.compareTo
 //TODO send logs to a server, too many logs fill up space
 //TODO Optimize CPU performance, make code more readable | optimize preloading of app
-//TODO seperate gui in smaller classes
-//TODO Use View-Design-Pattern or something like that where the data is stored in a Model and only called by the view
 
 //Bugs
 //TODO create issues in github instead of in todo file
@@ -46,6 +40,7 @@ package de.yochyo.yummybooru
 //TODO changelogs are not displayed on an update
 //TODO update old screenshot on github
 //TODO delete old sorting preferences when updating database (in onUpgrade)
+//TODO doesn't scroll to new tag while filtering
 //Probably fixed
 
 /*

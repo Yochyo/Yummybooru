@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 
 class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : SelectableRecyclerViewAdapter<PreviewViewHolder>(activity, R.menu.preview_activity_selection_menu) {
     private val loadManagerPageUpdateActionModeListener = Listener.create<OnDownloadPageEvent> {
-        actionmode?.title = "${selected.size}/${m.posts.size}"
+        GlobalScope.launch(Dispatchers.Main) { actionmode?.title = "${selected.size}/${m.posts.size}" }
     }
 
     private val startSelectionListener = Listener.create<StartSelectingEvent> {

@@ -39,7 +39,7 @@ class PictureActivity : AppCompatActivity() {
     private lateinit var pictureAdapter: PictureAdapter
     private lateinit var tagInfoAdapter: TagInfoAdapter
 
-    private val managerListener = Listener.create<OnDownloadPageEvent> { this@PictureActivity.pictureAdapter.updatePosts() }
+    private val managerListener = Listener.create<OnDownloadPageEvent> { GlobalScope.launch(Dispatchers.Main) { this@PictureActivity.pictureAdapter.updatePosts() } }
     lateinit var m: ManagerWrapper
 
     override fun onCreate(savedInstanceState: Bundle?) {

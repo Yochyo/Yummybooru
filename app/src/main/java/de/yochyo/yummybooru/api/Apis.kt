@@ -6,7 +6,7 @@ import de.yochyo.booruapi.api.MoebooruApi
 import java.util.*
 
 object Apis {
-    val apis = arrayListOf("Moebooru", "Danbooru")
+    val apis = arrayListOf("moebooru", "danbooru")
     fun getApi(name: String, url: String): IApi {
         return when (name.toLowerCase(Locale.ENGLISH)) {
             "moebooru" -> return MoebooruApi(url)

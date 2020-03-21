@@ -1,6 +1,7 @@
 package de.yochyo.yummybooru
 
 //Features
+//TODO Tag Blacklist for servers
 //TODO extract zip files and show as pixiv history
 //TODO display several colors on tags with several tags in them
 //TODO Gelbooru alphacoders.com

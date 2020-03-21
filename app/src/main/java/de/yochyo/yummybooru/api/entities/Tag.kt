@@ -19,8 +19,10 @@ open class Tag(val name: String, type: Int, isFavorite: Boolean = false, val cou
         }
     var sub = sub
     set(value) {
+        var trig = CHANGED_SUB
+        if(field == null && value != null) trig = ADD_SUB
         field = value
-        trigger(CHANGED_SUB)
+        trigger(trig)
     }
 
     companion object {
@@ -35,6 +37,7 @@ open class Tag(val name: String, type: Int, isFavorite: Boolean = false, val cou
         const val CHANGED_TYPE = 0
         const val CHANGED_FAVORITE = 1
         const val CHANGED_SUB = 2
+        const val ADD_SUB = 3
 
         fun isSpecialTag(name: String): Boolean {
             return name == "*" || name.startsWith("height") || name.startsWith("width") || name.startsWith("order") || name.startsWith("rating") || name.contains(" ")

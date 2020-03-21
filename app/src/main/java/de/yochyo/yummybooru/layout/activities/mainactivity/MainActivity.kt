@@ -30,7 +30,10 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
-import de.yochyo.yummybooru.utils.general.*
+import de.yochyo.yummybooru.utils.general.FilteringEventCollection
+import de.yochyo.yummybooru.utils.general.cache
+import de.yochyo.yummybooru.utils.general.currentServer
+import de.yochyo.yummybooru.utils.general.toTagString
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.coroutines.Dispatchers
@@ -98,16 +101,58 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     fun initData() {
         filteringTagList = FilteringEventCollection({ db.tags }, { it.name })
         GlobalScope.launch { cache.clearCache() }
-        db.tags.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList) } }
-        db.servers.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.notifyDataSetChanged() } }
-
         tagAdapter = TagAdapter(this, filteringTagList).apply { tagRecyclerView.adapter = this }
         val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
         serverRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
         serverAdapter = ServerAdapter(this).apply { serverRecyclerView.adapter = this }
 
+        initListeners()
         Changelog.showChangelogIfChanges(this)
         AutoUpdater().autoUpdate(this)
+    }
+
+    private fun initListeners() {
+        db.tags.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList) } }
+        db.servers.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.notifyDataSetChanged() } }
+
+        //Global Listeners for whole app
+        db.tags.onAddElements.registerListener { //On add (favorite) tag
+            GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(this@MainActivity, "Add ${if (element.isFavorite) "favorite" else ""} tag [${element.name}]", Toast.LENGTH_SHORT).show() } }
+        }
+        db.tags.onRemoveElements.registerListener {//On remove tag
+            GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(this@MainActivity, "\"Delete tag [${element.name}]\"", Toast.LENGTH_SHORT).show() } }
+        }
+
+        db.tags.onElementChange.registerListener { //On change tag
+            if (it.arg == Tag.CHANGED_FAVORITE)
+                Toast.makeText(this@MainActivity,
+                        "${if (it.new.isFavorite) "Favorite" else "Unfavorite"} tag [${it.new.name}]", Toast.LENGTH_SHORT).show()
+            GlobalScope.launch(Dispatchers.Main) {
+                if (it.arg == Tag.CHANGED_TYPE)
+                    Toast.makeText(this@MainActivity,
+                            "Changed tag [${it.new.name}]", Toast.LENGTH_SHORT).show()
+                if (it.arg == Tag.CHANGED_SUB)
+                    Toast.makeText(this@MainActivity,
+                            "${if (it.new.sub == null) "Deleted" else "Changed"} sub [${it.new.name}]", Toast.LENGTH_SHORT).show()
+                if (it.arg == Tag.ADD_SUB)
+                    Toast.makeText(this@MainActivity,
+                            "Add sub [${it.new.name}]", Toast.LENGTH_SHORT).show()
+            }
+        }
+        db.servers.onAddElements.registerListener { //On add server
+            GlobalScope.launch(Dispatchers.Main) {
+                it.elements.forEach { element ->
+                    Toast.makeText(this@MainActivity, "Add server [${element.name}]", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        db.servers.onRemoveElements.registerListener { //On add server
+            GlobalScope.launch(Dispatchers.Main) {
+                it.elements.forEach { element ->
+                    Toast.makeText(this@MainActivity, "Remove server [${element.name}]", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     private fun initDrawerToolbar(toolbar: androidx.appcompat.widget.Toolbar) {
@@ -130,7 +175,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     AddTagDialog {
                         GlobalScope.launch {
                             val t = currentServer.getTag(it.text.toString())
-                            if(t != null){
+                            if (t != null) {
                                 db.tags += t
                                 withContext(Dispatchers.Main) {
                                     tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(t), 0)

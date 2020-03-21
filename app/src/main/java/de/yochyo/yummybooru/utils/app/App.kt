@@ -21,14 +21,6 @@ class App : Application() {
     }
 
     private fun initListeners() {
-        AddTagEvent.registerListener(DisplayToastAddTagListener())
-        AddSubEvent.registerListener(DisplayToastAddSubListener())
-        DeleteServerEvent.registerListener(DisplayToastDeleteServerListener())
-        DeleteSubEvent.registerListener(DisplayToastDeleteSubListener())
-        DeleteTagEvent.registerListener(DisplayToastDeleteTagListener())
-        ChangeSubEvent.registerListener(DisplayToastFavoriteSubListener())
-        ChangeTagEvent.registerListener(DisplayToastFavoriteTagListener())
-        DeleteTagEvent.registerListener(RemoveSelectedTagsInMainactivityListener())
         SelectServerEvent.registerListener(DisplayToastSelectServerListener())
         SelectServerEvent.registerListener(ClearSelectedTagsInMainactivityListener())
         SafeFileEvent.registerListener(DisplayToastDownloadFileListener())

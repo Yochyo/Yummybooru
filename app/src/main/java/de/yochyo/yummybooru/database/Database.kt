@@ -22,13 +22,14 @@ import kotlinx.coroutines.*
 import org.jetbrains.anko.db.ManagedSQLiteOpenHelper
 import org.jetbrains.anko.db.dropTable
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 3) {
     private val prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
     private val listeners = DatabaseListeners()
 
-    val servers = object : ObservingEventCollection<Server, Int>(TreeSet()) {
+    val servers = object : ObservingEventCollection<Server, Int>(ArrayList()) {
         override fun remove(element: Server): Boolean {
             return if (currentServerID == element.id) false
             else super.remove(element)

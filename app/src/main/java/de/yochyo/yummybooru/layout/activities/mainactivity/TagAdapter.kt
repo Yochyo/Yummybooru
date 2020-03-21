@@ -8,11 +8,11 @@ import android.widget.TextView
 import android.widget.Toolbar
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.layout.menus.Menus
+import de.yochyo.yummybooru.utils.general.addSub
 import de.yochyo.yummybooru.utils.general.setColor
 import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.coroutines.Dispatchers
@@ -47,23 +47,18 @@ class TagAdapter(val context: Context, t: Collection<Tag>) : RecyclerView.Adapte
         toolbar.setOnMenuItemClickListener {
             val tag = tags.elementAt(adapterPosition)
             when (it.itemId) {
-                R.id.main_search_favorite_tag -> GlobalScope.launch {
-                    val copy = tag.copy(isFavorite = !tag.isFavorite)
-                    context.db.changeTag(copy)
-                }
+                R.id.main_search_favorite_tag -> tag.isFavorite = !tag.isFavorite
                 R.id.main_search_subscribe_tag -> {
                     GlobalScope.launch {
-                        if (context.db.getSubscription(tag.name) == null) context.db.addSubscription(Subscription.fromTag(context, tag))
-                        else context.db.deleteSubscription(tag.name)
+                        if(tag.sub == null) tag.addSub(context)
+                        else tag.sub = null
                         withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
                     }
                 }
                 R.id.main_search_delete_tag -> {
                     ConfirmDialog {
-                        GlobalScope.launch {
-                            MainActivity.selectedTags.remove(tag.name)
-                            context.db.deleteTag(tag.name)
-                        }
+                        MainActivity.selectedTags.remove(tag.name)
+                        context.db.tags -= tag
                     }.withTitle("Delete").withMessage("Delete tag ${tag.name}").build(context)
                 }
             }

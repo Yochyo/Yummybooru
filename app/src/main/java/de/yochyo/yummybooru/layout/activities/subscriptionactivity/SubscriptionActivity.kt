@@ -8,24 +8,28 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import de.yochyo.eventcollection.SubEventCollection
+import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.api.entities.Subscription
+import de.yochyo.yummybooru.api.entities.Sub
+import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.events.events.UpdateSubsEvent
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.utils.general.FilteringEventCollection
+import de.yochyo.yummybooru.utils.general.createTagAndOrChangeSubState
+import de.yochyo.yummybooru.utils.general.currentServer
 import kotlinx.android.synthetic.main.activity_subscription.*
 import kotlinx.android.synthetic.main.content_subscription.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.*
 
 class SubscriptionActivity : AppCompatActivity() {
-    val filteringSubList = FilteringEventCollection({ db.subs }, { it.name })
+    val filteringSubList = FilteringEventCollection({ SubEventCollection(TreeSet(), db.tags) { it.sub != null } }, { it.name })
     suspend fun filter(name: String) {
         val result = filteringSubList.filter(name)
         withContext(Dispatchers.Main) {
@@ -35,7 +39,7 @@ class SubscriptionActivity : AppCompatActivity() {
     }
 
 
-    private val updateSubsListener = Listener.create<UpdateSubsEvent> { adapter.updateSubs(filteringSubList) }
+    private val updateSubsListener = Listener.create<OnUpdateEvent<Tag>> { adapter.updateSubs(filteringSubList) }
     var onClickedData: SubData? = null
 
     private lateinit var recyclerView: RecyclerView
@@ -59,7 +63,7 @@ class SubscriptionActivity : AppCompatActivity() {
 
             override fun onQueryTextSubmit(query: String?) = true
         })
-        UpdateSubsEvent.registerListener(updateSubsListener)
+        db.tags.onUpdate.registerListener(updateSubsListener)
         subs_swipe_refresh_layout.setOnRefreshListener {
             subs_swipe_refresh_layout.isRefreshing = false
             clear()
@@ -79,15 +83,16 @@ class SubscriptionActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         adapter.util.paused = false
-        if (onClickedData != null) {
+        val clickedData = onClickedData
+        if (clickedData != null) {
 
-            val sub = filteringSubList.elementAt(onClickedData!!.clickedSub)
+            val tag = filteringSubList.elementAt(clickedData.clickedSub)
             val builder = AlertDialog.Builder(this)
             builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
             builder.setNegativeButton(R.string.no) { _, _ -> }
             builder.setPositiveButton(R.string.yes) { _, _ ->
                 GlobalScope.launch(Dispatchers.Main) {
-                    db.changeSubscription(sub.copy(lastID = onClickedData!!.idWhenClicked, lastCount = onClickedData!!.countWhenClicked))
+                    tag.sub = Sub(clickedData.idWhenClicked, clickedData.countWhenClicked)
                     onClickedData = null
                 }
             }
@@ -105,14 +110,10 @@ class SubscriptionActivity : AppCompatActivity() {
             android.R.id.home -> finish()
             R.id.add_subscription -> {
                 AddTagDialog {
-                    if (db.getSubscription(it.text.toString()) == null) {
-                        GlobalScope.launch {
-                            val tag = Api.getTag(this@SubscriptionActivity, it.text.toString())
-                            val sub = Subscription.fromTag(this@SubscriptionActivity, tag)
-                            db.addSubscription(sub)
-                            withContext(Dispatchers.Main) {
-                                layoutManager.scrollToPositionWithOffset(filteringSubList.indexOf(sub), 0)
-                            }
+                    GlobalScope.launch {
+                        val sub = createTagAndOrChangeSubState(this@SubscriptionActivity, it.text.toString())
+                        withContext(Dispatchers.Main) {
+                            layoutManager.scrollToPositionWithOffset(filteringSubList.indexOf(sub), 0)
                         }
                     }
                 }.withTitle(getString(R.string.add_subscription)).build(this)
@@ -120,10 +121,15 @@ class SubscriptionActivity : AppCompatActivity() {
             R.id.update_subs -> {
                 ConfirmDialog {
                     GlobalScope.launch {
-                        val id = Api.newestID(this@SubscriptionActivity)
-                        for (sub in filteringSubList) {
-                            val tag = Api.getTag(this@SubscriptionActivity, sub.name)
-                            db.changeSubscription(sub.copy(lastCount = tag.count, lastID = id))
+                        val id = currentServer.newestID()
+                        if(id != null){
+                            for (sub in filteringSubList) {
+                                val tag = currentServer.getTag(sub.name)
+                                if(tag != null){
+                                    val tagInDb = db.getTag(tag.name)
+                                    tagInDb?.sub = Sub(id, tag.count)
+                                }
+                            }
                         }
                     }
                 }.withTitle("Update all subs?").build(this@SubscriptionActivity)
@@ -134,7 +140,7 @@ class SubscriptionActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        UpdateSubsEvent.removeListener(updateSubsListener)
+        db.tags.onUpdate.removeListener(updateSubsListener)
         adapter.util.close()
     }
 

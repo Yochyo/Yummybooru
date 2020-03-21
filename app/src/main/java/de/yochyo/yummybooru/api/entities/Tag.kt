@@ -1,10 +1,28 @@
 package de.yochyo.yummybooru.api.entities
 
-import android.content.Context
+import de.yochyo.eventcollection.events.OnChangeObjectEvent
+import de.yochyo.eventcollection.observable.IObservableObject
+import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.R
 import java.util.*
 
-data class Tag(val context: Context, val name: String, val type: Int, val isFavorite: Boolean = false, val creation: Date = Date(), val serverID: Int = Server.getCurrentServerID(context), val count: Int = 0) : Comparable<Tag> {
+open class Tag(val name: String, type: Int, isFavorite: Boolean = false, val count: Int = 0, sub: Sub? = null, val creation: Date = Date(), var serverID: Int = -1) : Comparable<Tag>, IObservableObject<Tag, Int> {
+    var type = type
+        set(value) {
+            field = value
+            trigger(CHANGED_TYPE)
+        }
+    var isFavorite = isFavorite
+        set(value) {
+            field = value
+            trigger(CHANGED_FAVORITE)
+        }
+    var sub = sub
+    set(value) {
+        field = value
+        trigger(CHANGED_SUB)
+    }
+
     companion object {
         const val GENERAL = 0
         const val CHARACTER = 4
@@ -13,6 +31,10 @@ data class Tag(val context: Context, val name: String, val type: Int, val isFavo
         const val META = 5
         const val UNKNOWN = 99
         const val SPECIAL = 100
+
+        const val CHANGED_TYPE = 0
+        const val CHANGED_FAVORITE = 1
+        const val CHANGED_SUB = 2
 
         fun isSpecialTag(name: String): Boolean {
             return name == "*" || name.startsWith("height") || name.startsWith("width") || name.startsWith("order") || name.startsWith("rating") || name.contains(" ")
@@ -24,6 +46,10 @@ data class Tag(val context: Context, val name: String, val type: Int, val isFavo
             else UNKNOWN
         }
     }
+
+    //tag, change
+    override val onChange = EventHandler<OnChangeObjectEvent<Tag, Int>>()
+    protected fun trigger(change: Int) = onChange.trigger(OnChangeObjectEvent(this, change))
 
     val color: Int
         get() {

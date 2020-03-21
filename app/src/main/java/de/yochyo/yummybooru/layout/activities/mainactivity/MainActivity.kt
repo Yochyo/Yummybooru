@@ -20,11 +20,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.events.events.UpdateServersEvent
-import de.yochyo.yummybooru.events.events.UpdateTagsEvent
 import de.yochyo.yummybooru.layout.activities.SettingsActivity
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
 import de.yochyo.yummybooru.layout.activities.subscriptionactivity.SubscriptionActivity
@@ -33,9 +30,7 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
-import de.yochyo.yummybooru.utils.general.FilteringEventCollection
-import de.yochyo.yummybooru.utils.general.cache
-import de.yochyo.yummybooru.utils.general.toTagString
+import de.yochyo.yummybooru.utils.general.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.coroutines.Dispatchers
@@ -103,8 +98,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     fun initData() {
         filteringTagList = FilteringEventCollection({ db.tags }, { it.name })
         GlobalScope.launch { cache.clearCache() }
-        UpdateTagsEvent.registerListener { tagAdapter.update(filteringTagList) }
-        UpdateServersEvent.registerListener { serverAdapter.notifyDataSetChanged() }
+        db.tags.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList) } }
+        db.servers.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.notifyDataSetChanged() } }
 
         tagAdapter = TagAdapter(this, filteringTagList).apply { tagRecyclerView.adapter = this }
         val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
@@ -113,7 +108,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         Changelog.showChangelogIfChanges(this)
         AutoUpdater().autoUpdate(this)
-
     }
 
     private fun initDrawerToolbar(toolbar: androidx.appcompat.widget.Toolbar) {
@@ -130,15 +124,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             when (it.itemId) {
                 R.id.search -> {
                     drawer_layout.closeDrawer(GravityCompat.END)
-                    println(selectedTags)
                     PreviewActivity.startActivity(this, if (selectedTags.isEmpty()) "*" else selectedTags.toTagString())
                 }
                 R.id.add_tag -> {
                     AddTagDialog {
                         GlobalScope.launch {
-                            val t = db.addTag(Api.getTag(this@MainActivity, it.text.toString()))
-                            withContext(Dispatchers.Main) {
-                                tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(t), 0)
+                            val t = currentServer.getTag(it.text.toString())
+                            if(t != null){
+                                db.tags += t
+                                withContext(Dispatchers.Main) {
+                                    tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(t), 0)
+                                }
                             }
                         }
                     }.build(this)
@@ -156,7 +152,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             R.id.action_add_server -> AddServerDialog {
                 GlobalScope.launch {
-                    db.addServer(it)
+                    db.servers += it
                     withContext(Dispatchers.Main) { Snackbar.make(drawer_layout, "Add server [${it.name}]", Snackbar.LENGTH_SHORT).show() }
                 }
             }.build(this)

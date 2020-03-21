@@ -7,9 +7,9 @@ import android.text.TextWatcher
 import android.view.*
 import android.widget.*
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.api.Api
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
+import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.setColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -42,7 +42,7 @@ class AddTagDialog(val runOnPositive: (editText: AutoCompleteTextView) -> Unit) 
             }
 
         }
-        editText.onItemClickListener = AdapterView.OnItemClickListener { _,_,_,_ -> clickedDropdown = true }
+        editText.onItemClickListener = AdapterView.OnItemClickListener { _, _, _, _ -> clickedDropdown = true }
         editText.setAdapter(arrayAdapter)
         editText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable) {
@@ -52,14 +52,16 @@ class AddTagDialog(val runOnPositive: (editText: AutoCompleteTextView) -> Unit) 
                 GlobalScope.launch {
                     val lastIndexOf = string.lastIndexOf(" ")
                     val a = if (lastIndexOf != -1) string.substring(0..lastIndexOf) else ""
-                    val tags = Api.getTags(context, name).map { it.copy(name = a + it.name) } //damit der filter funktioniert
-                    launch(Dispatchers.Main) {
-                        if (!dialogIsDismissed) {
-                            arrayAdapter.apply { clear(); addAll(tags); notifyDataSetChanged() }
-                            if (clickedDropdown || (tags.size == 1 && tags.first().name == string)) {
-                                editText.dismissDropDown()
-                                clickedDropdown = false
-                            } else editText.showDropDown()
+                    val tags = context.currentServer.getMatchingTags(name)?.map { Tag(a + it.name, it.type) } //damit der filter funktioniert
+                    if (tags != null) {
+                        launch(Dispatchers.Main) {
+                            if (!dialogIsDismissed) {
+                                arrayAdapter.apply { clear(); addAll(tags); notifyDataSetChanged() }
+                                if (clickedDropdown || (tags.size == 1 && tags.first().name == string)) {
+                                    editText.dismissDropDown()
+                                    clickedDropdown = false
+                                } else editText.showDropDown()
+                            }
                         }
                     }
                 }

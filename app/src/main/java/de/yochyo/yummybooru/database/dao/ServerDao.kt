@@ -1,39 +1,26 @@
 package de.yochyo.yummybooru.database.dao
 
+import android.database.sqlite.SQLiteDatabase
 import de.yochyo.yummybooru.api.entities.Server
-import de.yochyo.yummybooru.database.converter.ConvertBoolean
 import org.jetbrains.anko.db.*
 
 class ServerDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
     private companion object {
         const val TABLE_NAME = "servers"
         const val NAME = "name"
-        const val API = "api"
         const val URL = "url"
-        const val USERNAME = "userName"
+        const val API = "api"
+        const val USERNAME = "username"
         const val PASSWORD = "password"
-        const val ENABLE_R18_FILTER = "enableR18Filter"
         const val ID = "id"
 
-        val parser = object : RowParser<Server> {
-            override fun parseRow(columns: Array<Any?>): Server {
-                return Server(columns[0] as String, columns[1] as String, columns[2] as String, columns[3] as String,
-                        columns[4] as String, ConvertBoolean.toBoolean((columns[5] as Long).toInt()), (columns[6] as Long).toInt())
-            }
+        val parser = rowParser { name: String, url: String, api: String, username: String, password: String, id: Long ->
+            Server(name, url, api, username, password, id = id.toInt())
         }
     }
 
-    override fun createTable() {
-        database.use {
-            createTable(TABLE_NAME, true,
-                    NAME to TEXT + NOT_NULL,
-                    API to TEXT + NOT_NULL,
-                    URL to TEXT + NOT_NULL,
-                    USERNAME to TEXT + NOT_NULL,
-                    PASSWORD to TEXT + NOT_NULL,
-                    ENABLE_R18_FILTER to INTEGER + NOT_NULL,
-                    ID to INTEGER + NOT_NULL + PRIMARY_KEY)
-        }
+    override fun createTable(database: SQLiteDatabase) {
+        database.execSQL("CREATE TABLE IF NOT EXISTS servers(name TEXT NOT NULL, url TEXT NOT NULL, api TEXT NOT NULL, username TEXT NOT NULL, password TEXT NOT NULL, id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT)")
     }
 
     fun delete(server: Server) {
@@ -42,17 +29,16 @@ class ServerDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
         }
     }
 
-    fun insert(server: Server) {
-        database.use {
+    fun insert(server: Server): Int {
+        return database.use {
             insert(TABLE_NAME,
                     NAME to server.name,
-                    API to server.api,
-                    URL to server.api,
-                    USERNAME to server.userName,
+                    URL to server.url,
+                    API to server.apiName,
+                    USERNAME to server.username,
                     PASSWORD to server.password,
-                    ENABLE_R18_FILTER to ConvertBoolean.toInteger(server.enableR18Filter),
-                    ID to server.id)
-        }
+                    ID to null)
+        }.toInt()
     }
 
     fun selectAll(): List<Server> {
@@ -71,11 +57,10 @@ class ServerDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
         database.use {
             update(TABLE_NAME,
                     NAME to server.name,
-                    API to server.api,
-                    URL to server.api,
-                    USERNAME to server.userName,
+                    URL to server.url,
+                    API to server.apiName,
+                    USERNAME to server.username,
                     PASSWORD to server.password,
-                    ENABLE_R18_FILTER to ConvertBoolean.toInteger(server.enableR18Filter),
                     ID to server.id).whereArgs("$ID = {$ID}", ID to server.id).exec()
         }
     }

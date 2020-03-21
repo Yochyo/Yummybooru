@@ -31,7 +31,7 @@ class ServerAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Serv
             when (i) {
                 0 -> editServerDialog(server)
                 1 -> {
-                    if (!server.isSelected(activity)) ConfirmDialog { server.deleteServer(activity) }.withTitle(activity.getString(R.string.delete) + " [${server.name}]").build(activity)
+                    if (!server.isSelected(activity)) ConfirmDialog { activity.db.servers -= server }.withTitle(activity.getString(R.string.delete) + " [${server.name}]").build(activity)
                     else Toast.makeText(activity, activity.getString(R.string.cannot_delete_server), Toast.LENGTH_SHORT).show()
                 }
             }
@@ -42,7 +42,11 @@ class ServerAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Serv
     private fun editServerDialog(server: Server) {
         AddServerDialog {
             GlobalScope.launch {
-                activity.db.changeServer(it)
+                server.name = it.name
+                server.url =  it.url
+                server.apiName = it.apiName
+                server.username = it.username
+                server.password = it.password
                 withContext(Dispatchers.Main) { Snackbar.make(activity.drawer_layout, "Edit [${it.name}]", Snackbar.LENGTH_SHORT).show() }
             }
         }.withServer(server).withTitle(activity.getString(R.string.edit_server)).build(activity)
@@ -53,7 +57,7 @@ class ServerAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Serv
         holder.layout.setOnClickListener {
             val server = activity.db.servers.elementAt(holder.adapterPosition)
             GlobalScope.launch(Dispatchers.Main) {
-                server.select(activity)
+                activity.db.loadServer(server)
             }
         }
         holder.layout.setOnLongClickListener {
@@ -74,7 +78,7 @@ class ServerAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Serv
         text1.text = server.name
         if (isSelected) text1.setColor(R.color.dark_red)
         else text1.setColor(R.color.violet)
-        layout.findViewById<TextView>(R.id.server_text2).text = server.api
-        layout.findViewById<TextView>(R.id.server_text3).text = server.userName
+        layout.findViewById<TextView>(R.id.server_text2).text = server.apiName
+        layout.findViewById<TextView>(R.id.server_text3).text = server.username
     }
 }

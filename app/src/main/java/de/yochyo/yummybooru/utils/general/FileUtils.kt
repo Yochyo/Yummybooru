@@ -2,7 +2,7 @@ package de.yochyo.yummybooru.utils.general
 
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
-import de.yochyo.yummybooru.api.Post
+import de.yochyo.booruapi.objects.Post
 import de.yochyo.yummybooru.api.entities.Resource
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
@@ -14,7 +14,7 @@ object FileUtils {
 
     suspend fun writeFile(context: Context, post: Post, res: Resource, server: Server, source: Int = SafeFileEvent.DEFAULT) {
         withContext(Dispatchers.IO) {
-            val file = createFileToWrite(context, post, server)
+            val file = createFileToWrite(context, post, server, res.mimetype)
             if (file != null) {
                 try {
                     context.contentResolver.openOutputStream(file.uri).write(res.resource)
@@ -27,7 +27,7 @@ object FileUtils {
         }
     }
 
-    private suspend fun createFileToWrite(context: Context, post: Post, server: Server, mimeType: String = post.extension): DocumentFile? {
+    private suspend fun createFileToWrite(context: Context, post: Post, server: Server, mimeType: String): DocumentFile? {
         return withContext(Dispatchers.IO) {
             val folder = getOrCreateFolder(context.db.saveFolder, server.urlHost)
             if (folder != null) createFileOrNull(folder, postToFilename(post, mimeType, server), mimeType) else null
@@ -36,7 +36,7 @@ object FileUtils {
     }
 
     private suspend fun postToFilename(p: Post, mimeType: String, server: Server): String {
-        val s = "${server.urlHost} ${p.id} ${p.getTags().joinToString(" ") { it.name }}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '[' && it != ']' }
+        val s = "${server.urlHost} ${p.id} ${p.tagString}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '[' && it != ']' }
         var last = s.length
         if (last > 127 - (mimeType.length + 1)) last = 127 - (mimeType.length + 1)
         return s.substring(0, last) + ".$mimeType"

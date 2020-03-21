@@ -8,13 +8,13 @@ import androidx.viewpager.widget.PagerAdapter
 import com.github.chrisbanes.photoview.OnSingleFlingListener
 import com.github.chrisbanes.photoview.PhotoView
 import com.google.android.material.snackbar.Snackbar
+import de.yochyo.booruapi.objects.Post
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.saveDownload
+import de.yochyo.yummybooru.utils.ManagerWrapper
 import de.yochyo.yummybooru.utils.general.*
-import de.yochyo.yummybooru.utils.manager.ManagerWrapper
 import de.yochyo.yummybooru.utils.network.download
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers
@@ -39,7 +39,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
         fun downloadPreview(index: Int) {
             if (index in 0 until m.posts.size) {
                 val p = m.posts[index]
-                download(activity, p.filePreviewURL, activity.preview(p.id), {}, false, true)
+                download(activity, p.filePreviewURL, activity.preview(p.id), {}, cacheFile = true)
             }
         }
         downloadPreview(position - 1)
@@ -49,12 +49,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
     override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
     override fun getCount(): Int = m.posts.size
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        if (position + 3 >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage(activity, db.limit) }
-        if (position == m.posts.size - 1) {
-            GlobalScope.launch {
-                m.downloadNextPage(activity, db.limit)
-            }
-        }
+        if (position + 3 >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
         val imageView = activity.layoutInflater.inflate(R.layout.picture_item_view, container, false) as PhotoView
         imageView.setAllowParentInterceptOnEdge(true)
         imageView.setOnSingleFlingListener(object : OnSingleFlingListener {
@@ -73,8 +68,8 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
                     }
                 } else { //add to history
                     GlobalScope.launch {
-                        for (tag in p.getTags().filter { it.type == Tag.ARTIST })
-                            db.addTag(tag)
+                        for (tag in p.tags.filter { it.type == Tag.ARTIST })
+                            db.tags += tag.toBooruTag()
                     }
                 }
                 lastSwipeUp = time

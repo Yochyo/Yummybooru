@@ -10,16 +10,16 @@ import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
+import de.yochyo.booruapi.objects.Post
+import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.saveDownload
 import de.yochyo.yummybooru.utils.general.currentManager
 import de.yochyo.yummybooru.utils.general.original
 import de.yochyo.yummybooru.utils.general.sample
-import de.yochyo.yummybooru.utils.manager.ManagerWrapper
-import de.yochyo.yummybooru.utils.manager.OnDownloadPageEvent
+import de.yochyo.yummybooru.utils.ManagerWrapper
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 class PictureActivity : AppCompatActivity() {
     companion object {
         fun startActivity(context: Context, manager: ManagerWrapper) {
-            currentManager = manager
+            context.currentManager = manager
             context.startActivity(Intent(context, PictureActivity::class.java))
         }
     }
@@ -39,7 +39,7 @@ class PictureActivity : AppCompatActivity() {
     private lateinit var pictureAdapter: PictureAdapter
     private lateinit var tagInfoAdapter: TagInfoAdapter
 
-    private val managerListener = Listener.create<OnDownloadPageEvent> { GlobalScope.launch(Dispatchers.Main) { this@PictureActivity.pictureAdapter.updatePosts() } }
+    private val managerListener = Listener.create<OnUpdateEvent<Post>> { GlobalScope.launch(Dispatchers.Main) { this@PictureActivity.pictureAdapter.updatePosts() } }
     lateinit var m: ManagerWrapper
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,7 +55,7 @@ class PictureActivity : AppCompatActivity() {
         tagRecyclerView.layoutManager = LinearLayoutManager(this)
         with(view_pager) {
             adapter = PictureAdapter(this@PictureActivity, m).apply { this@PictureActivity.pictureAdapter = this }
-            m.onDownloadPageEvent.registerListener(managerListener)
+            m.posts.onUpdate.registerListener(managerListener)
             this@PictureActivity.pictureAdapter.updatePosts()
             m.currentPost?.updateCurrentTags(m.position)
 
@@ -78,7 +78,6 @@ class PictureActivity : AppCompatActivity() {
 
         tagInfoAdapter.updateInfoTags(emptyList())
         GlobalScope.launch {
-            val tags = getTags()
             launch(Dispatchers.Main) {
                 if (wasCurrentPosition == m.position) {
                     tagInfoAdapter.updateInfoTags(tags)
@@ -120,7 +119,7 @@ class PictureActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        m.onDownloadPageEvent.removeListener(managerListener)
+        m.posts.onUpdate.removeListener(managerListener)
         super.onDestroy()
     }
 

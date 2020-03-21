@@ -8,27 +8,27 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.api.entities.Subscription
+import de.yochyo.yummybooru.api.entities.Sub
+import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.SelectableRecyclerViewAdapter
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
-import de.yochyo.yummybooru.layout.selectableRecyclerView.UpdateSelectionEvent
+import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.setColor
 import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Subscription>) : SelectableRecyclerViewAdapter<SubscribedTagViewHolder>(activity, R.menu.subscription_activity_selection_menu) {
+class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Tag>) : SelectableRecyclerViewAdapter<SubscribedTagViewHolder>(activity, R.menu.subscription_activity_selection_menu) {
     private val db = activity.db
     val util = SubscriptionCountUtil(activity)
 
-    private var subs: Collection<Subscription> = s
+    private var subs: Collection<Tag> = s
 
-    fun updateSubs(s: Collection<Subscription>){
+    fun updateSubs(s: Collection<Tag>) {
         subs = s
         notifyDataSetChanged()
     }
@@ -50,10 +50,12 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Sub
                 R.id.update_subs -> {
                     ConfirmDialog {
                         GlobalScope.launch {
-                            val id = Api.newestID(activity)
-                            for (selected in selected.getSelected(subs)) {
-                                val tag = Api.getTag(activity, selected.name)
-                                db.changeSubscription(selected.copy(lastCount = tag.count, lastID = id))
+                            val id = activity.currentServer.newestID()
+                            if (id != null) {
+                                for (selected in selected.getSelected(subs)) {
+                                    val tag = activity.currentServer.getTag(selected.name)
+                                    if (tag != null) selected.sub = Sub(id, tag.count)
+                                }
                             }
                         }
                         unselectAll()
@@ -74,12 +76,12 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Sub
         return SubscribedTagViewHolder(activity, activity.layoutInflater.inflate(R.layout.subscription_item_layout, parent, false) as FrameLayout)
     }
 
-    private fun deleteSubDialog(sub: Subscription) {
+    private fun deleteSubDialog(tag: Tag) {
         val b = AlertDialog.Builder(activity)
         b.setTitle(R.string.delete)
-        b.setMessage("${activity.getString(R.string.delete)} ${activity.getString(R.string.subscription)} ${sub.name}?")
+        b.setMessage("${activity.getString(R.string.delete)} ${activity.getString(R.string.subscription)} ${tag.name}?")
         b.setNegativeButton(R.string.no) { _, _ -> }
-        b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { db.deleteSubscription(sub.name) } }
+        b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { db.tags -= tag } }
         b.show()
     }
 
@@ -91,10 +93,7 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Sub
         toolbar.setOnMenuItemClickListener {
             val sub = subs.elementAt(holder.adapterPosition)
             when (it.itemId) {
-                R.id.subscription_set_favorite -> GlobalScope.launch {
-                    val copy = sub.copy(isFavorite = !sub.isFavorite)
-                    db.changeSubscription(copy)
-                }
+                R.id.subscription_set_favorite -> sub.isFavorite = !sub.isFavorite
                 R.id.subscription_delete -> deleteSubDialog(sub)
             }
             true

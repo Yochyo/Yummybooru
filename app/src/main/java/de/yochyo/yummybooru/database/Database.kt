@@ -3,43 +3,47 @@ package de.yochyo.yummybooru.database
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import androidx.documentfile.provider.DocumentFile
-import de.yochyo.eventcollection.EventCollection
+import de.yochyo.eventcollection.ObservingEventCollection
+import de.yochyo.eventcollection.events.OnAddElementsEvent
+import de.yochyo.eventcollection.events.OnChangeObjectEvent
+import de.yochyo.eventcollection.events.OnRemoveElementsEvent
+import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.api.entities.Server
-import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.dao.ServerDao
-import de.yochyo.yummybooru.database.dao.SubDao
 import de.yochyo.yummybooru.database.dao.TagDao
 import de.yochyo.yummybooru.database.utils.Upgrade
-import de.yochyo.yummybooru.events.events.*
+import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.utils.general.createDefaultSavePath
+import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.documentFile
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.jetbrains.anko.db.ManagedSQLiteOpenHelper
 import org.jetbrains.anko.db.dropTable
 import java.util.*
 
 
-class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 2) {
-    private val lock = Mutex()
+class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 3) {
     private val prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
+    private val listeners = DatabaseListeners()
+
+    val servers = object : ObservingEventCollection<Server, Int>(TreeSet()) {
+        override fun remove(element: Server): Boolean {
+            return if (currentServerID == element.id) false
+            else super.remove(element)
+        }
+    }
+    val tags = ObservingEventCollection(TreeSet<Tag>())
 
     companion object {
         private var instance: Database? = null
         fun getDatabase(context: Context): Database {
             if (instance == null) {
                 instance = Database(context)
-                instance!!.servers.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateServersEvent.trigger(UpdateServersEvent(context, instance!!.servers)) } }
-                instance!!.tags.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateTagsEvent.trigger(UpdateTagsEvent(context, instance!!.tags)) } }
-                instance!!.subs.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { UpdateSubsEvent.trigger(UpdateSubsEvent(context, instance!!.subs)) } }
                 GlobalScope.launch {
-                    instance!!.loadServers(context)
+                    delay(100)
+                    instance!!.loadDatabase()
                 }
             }
             return instance!!
@@ -47,179 +51,37 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     }
 
     override fun onCreate(db: SQLiteDatabase) {
-        tagDao.createTable()
-        subDao.createTable()
-        serverDao.createTable()
+        serverDao.createTable(db)
+        tagDao.createTable(db)
 
-        db.rawQuery("INSERT INTO servers (name,api,url,userName,password,enableR18Filter) VALUES ('Danbooru', 'danbooru', 'https://danbooru.donmai.us/', '', '', 0);", emptyArray())
-        db.rawQuery("INSERT INTO servers (name,api,url,userName,password,enableR18Filter) VALUES ('Konachan', 'moebooru', 'https://konachan.com/', '', '', 0);", emptyArray())
-        db.rawQuery("INSERT INTO servers (name,api,url,userName,password,enableR18Filter) VALUES ('Yande.re', 'moebooru', 'https://yande.re/', '', '', 0);", emptyArray())
+        db.execSQL("INSERT INTO servers VALUES ('Danbooru', 'https://danbooru.donmai.us/', 'danbooru', '', '', NULL);", emptyArray())
+        db.execSQL("INSERT INTO servers VALUES ('Konachan', 'https://konachan.com/', 'moebooru', '', '', NULL);", emptyArray())
+        db.execSQL("INSERT INTO servers VALUES ('Yande.re', 'https://yande.re/', 'moebooru', '', '', NULL);", emptyArray())
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         Upgrade.upgradeFromTo(db, oldVersion, newVersion)
     }
 
-    val servers: EventCollection<Server> = EventCollection(TreeSet())
-    val tags: EventCollection<Tag> = EventCollection(TreeSet())
-    val subs: EventCollection<Subscription> = EventCollection(TreeSet())
-    suspend fun loadServers(context: Context) {
-        withContext(Dispatchers.Default) {
+    suspend fun loadDatabase() {
+        withContext(Dispatchers.IO) {
             val se: List<Server> = serverDao.selectAll()
             servers.clear()
             servers.addAll(se)
-            Server.getCurrentServer(context).select(context)
+            loadServer(context.currentServer)
         }
     }
 
-    suspend fun loadServerWithMutex() = lock.withLock { loadServer() }
-    suspend fun loadServer() {
-        withContext(Dispatchers.Default) {
-            val server = Server.getCurrentServer(context)
-            loadTags(server.id)
-            loadSubscriptions(server.id)
-        }
-    }
-
-    suspend fun loadTagsWithMutex(serverID: Int) = lock.withLock { loadTags(serverID) }
-    suspend fun loadTags(serverID: Int) {
-        withContext(Dispatchers.Default) {
-            val t = tagDao.selectWhereID(serverID)
-            withContext(Dispatchers.Main) {
-                tags.clear()
-                tags.addAll(t)
-            }
-        }
-    }
-
-    suspend fun loadSubscriptionsWithMutex(serverID: Int) = lock.withLock { loadSubscriptions(serverID) }
-    suspend fun loadSubscriptions(serverID: Int) {
-        withContext(Dispatchers.Default) {
-            val s = subDao.selectWhereID(serverID)
-            subs.clear()
-            subs.addAll(s)
-        }
-    }
-
-    fun getServer(id: Int) = servers.find { it.id == id }
-
-    suspend fun addServerWithMutex(server: Server) = lock.withLock { addServer(server) }
-    suspend fun addServer(server: Server) {
-        withContext(Dispatchers.Default) {
-            val s = getServer(server.id)
-            if (s == null) {
-                val serverCopy = server.copy(id = nextServerID)
-                servers.add(serverCopy)
-                serverDao.insert(serverCopy)
-                withContext(Dispatchers.Main) { AddServerEvent.trigger(AddServerEvent(context, serverCopy)) }
-            }
-        }
-    }
-
-    suspend fun deleteServerWithMutex(id: Int) = lock.withLock { deleteServer(id) }
-    suspend fun deleteServer(id: Int) {
-        withContext(Dispatchers.Default) {
-            val s = servers.find { id == it.id }
-            if (s != null && !s.isSelected(context)) {
-                servers.remove(s)
-                serverDao.delete(s)
-                for (tag in tagDao.selectWhereID(s.id)) tagDao.delete(tag)
-                for (sub in subDao.selectWhereID(s.id)) subDao.delete(sub)
-                withContext(Dispatchers.Main) { DeleteServerEvent.trigger(DeleteServerEvent(context, s)) }
-            }
-        }
-    }
-
-    suspend fun changeServerWithMutex(changedServer: Server) = lock.withLock { changeServer(changedServer) }
-    suspend fun changeServer(changedServer: Server) {
-        withContext(Dispatchers.Default) {
-            val s = servers.find { it.id == changedServer.id }
-            if (s != null) {
-                val wasCurrentServer = Server.getCurrentServer(context) == changedServer
-                servers.remove(s)
-                servers.add(changedServer)
-                if (wasCurrentServer) changedServer.select(context)
-                serverDao.update(changedServer)
-                withContext(Dispatchers.Main) { ChangeServerEvent.trigger(ChangeServerEvent(context, changedServer, s)) }
-            }
-        }
-    }
-
-    fun getTag(name: String) = tags.find { it.name == name }
-
-    suspend fun addTagWithMutex(tag: Tag) = lock.withLock { addTag(tag) }
-    suspend fun addTag(tag: Tag): Tag {
-        return withContext(Dispatchers.Default) {
-            val t = getTag(tag.name)
-            if (t == null) {
-                tags.add(tag)
-                tagDao.insert(tag)
-                withContext(Dispatchers.Main) { AddTagEvent.trigger(AddTagEvent(context, tag)) }
-                tag
-            } else t
-        }
-    }
-
-    suspend fun deleteTagWithMutex(name: String) = lock.withLock { deleteTag(name) }
-    suspend fun deleteTag(name: String) {
-        withContext(Dispatchers.Default) {
-            val tag = tags.find { it.name == name }
-            if (tag != null) {
-                tags.remove(tag)
-                tagDao.delete(tag)
-                withContext(Dispatchers.Main) { DeleteTagEvent.trigger(DeleteTagEvent(context, tag)) }
-            }
-        }
-    }
-
-    suspend fun changeTagWithMutex(changedTag: Tag) = lock.withLock { changeTag(changedTag) }
-    suspend fun changeTag(changedTag: Tag) {
-        withContext(Dispatchers.Default) {
-            val tag = tags.find { it.name == changedTag.name }
-            if (tag != null) {
-                tags.remove(tag)
-                tags.add(changedTag)
-                tagDao.update(changedTag)
-                withContext(Dispatchers.Main) { ChangeTagEvent.trigger(ChangeTagEvent(context, tag, changedTag)) }
-            }
-        }
-    }
-
-    fun getSubscription(name: String) = subs.find { it.name == name }
-
-    suspend fun addSubscriptionWithMutex(sub: Subscription) = lock.withLock { addSubscription(sub) }
-    suspend fun addSubscription(sub: Subscription) {
-        withContext(Dispatchers.Default) {
-            if (getSubscription(sub.name) == null) {
-                subs.add(sub)
-                subDao.insert(sub)
-                withContext(Dispatchers.Main) { AddSubEvent.trigger(AddSubEvent(context, sub)) }
-            }
-        }
-    }
-
-    suspend fun deleteSubscriptionWithMutex(name: String) = lock.withLock { deleteSubscription(name) }
-    suspend fun deleteSubscription(name: String) {
-        withContext(Dispatchers.Default) {
-            val sub = subs.find { it.name == name }
-            if (sub != null) {
-                subs.remove(sub)
-                subDao.delete(sub)
-                withContext(Dispatchers.Main) { DeleteSubEvent.trigger(DeleteSubEvent(context, sub)) }
-            }
-        }
-    }
-
-    suspend fun changeSubscriptionWithMutex(changedSub: Subscription) = lock.withLock { changeSubscription(changedSub) }
-    suspend fun changeSubscription(changedSub: Subscription) {
-        withContext(Dispatchers.Default) {
-            val sub = subs.find { it.name == changedSub.name }
-            if (sub != null) {
-                subs.remove(sub)
-                subs.add(changedSub)
-                subDao.update(changedSub)
-                withContext(Dispatchers.Main) { ChangeSubEvent.trigger(ChangeSubEvent(context, sub, changedSub)) }
-            }
+    suspend fun loadServer(server: Server) {
+        withContext(Dispatchers.IO) {
+            listeners.unregisterListeners()
+            withContext(Dispatchers.Main) { context.db.currentServerID = server.id }
+            tags.clear()
+            val t = tagDao.selectWhere(server)
+            withContext(Dispatchers.Main) { tags += t }
+            listeners.registerListeners()
+            SelectServerEvent.trigger(SelectServerEvent(context, context.currentServer, server))
+            server.updateMissingTypeTags(context)
         }
     }
 
@@ -240,6 +102,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
                 apply()
             }
         }
+
     var lastVersion = prefs.getInt("lastVersion", BuildConfig.VERSION_CODE)
         set(v) {
             field = v
@@ -248,21 +111,6 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
                 apply()
             }
         }
-
-    var nextServerID = prefs.getInt("nextServerID", 10) //10 because of potential default server
-        get() {
-            val i = field
-            nextServerID = i + 1
-            return i
-        }
-        set(v) {
-            field = v
-            with(prefs.edit()) {
-                putInt("nextServerID", v)
-                apply()
-            }
-        }
-
 
     var downloadOriginal = prefs.getBoolean("downloadOriginal", true)
         set(v) {
@@ -294,13 +142,11 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
         withContext(Dispatchers.Default) {
             use {
                 dropTable("tags", true)
-                dropTable("subs", true)
                 dropTable("servers", true)
             }
             withContext(Dispatchers.Main) {
                 servers.clear()
                 tags.clear()
-                subs.clear()
             }
         }
         val p = prefs.all
@@ -310,9 +156,54 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
         }
     }
 
-    val tagDao = TagDao(context, this)
-    val subDao = SubDao(context, this)
+    val tagDao = TagDao(this)
     val serverDao = ServerDao(this)
+
+    fun getTag(name: String) = tags.find { it.name == name }
+    fun getServer(id: Int) = servers.find { it.id == id }
+
+    private inner class DatabaseListeners {
+        //The listeners in this class automatically update the database when the ObservingEventCollection changes
+        private val addServerListener = Listener.create<OnAddElementsEvent<Server>> {
+            GlobalScope.launch(Dispatchers.IO) {
+                for (server in it.elements)
+                    server.id = serverDao.insert(server)
+            }
+        }
+        private val removeServerListener = Listener.create<OnRemoveElementsEvent<Server>> { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> serverDao.delete(element) } } }
+        private val changeServerListener = Listener.create<OnChangeObjectEvent<Server, Int>> { GlobalScope.launch(Dispatchers.IO) { serverDao.update(it.new) } }
+
+        private val addTagListener = Listener.create<OnAddElementsEvent<Tag>> {
+            GlobalScope.launch(Dispatchers.IO) {
+                val id = context.currentServer.id
+                it.elements.forEach { element ->
+                    tagDao.insert(element.apply { serverID = id })
+                }
+            }
+        }
+        private val removeTagListener = Listener.create<OnRemoveElementsEvent<Tag>> { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> tagDao.delete(element) } } }
+        private val changeTagListener = Listener.create<OnChangeObjectEvent<Tag, Int>> { GlobalScope.launch(Dispatchers.IO) { tagDao.update(it.new) } }
+
+        fun registerListeners() {
+            servers.onAddElements.registerListener(addServerListener)
+            servers.onRemoveElements.registerListener(removeServerListener)
+            servers.onElementChange.registerListener(changeServerListener)
+
+            tags.onAddElements.registerListener(addTagListener)
+            tags.onRemoveElements.registerListener(removeTagListener)
+            tags.onElementChange.registerListener(changeTagListener)
+        }
+
+        fun unregisterListeners() {
+            servers.onAddElements.removeListener(addServerListener)
+            servers.onRemoveElements.removeListener(removeServerListener)
+            servers.onElementChange.removeListener(changeServerListener)
+
+            tags.onAddElements.removeListener(addTagListener)
+            tags.onRemoveElements.removeListener(removeTagListener)
+            tags.onElementChange.removeListener(changeTagListener)
+        }
+    }
 }
 
 val Context.db: Database get() = Database.getDatabase(this)

@@ -1,65 +1,78 @@
 package de.yochyo.yummybooru.api.entities
 
 import android.content.Context
-import de.yochyo.yummybooru.api.api.Api
+import de.yochyo.booruapi.api.IApi
+import de.yochyo.eventcollection.events.OnChangeObjectEvent
+import de.yochyo.eventcollection.observable.IObservableObject
+import de.yochyo.eventmanager.EventHandler
+import de.yochyo.yummybooru.api.Apis
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.events.events.SelectServerEvent
-import de.yochyo.yummybooru.utils.general.passwordToHash
-import kotlinx.coroutines.Dispatchers
+import de.yochyo.yummybooru.utils.general.currentServer
+import de.yochyo.yummybooru.utils.general.toBooruTag
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.net.URL
 
-data class Server(var name: String, var api: String, var url: String, var userName: String = "", var password: String = "", var enableR18Filter: Boolean = false, val id: Int = -1) : Comparable<Server> {
+open class Server(name: String, url: String, apiName: String, username: String = "", password: String = "", var id: Int = -1) : Comparable<Server>, IObservableObject<Server, Int> {
+    var api: IApi = Apis.getApi(apiName, url)
+        private set
+    var name = name
+        set(value) {
+            field = value
+            trigger(CHANGED_NAME)
+        }
+    var url = url
+        set(value) {
+            field = value
+            api = Apis.getApi(apiName, value)
+            trigger(CHANGED_URL)
+        }
+    var apiName = apiName
+        set(value) {
+            field = value
+            api = Apis.getApi(value, url)
+            trigger(CHANGED_API)
+        }
+    var username = username
+        set(value) {
+            field = value
+            GlobalScope.launch { api.login(value, password) }
+            trigger(CHANGED_USERNAME)
+        }
+    var password = password
+        set(value) {
+            field = value
+            GlobalScope.launch { api.login(username, value) }
+            trigger(CHANGED_PASSWORD)
+        }
+    override val onChange = EventHandler<OnChangeObjectEvent<Server, Int>>()
+    protected fun trigger(change: Int) = onChange.trigger(OnChangeObjectEvent(this, change))
 
     companion object {
-        private var _currentServer: Server? = null
-        fun getCurrentServer(context: Context): Server{
-            if (_currentServer == null || _currentServer!!.id != context.db.currentServerID) {
-                _currentServer = context.db.getServer(context.db.currentServerID) ?:
-                        if(context.db.servers.isNotEmpty()) context.db.servers.first()
-                        else Server("", "", "", "", "") //In case no server exist because of whatever bug may happened
-            }
-            return _currentServer!!
-        }
-        fun getCurrentServerID(context: Context): Int = getCurrentServer(context).id
+        const val CHANGED_NAME = 0
+        const val CHANGED_URL = 1
+        const val CHANGED_API = 2
+        const val CHANGED_USERNAME = 3
+        const val CHANGED_PASSWORD = 4
     }
 
-    private var cachedPassword = password
-
-    var passwordHash: String = if(cachedPassword == "") "" else passwordToHash(password)
-        get() {
-            if (cachedPassword != password) {
-                cachedPassword = password
-                field = if(cachedPassword == "") "" else passwordToHash(password)
-            }
-            return field
-        }
-        private set
 
     val urlHost: String = try {
-        if(url == "") ""
+        if (url == "") ""
         else URL(url).host
     } catch (e: Exception) {
         e.printStackTrace()
         ""
     }
 
-    fun isSelected(context: Context): Boolean = getCurrentServerID(context) == id
+    suspend fun login(username: String, password: String) = api.login(username, password)
+    suspend fun getMatchingTags(beginSequence: String, limit: Int = api.DEFAULT_TAG_LIMIT) = api.getMatchingTags(beginSequence, limit)?.map { it.toBooruTag() }
+    suspend fun getTag(name: String): Tag? = api.getTag(name)?.toBooruTag()
+    suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = api.DEFAULT_POST_LIMIT) = api.getPosts(page, tags, limit)
+    suspend fun newestID() = api.newestID()
 
-    suspend fun select(context: Context) {
-        withContext(Dispatchers.Main) {
-            if (getCurrentServer(context) != this@Server)
-                SelectServerEvent.trigger(SelectServerEvent(context, getCurrentServer(context), this@Server))
-            context.db.currentServerID = id
-            Api.selectApi(api, url)
-            context.db.loadServerWithMutex()
-            context.db.servers.notifyChange()
-            updateMissingTypeTags(context)
-            updateMissingTypeSubs(context)
-        }
-    }
+
+    fun isSelected(context: Context): Boolean = context.currentServer.id == id
 
     override fun compareTo(other: Server) = id.compareTo(other.id)
     override fun toString() = name
@@ -69,51 +82,20 @@ data class Server(var name: String, var api: String, var url: String, var userNa
         return false
     }
 
-    fun deleteServer(context: Context) {
-        GlobalScope.launch { context.db.deleteServer(id) }
-    }
-
-    private fun updateMissingTypeTags(context: Context) {
+    fun updateMissingTypeTags(context: Context) {
         GlobalScope.launch {
-            val current = getCurrentServer(context)
+            val current = context.currentServer
             val oldTags = context.db.tags.toCollection(ArrayList())
             val newTags = ArrayList<Tag>()
             for (tag in oldTags) { //Tags updaten
                 if (tag.type == Tag.UNKNOWN) {
-                    val t = Api.getTag(context, tag.name)
-                    newTags += t.copy(isFavorite = tag.isFavorite, creation = tag.creation, serverID = tag.serverID)
-                }
-            }
-            for (tag in newTags) { //Tags ersetzen
-                if (getCurrentServer(context) == current) {
-                    if (tag.type != Tag.UNKNOWN) {
-                        context.db.deleteTag(tag.name)
-                        context.db.addTag(tag)
+                    val t = getTag(tag.name)
+                    if (context.currentServer == current) {
+                        if (t != null) tag.type = t.type
                     }
-                } else break
+                }
             }
         }
     }
 
-    private fun updateMissingTypeSubs(context: Context) {
-        GlobalScope.launch {
-            val current = getCurrentServer(context)
-            val oldSubs = context.db.subs.toCollection(ArrayList())
-            val newSubs = ArrayList<Subscription>()
-            for (sub in oldSubs) { //Tags updaten
-                if (sub.type == Tag.UNKNOWN) {
-                    val s = Subscription.fromTag(context, Api.getTag(context, sub.name))
-                    newSubs += s.copy(isFavorite = sub.isFavorite, creation = sub.creation, serverID = sub.serverID)
-                }
-            }
-            for (sub in newSubs) { //Tags ersetzen
-                if (current == getCurrentServer(context)) {
-                    if (sub.type != Tag.UNKNOWN) {
-                        context.db.deleteSubscription(sub.name)
-                        context.db.addSubscription(sub)
-                    }
-                } else break
-            }
-        }
-    }
 }

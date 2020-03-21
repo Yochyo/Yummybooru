@@ -1,6 +1,8 @@
 package de.yochyo.yummybooru.database.utils
 
 import android.database.sqlite.SQLiteDatabase
+import de.yochyo.yummybooru.database.updates.Upgrade2
+import de.yochyo.yummybooru.utils.general.Logger
 
 abstract class Upgrade(val oldVersion: Int) {
     companion object {
@@ -11,17 +13,16 @@ abstract class Upgrade(val oldVersion: Int) {
                 override fun upgrade(sql: SQLiteDatabase) {
                 }
             }
+            upgrades += Upgrade2()
         }
 
         fun upgradeFromTo(sql: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            var currentVersion = oldVersion
-            while (currentVersion < newVersion) {
-                val upgrade = upgrades.find { oldVersion == currentVersion }
+            Logger.log("upgrading")
+            for(version in oldVersion until newVersion){
+                Logger.log("$version")
+                val upgrade = upgrades.find { it.oldVersion == version }
                 if (upgrade == null) throw Exception("Couldn't upgrade database")
-                else {
-                    upgrade.upgrade(sql)
-                }
-                ++currentVersion
+                else upgrade.upgrade(sql)
             }
         }
     }

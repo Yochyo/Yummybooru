@@ -3,9 +3,7 @@ package de.yochyo.yummybooru.layout.menus
 import android.content.Context
 import android.view.Menu
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.api.entities.Tag
-import de.yochyo.yummybooru.database.db
 
 object Menus {
     fun initMainSearchTagMenu(context: Context, menu: Menu, tag: Tag) {
@@ -13,7 +11,7 @@ object Menus {
             title = if (tag.isFavorite) "Unfavorite" else "Favorite"
         }
         with(menu.findItem(R.id.main_search_subscribe_tag)) {
-            title = if (context.db.getSubscription(tag.name) == null) "Subscribe" else "Unsubscribe"
+            title = if (tag.sub == null) "Subscribe" else "Unsubscribe"
         }
         with(menu.findItem(R.id.main_search_delete_tag)) {
             title = "Delete"
@@ -28,11 +26,11 @@ object Menus {
             title = if (tag.isFavorite) "Unfavorite" else "Favorite"
         }
         with(menu.findItem(R.id.picture_info_item_subscribe)) {
-            title = if (context.db.getSubscription(tag.name) == null) "Subscribe" else "Unsubscribe"
+            title = if (tag.name == null) "Subscribe" else "Unsubscribe"
         }
     }
 
-    fun initSubscriptionMenu(menu: Menu, sub: Subscription) {
+    fun initSubscriptionMenu(menu: Menu, sub: Tag) {
         with(menu.findItem(R.id.subscription_set_favorite)) {
             title = if (sub.isFavorite) "Unfavorite" else "Favorite"
         }

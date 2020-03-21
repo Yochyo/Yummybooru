@@ -5,19 +5,16 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.widget.*
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.api.api.api
+import de.yochyo.yummybooru.api.Apis
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.utils.general.parseURL
-import de.yochyo.yummybooru.utils.network.DownloadUtils
-import de.yochyo.yummybooru.utils.network.ResponseCodes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
-    var server = Server("", "", "", "", "", false)
+    var server = Server("", "", "", "", "")
     var title = "Add server"
 
     fun withServer(server: Server) = apply { this.server = server }
@@ -30,7 +27,7 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
         val spinner = layout.findViewById<Spinner>(R.id.add_server_api)
         val adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1)
         adapter.add("Auto")
-        adapter.addAll(Api.apis.map { it.name })
+        adapter.addAll(Apis.apis)
         spinner.adapter = adapter
         builder.setMessage(context.getString(R.string.add_server))
 
@@ -38,23 +35,22 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
         val apiSpinner = layout.findViewById<Spinner>(R.id.add_server_api).apply {
             //Falls ein Server übergeben wurde
             for (spin in 0 until this.adapter.count)
-                if ((this.adapter.getItem(spin) as String).equals(server.api, true)) {
+                if ((this.adapter.getItem(spin) as String).equals(server.apiName, true)) {
                     this.setSelection(spin)
                     break
                 }
         }
-        val r18 = layout.findViewById<CheckBox>(R.id.server_enable_r18_filter).apply { isChecked = server.enableR18Filter }
         val url = layout.findViewById<TextView>(R.id.add_server_url).apply { text = server.url }
-        val username = layout.findViewById<TextView>(R.id.add_server_username).apply { text = server.userName }
+        val username = layout.findViewById<TextView>(R.id.add_server_username).apply { text = server.username }
         val password = layout.findViewById<TextView>(R.id.add_server_password).apply { text = server.password }
 
         builder.setPositiveButton(context.getString(R.string.ok)) { _, _ ->
             GlobalScope.launch(Dispatchers.IO) {
                 try {
-                    val s = Server(name.text.toString(), apiSpinner.selectedItem.toString(), parseURL(url.text.toString()), username.text.toString(),
-                            password.text.toString(), r18.isChecked, server.id)
-                    if (s.api == "Auto") s.api = getCorrectApi(context, s)
-                    if (DownloadUtils.getUrlResponseCode(context) == ResponseCodes.Unauthorized)
+                    val s = Server(name.text.toString(), parseURL(url.text.toString()), apiSpinner.selectedItem.toString(), username.text.toString(),
+                            password.text.toString(), id = server.id)
+                    if (s.apiName == "Auto") s.apiName = getCorrectApi(context, s)
+                    if (s.newestID() == null)
                         withContext(Dispatchers.Main) { Toast.makeText(context, "(Probably) bad login", Toast.LENGTH_LONG).show() }
                     withContext(Dispatchers.Main) { runOnPositive(s) }
                 } catch (e: Exception) {
@@ -68,10 +64,9 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
 
 
     private suspend fun getCorrectApi(context: Context, s: Server): String {
-        for (api in Api.apis) {
-            Api.selectApi(api.name, s.url)
-            if (Api.newestID(context) != 0) return api.name
+        for (api in Apis.apis) {
+            if (s.newestID() != 0) return api
         }
-        return Api.apis.first().name
+        return Apis.apis.first()
     }
 }

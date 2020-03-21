@@ -9,19 +9,18 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import de.yochyo.booruapi.objects.Post
+import de.yochyo.eventcollection.events.OnAddElementsEvent
+import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.api.entities.Subscription
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
+import de.yochyo.yummybooru.utils.ManagerWrapper
+import de.yochyo.yummybooru.utils.general.createTagAndOrChangeSubState
 import de.yochyo.yummybooru.utils.general.currentManager
+import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.drawable
-import de.yochyo.yummybooru.utils.general.toTagArray
-import de.yochyo.yummybooru.utils.manager.IManager
-import de.yochyo.yummybooru.utils.manager.ManagerBuilder
-import de.yochyo.yummybooru.utils.manager.ManagerWrapper
-import de.yochyo.yummybooru.utils.manager.OnDownloadPageEvent
 import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +32,7 @@ open class PreviewActivity : AppCompatActivity() {
 
     companion object {
         fun startActivity(context: Context, tags: String) {
-            currentManager = ManagerWrapper(ManagerBuilder.toManager(tags))
+            context.currentManager = ManagerWrapper.build(context, tags)
             context.startActivity(Intent(context, PreviewActivity::class.java))
         }
     }
@@ -47,21 +46,20 @@ open class PreviewActivity : AppCompatActivity() {
 
     private lateinit var m: ManagerWrapper
 
-    private val managerListener = Listener.create<OnDownloadPageEvent> {
+    private val managerListener = Listener.create<OnAddElementsEvent<Post>> {
         GlobalScope.launch(Dispatchers.Main) {
-            if (it.page != null && it.page.isNotEmpty()) previewAdapter.updatePosts(it.page)
-            else Toast.makeText(this@PreviewActivity, "End", Toast.LENGTH_SHORT).show()
+            previewAdapter.updatePosts(it.elements)
         }
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_preview)
         m = currentManager
-        setSupportActionBar(toolbar_preview)
         initToolbar()
 
-        m.onDownloadPageEvent.registerListener(managerListener)
+        m.posts.onAddElements.registerListener(managerListener)
         recycler_view.layoutManager = object : GridLayoutManager(this, 3) {
             override fun onLayoutChildren(recycler: RecyclerView.Recycler?, state: RecyclerView.State?) {
                 try {
@@ -82,7 +80,7 @@ open class PreviewActivity : AppCompatActivity() {
     fun loadNextPage() {
         isLoadingView = true
         GlobalScope.launch {
-            m.downloadNextPage(this@PreviewActivity, db.limit)
+            m.downloadNextPage()
             isLoadingView = false
         }
     }
@@ -114,6 +112,7 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     fun initToolbar() {
+        setSupportActionBar(toolbar_preview)
         supportActionBar?.title = m.toString()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
@@ -126,23 +125,24 @@ open class PreviewActivity : AppCompatActivity() {
             R.id.select_all -> previewAdapter.selectAll()
             R.id.favorite -> {
                 val tag = db.getTag(m.toString())
-                if (tag == null) GlobalScope.launch { db.addTag(Api.getTag(this@PreviewActivity, m.toString()).copy(isFavorite = true)) }
-                else GlobalScope.launch { db.changeTag(tag.copy(isFavorite = !tag.isFavorite)) }
+
+                if (tag == null) GlobalScope.launch {
+                    val t = currentServer.getTag(m.toString())
+                    if (t != null) db.tags += t.apply { isFavorite = true }
+                }
+                else tag.isFavorite = !tag.isFavorite
             }
             R.id.add_tag -> {
                 val tag = db.getTag(m.toString())
-                if (tag == null) GlobalScope.launch { db.addTag(Api.getTag(this@PreviewActivity, m.toString())) }
-                else GlobalScope.launch { db.deleteTag(tag.name) }
+                if (tag == null) GlobalScope.launch {
+                    val t = currentServer.getTag(m.toString())
+                    if (t != null) db.tags += t
+                }
+                else db.tags -= tag
             }
             R.id.subscribe -> {
                 GlobalScope.launch {
-                    val sub = db.getSubscription(m.toString())
-                    if (sub != null) db.deleteSubscription(sub.name)
-                    else {
-                        val tag = db.getTag(m.toString())
-                                ?: Api.getTag(this@PreviewActivity, m.toString())
-                        db.addSubscription(Subscription.fromTag(this@PreviewActivity, tag))
-                    }
+                    createTagAndOrChangeSubState(this@PreviewActivity, m.toString())
                 }
             }
         }
@@ -152,11 +152,10 @@ open class PreviewActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.preview_menu, menu)
         val tag = db.getTag(m.toString())
-        val sub = db.getSubscription(m.toString())
         if (tag == null)
             menu.findItem(R.id.add_tag).icon = drawable(R.drawable.add)
         else if (tag.isFavorite) menu.findItem(R.id.favorite).icon = drawable(R.drawable.favorite)
-        if (sub != null) menu.findItem(R.id.subscribe).icon = drawable(R.drawable.star)
+        if (tag?.sub != null) menu.findItem(R.id.subscribe).icon = drawable(R.drawable.star)
         actionBarListener = ActionBarListener(this, m.toString(), menu).apply { registerListeners() }
         return true
     }
@@ -167,7 +166,7 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        m.onDownloadPageEvent.registerListener(managerListener)
+        m.posts.onAddElements.registerListener(managerListener)
         actionBarListener.unregisterListeners()
         super.onDestroy()
     }

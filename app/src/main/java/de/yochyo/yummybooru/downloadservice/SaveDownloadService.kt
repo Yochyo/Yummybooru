@@ -6,12 +6,12 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import de.yochyo.booruapi.objects.Post
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.Post
 import de.yochyo.yummybooru.api.entities.Resource
-import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
+import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.network.CacheableDownloader
 import kotlinx.coroutines.*
 
@@ -57,5 +57,5 @@ class SingleDownloadService : Service() {
 }
 
 fun saveDownload(context: Context, url: String, id: String, post: Post) = SingleDownloadService.startService(context, url, id) {
-    FileUtils.writeFile(context, post, it, Server.getCurrentServer(context))
+    FileUtils.writeFile(context, post, it, context.currentServer)
 }

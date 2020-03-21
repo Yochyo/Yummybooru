@@ -14,7 +14,7 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 7
+        versionCode 8
         versionName "2.01"
 
         javaCompileOptions {
@@ -44,10 +44,10 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.1.0'
     implementation 'com.github.chrisbanes:PhotoView:2.0.0'
 
-    implementation "de.yochyo.eventcollection:EventCollection:1.1"
+    implementation "de.yochyo.eventcollection:EventCollection:1.4"
     implementation "de.yochyo.eventmanager:EventManager:1.4"
-    implementation "de.yochyo.downloader:Downloader:1.51"
+    implementation "de.yochyo.downloader:Downloader:1.6"
+    implementation "de.yochyo.booruapi:BooruAPI:1.4"
     implementation 'com.github.bumptech.glide:glide:4.10.0'
-
     implementation "org.jetbrains.anko:anko-sqlite:$anko_version"
 }

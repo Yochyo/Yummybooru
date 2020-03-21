@@ -8,23 +8,25 @@ import de.yochyo.yummybooru.utils.general.toBitmap
 import de.yochyo.yummybooru.utils.general.tryCatch
 import java.io.*
 
-class Resource(val resource: ByteArray, val type: Int) : Serializable {
+class Resource(val resource: ByteArray, val mimetype: String) : Serializable {
+    val type = when (mimetype) {
+        "gif" -> ANIMATED
+        "mp4", "webm" -> VIDEO
+        else -> IMAGE
+    }
+
+
     companion object {
         const val IMAGE = 0
         const val ANIMATED = 1
         const val VIDEO = 2
 
-        fun getTypeFromURL(url: String): Int {
+        fun getMimetypeFromURL(url: String): String {
             val mimeType = url.mimeType
-            if (mimeType != null) {
-                return when (mimeType) {
-                    "gif" -> ANIMATED
-                    "mp4", "webm" -> VIDEO
-                    else -> IMAGE
-                }
-            }
-            return IMAGE
+            return mimeType ?: ""
         }
+
+
 
         fun fromFile(file: File): Resource? {
             try {
@@ -43,7 +45,6 @@ class Resource(val resource: ByteArray, val type: Int) : Serializable {
     }
 
     fun loadInto(imageView: ImageView) {
-
         when (type) {
             IMAGE -> imageView.setImageBitmap(resource.toBitmap())
             ANIMATED -> tryCatch { Glide.with(imageView).load(resource).into(imageView) }

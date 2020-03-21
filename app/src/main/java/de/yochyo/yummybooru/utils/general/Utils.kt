@@ -10,18 +10,18 @@ import android.view.MotionEvent
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
+import de.yochyo.booruapi.objects.Tag
 import de.yochyo.yummybooru.api.entities.Server
-import de.yochyo.yummybooru.utils.manager.IManager
-import de.yochyo.yummybooru.utils.manager.ManagerWrapper
-import de.yochyo.yummybooru.utils.manager.NewManager
+import de.yochyo.yummybooru.api.entities.Sub
+import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.utils.ManagerWrapper
 import java.io.File
-import java.net.URLEncoder
 import java.security.MessageDigest
 import kotlin.math.atan2
 
-fun Context.preview(id: Int) = "${id}P${Server.getCurrentServerID(this)}"
-fun Context.sample(id: Int) = "${id}S${Server.getCurrentServerID(this)}"
-fun Context.original(id: Int) = "${id}O${Server.getCurrentServerID(this)}"
+fun Context.preview(id: Int) = "${id}P${currentServer}"
+fun Context.sample(id: Int) = "${id}S${currentServer}"
+fun Context.original(id: Int) = "${id}O${currentServer}"
 
 fun String.toTagArray(): Array<String> = split(" ").toTypedArray()
 fun Array<String>.toTagString() = joinToString(" ")
@@ -38,6 +38,36 @@ private val p = Paint()
 fun TextView.underline(underline: Boolean) {
     if (underline) paintFlags = p.apply { isUnderlineText = true }.flags
     else paintFlags = p.apply { isUnderlineText = false }.flags
+}
+
+fun Tag.toBooruTag() = de.yochyo.yummybooru.api.entities.Tag(name, type, false, count, null)
+
+suspend fun de.yochyo.yummybooru.api.entities.Tag.addSub(context: Context): Boolean {
+    val s = context.currentServer
+    val t = s.getTag(name)
+    val id = s.newestID()
+    return if (t != null && id != null) {
+        this.sub = Sub(t.count, id)
+        true
+    } else false
+}
+
+suspend fun createTagAndOrChangeSubState(context: Context, name: String): de.yochyo.yummybooru.api.entities.Tag?{
+    val db = context.db
+    val tag = db.getTag(name)
+    if (tag != null) {
+        if (tag.sub == null) tag.addSub(context)
+        else tag.sub = null
+        return tag
+    } else {
+        val t = context.currentServer.getTag(name)
+        if (t != null) {
+            t.addSub(context)
+            db.tags += t
+            return t
+        }
+    }
+    return null
 }
 
 fun passwordToHash(password: String): String {
@@ -67,7 +97,9 @@ fun createDefaultSavePath(): String {
     f.mkdirs()
     return f.absolutePath
 }
+
 class MutablePair<A, B>(var first: A, var second: B)
+
 fun documentFile(context: Context, path: String): DocumentFile {
     return if (path.startsWith("content")) DocumentFile.fromTreeUri(context, Uri.parse(path))!!
     else DocumentFile.fromFile(File(path))
@@ -83,14 +115,22 @@ val String.mimeType: String?
 
 fun Context.drawable(id: Int) = ContextCompat.getDrawable(this, id)
 
-fun parseUrlCharacters(urlStr: String): String {
-    return URLEncoder.encode(urlStr, "UTF-8")
-}
+
+private var _currentServer: Server? = null
+val Context.currentServer: Server
+    get() {
+        val s = _currentServer
+        if (s == null || s.id != db.currentServerID)
+            _currentServer = db.getServer(db.currentServerID)
+                    ?: if (db.servers.isNotEmpty()) db.servers.first() else null
+
+        return _currentServer ?: Server("", "", "", "", "")
+    }
 
 private var _currentManager: ManagerWrapper? = null
-var currentManager: ManagerWrapper
+var Context.currentManager: ManagerWrapper
     get() {
-        val v = if (_currentManager == null) ManagerWrapper(NewManager("*")) else _currentManager
+        val v = if (_currentManager == null) ManagerWrapper(ManagerWrapper.build(this, "*")) else _currentManager
         _currentManager = null
         return v!!
     }

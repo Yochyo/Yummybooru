@@ -1,12 +1,11 @@
 package de.yochyo.yummybooru.layout.activities.subscriptionactivity
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
-import de.yochyo.eventcollection.EventCollection
+import de.yochyo.eventcollection.events.OnAddElementsEvent
 import de.yochyo.eventmanager.Listener
-import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.api.entities.Subscription
+import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.tryCatchSuspended
 import kotlinx.coroutines.*
 
@@ -27,15 +26,15 @@ class SubscriptionCountUtil(val activity: SubscriptionActivity) {
         }
     }
 
-    private val onAddElementListener = Listener.create<EventCollection<Subscription>.OnAddElementEvent> { event -> GlobalScope.launch { cacheCount(event.element.name) } }
+    private val onAddElementListener = Listener.create<OnAddElementsEvent<Tag>> { GlobalScope.launch { it.elements.forEach { element -> cacheCount(element.name) } } }
 
     init {
-        activity.db.subs.onAddElement.registerListener(onAddElementListener)
+        activity.db.tags.onAddElements.registerListener(onAddElementListener)
     }
 
-    fun getCount(sub: Subscription): Int {
-        GlobalScope.launch { cacheCount(sub.name) }
-        val countDifference = getRawCount(sub.name) - sub.lastCount
+    fun getCount(tag: Tag): Int {
+        GlobalScope.launch { cacheCount(tag.name) }
+        val countDifference = getRawCount(tag.name) - (tag.sub?.lastCount ?: 0)
         return if (countDifference > 0) countDifference else 0
     }
 
@@ -44,8 +43,8 @@ class SubscriptionCountUtil(val activity: SubscriptionActivity) {
             var newCount = 0
             tryCatchSuspended {
                 val oldValue = getRawCount(name)
-                val tag = Api.getTag(activity, name)
-                newCount = tag.count
+                val t = activity.currentServer.getTag(name)
+                newCount = t?.count ?: 0
                 setCount(name, newCount)
                 if (oldValue != newCount) {
                     val newIndex = activity.filteringSubList.indexOfFirst { it.name == name }
@@ -70,7 +69,7 @@ class SubscriptionCountUtil(val activity: SubscriptionActivity) {
     }
 
     fun close() {
-        activity.db.subs.onAddElement.removeListener(onAddElementListener)
+        activity.db.tags.onAddElements.removeListener(onAddElementListener)
         job.cancel()
     }
 }

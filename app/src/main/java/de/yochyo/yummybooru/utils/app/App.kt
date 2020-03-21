@@ -4,9 +4,6 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
-import de.yochyo.yummybooru.api.api.Api
-import de.yochyo.yummybooru.api.api.DanbooruApi
-import de.yochyo.yummybooru.api.api.MoebooruApi
 import de.yochyo.yummybooru.events.events.*
 import de.yochyo.yummybooru.events.listeners.*
 import de.yochyo.yummybooru.utils.general.ThreadExceptionHandler

@@ -1,17 +1,18 @@
 package de.yochyo.yummybooru.database.dao
 
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
+import de.yochyo.yummybooru.api.entities.Server
+import de.yochyo.yummybooru.api.entities.Sub
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.converter.ConvertBoolean
 import de.yochyo.yummybooru.database.converter.ConvertDate
 import org.jetbrains.anko.db.*
 
-class TagDao(context: Context, database: ManagedSQLiteOpenHelper) : Dao(database) {
-    val parser = object : RowParser<Tag> {
-        override fun parseRow(columns: Array<Any?>): Tag {
-            return Tag(context, columns[0] as String, (columns[1] as Long).toInt(), ConvertBoolean.toBoolean((columns[2] as Long).toInt()),
-                    ConvertDate.toDate(columns[3] as Long), (columns[4] as Long).toInt(), (columns[5] as Long).toInt())
-        }
+class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
+    val parser = rowParser { name: String, type: Long, serverID: Long, isFavorite: Long, creation: Long, lastCount: Long?, lastID: Long? ->
+        val sub = if(lastID == null || lastCount == null) null else Sub(lastID.toInt(), lastCount.toInt())
+        Tag(name, type.toInt(), isFavorite > 0, 0, sub, ConvertDate.toDate(creation), serverID.toInt())
     }
 
     private companion object {
@@ -20,22 +21,18 @@ class TagDao(context: Context, database: ManagedSQLiteOpenHelper) : Dao(database
         const val TYPE = "type"
         const val IS_FAVORITE = "isFavorite"
         const val CREATION = "creation"
-        const val SERVER_ID = "serverID"
-        const val COUNT = "count"
-
+        const val SERVER_ID = "server_id"
+        const val LAST_COUNT = "last_count"
+        const val LAST_ID = "last_id"
 
     }
 
-    override fun createTable() {
-        database.use {
-            createTable(TABLE_NAME, true,
-                    NAME to TEXT + NOT_NULL + PRIMARY_KEY,
-                    TYPE to INTEGER + NOT_NULL,
-                    IS_FAVORITE to INTEGER + NOT_NULL,
-                    CREATION to INTEGER + NOT_NULL,
-                    SERVER_ID to INTEGER + NOT_NULL + PRIMARY_KEY,
-                    COUNT to INTEGER + NOT_NULL)
-        }
+    override fun createTable(database: SQLiteDatabase) {
+        database.execSQL("CREATE TABLE IF NOT EXISTS tags(name TEXT NOT NULL, type INTEGER NOT NULL, server_id INTEGER NOT NULL, " +
+                "isFavorite INTEGER NOT NULL, creation INTEGER NOT NULL, last_count INTEGER, last_id INTEGER, " +
+                "PRIMARY KEY(name, server_id), " +
+                "FOREIGN KEY(server_id) REFERENCES servers(id) " +
+                "ON UPDATE CASCADE ON DELETE CASCADE)")
     }
 
     fun delete(tag: Tag) {
@@ -49,16 +46,17 @@ class TagDao(context: Context, database: ManagedSQLiteOpenHelper) : Dao(database
             insert(TABLE_NAME,
                     NAME to tag.name,
                     TYPE to tag.type,
+                    SERVER_ID to tag.serverID,
                     IS_FAVORITE to ConvertBoolean.toInteger(tag.isFavorite),
                     CREATION to ConvertDate.toTimestamp(tag.creation),
-                    SERVER_ID to tag.serverID,
-                    COUNT to tag.count)
+                    LAST_COUNT to tag.sub?.lastCount,
+                    LAST_ID to tag.sub?.lastID)
         }
     }
 
-    fun selectWhereID(serverID: Int): List<Tag> {
+    fun selectWhere(server: Server): List<Tag> {
         return database.use {
-            select(TABLE_NAME).whereArgs("$SERVER_ID = {$SERVER_ID}", SERVER_ID to serverID).exec { parseList(parser) }
+            select(TABLE_NAME).whereArgs("$SERVER_ID = {$SERVER_ID}", SERVER_ID to server.id).exec { parseList(parser) }
         }
     }
 
@@ -74,7 +72,8 @@ class TagDao(context: Context, database: ManagedSQLiteOpenHelper) : Dao(database
                     TYPE to tag.type,
                     IS_FAVORITE to ConvertBoolean.toInteger(tag.isFavorite),
                     CREATION to ConvertDate.toTimestamp(tag.creation),
-                    COUNT to tag.count).whereArgs("$NAME = {$NAME} AND $SERVER_ID = {$SERVER_ID}", NAME to tag.name, SERVER_ID to tag.serverID).exec()
+                    LAST_COUNT to tag.sub?.lastCount,
+                    LAST_ID to tag.sub?.lastID).whereArgs("$NAME = {$NAME} AND $SERVER_ID = {$SERVER_ID}", NAME to tag.name, SERVER_ID to tag.serverID).exec()
         }
     }
 }

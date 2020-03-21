@@ -12,9 +12,8 @@ object ServerBackup : BackupableEntity<Server> {
         json.put("name", e.name)
         json.put("api", e.api)
         json.put("url", e.url)
-        json.put("userName", e.userName)
+        json.put("userName", e.username)
         json.put("password", e.password)
-        json.put("enableR18Filter", e.enableR18Filter)
         json.put("id", e.id)
         return json
     }
@@ -22,8 +21,7 @@ object ServerBackup : BackupableEntity<Server> {
     override suspend fun restoreEntity(json: JSONObject, context: Context) {
         try{
             val server = Server(json.getString("name"), json.getString("api"),
-                    json.getString("url"), json.getString("userName"), json.getString("password"),
-                    json.getBoolean("enableR18Filter"), json.getInt("id"))
+                    json.getString("url"), json.getString("userName"), json.getString("password"), json.getInt("id"))
             context.db.serverDao.insert(server)
         }catch (e: Exception){
             Logger.log(e)

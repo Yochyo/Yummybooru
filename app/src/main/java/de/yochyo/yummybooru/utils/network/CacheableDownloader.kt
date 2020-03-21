@@ -12,7 +12,7 @@ import java.io.InputStream
 class CacheableDownloader(maxThreads: Int) {
     val dl = object : RegulatingDownloader<Resource>(maxThreads) {
         override fun toResource(inputStream: InputStream, context: Any): Resource {
-            return Resource(inputStream.readBytes(), context as Int)
+            return Resource(inputStream.readBytes(), context as String)
         }
     }
 
@@ -26,9 +26,11 @@ class CacheableDownloader(maxThreads: Int) {
         try {
             GlobalScope.launch {
                 val res = context.cache.getCachedFile(id)
-                if (res != null) doAfter(res)
-                else if (downloadFirst) dl.downloadNow(url, { doAfter(it) }, Resource.getTypeFromURL(url))
-                else dl.download(url, { doAfter(it) }, Resource.getTypeFromURL(url))
+                when {
+                    res != null -> doAfter(res)
+                    downloadFirst -> dl.downloadNow(url, { doAfter(it) }, Resource.getMimetypeFromURL(url))
+                    else -> dl.download(url, { doAfter(it) }, Resource.getMimetypeFromURL(url))
+                }
             }
         } catch (e: OutOfMemoryError) {
             e.printStackTrace()

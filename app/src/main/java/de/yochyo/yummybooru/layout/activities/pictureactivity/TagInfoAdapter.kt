@@ -7,12 +7,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.entities.Subscription
-import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
 import de.yochyo.yummybooru.layout.menus.Menus
+import de.yochyo.yummybooru.utils.general.createTagAndOrChangeSubState
 import de.yochyo.yummybooru.utils.general.setColor
+import de.yochyo.yummybooru.utils.general.toBooruTag
 import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers
@@ -23,9 +23,9 @@ import kotlinx.coroutines.withContext
 class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<InfoButtonHolder>() {
     private val db = activity.db
 
-    private var tags: Collection<Tag> = emptyList()
+    private var tags: Collection<de.yochyo.booruapi.objects.Tag> = emptyList()
 
-    fun updateInfoTags(t: Collection<Tag>) {
+    fun updateInfoTags(t: Collection<de.yochyo.booruapi.objects.Tag>) {
         tags = t
         notifyDataSetChanged()
     }
@@ -39,20 +39,18 @@ class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Inf
         toolbar.setOnMenuItemClickListener {
             val tag = tags.elementAt(adapterPosition)
             when (it.itemId) {
-                R.id.picture_info_item_add_history -> GlobalScope.launch { db.addTag(Tag(activity, tag.name, tag.type)) }
+                R.id.picture_info_item_add_history -> GlobalScope.launch { db.tags += tag.toBooruTag() }
                 R.id.picture_info_item_add_favorite -> {
                     GlobalScope.launch {
                         val t = db.getTag(tag.name)
-                        if (t == null) db.addTag(Tag(activity, tag.name, tag.type, true))
-                        else db.changeTag(tag.copy(isFavorite = !t.isFavorite))
+                        if (t == null) db.tags += tag.toBooruTag().apply { isFavorite = true }
+                        else t.isFavorite = !t.isFavorite
                         withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
                     }
                 }
                 R.id.picture_info_item_subscribe -> {
                     GlobalScope.launch {
-                        if (db.getSubscription(tag.name) == null) db.addSubscription(Subscription.fromTag(activity, tag))
-                        else db.deleteSubscription(tag.name)
-                        withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
+                        createTagAndOrChangeSubState(activity, tag.name)
                     }
                 }
             }
@@ -61,7 +59,7 @@ class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Inf
     }
 
     override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
-        val tag = tags.elementAt(position)
+        val tag = tags.elementAt(position).toBooruTag()
         val tagInDatabase = db.getTag(tag.name)
         val textView = holder.toolbar.findViewById<TextView>(R.id.info_textview)
         textView.text = tag.name

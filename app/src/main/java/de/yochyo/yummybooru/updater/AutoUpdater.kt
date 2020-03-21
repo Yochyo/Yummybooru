@@ -6,12 +6,12 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
+import de.yochyo.utils.DownloadUtils
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.configPath
-import de.yochyo.yummybooru.utils.network.DownloadUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -80,8 +80,8 @@ class AutoUpdater {
 
     suspend fun newestDownloadUrl(): String? {
         val latest = latestVersionName()
-        if (latest != null) return "https://github.com/Yochyo/Yummybooru/releases/download/$latest/$latest.apk"
-        else return null
+        return if (latest != null) "https://github.com/Yochyo/Yummybooru/releases/download/$latest/$latest.apk"
+        else null
     }
 
     private suspend fun isNewestVersion() = BuildConfig.VERSION_NAME == latestVersionName()

@@ -67,20 +67,23 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     suspend fun loadDatabase() {
         withContext(Dispatchers.IO) {
             val se: List<Server> = serverDao.selectAll()
-            servers.clear()
-            servers.addAll(se)
+            listeners.registerListeners()
+            servers.collection.clear()
+            servers.collection += se
+            servers.notifyChange()
             loadServer(context.currentServer)
         }
     }
 
     suspend fun loadServer(server: Server) {
         withContext(Dispatchers.IO) {
-            listeners.unregisterListeners()
             withContext(Dispatchers.Main) { context.db.currentServerID = server.id }
-            tags.clear()
             val t = tagDao.selectWhere(server)
-            withContext(Dispatchers.Main) { tags += t }
-            listeners.registerListeners()
+            withContext(Dispatchers.Main) {
+                tags.collection.clear()
+                tags.collection += t
+                tags.notifyChange()
+            }
             SelectServerEvent.trigger(SelectServerEvent(context, context.currentServer, server))
             server.updateMissingTypeTags(context)
         }

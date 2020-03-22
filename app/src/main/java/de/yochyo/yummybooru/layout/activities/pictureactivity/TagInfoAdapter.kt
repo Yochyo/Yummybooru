@@ -65,7 +65,7 @@ class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Inf
         textView.text = tag.name
         textView.setColor(tag.color)
         textView.underline(tagInDatabase != null && tagInDatabase.isFavorite)
-        Menus.initPictureInfoTagMenu(activity, holder.toolbar.menu, tagInDatabase ?: tag)
+        Menus.initPictureInfoTagMenu(holder.toolbar.menu, tagInDatabase ?: tag)
     }
 
     override fun getItemCount(): Int = tags.size

@@ -16,6 +16,7 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
+import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.utils.ManagerWrapper
 import de.yochyo.yummybooru.utils.general.createTagAndOrChangeSubState
 import de.yochyo.yummybooru.utils.general.currentManager
@@ -48,7 +49,8 @@ open class PreviewActivity : AppCompatActivity() {
 
     private val managerListener = Listener.create<OnAddElementsEvent<Post>> {
         GlobalScope.launch(Dispatchers.Main) {
-            previewAdapter.updatePosts(it.elements)
+            if(it.elements.isEmpty()) Toast.makeText(this@PreviewActivity, "End", Toast.LENGTH_SHORT).show()
+            else previewAdapter.updatePosts(it.elements)
         }
     }
 
@@ -152,10 +154,7 @@ open class PreviewActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.preview_menu, menu)
         val tag = db.getTag(m.toString())
-        if (tag == null)
-            menu.findItem(R.id.add_tag).icon = drawable(R.drawable.add)
-        else if (tag.isFavorite) menu.findItem(R.id.favorite).icon = drawable(R.drawable.favorite)
-        if (tag?.sub != null) menu.findItem(R.id.subscribe).icon = drawable(R.drawable.star)
+        Menus.initPreviewMenu(this, menu, tag)
         actionBarListener = ActionBarListener(this, m.toString(), menu).apply { registerListeners() }
         return true
     }

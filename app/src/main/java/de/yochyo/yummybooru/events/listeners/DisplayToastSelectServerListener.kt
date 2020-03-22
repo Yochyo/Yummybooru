@@ -8,8 +8,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class DisplayToastSelectServerListener : Listener<SelectServerEvent>() {
-
+    private var firstTrigger = true
     override fun onEvent(e: SelectServerEvent) {
-        GlobalScope.launch(Dispatchers.Main) { Toast.makeText(e.context, "Selected server [${e.newServer.name}]", Toast.LENGTH_SHORT).show() }
+        if(firstTrigger) firstTrigger = false
+        else GlobalScope.launch(Dispatchers.Main) { Toast.makeText(e.context, "Selected server [${e.newServer.name}]", Toast.LENGTH_SHORT).show() }
     }
 }

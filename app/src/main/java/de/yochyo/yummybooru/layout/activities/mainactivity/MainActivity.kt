@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         //Global Listeners for whole app
         db.tags.onAddElements.registerListener { //On add (favorite) tag
-            GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(this@MainActivity, "Add ${if (element.isFavorite) "favorite" else ""} tag [${element.name}]", Toast.LENGTH_SHORT).show() } }
+            GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(this@MainActivity, "Add ${if(element.sub != null) "sub" else if (element.isFavorite) "favorite tag" else "tag"} [${element.name}]", Toast.LENGTH_SHORT).show() } }
         }
         db.tags.onRemoveElements.registerListener {//On remove tag
             GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(this@MainActivity, "\"Delete tag [${element.name}]\"", Toast.LENGTH_SHORT).show() } }

@@ -24,14 +24,20 @@ open class Server(name: String, url: String, apiName: String, username: String =
     var url = url
         set(value) {
             field = value
-            api = Apis.getApi(apiName, value)
-            trigger(CHANGED_URL)
+            GlobalScope.launch {
+                api = Apis.getApi(apiName, value)
+                api.login(username, password)
+                trigger(CHANGED_URL)
+            }
         }
     var apiName = apiName
         set(value) {
             field = value
-            api = Apis.getApi(value, url)
-            trigger(CHANGED_API)
+            GlobalScope.launch {
+                api = Apis.getApi(value, url)
+                api.login(username, password)
+                trigger(CHANGED_API)
+            }
         }
     var username = username
         set(value) {

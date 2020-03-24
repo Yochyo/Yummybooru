@@ -39,7 +39,7 @@ class SubscriptionActivity : AppCompatActivity() {
     }
 
 
-    private val updateSubsListener = Listener.create<OnUpdateEvent<Tag>> { GlobalScope.launch { adapter.updateSubs(filteringSubList) } }
+    private val updateSubsListener = Listener.create<OnUpdateEvent<Tag>> { GlobalScope.launch(Dispatchers.Main) { adapter.updateSubs(filteringSubList) } }
     var onClickedData: SubData? = null
 
     private lateinit var recyclerView: RecyclerView

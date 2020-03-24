@@ -17,9 +17,7 @@ abstract class Upgrade(val oldVersion: Int) {
         }
 
         fun upgradeFromTo(sql: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            Logger.log("upgrading")
             for(version in oldVersion until newVersion){
-                Logger.log("$version")
                 val upgrade = upgrades.find { it.oldVersion == version }
                 if (upgrade == null) throw Exception("Couldn't upgrade database")
                 else upgrade.upgrade(sql)

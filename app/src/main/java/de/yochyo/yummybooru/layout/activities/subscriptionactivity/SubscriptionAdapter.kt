@@ -81,7 +81,7 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Tag
         b.setTitle(R.string.delete)
         b.setMessage("${activity.getString(R.string.delete)} ${activity.getString(R.string.subscription)} ${tag.name}?")
         b.setNegativeButton(R.string.no) { _, _ -> }
-        b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { db.tags -= tag } }
+        b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { tag.sub = null } }
         b.show()
     }
 

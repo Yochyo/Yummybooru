@@ -15,6 +15,7 @@ import de.yochyo.yummybooru.database.dao.ServerDao
 import de.yochyo.yummybooru.database.dao.TagDao
 import de.yochyo.yummybooru.database.utils.Upgrade
 import de.yochyo.yummybooru.events.events.SelectServerEvent
+import de.yochyo.yummybooru.utils.GlobalListeners
 import de.yochyo.yummybooru.utils.general.createDefaultSavePath
 import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.documentFile
@@ -27,7 +28,6 @@ import kotlin.collections.ArrayList
 
 class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 3) {
     private val prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
-    private val listeners = DatabaseListeners()
 
     val servers = object : ObservingEventCollection<Server, Int>(ArrayList()) {
         override fun remove(element: Server): Boolean {
@@ -67,9 +67,8 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     suspend fun loadDatabase() {
         withContext(Dispatchers.IO) {
             val se: List<Server> = serverDao.selectAll()
-            listeners.registerListeners()
-            servers.collection.clear()
-            servers.collection += se
+            servers.clear()
+            servers += se
             servers.notifyChange()
             loadServer(context.currentServer)
         }
@@ -77,13 +76,15 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     suspend fun loadServer(server: Server) {
         withContext(Dispatchers.IO) {
+            GlobalListeners.unregisterGlobalListeners(context)
             withContext(Dispatchers.Main) { context.db.currentServerID = server.id }
             val t = tagDao.selectWhere(server)
             withContext(Dispatchers.Main) {
-                tags.collection.clear()
-                tags.collection += t
+                tags.clear()
+                tags += t
                 tags.notifyChange()
             }
+            GlobalListeners.registerGlobalListeners(context)
             SelectServerEvent.trigger(SelectServerEvent(context, context.currentServer, server))
             server.updateMissingTypeTags(context)
         }
@@ -165,49 +166,6 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     fun getTag(name: String) = tags.find { it.name == name }
     fun getServer(id: Int) = servers.find { it.id == id }
-
-    private inner class DatabaseListeners {
-        //The listeners in this class automatically update the database when the ObservingEventCollection changes
-        private val addServerListener = Listener.create<OnAddElementsEvent<Server>> {
-            GlobalScope.launch(Dispatchers.IO) {
-                for (server in it.elements)
-                    server.id = serverDao.insert(server)
-            }
-        }
-        private val removeServerListener = Listener.create<OnRemoveElementsEvent<Server>> { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> serverDao.delete(element) } } }
-        private val changeServerListener = Listener.create<OnChangeObjectEvent<Server, Int>> { GlobalScope.launch(Dispatchers.IO) { serverDao.update(it.new) } }
-
-        private val addTagListener = Listener.create<OnAddElementsEvent<Tag>> {
-            GlobalScope.launch(Dispatchers.IO) {
-                val id = context.currentServer.id
-                it.elements.forEach { element ->
-                    tagDao.insert(element.apply { serverID = id })
-                }
-            }
-        }
-        private val removeTagListener = Listener.create<OnRemoveElementsEvent<Tag>> { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> tagDao.delete(element) } } }
-        private val changeTagListener = Listener.create<OnChangeObjectEvent<Tag, Int>> { GlobalScope.launch(Dispatchers.IO) { tagDao.update(it.new) } }
-
-        fun registerListeners() {
-            servers.onAddElements.registerListener(addServerListener)
-            servers.onRemoveElements.registerListener(removeServerListener)
-            servers.onElementChange.registerListener(changeServerListener)
-
-            tags.onAddElements.registerListener(addTagListener)
-            tags.onRemoveElements.registerListener(removeTagListener)
-            tags.onElementChange.registerListener(changeTagListener)
-        }
-
-        fun unregisterListeners() {
-            servers.onAddElements.removeListener(addServerListener)
-            servers.onRemoveElements.removeListener(removeServerListener)
-            servers.onElementChange.removeListener(changeServerListener)
-
-            tags.onAddElements.removeListener(addTagListener)
-            tags.onRemoveElements.removeListener(removeTagListener)
-            tags.onElementChange.removeListener(changeTagListener)
-        }
-    }
 }
 
 val Context.db: Database get() = Database.getDatabase(this)

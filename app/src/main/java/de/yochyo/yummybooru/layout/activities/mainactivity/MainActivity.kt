@@ -116,43 +116,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         db.servers.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.notifyDataSetChanged() } }
 
         //Global Listeners for whole app
-        db.tags.onAddElements.registerListener { //On add (favorite) tag
-            GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(this@MainActivity, "Add ${if(element.sub != null) "sub" else if (element.isFavorite) "favorite tag" else "tag"} [${element.name}]", Toast.LENGTH_SHORT).show() } }
-        }
-        db.tags.onRemoveElements.registerListener {//On remove tag
-            GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(this@MainActivity, "\"Delete tag [${element.name}]\"", Toast.LENGTH_SHORT).show() } }
-        }
-
-        db.tags.onElementChange.registerListener { //On change tag
-            if (it.arg == Tag.CHANGED_FAVORITE)
-                Toast.makeText(this@MainActivity,
-                        "${if (it.new.isFavorite) "Favorite" else "Unfavorite"} tag [${it.new.name}]", Toast.LENGTH_SHORT).show()
-            GlobalScope.launch(Dispatchers.Main) {
-                if (it.arg == Tag.CHANGED_TYPE)
-                    Toast.makeText(this@MainActivity,
-                            "Changed tag [${it.new.name}]", Toast.LENGTH_SHORT).show()
-                if (it.arg == Tag.CHANGED_SUB)
-                    Toast.makeText(this@MainActivity,
-                            "${if (it.new.sub == null) "Deleted" else "Changed"} sub [${it.new.name}]", Toast.LENGTH_SHORT).show()
-                if (it.arg == Tag.ADD_SUB)
-                    Toast.makeText(this@MainActivity,
-                            "Add sub [${it.new.name}]", Toast.LENGTH_SHORT).show()
-            }
-        }
-        db.servers.onAddElements.registerListener { //On add server
-            GlobalScope.launch(Dispatchers.Main) {
-                it.elements.forEach { element ->
-                    Toast.makeText(this@MainActivity, "Add server [${element.name}]", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-        db.servers.onRemoveElements.registerListener { //On add server
-            GlobalScope.launch(Dispatchers.Main) {
-                it.elements.forEach { element ->
-                    Toast.makeText(this@MainActivity, "Remove server [${element.name}]", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
     }
 
     private fun initDrawerToolbar(toolbar: androidx.appcompat.widget.Toolbar) {

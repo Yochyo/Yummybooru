@@ -26,7 +26,6 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
     private val db = activity.db
     fun updatePosts() {
         notifyDataSetChanged()
-        activity.view_pager.currentItem = m.position
     }
 
     private fun downloadOriginalPicture(p: Post) {

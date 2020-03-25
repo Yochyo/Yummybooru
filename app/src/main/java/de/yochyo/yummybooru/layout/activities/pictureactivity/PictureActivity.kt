@@ -56,6 +56,7 @@ class PictureActivity : AppCompatActivity() {
         with(view_pager) {
             adapter = PictureAdapter(this@PictureActivity, m).apply { this@PictureActivity.pictureAdapter = this }
             m.posts.onUpdate.registerListener(managerListener)
+            view_pager.currentItem = m.position
             this@PictureActivity.pictureAdapter.updatePosts()
             m.currentPost?.updateCurrentTags(m.position)
 

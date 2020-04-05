@@ -10,6 +10,7 @@ import java.io.*
 
 class Resource(val resource: ByteArray, val mimetype: String) : Serializable {
     val type = when (mimetype) {
+        "png", "jpg" -> IMAGE
         "gif" -> ANIMATED
         "mp4", "webm" -> VIDEO
         else -> IMAGE

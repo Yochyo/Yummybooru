@@ -88,17 +88,19 @@ class SubscriptionActivity : AppCompatActivity() {
         val clickedData = onClickedData
         if (clickedData != null) {
 
-            val tag = filteringSubList.elementAt(clickedData.clickedSub)
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
-            builder.setNegativeButton(R.string.no) { _, _ -> }
-            builder.setPositiveButton(R.string.yes) { _, _ ->
-                GlobalScope.launch(Dispatchers.Main) {
-                    tag.sub = Sub(clickedData.idWhenClicked, clickedData.countWhenClicked)
-                    onClickedData = null
+            val tag = filteringSubList.find { it.name == clickedData.name }
+            if(tag != null){
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
+                builder.setNegativeButton(R.string.no) { _, _ -> }
+                builder.setPositiveButton(R.string.yes) { _, _ ->
+                    GlobalScope.launch(Dispatchers.Main) {
+                        tag.sub = Sub(clickedData.idWhenClicked, clickedData.countWhenClicked)
+                        onClickedData = null
+                    }
                 }
+                builder.show()
             }
-            builder.show()
         }
     }
 
@@ -149,4 +151,4 @@ class SubscriptionActivity : AppCompatActivity() {
 
 }
 
-class SubData(val clickedSub: Int, val idWhenClicked: Int, val countWhenClicked: Int)
+class SubData(val name: String, val idWhenClicked: Int, val countWhenClicked: Int)

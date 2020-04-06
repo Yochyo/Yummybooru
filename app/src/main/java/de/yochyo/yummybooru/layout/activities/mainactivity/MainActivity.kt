@@ -43,7 +43,7 @@ import kotlinx.coroutines.withContext
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-    private lateinit var filteringTagList: FilteringEventCollection<Tag>
+    private lateinit var filteringTagList: FilteringEventCollection<Tag, Int>
     suspend fun filter(name: String) {
         val result = filteringTagList.filter(name)
         withContext(Dispatchers.Main) {

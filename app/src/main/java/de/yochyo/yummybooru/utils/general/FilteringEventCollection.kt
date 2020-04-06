@@ -1,7 +1,11 @@
 package de.yochyo.yummybooru.utils.general
 
 import de.yochyo.eventcollection.EventCollection
+import de.yochyo.eventcollection.IEventCollection
 import de.yochyo.eventcollection.SubEventCollection
+import de.yochyo.eventcollection.observable.IObservableObject
+import de.yochyo.eventcollection.observablecollection.IObservableCollection
+import de.yochyo.eventcollection.observablecollection.ObservingSubEventCollection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -9,32 +13,32 @@ import kotlinx.coroutines.withContext
 import java.util.*
 import kotlin.collections.ArrayList
 
-class FilteringEventCollection<E>(private val getUnfilteredCollection: () -> EventCollection<E>, private val filterBy: (e: E) -> String) : Collection<E> {
-    private val eventCollections = ArrayList<Pair<EventCollection<E>, String>>()
+class FilteringEventCollection<E : IObservableObject<E, A>, A>(private val getUnfilteredCollection: () -> IObservableCollection<E, A>, private val filterBy: (e: E) -> String) : Collection<E> {
+    private val eventCollections = ArrayList<Pair<IObservableCollection<E, A>, String>>()
     private val filterMutex = Mutex()
 
-    private val currentFilter: EventCollection<E> get() = eventCollections.last().first
+    private val currentFilter: IObservableCollection<E, A> get() = eventCollections.last().first
 
     init {
         eventCollections += Pair(getUnfilteredCollection(), "")
     }
 
-    suspend fun filter(name: String): EventCollection<E> {
+    suspend fun filter(name: String): IObservableCollection<E, A> {
         filterMutex.withLock {
             withContext(Dispatchers.Default) {
-                var result: EventCollection<E>? = null
+                var result: IObservableCollection<E, A>? = null
                 if (name == "") {
                     clear()
                     result = getUnfilteredCollection()
                 } else {
                     for (i in eventCollections.indices.reversed()) {
                         if (name.startsWith(eventCollections[i].second)) {
-                            result = SubEventCollection(TreeSet(), eventCollections[i].first) { filterBy(it).contains(name) }
+                            result = ObservingSubEventCollection(TreeSet(), eventCollections[i].first) { filterBy(it).contains(name) }
                             break
                         }
                     }
                 }
-                if (result == null) result = SubEventCollection(TreeSet(), getUnfilteredCollection()) { filterBy(it).contains(name) }
+                if (result == null) result = ObservingSubEventCollection(TreeSet(), getUnfilteredCollection()) { filterBy(it).contains(name) }
                 eventCollections += Pair(result, name)
             }
         }
@@ -44,7 +48,7 @@ class FilteringEventCollection<E>(private val getUnfilteredCollection: () -> Eve
     fun clear() {
         for (item in eventCollections) {
             val list = item.first
-            if (list is SubEventCollection) list.destroy()
+            if (list is SubEventCollection<*>) list.destroy()
         }
         eventCollections.clear()
     }

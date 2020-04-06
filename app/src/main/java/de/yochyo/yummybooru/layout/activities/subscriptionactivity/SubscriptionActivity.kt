@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.eventcollection.SubEventCollection
 import de.yochyo.eventcollection.events.OnUpdateEvent
+import de.yochyo.eventcollection.observablecollection.ObservingSubEventCollection
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Sub
@@ -29,7 +30,7 @@ import kotlinx.coroutines.withContext
 import java.util.*
 
 class SubscriptionActivity : AppCompatActivity() {
-    val filteringSubList = FilteringEventCollection({ SubEventCollection(TreeSet(), db.tags) { it.sub != null } }, { it.name })
+    val filteringSubList = FilteringEventCollection({ ObservingSubEventCollection(TreeSet(), db.tags) { it.sub != null } }, { it.name })
     suspend fun filter(name: String) {
         val result = filteringSubList.filter(name)
         withContext(Dispatchers.Main) {
@@ -38,8 +39,7 @@ class SubscriptionActivity : AppCompatActivity() {
         }
     }
 
-
-    private val updateSubsListener = Listener.create<OnUpdateEvent<Tag>> { GlobalScope.launch(Dispatchers.Main) { adapter.updateSubs(filteringSubList) } }
+    private val updateSubsListener = Listener.create<OnUpdateEvent<Tag>> { println(it.collection.joinToString { it.name });GlobalScope.launch(Dispatchers.Main) { adapter.updateSubs(filteringSubList) } }
     var onClickedData: SubData? = null
 
     private lateinit var recyclerView: RecyclerView
@@ -51,6 +51,8 @@ class SubscriptionActivity : AppCompatActivity() {
         setContentView(R.layout.activity_subscription)
         setSupportActionBar(toolbar_subs)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        val subsC = ObservingSubEventCollection(TreeSet(), db.tags) { it.sub != null }
+        subsC.registerOnElementChangeListener { println("new: ${it.new.name}, arg: ${it.arg}") }
         recyclerView = subs_recycler
         recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity).apply { layoutManager = this }
 
@@ -122,10 +124,10 @@ class SubscriptionActivity : AppCompatActivity() {
                 ConfirmDialog {
                     GlobalScope.launch {
                         val id = currentServer.newestID()
-                        if(id != null){
+                        if (id != null) {
                             for (sub in filteringSubList) {
                                 val tag = currentServer.getTag(sub.name)
-                                if(tag != null){
+                                if (tag != null) {
                                     val tagInDb = db.getTag(tag.name)
                                     tagInDb?.sub = Sub(id, tag.count)
                                 }

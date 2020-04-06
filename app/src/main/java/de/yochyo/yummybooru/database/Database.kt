@@ -3,11 +3,7 @@ package de.yochyo.yummybooru.database
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import androidx.documentfile.provider.DocumentFile
-import de.yochyo.eventcollection.ObservingEventCollection
-import de.yochyo.eventcollection.events.OnAddElementsEvent
-import de.yochyo.eventcollection.events.OnChangeObjectEvent
-import de.yochyo.eventcollection.events.OnRemoveElementsEvent
-import de.yochyo.eventmanager.Listener
+import de.yochyo.eventcollection.observablecollection.ObservingEventCollection
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag

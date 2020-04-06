@@ -61,7 +61,7 @@ open class PreviewActivity : AppCompatActivity() {
         m = currentManager
         initToolbar()
 
-        m.posts.onAddElements.registerListener(managerListener)
+        m.posts.registerOnAddElementsListener(managerListener)
         recycler_view.layoutManager = object : GridLayoutManager(this, 3) {
             override fun onLayoutChildren(recycler: RecyclerView.Recycler?, state: RecyclerView.State?) {
                 try {
@@ -165,7 +165,7 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        m.posts.onAddElements.registerListener(managerListener)
+        m.posts.removeOnAddElementsListener(managerListener)
         actionBarListener.unregisterListeners()
         super.onDestroy()
     }

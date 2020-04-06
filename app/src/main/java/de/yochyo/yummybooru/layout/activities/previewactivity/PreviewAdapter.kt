@@ -29,10 +29,10 @@ class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : Sel
     }
 
     private val startSelectionListener = Listener.create<StartSelectingEvent> {
-        m.posts.onUpdate.registerListener(loadManagerPageUpdateActionModeListener)
+        m.posts.registerOnUpdateListener(loadManagerPageUpdateActionModeListener)
     }
     private val stopSelectionListener = Listener.create<StopSelectingEvent> {
-        m.posts.onUpdate.removeListener(loadManagerPageUpdateActionModeListener)
+        m.posts.removeOnUpdateListener(loadManagerPageUpdateActionModeListener)
     }
     private val clickMenuItemListener = Listener.create<ActionModeClickEvent> {
         when (it.menuItem.itemId) {

@@ -29,6 +29,9 @@ package de.yochyo.yummybooru
 //TODO SubscriptionAcitivty: Sort by amount of new images
 //TODO writing on SD card gets reeeaallly slow when too many images are in the folder
 //Optimizations
+//TODO change BooruApi, returns because of unkown tag restore tries spam
+//TODO settings into what ugoira's should be parsed to
+//TODO implement tag search bar like in danbooru
 //TODO PreviewActivity should display an "End" Toast when reaching end
 //TODO add foreign key constraint to favorite database (soon to be added)
 //TODO use strings from string.xml

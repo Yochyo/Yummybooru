@@ -19,15 +19,11 @@ class ManagerWrapper(private val manager: IManager) : IManager by manager {
     override fun toString() = manager.toString()
 
     //This will let the activities know that the end was reached
-    override suspend fun downloadNextPage(): List<Post>? {
-        val result = manager.downloadNextPage()
-        if (result != null && result.isEmpty()) posts.onAddElements.trigger(OnAddElementsEvent(posts, emptyList()))
-        return result
-    }
+    override suspend fun downloadNextPage() = downloadNextPages(1)
     //This will let the activities know that the end was reached
     override suspend fun downloadNextPages(amount: Int): List<Post>? {
         val result = manager.downloadNextPages(amount)
-        if (result != null && result.isEmpty()) posts.onAddElements.trigger(OnAddElementsEvent(posts, emptyList()))
+        if (result != null && result.isEmpty()) posts.triggerOnAddElementsEvent(OnAddElementsEvent(posts, emptyList()))
         return result
     }
 

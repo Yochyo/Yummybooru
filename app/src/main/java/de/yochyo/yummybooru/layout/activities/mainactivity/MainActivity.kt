@@ -112,8 +112,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun initListeners() {
-        db.tags.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList) } }
-        db.servers.onUpdate.registerListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.notifyDataSetChanged() } }
+        db.tags.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList) } }
+        db.servers.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.notifyDataSetChanged() } }
 
         //Global Listeners for whole app
     }

@@ -29,7 +29,7 @@ class SubscriptionCountUtil(val activity: SubscriptionActivity) {
     private val onAddElementListener = Listener.create<OnAddElementsEvent<Tag>> { GlobalScope.launch { it.elements.forEach { element -> cacheCount(element.name) } } }
 
     init {
-        activity.db.tags.onAddElements.registerListener(onAddElementListener)
+        activity.db.tags.registerOnAddElementsListener(onAddElementListener)
     }
 
     fun getCount(tag: Tag): Int {
@@ -69,7 +69,7 @@ class SubscriptionCountUtil(val activity: SubscriptionActivity) {
     }
 
     fun close() {
-        activity.db.tags.onAddElements.removeListener(onAddElementListener)
+        activity.db.tags.removeOnAddElementsListener(onAddElementListener)
         job.cancel()
     }
 }

@@ -55,7 +55,7 @@ class PictureActivity : AppCompatActivity() {
         tagRecyclerView.layoutManager = LinearLayoutManager(this)
         with(view_pager) {
             adapter = PictureAdapter(this@PictureActivity, m).apply { this@PictureActivity.pictureAdapter = this }
-            m.posts.onUpdate.registerListener(managerListener)
+            m.posts.registerOnUpdateListener(managerListener)
             view_pager.currentItem = m.position
             this@PictureActivity.pictureAdapter.updatePosts()
             m.currentPost?.updateCurrentTags(m.position)
@@ -120,7 +120,7 @@ class PictureActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        m.posts.onUpdate.removeListener(managerListener)
+        m.posts.removeOnUpdateListener(managerListener)
         super.onDestroy()
     }
 

@@ -63,7 +63,7 @@ class SubscriptionActivity : AppCompatActivity() {
 
             override fun onQueryTextSubmit(query: String?) = true
         })
-        db.tags.onUpdate.registerListener(updateSubsListener)
+        db.tags.registerOnUpdateListener(updateSubsListener)
         subs_swipe_refresh_layout.setOnRefreshListener {
             subs_swipe_refresh_layout.isRefreshing = false
             clear()
@@ -140,7 +140,7 @@ class SubscriptionActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        db.tags.onUpdate.removeListener(updateSubsListener)
+        db.tags.removeOnUpdateListener(updateSubsListener)
         adapter.util.close()
     }
 

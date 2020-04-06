@@ -26,7 +26,7 @@ class ActionBarListener(val context: Context, tag: String, menu: Menu) {
     fun registerListeners() {
         if (!registered){
             registered = true
-            context.db.tags.onUpdate.registerListener(listener)
+            context.db.tags.registerOnUpdateListener(listener)
         }
 
     }
@@ -34,7 +34,7 @@ class ActionBarListener(val context: Context, tag: String, menu: Menu) {
     fun unregisterListeners() {
         if (registered) {
             registered = false
-            context.db.tags.onUpdate.removeListener(listener)
+            context.db.tags.removeOnUpdateListener(listener)
         }
     }
 

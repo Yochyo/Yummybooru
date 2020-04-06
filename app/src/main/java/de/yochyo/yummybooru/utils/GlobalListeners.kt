@@ -43,14 +43,14 @@ private object ToastListeners {
     private lateinit var onRemoveServers: Listener<OnRemoveElementsEvent<Server>>
     fun registerListeners(context: Context) {
         val db = context.db
-        onAddTags = db.tags.onAddElements.registerListener { //On add (favorite) tag
+        onAddTags = db.tags.registerOnAddElementsListener { //On add (favorite) tag
             GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(context, "Add ${if (element.sub != null) "sub" else if (element.isFavorite) "favorite tag" else "tag"} [${element.name}]", Toast.LENGTH_SHORT).show() } }
         }
-        onRemoveTags = db.tags.onRemoveElements.registerListener {//On remove tag
+        onRemoveTags = db.tags.registerOnRemoveElementsListener {//On remove tag
             GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(context, "\"Delete tag [${element.name}]\"", Toast.LENGTH_SHORT).show() } }
         }
 
-        onChangeTag = db.tags.onElementChange.registerListener { //On change tag
+        onChangeTag = db.tags.registerOnElementChangeListener { //On change tag
             GlobalScope.launch(Dispatchers.Main) {
                 println(it.arg)
                 when (it.arg) {
@@ -68,14 +68,14 @@ private object ToastListeners {
                 }
             }
         }
-        onAddServers = db.servers.onAddElements.registerListener { //On add server
+        onAddServers = db.servers.registerOnAddElementsListener { //On add server
             GlobalScope.launch(Dispatchers.Main) {
                 it.elements.forEach { element ->
                     Toast.makeText(context, "Add server [${element.name}]", Toast.LENGTH_SHORT).show()
                 }
             }
         }
-        onRemoveServers = db.servers.onRemoveElements.registerListener { //On add server
+        onRemoveServers = db.servers.registerOnRemoveElementsListener { //On add server
             GlobalScope.launch(Dispatchers.Main) {
                 it.elements.forEach { element ->
                     Toast.makeText(context, "Remove server [${element.name}]", Toast.LENGTH_SHORT).show()
@@ -86,11 +86,11 @@ private object ToastListeners {
 
     fun unregisterListeners(context: Context) {
         val db = context.db
-        db.tags.onAddElements.removeListener(onAddTags)
-        db.tags.onRemoveElements.removeListener(onRemoveTags)
-        db.tags.onElementChange.removeListener(onChangeTag)
-        db.servers.onAddElements.removeListener(onAddServers)
-        db.servers.onRemoveElements.removeListener(onRemoveServers)
+        db.tags.removeOnAddElementsListener(onAddTags)
+        db.tags.removeOnRemoveElementsListener(onRemoveTags)
+        db.tags.removeOnElementChangeListener(onChangeTag)
+        db.servers.removeOnAddElementsListener(onAddServers)
+        db.servers.removeOnRemoveElementsListener(onRemoveServers)
     }
 }
 
@@ -104,17 +104,17 @@ private object DatabaseListeners {
     private lateinit var changeTagListener: Listener<OnChangeObjectEvent<Tag, Int>>
     fun registerListeners(context: Context) {
         val db = context.db
-        addServerListener = db.servers.onAddElements.registerListener {
+        addServerListener = db.servers.registerOnAddElementsListener {
             GlobalScope.launch(Dispatchers.IO) {
                 for (server in it.elements)
                     server.id = db.serverDao.insert(server)
             }
         }
-        removeServerListener = db.servers.onRemoveElements.registerListener { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> db.serverDao.delete(element) } } }
-        changeServerListener = db.servers.onElementChange.registerListener { GlobalScope.launch(Dispatchers.IO) { db.serverDao.update(it.new) } }
+        removeServerListener = db.servers.registerOnRemoveElementsListener { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> db.serverDao.delete(element) } } }
+        changeServerListener = db.servers.registerOnElementChangeListener { GlobalScope.launch(Dispatchers.IO) { db.serverDao.update(it.new) } }
 
 
-        addTagListener = db.tags.onAddElements.registerListener {
+        addTagListener = db.tags.registerOnAddElementsListener {
             GlobalScope.launch(Dispatchers.IO) {
                 val id = context.currentServer.id
                 it.elements.forEach { element ->
@@ -122,20 +122,20 @@ private object DatabaseListeners {
                 }
             }
         }
-        removeTagListener = db.tags.onRemoveElements.registerListener { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> db.tagDao.delete(element) } } }
+        removeTagListener = db.tags.registerOnRemoveElementsListener { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> db.tagDao.delete(element) } } }
 
-        changeTagListener = db.tags.onElementChange.registerListener { GlobalScope.launch(Dispatchers.IO) { db.tagDao.update(it.new) } }
+        changeTagListener = db.tags.registerOnElementChangeListener { GlobalScope.launch(Dispatchers.IO) { db.tagDao.update(it.new) } }
 
     }
 
     fun unregisterListeners(context: Context) {
         val db = context.db
-        db.servers.onAddElements.removeListener(addServerListener)
-        db.servers.onRemoveElements.removeListener(removeServerListener)
-        db.servers.onElementChange.removeListener(changeServerListener)
+        db.servers.removeOnAddElementsListener(addServerListener)
+        db.servers.removeOnRemoveElementsListener(removeServerListener)
+        db.servers.removeOnElementChangeListener(changeServerListener)
 
-        db.tags.onAddElements.removeListener(addTagListener)
-        db.tags.onRemoveElements.removeListener(removeTagListener)
-        db.tags.onElementChange.removeListener(changeTagListener)
+        db.tags.removeOnAddElementsListener(addTagListener)
+        db.tags.removeOnRemoveElementsListener(removeTagListener)
+        db.tags.removeOnElementChangeListener(changeTagListener)
     }
 }

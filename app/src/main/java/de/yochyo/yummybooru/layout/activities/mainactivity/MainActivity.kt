@@ -137,7 +137,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             if (t != null) {
                                 db.tags += t
                                 withContext(Dispatchers.Main) {
-                                    tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOfFirst { it.name == t.name }, 0)
+                                    tagLayoutManager.scrollToPositionWithOffset(filteringTagList.indexOfFirst { it.name == t.name }, 0)
                                 }
                             }
                         }

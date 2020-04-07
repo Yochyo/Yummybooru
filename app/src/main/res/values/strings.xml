@@ -101,7 +101,7 @@
     <string name="enable_safe_filter">Enable safe filter</string>
     <string name="url">Url</string>
     <string name="username">Username</string>
-    <string name="password">Password</string>
+    <string name="password">Password/Api</string>
     <string name="tag">Tag</string>
     <string name="download_all_pictures">Download all pictures</string>
     <string name="download_all_visible">Download all visible pictures</string>

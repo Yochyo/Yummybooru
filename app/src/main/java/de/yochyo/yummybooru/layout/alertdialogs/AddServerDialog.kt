@@ -3,6 +3,7 @@ package de.yochyo.yummybooru.layout.alertdialogs
 import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.*
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Apis
@@ -26,10 +27,14 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
         builder.setView(layout)
         val spinner = layout.findViewById<Spinner>(R.id.add_server_api)
         val adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1)
-        adapter.add("Auto")
+        adapter.add("auto")
         adapter.addAll(Apis.apis)
         spinner.adapter = adapter
         builder.setMessage(context.getString(R.string.add_server))
+
+        val url = layout.findViewById<TextView>(R.id.add_server_url).apply { text = server.url }
+        val username = layout.findViewById<TextView>(R.id.add_server_username).apply { text = server.username }
+        val password = layout.findViewById<TextView>(R.id.add_server_password).apply { text = server.password }
 
         val name = layout.findViewById<TextView>(R.id.add_server_name).apply { text = server.name }
         val apiSpinner = layout.findViewById<Spinner>(R.id.add_server_api).apply {
@@ -40,9 +45,22 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
                     break
                 }
         }
-        val url = layout.findViewById<TextView>(R.id.add_server_url).apply { text = server.url }
-        val username = layout.findViewById<TextView>(R.id.add_server_username).apply { text = server.username }
-        val password = layout.findViewById<TextView>(R.id.add_server_password).apply { text = server.password }
+        apiSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val item = apiSpinner.selectedItem.toString()
+                password.hint = when(item){
+                    "auto" -> "Password/Api key"
+                    "danbooru" -> "Api key"
+                    "moebooru" -> "Password"
+                    else -> ""
+                }
+                println(item)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                TODO("Not yet implemented")
+            }
+        }
 
         builder.setPositiveButton(context.getString(R.string.ok)) { _, _ ->
             GlobalScope.launch(Dispatchers.IO) {

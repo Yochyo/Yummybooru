@@ -12,3 +12,7 @@ gradle.properties
 libs/
 proguard-rules.pro
 release/
+/app/schemas/de.yochyo.yummybooru.database.Database/
+/app/src/main/java/de/yochyo/yummybooru/TODO.kt
+/app/src/main/java/de/yochyo/yummybooru/utils/useless/
+/settings.gradle

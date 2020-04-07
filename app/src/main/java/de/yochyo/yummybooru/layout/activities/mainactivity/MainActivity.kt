@@ -36,10 +36,7 @@ import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.toTagString
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -88,7 +85,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         })
         if (hasPermission)
             initData()
-
     }
 
 
@@ -141,7 +137,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             if (t != null) {
                                 db.tags += t
                                 withContext(Dispatchers.Main) {
-                                    tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOf(t), 0)
+                                    tagLayoutManager.scrollToPositionWithOffset(db.tags.indexOfFirst { it.name == t.name }, 0)
                                 }
                             }
                         }

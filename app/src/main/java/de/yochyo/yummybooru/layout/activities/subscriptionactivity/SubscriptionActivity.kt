@@ -117,7 +117,7 @@ class SubscriptionActivity : AppCompatActivity() {
                     GlobalScope.launch {
                         val sub = createTagAndOrChangeSubState(this@SubscriptionActivity, it.text.toString())
                         withContext(Dispatchers.Main) {
-                            layoutManager.scrollToPositionWithOffset(filteringSubList.indexOf(sub), 0)
+                            layoutManager.scrollToPositionWithOffset(filteringSubList.indexOfFirst { it.name == sub?.name }, 0)
                         }
                     }
                 }.withTitle(getString(R.string.add_subscription)).build(this)

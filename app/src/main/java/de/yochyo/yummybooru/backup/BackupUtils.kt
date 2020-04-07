@@ -62,6 +62,7 @@ object BackupUtils {
     fun updateRestoreObject(json: JSONObject): JSONObject{
         val version = json["version"] as Int
         if(version < 8){
+            (json["preferences"] as JSONObject).put("downloadWebm", true)
             val subs = json["subs"] as JSONArray
             val tags = json["tags"] as JSONArray
             val newTags = JSONArray()

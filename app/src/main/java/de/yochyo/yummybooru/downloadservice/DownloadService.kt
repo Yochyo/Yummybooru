@@ -16,6 +16,7 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
+import de.yochyo.yummybooru.utils.general.getDownloadPathAndId
 import kotlinx.coroutines.*
 import java.io.InputStream
 import java.util.*
@@ -57,7 +58,7 @@ class DownloadService : Service() {
         job = GlobalScope.launch(Dispatchers.IO) {
             var pair = getNextElement()
             while (pair != null && isActive) {
-                val url = if (db.downloadOriginal) pair.first.fileURL else pair.first.fileSampleURL
+                val (url, _) = getDownloadPathAndId(this@DownloadService, pair.first)
                 val image = downloader.downloadSync(url, Resource.getMimetypeFromURL(url))
                 if (image != null) FileUtils.writeFile(this@DownloadService, pair.first, image, pair.second, SafeFileEvent.SILENT)
                 pair = getNextElement()

@@ -8,11 +8,9 @@ import androidx.viewpager.widget.PagerAdapter
 import com.github.chrisbanes.photoview.OnSingleFlingListener
 import com.github.chrisbanes.photoview.PhotoView
 import com.google.android.material.snackbar.Snackbar
-import de.yochyo.booruapi.objects.Post
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.downloadservice.saveDownload
 import de.yochyo.yummybooru.utils.ManagerWrapper
 import de.yochyo.yummybooru.utils.general.*
 import de.yochyo.yummybooru.utils.network.download
@@ -26,12 +24,6 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
     private val db = activity.db
     fun updatePosts() {
         notifyDataSetChanged()
-    }
-
-    private fun downloadOriginalPicture(p: Post) {
-        GlobalScope.launch {
-            saveDownload(activity, if (db.downloadOriginal) p.fileURL else p.fileSampleURL, if (db.downloadOriginal) activity.original(p.id) else activity.sample(p.id), p)
-        }
     }
 
     fun loadPreview(position: Int) {
@@ -58,7 +50,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
                 val time = System.currentTimeMillis()
                 val p = m.posts.elementAt(position)
                 if (time - lastSwipeUp > 400L) { //download
-                    downloadOriginalPicture(p)
+                    downloadImage(activity, p)
                     val snack = Snackbar.make(activity.view_pager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT)
                     snack.show()
                     GlobalScope.launch(Dispatchers.Main) {

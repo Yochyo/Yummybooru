@@ -10,11 +10,15 @@ import android.view.MotionEvent
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
+import de.yochyo.booruapi.objects.Post
 import de.yochyo.booruapi.objects.Tag
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Sub
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.downloadservice.saveDownload
 import de.yochyo.yummybooru.utils.ManagerWrapper
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.security.MessageDigest
 import kotlin.math.atan2
@@ -32,6 +36,30 @@ val configPath = "${Environment.getExternalStorageDirectory().absolutePath}/.Yum
 fun TextView.setColor(colorCode: Int) {
     if (Build.VERSION.SDK_INT > 22) setTextColor(context.getColor(colorCode))
     else setTextColor(context.resources.getColor(colorCode))
+}
+
+fun downloadImage(context: Context, p: Post) {
+    val (url, id) = getDownloadPathAndId(context, p)
+    GlobalScope.launch {
+        saveDownload(context, url, id, p)
+    }
+}
+fun getDownloadPathAndId(context: Context, p: Post): Pair<String, String>{
+    val url: String
+    val id: String
+    if (context.db.downloadOriginal) {
+        if (p.fileURL.mimeType == "zip" && context.db.downloadWebm) {
+            url = p.fileSampleURL
+            id = context.sample(p.id)
+        } else {
+            url = p.fileURL
+            id = context.original(p.id)
+        }
+    } else {
+        url = p.fileSampleURL
+        id = context.sample(p.id)
+    }
+    return Pair(url, id)
 }
 
 private val p = Paint()
@@ -52,7 +80,7 @@ suspend fun de.yochyo.yummybooru.api.entities.Tag.addSub(context: Context): Bool
     } else false
 }
 
-suspend fun createTagAndOrChangeSubState(context: Context, name: String): de.yochyo.yummybooru.api.entities.Tag?{
+suspend fun createTagAndOrChangeSubState(context: Context, name: String): de.yochyo.yummybooru.api.entities.Tag? {
     val db = context.db
     val tag = db.getTag(name)
     if (tag != null) {

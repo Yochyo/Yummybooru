@@ -8,6 +8,11 @@
             android:title="Download extra large picture"
             android:summary="Large pictures take longer to download"
             android:defaultValue="true"/>
+    <SwitchPreference
+            android:key="downloadWebm"
+            android:title="Download ugoira as webm"
+            android:summary="Download as webm instead of zip"
+            android:defaultValue="true"/>
     <ListPreference
             android:key="limit"
             android:title="Post per page"

@@ -11,6 +11,7 @@ object PreferencesBackup : BackupableEntity<String> {
         json.put("limit", context.db.limit)
         json.put("currentServerID", context.db.currentServerID)
         json.put("downloadOriginal", context.db.downloadOriginal)
+        json.put("downloadWebm", context.db.downloadWebm)
         json.put("savePath", context.db.saveFolder.uri)
         return json
     }

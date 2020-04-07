@@ -15,11 +15,11 @@ import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.downloadservice.saveDownload
 import de.yochyo.yummybooru.utils.general.currentManager
 import de.yochyo.yummybooru.utils.general.original
 import de.yochyo.yummybooru.utils.general.sample
 import de.yochyo.yummybooru.utils.ManagerWrapper
+import de.yochyo.yummybooru.utils.general.downloadImage
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers
@@ -88,12 +88,6 @@ class PictureActivity : AppCompatActivity() {
         }
     }
 
-    private fun downloadOriginalPicture(p: Post) {
-        GlobalScope.launch {
-            saveDownload(this@PictureActivity, if (db.downloadOriginal) p.fileURL else p.fileSampleURL, if (db.downloadOriginal) original(p.id) else sample(p.id), p)
-        }
-    }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.picture_menu, menu)
         return true
@@ -103,7 +97,7 @@ class PictureActivity : AppCompatActivity() {
         when (item.itemId) {
             android.R.id.home -> finish()
             R.id.show_info -> drawer_picture.openDrawer(GravityCompat.END)
-            R.id.save -> m.currentPost?.apply { downloadOriginalPicture(this) }
+            R.id.save -> m.currentPost?.apply { downloadImage(this@PictureActivity, this) }
             R.id.share -> {
                 val post = m.currentPost
                 if (post != null) {

@@ -59,6 +59,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
 
         bindPreferenceSummaryToValue(findPreference("limit"))
         bindPreferenceSummaryToValue(findPreference("downloadOriginal"))
+        bindPreferenceSummaryToValue(findPreference("downloadWebm"))
         bindPreferenceSummaryToValue(findPreference("savePath"))
         bindPreferenceSummaryToValue(findPreference("updates"))
         bindPreferenceSummaryToValue(findPreference("changelogs"))
@@ -70,6 +71,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             when (preference.key) {
                 "limit" -> database.limit = value.toString().toInt()
                 "downloadOriginal" -> database.downloadOriginal = value.toString().toBoolean()
+                "downloadWebm" -> database.downloadWebm = value.toString().toBoolean()
                 //Add here
             }
             true
@@ -81,7 +83,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
 
         private fun bindPreferenceSummaryToValue(preference: Preference) {
             preference.onPreferenceChangeListener = sBindPreferenceSummaryToValueListener
-            if (preference.key == "downloadOriginal")
+            if (preference.key == "downloadOriginal" || preference.key == "downloadWebm")
                 sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, PreferenceManager.getDefaultSharedPreferences(preference.context).getBoolean(preference.key, true))
             else
                 sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, PreferenceManager.getDefaultSharedPreferences(preference.context).getString(preference.key, ""))

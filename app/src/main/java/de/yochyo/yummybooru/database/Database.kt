@@ -121,6 +121,14 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
                 apply()
             }
         }
+    var downloadWebm = prefs.getBoolean("downloadWebm", true)
+        set(value) {
+            field = value
+            with(prefs.edit()) {
+                putBoolean("downloadWebm", value)
+                apply()
+            }
+        }
 
     private var _savePathTested = false
     var saveFolder: DocumentFile = documentFile(context, prefs.getString("savePath", createDefaultSavePath())!!)

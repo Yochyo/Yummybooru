@@ -6,7 +6,6 @@ import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventcollection.observable.IObservableObject
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.Apis
-import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import kotlinx.coroutines.GlobalScope
@@ -52,7 +51,14 @@ open class Server(name: String, url: String, apiName: String, username: String =
             trigger(CHANGED_PASSWORD)
         }
     override val onChange = EventHandler<OnChangeObjectEvent<Server, Int>>()
-    protected fun trigger(change: Int) = onChange.trigger(OnChangeObjectEvent(this, change))
+
+    val urlHost: String = try {
+        if (url == "") ""
+        else URL(url).host
+    } catch (e: Exception) {
+        e.printStackTrace()
+        ""
+    }
 
     companion object {
         const val CHANGED_NAME = 0
@@ -62,14 +68,11 @@ open class Server(name: String, url: String, apiName: String, username: String =
         const val CHANGED_PASSWORD = 4
     }
 
-
-    val urlHost: String = try {
-        if (url == "") ""
-        else URL(url).host
-    } catch (e: Exception) {
-        e.printStackTrace()
-        ""
+    init {
+        GlobalScope.launch { login(username, password) }
     }
+
+    protected fun trigger(change: Int) = onChange.trigger(OnChangeObjectEvent(this, change))
 
     suspend fun login(username: String, password: String) = api.login(username, password)
     suspend fun getMatchingTags(beginSequence: String, limit: Int = api.DEFAULT_TAG_LIMIT) = api.getMatchingTags(beginSequence, limit)?.map { it.toBooruTag() }
@@ -87,21 +90,4 @@ open class Server(name: String, url: String, apiName: String, username: String =
             return other.id == id
         return false
     }
-
-    fun updateMissingTypeTags(context: Context) {
-        GlobalScope.launch {
-            val current = context.currentServer
-            val oldTags = context.db.tags.toCollection(ArrayList())
-            val newTags = ArrayList<Tag>()
-            for (tag in oldTags) { //Tags updaten
-                if (tag.type == Tag.UNKNOWN) {
-                    val t = getTag(tag.name)
-                    if (context.currentServer == current) {
-                        if (t != null) tag.type = t.type
-                    }
-                }
-            }
-        }
-    }
-
 }

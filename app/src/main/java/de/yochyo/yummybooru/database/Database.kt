@@ -82,7 +82,6 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
             }
             GlobalListeners.registerGlobalListeners(context)
             SelectServerEvent.trigger(SelectServerEvent(context, context.currentServer, server))
-            server.updateMissingTypeTags(context)
         }
     }
 

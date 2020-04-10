@@ -1,6 +1,8 @@
 package de.yochyo.yummybooru.backup
 
 import android.content.Context
+import de.yochyo.json.JSONArray
+import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.general.Logger
@@ -8,8 +10,6 @@ import de.yochyo.yummybooru.utils.general.configPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
 import java.io.File
 
 object BackupUtils {
@@ -61,48 +61,25 @@ object BackupUtils {
 
     fun updateRestoreObject(json: JSONObject): JSONObject{
         val version = json["version"] as Int
-        if(version < 8){
-            (json["preferences"] as JSONObject).put("downloadWebm", true)
-            val subs = json["subs"] as JSONArray
-            val tags = json["tags"] as JSONArray
-            val newTags = JSONArray()
-            for (i in 0 until tags.length()) { //add sub infos to tag
-                val tag = tags[i] as JSONObject
-                val tagName = tag["name"].toString()
-                tag.remove("count")
-                for (s in 0 until subs.length()) { //check if a sub exists
-                    val sub = subs[s] as JSONObject
-                    val subName = sub["name"].toString()
-                    if (tagName == subName) {
-                        tag.put("lastID", sub["lastID"])
-                        tag.put("lastCount", sub["lastCount"])
-                        subs.remove(s)
-                        break
-                    }
-                }
-                newTags.put(tag)
+        if(version < 9){
+            json.getJSONObject("preferences").put("downloadWebm", true)
+            val subs = json.getJSONArray("subs")
+            val tags = json.getJSONArray("tags")
+            for(tag  in tags){
+                val tag = tag as JSONObject
+                val name = tag.getString("name")
+                val sub = subs.find { (it as JSONObject).getString("name") == name } as JSONObject?
+                tag.put("lastID", sub?.getString("lastID") ?: -1)
+                tag.put("lastCount", sub?.getString("lastCount") ?: -1)
             }
-            for(i in 0 until subs.length()){ //add all subs that didn't have a tag
-                val sub = subs[i] as JSONObject
-                val subName = sub["name"].toString()
-                var exists = false
-                for(t in 0 until tags.length()){
-                    val tag = tags[t] as JSONObject
-                    val tagName = tag["name"].toString()
-                    if(tagName == subName){
-                        exists = true
-                        break
-                    }
-                }
-                if(!exists) {
-                    newTags.put(sub)
+            for(sub in subs){
+                val sub = sub as JSONObject
+                val name = sub.getString("name")
+                val tag = tags.find { (it as JSONObject).getString("name") == name } as JSONObject?
+                if(tag == null){
+                    tags.put(sub)
                 }
             }
-
-
-            json.remove("tags")
-            json.remove("subs")
-            json.put("tags", newTags)
         }
         return json
     }

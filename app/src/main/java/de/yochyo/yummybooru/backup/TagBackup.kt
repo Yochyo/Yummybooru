@@ -1,12 +1,11 @@
 package de.yochyo.yummybooru.backup
 
 import android.content.Context
+import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.api.entities.Sub
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.general.Logger
-import org.json.JSONObject
-import java.lang.Exception
 import java.util.*
 
 object TagBackup : BackupableEntity<Tag> {
@@ -23,13 +22,13 @@ object TagBackup : BackupableEntity<Tag> {
     }
 
     override suspend fun restoreEntity(json: JSONObject, context: Context) {
-        try{
+        try {
             var sub: Sub? = Sub(json.getInt("lastID"), json.getInt("lastCount"))
-            if(sub?.lastID == -1 && sub.lastCount == -1) sub = null
+            if (sub?.lastID == -1 && sub.lastCount == -1) sub = null
             context.db.tagDao.insert(
                     Tag(json.getString("name"), json.getInt("type"), json.getBoolean("isFavorite"),
                             0, sub, Date(json.getLong("creation")), json.getInt("serverID")))
-        }catch(e: Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
             Logger.log(e)
         }

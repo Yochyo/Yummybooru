@@ -11,7 +11,6 @@ import kotlinx.coroutines.*
 import java.io.File
 
 object BackupUtils {
-    //TODO ObjectSerializer benutzen, Eine Preferences Klasse schreiben
     val directory = "$configPath/backup"
 
     val dir = File(directory)

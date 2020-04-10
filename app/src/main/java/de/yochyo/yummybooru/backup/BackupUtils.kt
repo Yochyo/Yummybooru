@@ -7,9 +7,7 @@ import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.configPath
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.File
 
 object BackupUtils {
@@ -45,38 +43,38 @@ object BackupUtils {
     suspend fun restoreBackup(byteArray: ByteArray, context: Context) {
         try {
             context.db.deleteEverything()
-            var obj = updateRestoreObject(JSONObject(String(byteArray)))
-            val tags = obj["tags"] as JSONArray
-            val servers = obj["servers"] as JSONArray
-            PreferencesBackup.restoreEntity(obj["preferences"] as JSONObject, context)
-            for (i in 0 until servers.length())
-                ServerBackup.restoreEntity(servers[i] as JSONObject, context)
-            for (i in 0 until tags.length())
-                TagBackup.restoreEntity(tags[i] as JSONObject, context)
+            val obj = updateRestoreObject(JSONObject(String(byteArray)))
+            val tags = obj.getJSONArray("tags")
+            val servers = obj.getJSONArray("servers")
+            withContext(Dispatchers.IO) {
+                PreferencesBackup.restoreEntity(obj.getJSONObject("preferences"), context)
+                servers.map { launch { ServerBackup.restoreEntity(it as JSONObject, context) } }.joinAll()
+                tags.map { launch { TagBackup.restoreEntity(it as JSONObject, context) } }.joinAll()
+            }
         } catch (e: Exception) {
             Logger.log(e)
             e.printStackTrace()
         }
     }
 
-    fun updateRestoreObject(json: JSONObject): JSONObject{
+    fun updateRestoreObject(json: JSONObject): JSONObject {
         val version = json["version"] as Int
-        if(version < 9){
+        if (version < 9) {
             json.getJSONObject("preferences").put("downloadWebm", true)
             val subs = json.getJSONArray("subs")
             val tags = json.getJSONArray("tags")
-            for(tag  in tags){
+            for (tag in tags) {
                 val tag = tag as JSONObject
                 val name = tag.getString("name")
                 val sub = subs.find { (it as JSONObject).getString("name") == name } as JSONObject?
                 tag.put("lastID", sub?.getString("lastID") ?: -1)
                 tag.put("lastCount", sub?.getString("lastCount") ?: -1)
             }
-            for(sub in subs){
+            for (sub in subs) {
                 val sub = sub as JSONObject
                 val name = sub.getString("name")
                 val tag = tags.find { (it as JSONObject).getString("name") == name } as JSONObject?
-                if(tag == null){
+                if (tag == null) {
                     tags.put(sub)
                 }
             }

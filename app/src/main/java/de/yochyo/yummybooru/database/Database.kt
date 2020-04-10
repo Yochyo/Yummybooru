@@ -151,6 +151,8 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
             use {
                 dropTable("tags", true)
                 dropTable("servers", true)
+                tagDao.createTable(this)
+                serverDao.createTable(this)
             }
             withContext(Dispatchers.Main) {
                 servers.clear()

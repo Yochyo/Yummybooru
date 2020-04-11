@@ -19,9 +19,8 @@ object BackupUtils {
         dir.mkdirs()
     }
 
-    fun createBackup(context: Context) {
-        GlobalScope.launch(Dispatchers.IO) {
-            val f = createBackupFile()
+    suspend fun createBackup(context: Context) {
+        withContext(Dispatchers.IO){
             val json = JSONObject()
             val tagArray = JSONArray()
             val serverArray = JSONArray()
@@ -34,7 +33,7 @@ object BackupUtils {
             json.put("preferences", PreferencesBackup.toJSONObject("", context))
             json.put("version", BuildConfig.VERSION_CODE)
 
-
+            val f = createBackupFile()
             f.writeBytes(json.toString().toByteArray())
         }
     }
@@ -49,6 +48,7 @@ object BackupUtils {
                 PreferencesBackup.restoreEntity(obj.getJSONObject("preferences"), context)
                 servers.map { launch { ServerBackup.restoreEntity(it as JSONObject, context) } }.joinAll()
                 tags.map { launch { TagBackup.restoreEntity(it as JSONObject, context) } }.joinAll()
+                context.db.loadDatabase()
             }
         } catch (e: Exception) {
             Logger.log(e)
@@ -66,8 +66,8 @@ object BackupUtils {
                 val tag = tag as JSONObject
                 val name = tag.getString("name")
                 val sub = subs.find { (it as JSONObject).getString("name") == name } as JSONObject?
-                tag.put("lastID", sub?.getString("lastID") ?: -1)
-                tag.put("lastCount", sub?.getString("lastCount") ?: -1)
+                tag.put("lastID", sub?.getInt("lastID") ?: -1)
+                tag.put("lastCount", sub?.getInt("lastCount") ?: -1)
             }
             for (sub in subs) {
                 val sub = sub as JSONObject

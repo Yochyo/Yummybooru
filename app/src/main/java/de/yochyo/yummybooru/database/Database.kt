@@ -39,7 +39,6 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
             if (instance == null) {
                 instance = Database(context)
                 GlobalScope.launch {
-                    delay(100)
                     instance!!.loadDatabase()
                 }
             }
@@ -62,6 +61,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     suspend fun loadDatabase() {
         withContext(Dispatchers.IO) {
+            GlobalListeners.unregisterGlobalListeners(context)
             val se: List<Server> = serverDao.selectAll()
             servers.clear()
             servers += se
@@ -148,15 +148,14 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     suspend fun deleteEverything() {
         withContext(Dispatchers.Default) {
+            GlobalListeners.unregisterGlobalListeners(context)
+            servers.clear()
+            tags.clear()
             use {
                 dropTable("tags", true)
                 dropTable("servers", true)
                 tagDao.createTable(this)
                 serverDao.createTable(this)
-            }
-            withContext(Dispatchers.Main) {
-                servers.clear()
-                tags.clear()
             }
         }
         val p = prefs.all

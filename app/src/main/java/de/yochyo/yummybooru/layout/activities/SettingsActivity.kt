@@ -36,8 +36,12 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             true
         }
         findPreference("create_backup").setOnPreferenceClickListener {
-            BackupUtils.createBackup(this)
-            Toast.makeText(this, "New backup in [${BackupUtils.directory}]", Toast.LENGTH_LONG).show()
+            GlobalScope.launch {
+                BackupUtils.createBackup(this@SettingsActivity)
+                withContext(Dispatchers.Main){
+                    Toast.makeText(this@SettingsActivity, "New backup in [${BackupUtils.directory}]", Toast.LENGTH_LONG).show()
+                }
+            }
             true
         }
         findPreference("restore_backup").setOnPreferenceClickListener {
@@ -120,7 +124,6 @@ class SettingsActivity : AppCompatPreferenceActivity() {
                     BackupUtils.restoreBackup(bytes, this@SettingsActivity)
                     withContext(Dispatchers.Main) {
                         Toast.makeText(this@SettingsActivity, "Restored backup", Toast.LENGTH_LONG).show()
-                        db.loadDatabase()
                     }
                 }
             }

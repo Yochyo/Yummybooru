@@ -29,7 +29,8 @@ class ServerDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
         }
     }
 
-    fun insert(server: Server): Int {
+    fun insert(server: Server): Int = insertWithID(server, null)
+    fun insertWithID(server: Server, id: Int?): Int{
         return database.use {
             insert(TABLE_NAME,
                     NAME to server.name,
@@ -37,7 +38,7 @@ class ServerDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
                     API to server.apiName,
                     USERNAME to server.username,
                     PASSWORD to server.password,
-                    ID to null)
+                    ID to id)
         }.toInt()
     }
 

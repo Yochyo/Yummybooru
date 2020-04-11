@@ -23,9 +23,9 @@ import java.io.File
 import java.security.MessageDigest
 import kotlin.math.atan2
 
-fun Context.preview(id: Int) = "${id}P${currentServer}"
-fun Context.sample(id: Int) = "${id}S${currentServer}"
-fun Context.original(id: Int) = "${id}O${currentServer}"
+fun Context.preview(id: Int) = "${id}P${currentServer.id}"
+fun Context.sample(id: Int) = "${id}S${currentServer.id}"
+fun Context.original(id: Int) = "${id}O${currentServer.id}"
 
 fun String.toTagArray(): Array<String> = split(" ").toTypedArray()
 fun Array<String>.toTagString() = joinToString(" ")

@@ -92,7 +92,8 @@ class SubscriptionActivity : AppCompatActivity() {
             if(tag != null){
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
-                builder.setNegativeButton(R.string.no) { _, _ -> }
+                builder.setNegativeButton(R.string.no) { _, _ -> onClickedData = null}
+                builder.setOnCancelListener { onClickedData = null }
                 builder.setPositiveButton(R.string.yes) { _, _ ->
                     GlobalScope.launch(Dispatchers.Main) {
                         tag.sub = Sub(clickedData.idWhenClicked, clickedData.countWhenClicked)

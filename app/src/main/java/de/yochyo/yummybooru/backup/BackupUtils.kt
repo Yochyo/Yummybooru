@@ -40,13 +40,13 @@ object BackupUtils {
 
     suspend fun restoreBackup(byteArray: ByteArray, context: Context) {
         try {
-            context.db.deleteEverything()
             val obj = updateRestoreObject(JSONObject(String(byteArray)))
             val tags = obj.getJSONArray("tags")
             val servers = obj.getJSONArray("servers")
             withContext(Dispatchers.IO) {
+                context.db.deleteEverything()
                 PreferencesBackup.restoreEntity(obj.getJSONObject("preferences"), context)
-                servers.map { launch { ServerBackup.restoreEntity(it as JSONObject, context) } }.joinAll()
+                servers.map { ServerBackup.restoreEntity(it as JSONObject, context) }
                 tags.map { launch { TagBackup.restoreEntity(it as JSONObject, context) } }.joinAll()
                 context.db.loadDatabase()
             }

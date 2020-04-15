@@ -22,7 +22,7 @@ object ServerBackup : BackupableEntity<Server> {
         try {
             val server = Server(json.getString("name"), json.getString("url"), json.getString("api"),
                      json.getString("userName"), json.getString("password"), json.getInt("id"))
-            context.db.serverDao.insert(server)
+            context.db.serverDao.insertWithID(server, server.id)
         } catch (e: Exception) {
             Logger.log(e)
             e.printStackTrace()

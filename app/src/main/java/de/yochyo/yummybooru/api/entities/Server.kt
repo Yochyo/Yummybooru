@@ -75,8 +75,8 @@ open class Server(name: String, url: String, apiName: String, username: String =
     protected fun trigger(change: Int) = onChange.trigger(OnChangeObjectEvent(this, change))
 
     suspend fun login(username: String, password: String) = api.login(username, password)
-    suspend fun getMatchingTags(beginSequence: String, limit: Int = api.DEFAULT_TAG_LIMIT) = api.getMatchingTags(beginSequence, limit)?.map { it.toBooruTag() }
-    suspend fun getTag(name: String): Tag? = api.getTag(name)?.toBooruTag()
+    suspend fun getMatchingTags(context: Context,beginSequence: String, limit: Int = api.DEFAULT_TAG_LIMIT) = api.getMatchingTags(beginSequence, limit)?.map { it.toBooruTag(context) }
+    suspend fun getTag(context: Context, name: String): Tag? = api.getTag(name)?.toBooruTag(context)
     suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = api.DEFAULT_POST_LIMIT) = api.getPosts(page, tags, limit)
     suspend fun newestID() = api.newestID()
 

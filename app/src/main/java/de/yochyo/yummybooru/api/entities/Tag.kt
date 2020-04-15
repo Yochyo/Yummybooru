@@ -38,16 +38,6 @@ open class Tag(val name: String, type: Int, isFavorite: Boolean = false, val cou
         const val CHANGED_FAVORITE = 1
         const val CHANGED_SUB = 2
         const val ADD_SUB = 3
-
-        fun isSpecialTag(name: String): Boolean {
-            return name == "*" || name.startsWith("height") || name.startsWith("width") || name.startsWith("order") || name.startsWith("rating") || name.contains(" ")
-        }
-
-        fun getCorrectTagType(tagName: String, type: Int): Int {
-            return if (type in 0..1 || type in 3..5) type
-            else if (isSpecialTag(tagName)) SPECIAL
-            else UNKNOWN
-        }
     }
 
     //tag, change
@@ -68,7 +58,9 @@ open class Tag(val name: String, type: Int, isFavorite: Boolean = false, val cou
 
     override fun toString(): String = name
 
+    override fun equals(other: Any?) = if(other is Tag) (compareTo(other) == 0) else false
     override fun compareTo(other: Tag): Int {
+        if(name == other.name) return 0
         if (isFavorite && !other.isFavorite)
             return -1
         if (!isFavorite && other.isFavorite)

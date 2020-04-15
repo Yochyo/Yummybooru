@@ -129,7 +129,7 @@ class SubscriptionActivity : AppCompatActivity() {
                         val id = currentServer.newestID()
                         if (id != null) {
                             for (sub in filteringSubList) {
-                                val tag = currentServer.getTag(sub.name)
+                                val tag = currentServer.getTag(this@SubscriptionActivity, sub.name)
                                 if (tag != null) {
                                     val tagInDb = db.getTag(tag.name)
                                     tagInDb?.sub = Sub(id, tag.count)

@@ -43,7 +43,7 @@ class SubscriptionCountUtil(val activity: SubscriptionActivity) {
             var newCount = 0
             tryCatchSuspended {
                 val oldValue = getRawCount(name)
-                val t = activity.currentServer.getTag(name)
+                val t = activity.currentServer.getTag(activity, name)
                 newCount = t?.count ?: 0
                 setCount(name, newCount)
                 if (oldValue != newCount) {

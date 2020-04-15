@@ -12,7 +12,7 @@ class SubscribedTagViewHolder(val activity: SubscriptionActivity, layout: FrameL
         val tag = activity.filteringSubList.elementAt(adapterPosition)
         GlobalScope.launch {
             val id = activity.currentServer.newestID()
-            val count = activity.currentServer.getTag(tag.name)
+            val count = activity.currentServer.getTag(activity, tag.name)
             if (id != null && count != null) activity.onClickedData = SubData(tag.name, id, count.count)
         }
         PreviewActivity.startActivity(activity, "id:>${tag.sub?.lastID ?: Int.MAX_VALUE} ${tag.name}")

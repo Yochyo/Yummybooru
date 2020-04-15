@@ -68,11 +68,11 @@ fun TextView.underline(underline: Boolean) {
     else paintFlags = p.apply { isUnderlineText = false }.flags
 }
 
-fun Tag.toBooruTag() = de.yochyo.yummybooru.api.entities.Tag(name, type, false, count, null)
+fun Tag.toBooruTag(context: Context) = de.yochyo.yummybooru.api.entities.Tag(name, type, false, count, null, serverID = context.currentServer.id)
 
 suspend fun de.yochyo.yummybooru.api.entities.Tag.addSub(context: Context): Boolean {
     val s = context.currentServer
-    val t = s.getTag(name)
+    val t = s.getTag(context, name)
     val id = s.newestID()
     return if (t != null && id != null) {
         this.sub = Sub(t.count, id)
@@ -88,7 +88,7 @@ suspend fun createTagAndOrChangeSubState(context: Context, name: String): de.yoc
         else tag.sub = null
         return tag
     } else {
-        val t = context.currentServer.getTag(name)
+        val t = context.currentServer.getTag(context, name)
         if (t != null) {
             t.addSub(context)
             db.tags += t

@@ -39,11 +39,11 @@ class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Inf
         toolbar.setOnMenuItemClickListener {
             val tag = tags.elementAt(adapterPosition)
             when (it.itemId) {
-                R.id.picture_info_item_add_history -> GlobalScope.launch { db.tags += tag.toBooruTag() }
+                R.id.picture_info_item_add_history -> GlobalScope.launch { db.tags += tag.toBooruTag(activity) }
                 R.id.picture_info_item_add_favorite -> {
                     GlobalScope.launch {
                         val t = db.getTag(tag.name)
-                        if (t == null) db.tags += tag.toBooruTag().apply { isFavorite = true }
+                        if (t == null) db.tags += tag.toBooruTag(activity).apply { isFavorite = true }
                         else t.isFavorite = !t.isFavorite
                         withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
                     }
@@ -59,7 +59,7 @@ class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Inf
     }
 
     override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
-        val tag = tags.elementAt(position).toBooruTag()
+        val tag = tags.elementAt(position).toBooruTag(activity)
         val tagInDatabase = db.getTag(tag.name)
         val textView = holder.toolbar.findViewById<TextView>(R.id.info_textview)
         textView.text = tag.name

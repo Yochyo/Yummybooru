@@ -9,7 +9,6 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.utils.general.currentServer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -116,9 +115,8 @@ private object DatabaseListeners {
 
         addTagListener = db.tags.registerOnAddElementsListener {
             GlobalScope.launch(Dispatchers.IO) {
-                val id = context.currentServer.id
                 it.elements.forEach { element ->
-                    db.tagDao.insert(element.apply { serverID = id })
+                    db.tagDao.insert(element)
                 }
             }
         }

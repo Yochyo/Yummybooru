@@ -47,7 +47,7 @@ class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : Sel
                 GlobalScope.launch {
                     for (post in posts) {
                         for (tag in post.tags) {
-                            if (tag.type == Tag.ARTIST) activity.db.tags += tag.toBooruTag()
+                            if (tag.type == Tag.ARTIST) activity.db.tags += tag.toBooruTag(activity)
                         }
                     }
                 }

@@ -60,7 +60,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
                 } else { //double swipe
                     GlobalScope.launch {
                         for (tag in p.tags.filter { it.type == Tag.ARTIST })
-                            db.tags += tag.toBooruTag()
+                            db.tags += tag.toBooruTag(activity)
                     }
                 }
                 lastSwipeUp = time

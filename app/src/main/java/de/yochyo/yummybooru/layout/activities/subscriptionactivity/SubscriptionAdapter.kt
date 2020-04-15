@@ -53,7 +53,7 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Tag
                             val id = activity.currentServer.newestID()
                             if (id != null) {
                                 for (selected in selected.getSelected(subs)) {
-                                    val tag = activity.currentServer.getTag(selected.name)
+                                    val tag = activity.currentServer.getTag(activity, selected.name)
                                     if (tag != null) selected.sub = Sub(id, tag.count)
                                 }
                             }

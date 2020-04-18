@@ -30,7 +30,7 @@ import kotlinx.coroutines.withContext
 import java.util.*
 
 class SubscriptionActivity : AppCompatActivity() {
-    val filteringSubList = FilteringEventCollection({ ObservingSubEventCollection(TreeSet(), db.tags) { it.sub != null } }, { it.name })
+    lateinit var filteringSubList: FilteringEventCollection<Tag, Int>
     suspend fun filter(name: String) {
         val result = filteringSubList.filter(name)
         withContext(Dispatchers.Main) {
@@ -48,6 +48,7 @@ class SubscriptionActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        filteringSubList = FilteringEventCollection({ ObservingSubEventCollection(TreeSet(), db.tags) { it.sub != null } }, { it.name })
         setContentView(R.layout.activity_subscription)
         setSupportActionBar(toolbar_subs)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

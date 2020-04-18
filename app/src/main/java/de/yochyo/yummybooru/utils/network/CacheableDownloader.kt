@@ -5,6 +5,7 @@ import de.yochyo.downloader.RegulatingDownloader
 import de.yochyo.yummybooru.api.entities.Resource
 import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.cache
+import de.yochyo.yummybooru.utils.general.mimeType
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.InputStream
@@ -28,8 +29,8 @@ class CacheableDownloader(maxThreads: Int) {
                 val res = context.cache.getCachedFile(id)
                 when {
                     res != null -> doAfter(res)
-                    downloadFirst -> dl.downloadNow(url, { doAfter(it) }, Resource.getMimetypeFromURL(url))
-                    else -> dl.download(url, { doAfter(it) }, Resource.getMimetypeFromURL(url))
+                    downloadFirst -> dl.downloadNow(url, { doAfter(it) }, url.mimeType ?: "")
+                    else -> dl.download(url, { doAfter(it) }, url.mimeType ?: "")
                 }
             }
         } catch (e: OutOfMemoryError) {

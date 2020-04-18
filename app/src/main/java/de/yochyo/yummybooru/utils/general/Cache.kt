@@ -37,7 +37,7 @@ class Cache(context: Context) {
                         notYetCached[id] = res
                         cachedFiles[id] = true
                         f.createNewFile()
-                        res.loadInto(f)
+                        res.loadIntoImageView(f)
                         notYetCached.remove(id)
                     }
                 } catch (e: Exception) {

@@ -17,6 +17,7 @@ import de.yochyo.yummybooru.events.events.SafeFileEvent
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.getDownloadPathAndId
+import de.yochyo.yummybooru.utils.general.mimeType
 import kotlinx.coroutines.*
 import java.io.InputStream
 import java.util.*
@@ -59,7 +60,7 @@ class DownloadService : Service() {
             var pair = getNextElement()
             while (pair != null && isActive) {
                 val (url, _) = getDownloadPathAndId(this@DownloadService, pair.first)
-                val image = downloader.downloadSync(url, Resource.getMimetypeFromURL(url))
+                val image = downloader.downloadSync(url, url.mimeType ?: "")
                 if (image != null) FileUtils.writeFile(this@DownloadService, pair.first, image, pair.second, SafeFileEvent.SILENT)
                 pair = getNextElement()
             }

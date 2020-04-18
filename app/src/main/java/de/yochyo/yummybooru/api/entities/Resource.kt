@@ -3,18 +3,12 @@ package de.yochyo.yummybooru.api.entities
 import android.widget.ImageView
 import com.bumptech.glide.Glide
 import de.yochyo.yummybooru.utils.general.Logger
-import de.yochyo.yummybooru.utils.general.mimeType
 import de.yochyo.yummybooru.utils.general.toBitmap
 import de.yochyo.yummybooru.utils.general.tryCatch
 import java.io.*
 
 class Resource(val resource: ByteArray, val mimetype: String) : Serializable {
-    val type = when (mimetype) {
-        "png", "jpg" -> IMAGE
-        "gif" -> ANIMATED
-        "mp4", "webm" -> VIDEO
-        else -> IMAGE
-    }
+    val type = typeFromMimeType(mimetype)
 
 
     companion object {
@@ -22,12 +16,12 @@ class Resource(val resource: ByteArray, val mimetype: String) : Serializable {
         const val ANIMATED = 1
         const val VIDEO = 2
 
-        fun getMimetypeFromURL(url: String): String {
-            val mimeType = url.mimeType
-            return mimeType ?: ""
+        fun typeFromMimeType(mimetype: String) = when (mimetype) {
+            "png", "jpg" -> IMAGE
+            "gif" -> ANIMATED
+            "mp4", "webm" -> VIDEO
+            else -> IMAGE
         }
-
-
 
         fun fromFile(file: File): Resource? {
             try {
@@ -45,14 +39,14 @@ class Resource(val resource: ByteArray, val mimetype: String) : Serializable {
         }
     }
 
-    fun loadInto(imageView: ImageView) {
+    fun loadIntoImageView(imageView: ImageView) {
         when (type) {
             IMAGE -> imageView.setImageBitmap(resource.toBitmap())
             ANIMATED -> tryCatch { Glide.with(imageView).load(resource).into(imageView) }
         }
     }
 
-    fun loadInto(file: File) {
+    fun loadIntoImageView(file: File) {
         val outputStream = ByteArrayOutputStream()
         val objStream = ObjectOutputStream(outputStream)
         try {

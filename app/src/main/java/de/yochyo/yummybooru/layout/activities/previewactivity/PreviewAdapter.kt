@@ -74,7 +74,7 @@ class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : Sel
         val p = m.posts[holder.adapterPosition]
         download(activity, p.filePreviewURL, activity.preview(p.id), {
             if (pos == holder.adapterPosition)
-                GlobalScope.launch(Dispatchers.Main) { it.loadInto(holder.layout.findViewById<ImageView>(R.id.preview_picture)) }
+                GlobalScope.launch(Dispatchers.Main) { it.loadIntoImageView(holder.layout.findViewById<ImageView>(R.id.preview_picture)) }
         }, activity.isScrolling, true)
     }
 

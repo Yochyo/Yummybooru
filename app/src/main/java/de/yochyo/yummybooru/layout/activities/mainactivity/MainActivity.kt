@@ -133,7 +133,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 R.id.add_tag -> {
                     AddTagDialog {
                         GlobalScope.launch {
-                            val t = currentServer.getTag(it.text.toString())
+                            val t = currentServer.getTag(this@MainActivity, it.text.toString())
                             if (t != null) {
                                 db.tags += t
                                 withContext(Dispatchers.Main) {

@@ -32,6 +32,7 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
     private var mediaHeight = 0
 
 
+    /*
     var minScale = 1f
         set(value) {
             field =
@@ -52,6 +53,7 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
             field =
                     if (value >= mid2Scale) value else throw RuntimeException("maxScale can't be lower than 1 or minScale($minScale)")
         }
+     */
 
     private var currentScale = 1f
 

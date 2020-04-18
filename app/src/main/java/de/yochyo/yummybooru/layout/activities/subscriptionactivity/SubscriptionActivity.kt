@@ -39,7 +39,7 @@ class SubscriptionActivity : AppCompatActivity() {
         }
     }
 
-    private val updateSubsListener = Listener.create<OnUpdateEvent<Tag>> { println(it.collection.joinToString { it.name });GlobalScope.launch(Dispatchers.Main) { adapter.updateSubs(filteringSubList) } }
+    private val updateSubsListener = Listener.create<OnUpdateEvent<Tag>> { GlobalScope.launch(Dispatchers.Main) { adapter.updateSubs(filteringSubList) } }
     var onClickedData: SubData? = null
 
     private lateinit var recyclerView: RecyclerView
@@ -52,8 +52,6 @@ class SubscriptionActivity : AppCompatActivity() {
         setContentView(R.layout.activity_subscription)
         setSupportActionBar(toolbar_subs)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        val subsC = ObservingSubEventCollection(TreeSet(), db.tags) { it.sub != null }
-        subsC.registerOnElementChangeListener { println("new: ${it.new.name}, arg: ${it.arg}") }
         recyclerView = subs_recycler
         recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity).apply { layoutManager = this }
 

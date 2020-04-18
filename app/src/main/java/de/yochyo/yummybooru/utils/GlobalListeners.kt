@@ -56,7 +56,6 @@ private object ToastListeners {
                     Tag.CHANGED_FAVORITE -> {
                         Toast.makeText(context,
                                 "${if (it.new.isFavorite) "Favorite" else "Unfavorite"} tag [${it.new.name}]", Toast.LENGTH_SHORT).show()
-                        println("change tag favorite")
                     }
                     Tag.CHANGED_TYPE -> Toast.makeText(context,
                             "Changed tag [${it.new.name}]", Toast.LENGTH_SHORT).show()

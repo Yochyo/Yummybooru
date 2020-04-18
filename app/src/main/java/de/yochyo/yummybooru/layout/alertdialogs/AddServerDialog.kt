@@ -54,7 +54,6 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
                     "moebooru" -> "Password"
                     else -> ""
                 }
-                println(item)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {

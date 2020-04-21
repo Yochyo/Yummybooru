@@ -65,14 +65,16 @@ object BackupUtils {
             for (tag in tags) {
                 val tag = tag as JSONObject
                 val name = tag.getString("name")
-                val sub = subs.find { (it as JSONObject).getString("name") == name } as JSONObject?
+                val serverID = tag.getInt("serverID")
+                val sub = subs.find { (it as JSONObject).getString("name") == name && it.getInt("serverID") == serverID } as JSONObject?
                 tag.put("lastID", sub?.getInt("lastID") ?: -1)
                 tag.put("lastCount", sub?.getInt("lastCount") ?: -1)
             }
             for (sub in subs) {
                 val sub = sub as JSONObject
                 val name = sub.getString("name")
-                val tag = tags.find { (it as JSONObject).getString("name") == name } as JSONObject?
+                val serverID = sub.getInt("serverID")
+                val tag = tags.find { (it as JSONObject).getString("name") == name && it.getInt("serverID") == serverID} as JSONObject?
                 if (tag == null) {
                     tags.put(sub)
                 }

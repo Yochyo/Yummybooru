@@ -1,4 +1,4 @@
-package de.yochyo.mediaview.mediaViewImpl
+package de.yochyo.yummybooru.layout.views.mediaview.mediaViewImpl
 
 import android.content.Context
 import android.graphics.Point
@@ -7,6 +7,7 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
 import android.view.Surface
+import de.yochyo.mediaview.mediaViewImpl.MediaViewImpl
 
 class VideoImpl(private val context: Context, val surface: Surface) : MediaViewImpl {
     override var onSizeChange = { width: Int, height: Int -> }
@@ -15,11 +16,6 @@ class VideoImpl(private val context: Context, val surface: Surface) : MediaViewI
             mMediaPlayer!!.reset()
             mMediaPlayer!!.release()
             mMediaPlayer = null
-            if (requestAudioFocus) {
-                val am = context.applicationContext
-                    .getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                am.abandonAudioFocus(null)
-            }
         }
     }
 
@@ -41,42 +37,21 @@ class VideoImpl(private val context: Context, val surface: Surface) : MediaViewI
     private var mMediaPlayer: MediaPlayer? = null
 
     private var requestAudioFocus = true
-    private var audioSession: Int = 0
 
 
     fun openVideo() {
         if (uri == null)
             return
-
         destroy()
-        if (requestAudioFocus) {
-            val am = context.applicationContext
-                .getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
-        }
         try {
             mMediaPlayer = MediaPlayer()
             mMediaPlayer!!.setOnPreparedListener { mMediaPlayer?.start() }
-            if (audioSession != 0) {
-                mMediaPlayer!!.audioSessionId = audioSession
-            } else {
-                audioSession = mMediaPlayer!!.audioSessionId
-            }
 
 
             mMediaPlayer!!.setOnVideoSizeChangedListener { _, width, height -> onSizeChange(width, height) }
             mMediaPlayer!!.isLooping = true
-            /*
-            mMediaPlayer!!.setOnPreparedListener(mPreparedListener)
-            mMediaPlayer!!.setOnCompletionListener(mCompletionListener)
-            mMediaPlayer!!.setOnErrorListener(mErrorListener)
-            mMediaPlayer!!.setOnInfoListener(mInfoListener)
-            mMediaPlayer!!.setOnBufferingUpdateListener(mBufferingUpdateListener)
-             */
-          //  mMediaPlayer!!.setDataSource(uri.toString())
             mMediaPlayer!!.setDataSource(context.applicationContext, uri, headers)
             mMediaPlayer!!.setSurface(surface)
-            mMediaPlayer!!.setAudioStreamType(AudioManager.STREAM_MUSIC)
             mMediaPlayer!!.prepareAsync()
         } catch (e: Exception) {
             Log.w("MediaViewVideoImpl", "Unable to open content: $uri", e)

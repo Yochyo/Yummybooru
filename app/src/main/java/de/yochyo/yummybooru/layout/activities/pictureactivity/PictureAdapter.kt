@@ -110,6 +110,8 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
         fun forVideo(): View {
             val layout = LinearLayout(activity)
             layout.gravity = Gravity.CENTER
+            layout.orientation = LinearLayout.HORIZONTAL
+            layout.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT)
             val view = MediaView(activity)
             layout.addView(view)
             view.setVideoPath(post.fileSampleURL)

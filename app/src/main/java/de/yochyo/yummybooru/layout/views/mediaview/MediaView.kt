@@ -6,16 +6,18 @@ import android.graphics.SurfaceTexture
 import android.net.Uri
 import android.opengl.GLES20
 import android.util.AttributeSet
+import android.util.Log
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import de.yochyo.mediaview.mediaViewImpl.BitmapImpl
 import de.yochyo.mediaview.mediaViewImpl.GifImpl
 import de.yochyo.mediaview.mediaViewImpl.MediaViewImpl
-import de.yochyo.mediaview.mediaViewImpl.VideoImpl
+import de.yochyo.yummybooru.layout.views.mediaview.mediaViewImpl.VideoImpl
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.egl.EGLContext
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 //TODO you cannot change the media type after drawing a bitmap. (https://source.android.com/devices/graphics/arch-sh.html#canvas)
@@ -139,6 +141,7 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
         surfaceTexture?.setDefaultBufferSize(width, height)
         mediaWidth = width
         mediaHeight = height
+        println("SET SIZE: $width, $height")
         requestLayout()
     }
 
@@ -195,12 +198,12 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
 
-        /*
+
         Log.v("[View name] onMeasure w", MeasureSpec.toString(widthMeasureSpec))
         Log.v("[View name] onMeasure h", MeasureSpec.toString(heightMeasureSpec))
-         */
-        var width = (View.getDefaultSize(mediaWidth, widthMeasureSpec) * currentScale).toInt()
-        var height = (View.getDefaultSize(mediaHeight, heightMeasureSpec) * currentScale).toInt()
+
+        var width = View.getDefaultSize(mediaWidth, widthMeasureSpec)
+        var height = View.getDefaultSize(mediaHeight, heightMeasureSpec)
 
         if (mediaWidth > 0 && mediaHeight > 0) {
             val widthSpecMode = MeasureSpec.getMode(widthMeasureSpec)
@@ -232,21 +235,70 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
                     width = widthSpecSize
             } else {
                 //use actual video size
-                val ratio = mediaWidth.toDouble() / mediaHeight
                 if (mediaWidth < mediaHeight) {
-                    width = (height * ratio).roundToInt()
+                    val widthFactor = widthSpecSize.toDouble()/mediaWidth
+                    width = (mediaWidth*widthFactor).roundToInt()
+                    height = (mediaHeight*widthFactor).roundToInt()
 
+                    /*
                     if (width > widthSpecSize && widthSpecMode == MeasureSpec.AT_MOST) {
+                        println("width to large")
                         // too wide, decrease both width and height
                         val toLargeFactor = width.toDouble() / widthSpecSize
                         width = widthSpecSize
                         height = (width.toDouble() / toLargeFactor).roundToInt()
                     }
+                     */
 
 
                 } else {
-                    height = mediaHeight
+                    val heightFactor = heightSpecSize.toDouble()/mediaHeight
+                    height = (mediaHeight*heightFactor).roundToInt()
+                    width = (mediaWidth*heightFactor).roundToInt()
+                    /*
+                    if (height > heightSpecSize && heightSpecMode == MeasureSpec.AT_MOST) {
+                        // too tall, decrease both width and height
+                        val toLargeFactor = height.toDouble() / heightSpecSize
+                        height = heightSpecSize
+                        width = (width.toDouble() / toLargeFactor).roundToInt()
+                    }
+                     */
+                }
+                if (width > widthSpecSize) {
+                    println("width to large")
+                    val toLargeFactor = width.toDouble() / widthSpecSize
+                    width = widthSpecSize
+                    height = (height.toDouble() / toLargeFactor).roundToInt()
+                    println("")
+                }
+                if (height > heightSpecSize) {
+                    val toLargeFactor = height.toDouble() / heightSpecSize
+                    height = heightSpecSize
+                    width = (width.toDouble() / toLargeFactor).roundToInt()
+                }
 
+                println("cur width: $width, height: $height, mediawidth: $mediaWidth, mediaheight: $mediaHeight")
+
+                /*
+                if (mediaWidth < mediaHeight) {
+                    println("width < height")
+                    width = (height * ratio).roundToInt()
+                    println("newwidth: $width")
+
+                    if (width > widthSpecSize && widthSpecMode == MeasureSpec.AT_MOST) {
+                        println("width to large")
+                        // too wide, decrease both width and height
+                        val toLargeFactor = width.toDouble() / widthSpecSize
+                        width = widthSpecSize
+                        height = (width.toDouble() / toLargeFactor).roundToInt()
+
+                        }
+
+
+                } else {
+                    println("height < width")
+                    height = (ratio / mediaHeight).pow(-1.0).roundToInt()
+                    println("new height $height")
                     if (height > heightSpecSize && heightSpecMode == MeasureSpec.AT_MOST) {
                         // too tall, decrease both width and height
                         val toLargeFactor = height.toDouble() / heightSpecSize
@@ -256,6 +308,7 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 
 
                 }
+                 */
 
 
             }

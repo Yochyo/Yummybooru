@@ -75,7 +75,7 @@ suspend fun de.yochyo.yummybooru.api.entities.Tag.addSub(context: Context): Bool
     val t = s.getTag(context, name)
     val id = s.newestID()
     return if (t != null && id != null) {
-        this.sub = Sub(t.count, id)
+        this.sub = Sub(id, t.count)
         true
     } else false
 }
@@ -154,43 +154,3 @@ var Context.currentManager: ManagerWrapper
     set(value) {
         _currentManager = value
     }
-
-object Fling {
-    fun getDirection(e1: MotionEvent, e2: MotionEvent): Direction {
-        val x1 = e1.x
-        val y1 = e1.y
-        val x2 = e2.x
-        val y2 = e2.y
-        return getDirection(x1, y1, x2, y2)
-    }
-
-    private fun getDirection(x1: Float, y1: Float, x2: Float, y2: Float): Direction {
-        val angle = getAngle(x1, y1, x2, y2)
-        return Direction.fromAngle(angle)
-    }
-
-
-    private fun getAngle(x1: Float, y1: Float, x2: Float, y2: Float): Double {
-
-        val rad = atan2((y1 - y2).toDouble(), (x2 - x1).toDouble()) + Math.PI
-        return (rad * 180 / Math.PI + 180) % 360
-    }
-
-    enum class Direction {
-        UP, DOWN, LEFT, RIGHT;
-
-        companion object {
-            fun fromAngle(angle: Double): Direction {
-                return if (inRange(angle, 45f, 135f)) UP
-                else if (inRange(angle, 0f, 45f) || inRange(angle, 315f, 360f)) RIGHT
-                else if (inRange(angle, 225f, 315f)) DOWN
-                else LEFT
-            }
-
-            private fun inRange(angle: Double, init: Float, end: Float): Boolean {
-                return angle >= init && angle < end
-            }
-        }
-    }
-
-}

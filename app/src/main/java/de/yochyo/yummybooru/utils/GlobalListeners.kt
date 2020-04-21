@@ -51,7 +51,6 @@ private object ToastListeners {
 
         onChangeTag = db.tags.registerOnElementChangeListener { //On change tag
             GlobalScope.launch(Dispatchers.Main) {
-                println(it.arg)
                 when (it.arg) {
                     Tag.CHANGED_FAVORITE -> {
                         Toast.makeText(context,

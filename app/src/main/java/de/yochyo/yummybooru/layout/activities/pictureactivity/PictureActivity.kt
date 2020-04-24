@@ -39,7 +39,7 @@ class PictureActivity : AppCompatActivity() {
     private lateinit var pictureAdapter: PictureAdapter
     private lateinit var tagInfoAdapter: TagInfoAdapter
 
-    private val managerListener = Listener.create<OnUpdateEvent<Post>> { GlobalScope.launch(Dispatchers.Main) { this@PictureActivity.pictureAdapter.updatePosts() } }
+    private val managerListener = Listener.create<OnUpdateEvent<Post>> { GlobalScope.launch(Dispatchers.Main) { this@PictureActivity.pictureAdapter.updatePosts(it.collection) } }
     lateinit var m: ManagerWrapper
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,7 +57,7 @@ class PictureActivity : AppCompatActivity() {
             adapter = PictureAdapter(this@PictureActivity, m).apply { this@PictureActivity.pictureAdapter = this }
             m.posts.registerOnUpdateListener(managerListener)
             view_pager.currentItem = m.position
-            this@PictureActivity.pictureAdapter.updatePosts()
+            this@PictureActivity.pictureAdapter.updatePosts(m.posts)
             m.currentPost?.updateCurrentTags(m.position)
 
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {

@@ -26,14 +26,17 @@ import kotlinx.coroutines.launch
 
 class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : PagerAdapter() {
     private val db = activity.db
-    fun updatePosts() {
+
+    private var posts: Collection<Post> = emptyList()
+    fun updatePosts(posts: Collection<Post>) {
+        this.posts = posts
         notifyDataSetChanged()
     }
 
     fun loadPreview(position: Int) {
         fun downloadPreview(index: Int) {
-            if (index in 0 until m.posts.size) {
-                val p = m.posts[index]
+            if (index in 0 until posts.size) {
+                val p = posts.elementAt(position)
                 download(activity, p.filePreviewURL, activity.preview(p.id), {}, cacheFile = true)
             }
         }
@@ -42,46 +45,10 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
     }
 
     override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
-    override fun getCount(): Int = m.posts.size
+    override fun getCount(): Int = posts.size
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        if (position + 3 >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
-        /*
-        val imageView = activity.layoutInflater.inflate(R.layout.picture_item_view, container, false) as PhotoView
-        imageView.setAllowParentInterceptOnEdge(true)
-        imageView.setOnSingleFlingListener(object : OnSingleFlingListener {
-            private var lastSwipeUp = 0L
-
-            fun onFlingUp(position: Int) {
-                val time = System.currentTimeMillis()
-                val p = m.posts.elementAt(position)
-                if (time - lastSwipeUp > 400L) { //download
-                    downloadImage(activity, p)
-                    val snack = Snackbar.make(activity.view_pager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT)
-                    snack.show()
-                    GlobalScope.launch(Dispatchers.Main) {
-                        delay(150)
-                        snack.dismiss()
-                    }
-                } else { //double swipe
-                    GlobalScope.launch {
-                        for (tag in p.tags.filter { it.type == Tag.ARTIST })
-                            db.tags += tag.toBooruTag(activity)
-                    }
-                }
-                lastSwipeUp = time
-            }
-
-            override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-                when (Fling.getDirection(e1, e2)) {
-                    Fling.Direction.DOWN -> activity.finish()
-                    Fling.Direction.UP -> onFlingUp(position)
-                    else -> return false
-                }
-                return true
-            }
-        })
-         */
-        val post = m.posts.elementAt(position)
+        if (position + 3 >= posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
+        val post = posts.elementAt(position)
         val view = createView(post, position)
         loadPreview(position)
 
@@ -122,7 +89,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
             override fun onSwipe(direction: Direction): Boolean {
                 return if (direction == Direction.Up) {
                     val time = System.currentTimeMillis()
-                    val p = m.posts.elementAt(position)
+                    val p = posts.elementAt(position)
                     if (time - lastSwipeUp > 400L) { //download
                         downloadImage(activity, p)
                         val snack = Snackbar.make(activity.view_pager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT)

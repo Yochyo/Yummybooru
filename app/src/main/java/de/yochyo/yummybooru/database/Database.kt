@@ -12,6 +12,7 @@ import de.yochyo.yummybooru.database.dao.TagDao
 import de.yochyo.yummybooru.database.utils.Upgrade
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.utils.GlobalListeners
+import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.createDefaultSavePath
 import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.documentFile
@@ -134,7 +135,11 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
         get() {
             if (!_savePathTested) {
                 _savePathTested = true
-                if (!field.exists()) field = documentFile(context, createDefaultSavePath())
+                if (!field.exists()) {
+                    val uri = field.uri
+                    Logger.log("$uri does not exist anymore")
+                    field = documentFile(context, createDefaultSavePath())
+                }
             }
             return field
         }

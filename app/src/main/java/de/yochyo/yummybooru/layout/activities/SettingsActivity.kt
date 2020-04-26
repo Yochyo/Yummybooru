@@ -111,14 +111,14 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK && data != null) {
             if (requestCode == savePathCode) { //Speicherpfad ändern
-                val file = DocumentFile.fromTreeUri(this, data.data)
+                val file = DocumentFile.fromTreeUri(this, data.data!!)
                 db.saveFolder = file!!
                 setSavePathSummary()
             }
             if (requestCode == restoreDataCode) { //Daten wiederherstellen
-                val stream = contentResolver.openInputStream(data.data)
+                val stream = contentResolver.openInputStream(data.data!!)
                 GlobalScope.launch(Dispatchers.IO) {
-                    val bytes = stream.readBytes()
+                    val bytes = stream!!.readBytes()
                     stream.close()
                     withContext(Dispatchers.Main){Toast.makeText(this@SettingsActivity, "Please wait until the backup is restored", Toast.LENGTH_LONG).show()}
                     BackupUtils.restoreBackup(bytes, this@SettingsActivity)

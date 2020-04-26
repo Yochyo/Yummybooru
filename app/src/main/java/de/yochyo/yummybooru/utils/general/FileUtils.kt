@@ -17,7 +17,7 @@ object FileUtils {
             val file = createFileToWrite(context, post, server, res.mimetype)
             if (file != null) {
                 try {
-                    context.contentResolver.openOutputStream(file.uri).write(res.resource)
+                    context.contentResolver.openOutputStream(file.uri)!!.write(res.resource)
                     withContext(Dispatchers.Main) { SafeFileEvent.trigger(SafeFileEvent(context, file, post, source)) }
                 } catch (e: Exception) {
                     Logger.log(e)

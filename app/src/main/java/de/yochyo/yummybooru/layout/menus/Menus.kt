@@ -65,5 +65,8 @@ object Menus {
         with(menu.findItem(R.id.subscription_delete)) {
             title = "Delete"
         }
+        with(menu.findItem(R.id.subscription_delete_tag)) {
+            title = "Delete tag"
+        }
     }
 }

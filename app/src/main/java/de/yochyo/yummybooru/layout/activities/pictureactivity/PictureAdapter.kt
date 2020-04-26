@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : PagerAdapter() {
     private val db = activity.db
 
-    private var posts: Collection<Post> = emptyList()
+    private var posts: Collection<Post> = m.posts
     fun updatePosts(posts: Collection<Post>) {
         this.posts = posts
         notifyDataSetChanged()
@@ -35,7 +35,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
 
     fun loadPreview(position: Int) {
         fun downloadPreview(index: Int) {
-            if (index in 0 until posts.size) {
+            if (index in posts.indices) {
                 val p = posts.elementAt(position)
                 download(activity, p.filePreviewURL, activity.preview(p.id), {}, cacheFile = true)
             }
@@ -47,6 +47,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
     override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
     override fun getCount(): Int = posts.size
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
+        println("POSITIONCREATE=$position")
         if (position + 3 >= posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
         val post = posts.elementAt(position)
         val view = createView(post, position)

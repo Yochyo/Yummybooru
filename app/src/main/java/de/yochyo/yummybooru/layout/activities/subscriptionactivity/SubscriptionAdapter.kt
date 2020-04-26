@@ -84,6 +84,14 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Tag
         b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { tag.sub = null } }
         b.show()
     }
+    private fun deleteTagDialog(tag: Tag) {
+        val b = AlertDialog.Builder(activity)
+        b.setTitle(R.string.delete)
+        b.setMessage("${activity.getString(R.string.delete)} ${activity.getString(R.string.tag)} ${tag.name}?")
+        b.setNegativeButton(R.string.no) { _, _ -> }
+        b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { db.tags -= tag } }
+        b.show()
+    }
 
     override fun getItemCount(): Int = subs.size
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): SubscribedTagViewHolder {
@@ -95,6 +103,7 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Tag
             when (it.itemId) {
                 R.id.subscription_set_favorite -> sub.isFavorite = !sub.isFavorite
                 R.id.subscription_delete -> deleteSubDialog(sub)
+                R.id.subscription_delete_tag -> deleteTagDialog(sub)
             }
             true
         }

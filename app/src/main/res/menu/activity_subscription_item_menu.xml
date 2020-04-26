@@ -6,4 +6,7 @@
     <item
             android:id="@+id/subscription_delete"
             android:title=""/>
+    <item
+        android:id="@+id/subscription_delete_tag"
+        android:title=""/>
 </menu>

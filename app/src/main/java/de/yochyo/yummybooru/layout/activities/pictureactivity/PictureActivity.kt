@@ -59,10 +59,11 @@ class PictureActivity : AppCompatActivity() {
             view_pager.currentItem = m.position
             this@PictureActivity.pictureAdapter.updatePosts(m.posts)
             m.currentPost?.updateCurrentTags(m.position)
-
+            println("POSITIONSTART ${m.position}")
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                 override fun onPageScrolled(position: Int, offset: Float, p2: Int) {
                     if (offset == 0.0F && m.position != position) {
+                        println("POSITIONSCROLL $position")
                         m.position = position
                         m.currentPost?.updateCurrentTags(position)
                     }
@@ -78,13 +79,9 @@ class PictureActivity : AppCompatActivity() {
         supportActionBar?.title = id.toString()
 
         tagInfoAdapter.updateInfoTags(emptyList())
-        GlobalScope.launch {
-            launch(Dispatchers.Main) {
-                if (wasCurrentPosition == m.position) {
-                    tagInfoAdapter.updateInfoTags(tags)
-                    tagRecyclerView.scrollToPosition(0)
-                }
-            }
+        if (wasCurrentPosition == m.position) {
+            tagInfoAdapter.updateInfoTags(tags)
+            tagRecyclerView.scrollToPosition(0)
         }
     }
 

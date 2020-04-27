@@ -21,6 +21,7 @@ import kotlin.math.roundToInt
 class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0) :
         TextureView(context, attrs, defStyle) {
 
+    private var paused = true
     //TODO ACCEPT Inputstream/ByteArray
     private var onAvailable: () -> Unit = { }
     private var mSurface: Surface? = null
@@ -46,9 +47,6 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 
     private companion object {
         const val VIDEO = 0
-        const val BITMAP = 1
-        const val GIF = 2
-
     }
 
     init {
@@ -67,7 +65,7 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
             impl?.destroy()
 
             clearSurface()
-            impl = VideoImpl(context, mSurface!!)
+            impl = VideoImpl(context, mSurface!!, paused)
 
 
             impl?.onSizeChange = { width, height -> setSize(width, height) }
@@ -82,8 +80,15 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
         surfaceTexture?.setDefaultBufferSize(width, height)
         mediaWidth = width
         mediaHeight = height
-        println("SET SIZE: $width, $height")
         requestLayout()
+    }
+    fun resume(){
+        impl?.resume()
+        paused = false
+    }
+    fun pause(){
+        impl?.pause()
+        paused = true
     }
 
     fun destroy(): Boolean {
@@ -182,11 +187,9 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
                     width = (mediaWidth * heightFactor).roundToInt()
                 }
                 if (width > widthSpecSize) {
-                    println("width to large")
                     val toLargeFactor = width.toDouble() / widthSpecSize
                     width = widthSpecSize
                     height = (height.toDouble() / toLargeFactor).roundToInt()
-                    println("")
                 }
                 if (height > heightSpecSize) {
                     val toLargeFactor = height.toDouble() / heightSpecSize

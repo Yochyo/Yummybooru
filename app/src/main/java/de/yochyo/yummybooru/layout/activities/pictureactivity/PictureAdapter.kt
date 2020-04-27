@@ -47,16 +47,15 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
     override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
     override fun getCount(): Int = posts.size
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        println("POSITIONCREATE=$position")
         if (position + 3 >= posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
         val post = posts.elementAt(position)
         val view = createView(post, position)
         loadPreview(position)
 
         container.addView(view)
+        view.tag = position
         return view
     }
-
     private fun createView(post: Post, position: Int): View {
         fun forImage(): View {
             val view = PhotoView(activity)
@@ -81,6 +80,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
             val view = MediaView(activity)
             layout.addView(view)
             view.setVideoPath(post.fileSampleURL)
+            if(m.position == position) view.resume() //if first page is video, it would not play
             return layout
         }
 

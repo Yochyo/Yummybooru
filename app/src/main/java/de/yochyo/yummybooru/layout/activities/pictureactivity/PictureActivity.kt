@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -61,10 +62,13 @@ class PictureActivity : AppCompatActivity() {
             m.posts.registerOnUpdateListener(managerListener)
             currentItem = m.position
             this@PictureActivity.pictureAdapter.updatePosts(m.posts)
+            startMedia(m.position)
             m.currentPost?.updateCurrentTags(m.position)
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                 override fun onPageScrolled(position: Int, offset: Float, p2: Int) {
                     if (offset == 0.0F && m.position != position) {
+                        pauseMedia(m.position)
+                        startMedia(position)
                         m.position = position
                         m.currentPost?.updateCurrentTags(position)
                     }
@@ -111,19 +115,25 @@ class PictureActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onPause() {
+        pauseMedia(m.position)
+        super.onPause()
+    }
+
+    override fun onResume() {
+        startMedia(m.position)
+        super.onResume()
+    }
     override fun onDestroy() {
         m.posts.removeOnUpdateListener(managerListener)
         super.onDestroy()
     }
 
-    private fun startMedia(position: Int) = getMediaView(position)?.
-
-    private fun pauseMedia(position: Int) {
-
-    }
+    private fun startMedia(position: Int) = getMediaView(position)?.resume()
+    private fun pauseMedia(position: Int) = getMediaView(position)?.pause()
 
     private fun getMediaView(position: Int): MediaView? {
-        val child = view_pager.getChildAt(position)
+        val child = view_pager.findViewWithTag<View>(position)
         return if (child is LinearLayout) child.getChildAt(0) as MediaView
         else null
     }

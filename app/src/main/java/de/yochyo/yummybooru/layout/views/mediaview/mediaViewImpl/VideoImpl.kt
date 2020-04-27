@@ -48,7 +48,6 @@ class VideoImpl(private val context: Context, val surface: Surface) : MediaViewI
             mPlayer = SimpleExoPlayer.Builder(context).build()
             mPlayer?.repeatMode = SimpleExoPlayer.REPEAT_MODE_ONE
             mPlayer?.setVideoSurface(surface)
-            mPlayer?.playWhenReady = true
             mPlayer?.addVideoListener(object: VideoListener{
                 override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
                     onSizeChange(width, height)

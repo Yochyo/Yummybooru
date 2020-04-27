@@ -18,6 +18,12 @@ class VideoImpl(private val context: Context, val surface: Surface) : MediaViewI
             mMediaPlayer = null
         }
     }
+    override fun pause(){
+        mMediaPlayer?.pause()
+    }
+    override fun resume() {
+        mMediaPlayer?.start()
+    }
 
     override fun setUri(uri: Uri, headers: Map<String, String>?) {
         this.uri = uri
@@ -50,7 +56,7 @@ class VideoImpl(private val context: Context, val surface: Surface) : MediaViewI
 
             mMediaPlayer!!.setOnVideoSizeChangedListener { _, width, height -> onSizeChange(width, height) }
             mMediaPlayer!!.isLooping = true
-            mMediaPlayer!!.setDataSource(context.applicationContext, uri, headers)
+            mMediaPlayer!!.setDataSource(context.applicationContext, uri!!, headers)
             mMediaPlayer!!.setSurface(surface)
             mMediaPlayer!!.prepareAsync()
         } catch (e: Exception) {

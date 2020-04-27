@@ -15,7 +15,6 @@ import de.yochyo.yummybooru.layout.views.mediaview.mediaViewImpl.VideoImpl
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.egl.EGLContext
-import kotlin.math.pow
 import kotlin.math.roundToInt
 
 //TODO you cannot change the media type after drawing a bitmap. (https://source.android.com/devices/graphics/arch-sh.html#canvas)

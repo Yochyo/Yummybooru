@@ -9,4 +9,7 @@ interface MediaViewImpl{
     fun setUri(uri: Uri, headers: Map<String, String>? = null)
   //  fun onChangeScale(scale: Double, position: Point)
     fun destroy()
+
+    fun pause()
+    fun resume()
 }

@@ -10,8 +10,6 @@ import android.util.Log
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
-import de.yochyo.mediaview.mediaViewImpl.BitmapImpl
-import de.yochyo.mediaview.mediaViewImpl.GifImpl
 import de.yochyo.mediaview.mediaViewImpl.MediaViewImpl
 import de.yochyo.yummybooru.layout.views.mediaview.mediaViewImpl.VideoImpl
 import javax.microedition.khronos.egl.EGL10
@@ -119,16 +117,11 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
     private fun setImpl(type: Int, uri: Uri, headers: Map<String, String>? = null) {
         val f: () -> Unit = {
             impl?.destroy()
-            impl = when (type) {
-                BITMAP -> {
-                    BitmapImpl(this)
-                }
-                GIF -> GifImpl(this)
-                else -> {
-                    clearSurface()
-                    VideoImpl(context, mSurface!!)
-                }
-            }
+
+            clearSurface()
+            impl = VideoImpl(context, mSurface!!)
+
+
             impl?.onSizeChange = { width, height -> setSize(width, height) }
             impl?.setUri(uri, headers)
         }
@@ -236,9 +229,9 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
             } else {
                 //use actual video size
                 if (mediaWidth < mediaHeight) {
-                    val widthFactor = widthSpecSize.toDouble()/mediaWidth
-                    width = (mediaWidth*widthFactor).roundToInt()
-                    height = (mediaHeight*widthFactor).roundToInt()
+                    val widthFactor = widthSpecSize.toDouble() / mediaWidth
+                    width = (mediaWidth * widthFactor).roundToInt()
+                    height = (mediaHeight * widthFactor).roundToInt()
 
                     /*
                     if (width > widthSpecSize && widthSpecMode == MeasureSpec.AT_MOST) {
@@ -252,9 +245,9 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 
 
                 } else {
-                    val heightFactor = heightSpecSize.toDouble()/mediaHeight
-                    height = (mediaHeight*heightFactor).roundToInt()
-                    width = (mediaWidth*heightFactor).roundToInt()
+                    val heightFactor = heightSpecSize.toDouble() / mediaHeight
+                    height = (mediaHeight * heightFactor).roundToInt()
+                    width = (mediaWidth * heightFactor).roundToInt()
                     /*
                     if (height > heightSpecSize && heightSpecMode == MeasureSpec.AT_MOST) {
                         // too tall, decrease both width and height

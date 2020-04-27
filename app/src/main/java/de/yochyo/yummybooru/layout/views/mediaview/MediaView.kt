@@ -30,32 +30,6 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
     private var mediaWidth = 0
     private var mediaHeight = 0
 
-
-    /*
-    var minScale = 1f
-        set(value) {
-            field =
-                    if (value in 1.0f..maxScale) value else throw RuntimeException("minScale can't be lower than 1 or larger than maxScale($maxScale)")
-        }
-    var midScale = 1.6f
-        set(value) {
-            field =
-                    if (value in minScale..mid2Scale) value else throw Exception("midScale ($value) is not in min..max ($minScale, $maxScale)")
-        }
-    var mid2Scale = 2f
-        set(value) {
-            field =
-                    if (value in midScale..maxScale) value else throw RuntimeException("maxScale can't be lower than 1 or midScale($midScale)")
-        }
-    var maxScale = 5f
-        set(value) {
-            field =
-                    if (value >= mid2Scale) value else throw RuntimeException("maxScale can't be lower than 1 or minScale($minScale)")
-        }
-     */
-
-    private var currentScale = 1f
-
     private val mSurfaceTextureListener: SurfaceTextureListener = object : SurfaceTextureListener {
         override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {}
 
@@ -75,12 +49,6 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
         const val BITMAP = 1
         const val GIF = 2
 
-
-        const val SUPERSTATE_KEY = "superState"
-        const val MIN_SCALE_KEY = "minScale"
-        const val MAX_SCALE_KEY = "maxScale"
-        const val DRAG = 1
-        const val ZOOM = 2
     }
 
     init {
@@ -88,30 +56,11 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
         isFocusable = true
         isFocusableInTouchMode = true
         requestFocus()
-        //  initView(attrs)
     }
 
-    /*
-      private fun initView(attrs: AttributeSet?) {
-          val a = context.theme.obtainStyledAttributes(attrs, R.styleable.ZoomableTextureView, 0, 0)
-          try {
-              minScale = a.getFloat(R.styleable.ZoomableTextureView_minScale, minScale)
-              maxScale = a.getFloat(R.styleable.ZoomableTextureView_maxScale, maxScale)
-          } finally {
-              a.recycle()
-          }
-          setOnTouchListener(ZoomOnTouchListeners())
-      }
-     */
 
     fun setVideoPath(path: String, headers: Map<String, String>? = null) = setVideoUri(Uri.parse(path), headers)
     fun setVideoUri(uri: Uri, headers: Map<String, String>? = null) = setImpl(VIDEO, uri, headers)
-
-    fun setGifPath(path: String, headers: Map<String, String>? = null) = setGifUri(Uri.parse(path), headers)
-    fun setGifUri(uri: Uri, headers: Map<String, String>? = null) = setImpl(GIF, uri, headers)
-
-    fun setBitmapPath(path: String, headers: Map<String, String>? = null) = setBitmapUri(Uri.parse(path), headers)
-    fun setBitmapUri(uri: Uri, headers: Map<String, String>? = null) = setImpl(BITMAP, uri, headers)
 
     private fun setImpl(type: Int, uri: Uri, headers: Map<String, String>? = null) {
         val f: () -> Unit = {
@@ -189,11 +138,6 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
 
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-
-
-        Log.v("[View name] onMeasure w", MeasureSpec.toString(widthMeasureSpec))
-        Log.v("[View name] onMeasure h", MeasureSpec.toString(heightMeasureSpec))
-
         var width = View.getDefaultSize(mediaWidth, widthMeasureSpec)
         var height = View.getDefaultSize(mediaHeight, heightMeasureSpec)
 
@@ -232,29 +176,10 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
                     width = (mediaWidth * widthFactor).roundToInt()
                     height = (mediaHeight * widthFactor).roundToInt()
 
-                    /*
-                    if (width > widthSpecSize && widthSpecMode == MeasureSpec.AT_MOST) {
-                        println("width to large")
-                        // too wide, decrease both width and height
-                        val toLargeFactor = width.toDouble() / widthSpecSize
-                        width = widthSpecSize
-                        height = (width.toDouble() / toLargeFactor).roundToInt()
-                    }
-                     */
-
-
                 } else {
                     val heightFactor = heightSpecSize.toDouble() / mediaHeight
                     height = (mediaHeight * heightFactor).roundToInt()
                     width = (mediaWidth * heightFactor).roundToInt()
-                    /*
-                    if (height > heightSpecSize && heightSpecMode == MeasureSpec.AT_MOST) {
-                        // too tall, decrease both width and height
-                        val toLargeFactor = height.toDouble() / heightSpecSize
-                        height = heightSpecSize
-                        width = (width.toDouble() / toLargeFactor).roundToInt()
-                    }
-                     */
                 }
                 if (width > widthSpecSize) {
                     println("width to large")
@@ -269,201 +194,9 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
                     width = (width.toDouble() / toLargeFactor).roundToInt()
                 }
 
-                println("cur width: $width, height: $height, mediawidth: $mediaWidth, mediaheight: $mediaHeight")
-
-                /*
-                if (mediaWidth < mediaHeight) {
-                    println("width < height")
-                    width = (height * ratio).roundToInt()
-                    println("newwidth: $width")
-
-                    if (width > widthSpecSize && widthSpecMode == MeasureSpec.AT_MOST) {
-                        println("width to large")
-                        // too wide, decrease both width and height
-                        val toLargeFactor = width.toDouble() / widthSpecSize
-                        width = widthSpecSize
-                        height = (width.toDouble() / toLargeFactor).roundToInt()
-
-                        }
-
-
-                } else {
-                    println("height < width")
-                    height = (ratio / mediaHeight).pow(-1.0).roundToInt()
-                    println("new height $height")
-                    if (height > heightSpecSize && heightSpecMode == MeasureSpec.AT_MOST) {
-                        // too tall, decrease both width and height
-                        val toLargeFactor = height.toDouble() / heightSpecSize
-                        height = heightSpecSize
-                        width = (width.toDouble() / toLargeFactor).roundToInt()
-                    }
-
-
-                }
-                 */
-
-
             }
         }
         setMeasuredDimension(width, height)
     }
-
-
-    /*
-    private inner class ZoomOnTouchListeners : OnTouchListener {
-        private val mLast = PointF()
-
-        private var mRight = 0f
-        private var mBottom = 0f
-
-        private var mMode = ZOOM
-        val mMatrix = Matrix()
-        private var mMatrixValues: FloatArray = FloatArray(9)
-
-
-        private val mGestureDetector = GestureDetector(context, object : GestureDetector.OnGestureListener {
-            override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-                return true
-            }
-
-            override fun onDown(e: MotionEvent?) = false
-            override fun onLongPress(e: MotionEvent?) {}
-            override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float) = false
-            override fun onShowPress(e: MotionEvent?) {}
-            override fun onSingleTapUp(e: MotionEvent?) = false
-        })
-
-        init {
-            mGestureDetector.setOnDoubleTapListener(object : GestureDetector.OnDoubleTapListener {
-                override fun onDoubleTap(e: MotionEvent): Boolean {
-                    if(currentScale == minScale) zoomTo(midScale, e.x, e.y)
-                    else if(currentScale == midScale) zoomTo(mid2Scale, e.x, e.y)
-                   // else zoomTo(1f, e.x, e.y)
-                    //  requestLayout()
-                    return true
-                }
-
-                override fun onDoubleTapEvent(e: MotionEvent?) = false
-                override fun onSingleTapConfirmed(e: MotionEvent?) = false
-            })
-        }
-
-        private val mScaleDetector =
-            ScaleGestureDetector(context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
-                override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
-                    mMode = ZOOM
-                    return true
-                }
-
-                override fun onScaleEnd(detector: ScaleGestureDetector?) {
-                    mMode = DRAG
-                }
-
-                override fun onScale(detector: ScaleGestureDetector): Boolean {
-                    zoomBy(detector.scaleFactor, detector.focusX, detector.focusY)
-
-                    mMatrix.getValues(mMatrixValues)
-                    val x = mMatrixValues[Matrix.MTRANS_X]
-                    val y = mMatrixValues[Matrix.MTRANS_Y]
-
-                    if (y < -mBottom) mMatrix.postTranslate(0f, -(y + mBottom))
-                    else if (y > 0) mMatrix.postTranslate(0f, -y)
-                    if (x < -mRight) mMatrix.postTranslate(-(x + mRight), 0f)
-                    else if (x > 0) mMatrix.postTranslate(-x, 0f)
-                    return true
-                }
-            })
-
-        override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
-            mScaleDetector.onTouchEvent(motionEvent)
-            mGestureDetector.onTouchEvent(motionEvent)
-            mMatrix.getValues(mMatrixValues)
-            val x = mMatrixValues[Matrix.MTRANS_X]
-            val y = mMatrixValues[Matrix.MTRANS_Y]
-
-            when (motionEvent.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    mLast.set(motionEvent.x, motionEvent.y)
-                    mMode = DRAG
-                }
-                MotionEvent.ACTION_UP -> mMode = DRAG
-                MotionEvent.ACTION_POINTER_DOWN -> {
-                    mLast.set(motionEvent.x, motionEvent.y)
-                    mMode = DRAG
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    if (mMode == DRAG) {
-                        val curr = PointF(motionEvent.x, motionEvent.y)
-                        var deltaX = curr.x - mLast.x
-                        var deltaY = curr.y - mLast.y
-
-                        if (y + deltaY > 0) deltaY = -y
-                        else if (y + deltaY < -mBottom) deltaY = -(y + mBottom)
-
-                        if (x + deltaX > 0) {
-                            println("(${x+deltaX}, $x, $mRight)")
-                            deltaX = -x
-                        }
-                        else if (x + deltaX < -mRight) {
-                            println("(${x+deltaX}, ${-mRight})")
-                            deltaX = -(x + mRight)
-                        }
-
-                        mMatrix.postTranslate(deltaX, deltaY)
-                        mLast[curr.x] = curr.y
-                    }
-                }
-
-                MotionEvent.ACTION_POINTER_UP -> {
-                    val index = if (motionEvent.actionIndex != 0) 0 else 1
-                    mLast[motionEvent.getX(index)] = motionEvent.getY(index)
-                    mMode = DRAG
-                }
-                MotionEvent.ACTION_CANCEL -> mMode = DRAG
-            }
-            setTransform(mMatrix)
-            requestLayout()
-            return true
-        }
-
-        fun zoomBy(scaleBy: Float, x: Float, y: Float) {
-            var mScaleFactor = scaleBy
-            val origScale = currentScale
-            currentScale *= mScaleFactor
-            if (currentScale > maxScale) {
-                currentScale = maxScale
-                mScaleFactor = maxScale / origScale
-            } else if (currentScale < minScale) {
-                currentScale = minScale
-                mScaleFactor = minScale / origScale
-            }
-
-            zoom(mScaleFactor, x, y)
-        }
-
-        fun zoomTo(scaleTo: Float, x: Float, y: Float) {
-            var mScaleFactor = scaleTo / currentScale
-            val origScale = currentScale
-            currentScale = scaleTo
-            if (currentScale > maxScale) {
-                currentScale = maxScale
-                mScaleFactor = maxScale / origScale
-            } else if (currentScale < minScale) {
-                currentScale = minScale
-                mScaleFactor = minScale / origScale
-            }
-
-            zoom(mScaleFactor, x, y)
-        }
-
-        private fun zoom(scale: Float, x: Float, y: Float) {
-            println("[$mediaWidth, $currentScale, $mediaHeight]")
-            mRight = mediaWidth * currentScale - mediaWidth
-            mBottom = mediaHeight * currentScale - mediaHeight
-            mMatrix.postScale(scale, scale, x, y)
-        }
-    }
-     */
-
 }
 

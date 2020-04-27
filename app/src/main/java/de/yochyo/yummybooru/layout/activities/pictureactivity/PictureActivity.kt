@@ -5,16 +5,19 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.layout.views.mediaview.MediaView
 import de.yochyo.yummybooru.utils.general.currentManager
 import de.yochyo.yummybooru.utils.general.original
 import de.yochyo.yummybooru.utils.general.sample
@@ -56,14 +59,12 @@ class PictureActivity : AppCompatActivity() {
         with(view_pager) {
             adapter = PictureAdapter(this@PictureActivity, m).apply { this@PictureActivity.pictureAdapter = this }
             m.posts.registerOnUpdateListener(managerListener)
-            view_pager.currentItem = m.position
+            currentItem = m.position
             this@PictureActivity.pictureAdapter.updatePosts(m.posts)
             m.currentPost?.updateCurrentTags(m.position)
-            println("POSITIONSTART ${m.position}")
             addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                 override fun onPageScrolled(position: Int, offset: Float, p2: Int) {
                     if (offset == 0.0F && m.position != position) {
-                        println("POSITIONSCROLL $position")
                         m.position = position
                         m.currentPost?.updateCurrentTags(position)
                     }
@@ -113,6 +114,18 @@ class PictureActivity : AppCompatActivity() {
     override fun onDestroy() {
         m.posts.removeOnUpdateListener(managerListener)
         super.onDestroy()
+    }
+
+    private fun startMedia(position: Int) = getMediaView(position)?.
+
+    private fun pauseMedia(position: Int) {
+
+    }
+
+    private fun getMediaView(position: Int): MediaView? {
+        val child = view_pager.getChildAt(position)
+        return if (child is LinearLayout) child.getChildAt(0) as MediaView
+        else null
     }
 
 }

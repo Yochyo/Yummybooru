@@ -1,28 +1,37 @@
 package de.yochyo.yummybooru.layout.views.mediaview.mediaViewImpl
 
 import android.content.Context
-import android.graphics.Point
-import android.media.AudioManager
-import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
 import android.view.Surface
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.video.VideoListener
 import de.yochyo.mediaview.mediaViewImpl.MediaViewImpl
+import de.yochyo.yummybooru.R
+
 
 class VideoImpl(private val context: Context, val surface: Surface) : MediaViewImpl {
     override var onSizeChange = { width: Int, height: Int -> }
+
+    private var uri: Uri? = null
+    private var headers: Map<String, String>? = null
+
+    private var mPlayer: SimpleExoPlayer? = null
+
     override fun destroy() {
-        if (mMediaPlayer != null) {
-            mMediaPlayer!!.reset()
-            mMediaPlayer!!.release()
-            mMediaPlayer = null
-        }
+        mPlayer?.release()
+        mPlayer = null
     }
-    override fun pause(){
-        mMediaPlayer?.pause()
+
+    override fun pause() {
+        mPlayer?.playWhenReady = false
     }
+
     override fun resume() {
-        mMediaPlayer?.start()
+        mPlayer?.playWhenReady = true
     }
 
     override fun setUri(uri: Uri, headers: Map<String, String>?) {
@@ -31,34 +40,24 @@ class VideoImpl(private val context: Context, val surface: Surface) : MediaViewI
         openVideo()
     }
 
-    /*
-    override fun onChangeScale(scale: Double, position: Point) {
-
-    }
-     */
-
-    private var uri: Uri? = null
-    private var headers: Map<String, String>? = null
-
-    private var mMediaPlayer: MediaPlayer? = null
-
-    private var requestAudioFocus = true
-
-
     fun openVideo() {
         if (uri == null)
             return
         destroy()
         try {
-            mMediaPlayer = MediaPlayer()
-            mMediaPlayer!!.setOnPreparedListener { mMediaPlayer?.start() }
+            mPlayer = SimpleExoPlayer.Builder(context).build()
+            mPlayer?.repeatMode = SimpleExoPlayer.REPEAT_MODE_ONE
+            mPlayer?.setVideoSurface(surface)
+            mPlayer?.playWhenReady = true
+            mPlayer?.addVideoListener(object: VideoListener{
+                override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
+                    onSizeChange(width, height)
+                }
+            })
+            val factory = DefaultDataSourceFactory(context, context.getString(R.string.app_name))
+            val source = ProgressiveMediaSource.Factory(factory).createMediaSource(uri!!)
+            mPlayer?.prepare(source)
 
-
-            mMediaPlayer!!.setOnVideoSizeChangedListener { _, width, height -> onSizeChange(width, height) }
-            mMediaPlayer!!.isLooping = true
-            mMediaPlayer!!.setDataSource(context.applicationContext, uri!!, headers)
-            mMediaPlayer!!.setSurface(surface)
-            mMediaPlayer!!.prepareAsync()
         } catch (e: Exception) {
             Log.w("MediaViewVideoImpl", "Unable to open content: $uri", e)
         }

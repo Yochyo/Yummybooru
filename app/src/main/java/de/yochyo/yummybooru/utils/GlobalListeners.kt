@@ -5,6 +5,8 @@ import android.widget.Toast
 import de.yochyo.eventcollection.events.OnAddElementsEvent
 import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventcollection.events.OnRemoveElementsEvent
+import de.yochyo.eventmanager.Event
+import de.yochyo.eventmanager.EventHandler
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
@@ -12,13 +14,32 @@ import de.yochyo.yummybooru.database.db
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.*
 
+private class ListenerPair<E : Event>(val eventHandler: EventHandler<E>, val listener: Listener<E>)
 object GlobalListeners {
+    private val listeners = LinkedList<ListenerPair<Event>>()
     private var registered = false
+    fun <E : Event> addGlobalListener(eventHandler: EventHandler<E>, listener: Listener<E>) {
+        val p: ListenerPair<E> = ListenerPair(eventHandler, listener)
+        this.listeners.add(p as ListenerPair<Event>)
+    }
+
+    fun <E : Event> removeGlobalListener(eventHandler: EventHandler<E>, listener: Listener<E>) {
+        val iter = listeners.iterator()
+        while (iter.hasNext()) {
+            val next = iter.next()
+            if (next.eventHandler == eventHandler && next.listener == listener) {
+                iter.remove()
+                break
+            }
+        }
+    }
 
     fun registerGlobalListeners(context: Context) {
         if (!registered) {
             registered = true
+            listeners.forEach { it.eventHandler.registerListener(it.listener) }
             ToastListeners.registerListeners(context)
             DatabaseListeners.registerListeners(context)
         }
@@ -27,6 +48,7 @@ object GlobalListeners {
     fun unregisterGlobalListeners(context: Context) {
         if (registered) {
             registered = false
+            listeners.forEach { it.eventHandler.removeListener(it.listener) }
             ToastListeners.unregisterListeners(context)
             DatabaseListeners.unregisterListeners(context)
         }

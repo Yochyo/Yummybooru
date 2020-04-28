@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import de.yochyo.eventcollection.events.OnRemoveElementsEvent
+import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
@@ -30,6 +32,7 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
+import de.yochyo.yummybooru.utils.GlobalListeners
 import de.yochyo.yummybooru.utils.general.FilteringEventCollection
 import de.yochyo.yummybooru.utils.general.cache
 import de.yochyo.yummybooru.utils.general.currentServer
@@ -110,7 +113,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun initListeners() {
         db.tags.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList) } }
         db.servers.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.notifyDataSetChanged() } }
-
+        val listener = Listener.create<OnRemoveElementsEvent<Tag>> { selectedTags.removeAll(it.elements.map { it.name }) }
+        GlobalListeners.addGlobalListener(db.tags.onRemoveElements,
+                listener)
         //Global Listeners for whole app
     }
 

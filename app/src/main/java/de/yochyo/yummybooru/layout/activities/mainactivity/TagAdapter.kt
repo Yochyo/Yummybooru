@@ -57,7 +57,6 @@ class TagAdapter(val context: Context, t: Collection<Tag>) : RecyclerView.Adapte
                 }
                 R.id.main_search_delete_tag -> {
                     ConfirmDialog {
-                        MainActivity.selectedTags.remove(tag.name)
                         context.db.tags -= tag
                     }.withTitle("Delete").withMessage("Delete tag ${tag.name}").build(context)
                 }

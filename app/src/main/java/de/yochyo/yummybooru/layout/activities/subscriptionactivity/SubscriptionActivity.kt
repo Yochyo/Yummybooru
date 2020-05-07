@@ -88,10 +88,10 @@ class SubscriptionActivity : AppCompatActivity() {
         if (clickedData != null) {
 
             val tag = filteringSubList.find { it.name == clickedData.name }
-            if(tag != null){
+            if (tag != null) {
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
-                builder.setNegativeButton(R.string.no) { _, _ -> onClickedData = null}
+                builder.setNegativeButton(R.string.no) { _, _ -> onClickedData = null }
                 builder.setOnCancelListener { onClickedData = null }
                 builder.setPositiveButton(R.string.yes) { _, _ ->
                     GlobalScope.launch(Dispatchers.Main) {
@@ -124,22 +124,29 @@ class SubscriptionActivity : AppCompatActivity() {
             }
             R.id.update_subs -> {
                 ConfirmDialog {
-                    GlobalScope.launch {
-                        val id = currentServer.newestID()
-                        if (id != null) {
-                            for (sub in filteringSubList) {
-                                val tag = currentServer.getTag(this@SubscriptionActivity, sub.name)
-                                if (tag != null) {
-                                    val tagInDb = db.getTag(tag.name)
-                                    tagInDb?.sub = Sub(id, tag.count)
-                                }
-                            }
-                        }
-                    }
+                    GlobalScope.launch { updateSubs(filteringSubList) }
                 }.withTitle("Update all subs?").build(this@SubscriptionActivity)
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    suspend fun updateSubs(subs: Collection<Tag>) {
+        withContext(Dispatchers.IO) {
+            val id = currentServer.newestID()
+            if (id != null) {
+                subs.map {
+                    launch {
+                        val tag = currentServer.getTag(this@SubscriptionActivity, it.name)
+                        if (tag != null) {
+                            val tagInDb = db.getTag(tag.name)
+                            tagInDb?.sub = Sub(id, tag.count)
+                        }
+                        println("done with ${tag?.name}")
+                    }
+                }
+            }
+        }
     }
 
     override fun onDestroy() {

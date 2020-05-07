@@ -49,16 +49,18 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Tag
                 }
                 R.id.update_subs -> {
                     ConfirmDialog {
+                        val select = selected.getSelected(subs)
+                        unselectAll()
                         GlobalScope.launch {
                             val id = activity.currentServer.newestID()
                             if (id != null) {
-                                for (selected in selected.getSelected(subs)) {
+                                for (selected in select) {
                                     val tag = activity.currentServer.getTag(activity, selected.name)
+                                    println(tag?.name)
                                     if (tag != null) selected.sub = Sub(id, tag.count)
                                 }
                             }
                         }
-                        unselectAll()
                     }.withTitle("Update selected subs?").build(activity)
                 }
             }

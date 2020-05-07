@@ -32,7 +32,18 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
             else super.remove(element)
         }
     }
-    val tags = ObservingEventCollection(TreeSet<Tag>())
+    val tags = object : ObservingEventCollection<Tag, Int>(TreeSet<Tag>()) {
+        override fun add(element: Tag): Boolean {
+            var isContained = false
+            if (contains(element)) isContained = true
+            else {
+                element.isFavorite = !element.isFavorite
+                if (contains(element)) isContained = true
+                element.isFavorite = !element.isFavorite
+            }
+            return if(isContained) true else super.add(element)
+        }
+    }
 
     companion object {
         private var instance: Database? = null

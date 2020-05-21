@@ -34,6 +34,9 @@ class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : Sel
     private val stopSelectionListener = Listener.create<StopSelectingEvent> {
         m.posts.removeOnUpdateListener(loadManagerPageUpdateActionModeListener)
     }
+
+    private var size = m.posts.size
+
     private val clickMenuItemListener = Listener.create<ActionModeClickEvent> {
         when (it.menuItem.itemId) {
             R.id.select_all -> if (selected.size == m.posts.size) unselectAll() else selectAll()
@@ -64,6 +67,7 @@ class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : Sel
     }
 
     fun updatePosts(newPage: Collection<Post>) {
+        size = m.posts.size
         notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
     }
 
@@ -88,5 +92,5 @@ class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : Sel
         holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(null)
     }
 
-    override fun getItemCount(): Int = m.posts.size
+    override fun getItemCount(): Int = size
 }

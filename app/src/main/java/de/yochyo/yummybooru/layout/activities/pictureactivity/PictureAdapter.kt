@@ -27,16 +27,16 @@ import kotlinx.coroutines.launch
 class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : PagerAdapter() {
     private val db = activity.db
 
-    private var posts: Collection<Post> = m.posts
+    private var size = m.posts.size
     fun updatePosts(posts: Collection<Post>) {
-        this.posts = posts
+        size = m.posts.size
         notifyDataSetChanged()
     }
 
     fun loadPreview(position: Int) {
         fun downloadPreview(index: Int) {
-            if (index in posts.indices) {
-                val p = posts.elementAt(position)
+            if (index in m.posts.indices) {
+                val p = m.posts.elementAt(position)
                 download(activity, p.filePreviewURL, activity.preview(p.id), {}, cacheFile = true)
             }
         }
@@ -45,10 +45,10 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
     }
 
     override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
-    override fun getCount(): Int = posts.size
+    override fun getCount(): Int = size
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        if (position + 3 >= posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
-        val post = posts.elementAt(position)
+        if (position + 3 >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
+        val post = m.posts.elementAt(position)
         val view = createView(post, position)
         loadPreview(position)
 
@@ -90,7 +90,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
             override fun onSwipe(direction: Direction): Boolean {
                 return if (direction == Direction.Up) {
                     val time = System.currentTimeMillis()
-                    val p = posts.elementAt(position)
+                    val p = m.posts.elementAt(position)
                     if (time - lastSwipeUp > 400L) { //download
                         downloadImage(activity, p)
                         val snack = Snackbar.make(activity.view_pager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT)

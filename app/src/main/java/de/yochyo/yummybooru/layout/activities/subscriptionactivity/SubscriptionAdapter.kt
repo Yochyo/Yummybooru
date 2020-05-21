@@ -61,7 +61,7 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Tag
     override fun setListeners(holder: SubscribedTagViewHolder) {
         val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
         toolbar.setOnClickListener { clickHolder(holder) }
-        toolbar.setOnLongClickListener { onSelectHolder(holder); true }
+        toolbar.setOnLongClickListener { onSelectViewHolder(holder); true }
     }
 
 

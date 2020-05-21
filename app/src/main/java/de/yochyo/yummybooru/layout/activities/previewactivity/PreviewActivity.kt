@@ -17,6 +17,8 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
 import de.yochyo.yummybooru.layout.menus.Menus
+import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
+import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
 import de.yochyo.yummybooru.utils.ManagerWrapper
 import de.yochyo.yummybooru.utils.general.createTagAndOrChangeSubState
 import de.yochyo.yummybooru.utils.general.currentManager
@@ -39,6 +41,9 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     private lateinit var actionBarListener: ActionBarListener
+
+    private val disableSwipeRefreshOnSelectionListener = Listener.create<StartSelectingEvent> { swipeRefreshLayout.isEnabled = false }
+    private val reEnableSwipeRefreshOnSelectionListener = Listener.create<StopSelectingEvent> { swipeRefreshLayout.isEnabled = true }
     private var isLoadingView = false
     var isScrolling = false
 
@@ -72,6 +77,11 @@ open class PreviewActivity : AppCompatActivity() {
             }
         }.apply { layoutManager = this }
         recycler_view.adapter = PreviewAdapter(this, m).apply { previewAdapter = this }
+        previewAdapter.isDragSelectingEnabled(recycler_view, true)
+        previewAdapter.onStartSelection.registerListener(disableSwipeRefreshOnSelectionListener)
+        previewAdapter.onStopSelection.registerListener(reEnableSwipeRefreshOnSelectionListener)
+        previewAdapter.dragListener.disableAutoScroll()
+
         initSwipeRefreshLayout()
         initScrollView()
 
@@ -167,6 +177,8 @@ open class PreviewActivity : AppCompatActivity() {
     override fun onDestroy() {
         m.posts.removeOnAddElementsListener(managerListener)
         actionBarListener.unregisterListeners()
+        previewAdapter.onStartSelection.removeListener(disableSwipeRefreshOnSelectionListener)
+        previewAdapter.onStopSelection.removeListener(reEnableSwipeRefreshOnSelectionListener)
         super.onDestroy()
     }
 

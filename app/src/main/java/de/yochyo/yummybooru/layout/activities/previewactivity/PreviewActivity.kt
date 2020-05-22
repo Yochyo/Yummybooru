@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.eventcollection.events.OnAddElementsEvent
-import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
@@ -23,17 +22,18 @@ import de.yochyo.yummybooru.utils.ManagerWrapper
 import de.yochyo.yummybooru.utils.general.createTagAndOrChangeSubState
 import de.yochyo.yummybooru.utils.general.currentManager
 import de.yochyo.yummybooru.utils.general.currentServer
-import de.yochyo.yummybooru.utils.general.drawable
 import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 open class PreviewActivity : AppCompatActivity() {
     private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit / 2
 
     companion object {
+        private const val MANAGER = "MANAGER"
         fun startActivity(context: Context, tags: String) {
             context.currentManager = ManagerWrapper.build(context, tags)
             context.startActivity(Intent(context, PreviewActivity::class.java))
@@ -54,7 +54,7 @@ open class PreviewActivity : AppCompatActivity() {
 
     private val managerListener = Listener.create<OnAddElementsEvent<Post>> {
         GlobalScope.launch(Dispatchers.Main) {
-            if(it.elements.isEmpty()) Toast.makeText(this@PreviewActivity, "End", Toast.LENGTH_SHORT).show()
+            if (it.elements.isEmpty()) Toast.makeText(this@PreviewActivity, "End", Toast.LENGTH_SHORT).show()
             else previewAdapter.updatePosts(it.elements)
         }
     }
@@ -63,30 +63,49 @@ open class PreviewActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_preview)
-        m = currentManager
-        initToolbar()
+        initData(savedInstanceState)
+    }
 
-        m.posts.registerOnAddElementsListener(managerListener)
-        recycler_view.layoutManager = object : GridLayoutManager(this, 3) {
-            override fun onLayoutChildren(recycler: RecyclerView.Recycler?, state: RecyclerView.State?) {
-                try {
-                    super.onLayoutChildren(recycler, state)
-                } catch (e: java.lang.Exception) {
-                    e.printStackTrace()
-                }
+    private fun initData(savedInstanceState: Bundle?) {
+        GlobalScope.launch(Dispatchers.Main) {
+            withContext(Dispatchers.IO) {
+                db.join() //if app is killed in background
             }
-        }.apply { layoutManager = this }
-        recycler_view.adapter = PreviewAdapter(this, m).apply { previewAdapter = this }
-        previewAdapter.isDragSelectingEnabled(recycler_view, true)
-        previewAdapter.onStartSelection.registerListener(disableSwipeRefreshOnSelectionListener)
-        previewAdapter.onStopSelection.registerListener(reEnableSwipeRefreshOnSelectionListener)
-        previewAdapter.dragListener.disableAutoScroll()
+            //onRestoreActivity
+            val tags = savedInstanceState?.getString(MANAGER)
+            if (tags != null) m = ManagerWrapper.build(this@PreviewActivity, tags)
+            else m = currentManager
 
-        initSwipeRefreshLayout()
-        initScrollView()
+            initToolbar()
 
-        loadNextPage()
-        loadNextPage()
+            m.posts.registerOnAddElementsListener(managerListener)
+
+            recycler_view.layoutManager = object : GridLayoutManager(this@PreviewActivity, 3) {
+                override fun onLayoutChildren(recycler: RecyclerView.Recycler?, state: RecyclerView.State?) {
+                    try {
+                        super.onLayoutChildren(recycler, state)
+                    } catch (e: java.lang.Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }.apply { layoutManager = this }
+            recycler_view.adapter = PreviewAdapter(this@PreviewActivity, m).apply { previewAdapter = this }
+            previewAdapter.isDragSelectingEnabled(recycler_view, true)
+            previewAdapter.onStartSelection.registerListener(disableSwipeRefreshOnSelectionListener)
+            previewAdapter.onStopSelection.registerListener(reEnableSwipeRefreshOnSelectionListener)
+            previewAdapter.dragListener.disableAutoScroll()
+
+            initSwipeRefreshLayout()
+            initScrollView()
+
+            loadNextPage()
+            loadNextPage()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(MANAGER, m.toString())
     }
 
     fun loadNextPage() {
@@ -171,7 +190,8 @@ open class PreviewActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        layoutManager.scrollToPosition(m.position)
+        if (this::layoutManager.isInitialized)
+            layoutManager.scrollToPosition(m.position)
     }
 
     override fun onDestroy() {

@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.eventcollection.events.OnUpdateEvent
@@ -19,20 +18,20 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
-import de.yochyo.yummybooru.utils.general.currentManager
-import de.yochyo.yummybooru.utils.general.original
-import de.yochyo.yummybooru.utils.general.sample
 import de.yochyo.yummybooru.utils.ManagerWrapper
+import de.yochyo.yummybooru.utils.general.currentManager
 import de.yochyo.yummybooru.utils.general.downloadImage
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class PictureActivity : AppCompatActivity() {
     companion object {
+        private const val ACTIVITY_DESTROYED = "CRASHED"
         fun startActivity(context: Context, manager: ManagerWrapper) {
             context.currentManager = manager
             context.startActivity(Intent(context, PictureActivity::class.java))
@@ -49,35 +48,53 @@ class PictureActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_picture)
-        setSupportActionBar(toolbar_picture)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        m = currentManager
-        nav_view_picture.bringToFront()
 
-        tagRecyclerView = nav_view_picture.findViewById(R.id.recycle_view_info)
-        tagInfoAdapter = TagInfoAdapter(this).apply { tagRecyclerView.adapter = this }
-        tagRecyclerView.layoutManager = LinearLayoutManager(this)
-        with(view_pager) {
-            adapter = PictureAdapter(this@PictureActivity, m).apply { this@PictureActivity.pictureAdapter = this }
-            m.posts.registerOnUpdateListener(managerListener)
-            currentItem = m.position
-            this@PictureActivity.pictureAdapter.updatePosts(m.posts)
-            startMedia(m.position)
-            m.currentPost?.updateCurrentTags(m.position)
-            addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-                override fun onPageScrolled(position: Int, offset: Float, p2: Int) {
-                    if (offset == 0.0F && m.position != position) {
-                        pauseMedia(m.position)
-                        startMedia(position)
-                        m.position = position
-                        m.currentPost?.updateCurrentTags(position)
+        initData(savedInstanceState)
+    }
+
+    private fun initData(savedInstanceState: Bundle?) {
+        GlobalScope.launch(Dispatchers.Main) {
+            withContext(Dispatchers.IO) { db.join() }
+            setSupportActionBar(toolbar_picture)
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+            //onRestoreActivity
+            val destroyed = savedInstanceState?.getBoolean(ACTIVITY_DESTROYED) ?: false
+            if (destroyed) finish()
+            m = currentManager
+
+            nav_view_picture.bringToFront()
+
+            tagRecyclerView = nav_view_picture.findViewById(R.id.recycle_view_info)
+            tagInfoAdapter = TagInfoAdapter(this@PictureActivity).apply { tagRecyclerView.adapter = this }
+            tagRecyclerView.layoutManager = LinearLayoutManager(this@PictureActivity)
+            with(view_pager) {
+                adapter = PictureAdapter(this@PictureActivity, m).apply { this@PictureActivity.pictureAdapter = this }
+                m.posts.registerOnUpdateListener(managerListener)
+                currentItem = m.position
+                this@PictureActivity.pictureAdapter.updatePosts(m.posts)
+                startMedia(m.position)
+                m.currentPost?.updateCurrentTags(m.position)
+                addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+                    override fun onPageScrolled(position: Int, offset: Float, p2: Int) {
+                        if (offset == 0.0F && m.position != position) {
+                            pauseMedia(m.position)
+                            startMedia(position)
+                            m.position = position
+                            m.currentPost?.updateCurrentTags(position)
+                        }
                     }
-                }
 
-                override fun onPageScrollStateChanged(p0: Int) {}
-                override fun onPageSelected(position: Int) {}
-            })
+                    override fun onPageScrollStateChanged(p0: Int) {}
+                    override fun onPageSelected(position: Int) {}
+                })
+            }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(ACTIVITY_DESTROYED, true)
     }
 
     private fun Post.updateCurrentTags(wasCurrentPosition: Int) {
@@ -121,9 +138,11 @@ class PictureActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        startMedia(m.position)
         super.onResume()
+        if (this::m.isInitialized)
+            startMedia(m.position)
     }
+
     override fun onDestroy() {
         m.posts.removeOnUpdateListener(managerListener)
         super.onDestroy()

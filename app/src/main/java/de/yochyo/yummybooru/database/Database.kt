@@ -16,7 +16,12 @@ import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.createDefaultSavePath
 import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.documentFile
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import org.jetbrains.anko.db.ManagedSQLiteOpenHelper
 import org.jetbrains.anko.db.dropTable
 import java.util.*
@@ -25,6 +30,11 @@ import kotlin.collections.ArrayList
 
 class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 3) {
     private val prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
+
+    private val lock = Mutex()
+    suspend fun join() {
+        lock.withLock { }
+    }
 
     val servers = object : ObservingEventCollection<Server, Int>(ArrayList()) {
         override fun remove(element: Server): Boolean {
@@ -41,7 +51,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
                 if (contains(element)) isContained = true
                 element.isFavorite = !element.isFavorite
             }
-            return if(isContained) false else super.add(element)
+            return if (isContained) false else super.add(element)
         }
     }
 
@@ -73,12 +83,14 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     suspend fun loadDatabase() {
         withContext(Dispatchers.IO) {
-            GlobalListeners.unregisterGlobalListeners(context)
-            val se: List<Server> = serverDao.selectAll()
-            servers.clear()
-            servers += se
-            servers.notifyChange()
-            loadServer(context.currentServer)
+            lock.withLock {
+                GlobalListeners.unregisterGlobalListeners(context)
+                val se: List<Server> = serverDao.selectAll()
+                servers.clear()
+                servers += se
+                servers.notifyChange()
+                loadServer(context.currentServer)
+            }
         }
     }
 

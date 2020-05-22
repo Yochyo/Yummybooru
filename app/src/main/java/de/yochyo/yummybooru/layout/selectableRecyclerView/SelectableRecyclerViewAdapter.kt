@@ -18,8 +18,19 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
     private var isSelecting = false
     val selected = SelectionArray()
 
+    //tells receiver how the selection was triggered
+    private var startedLongClick: Boolean? = false
+    private val SELECT_BY_LONG_CLICK = true
+    private val SELECT_BY_DRAG = null
+    private val SELECT_BY_SHORT_CLICK = false
+
 
     private val receiver = object : DragSelectReceiver {
+        //tells setSelected() if we're in selection- or unselection-mode
+        private var isDragSelecting = false
+        private val SELECTING_MODE = true
+        private val UNSELECTING_MODE = false
+
         override fun getItemCount() = itemCount
 
         override fun isIndexSelectable(index: Int) = true
@@ -28,12 +39,18 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
 
         override fun setSelected(index: Int, selected: Boolean) {
             val current = isSelected(index)
-            if(current) unselect(index)
-            else select(index)
-           /*
-            if (!current && selected) select(index)
-            else if (current && !selected) unselect(index)
-            */
+            if(startedLongClick == SELECT_BY_LONG_CLICK){
+                startedLongClick = SELECT_BY_DRAG
+                isDragSelecting = !current
+            }
+            if(startedLongClick == SELECT_BY_DRAG){
+                if(!current && isDragSelecting == SELECTING_MODE) select(index)
+                else if(current && isDragSelecting == UNSELECTING_MODE) unselect(index)
+            }
+            else {
+                if(current) unselect(index)
+                else select(index)
+            }
         }
     }
     val dragListener = DragSelectTouchListener.create(activity, receiver) {
@@ -85,15 +102,18 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
     val onClickMenuItem = object : EventHandler<ActionModeClickEvent>() {}
 
 
-    val onSelectViewHolder = { holder: T ->
+    val onLongClickViewHolder = { holder: T ->
         val pos = holder.adapterPosition
-        //if (selected.isSelected(pos)) unselect(pos)
-        //else select(pos)
+        startedLongClick = SELECT_BY_LONG_CLICK
         dragListener.setIsActive(true, pos)
+    }
+    val onClickViewHolder = { holder: T ->
+        startedLongClick = SELECT_BY_SHORT_CLICK
+        receiver.setSelected(holder.adapterPosition, !selected.isSelected(holder.adapterPosition))
     }
 
     fun clickHolder(holder: T) {
-        if (isSelecting) receiver.setSelected(holder.adapterPosition, !selected.isSelected(holder.adapterPosition))//onSelectViewHolder(holder)
+        if (isSelecting) onClickViewHolder(holder)
         else holder.onClickLayout()
     }
 
@@ -102,7 +122,7 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
 
     open fun setListeners(holder: T) {
         holder.layout.setOnClickListener { clickHolder(holder) }
-        holder.layout.setOnLongClickListener { onSelectViewHolder(holder); true }
+        holder.layout.setOnLongClickListener { onLongClickViewHolder(holder); true }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): T {

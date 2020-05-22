@@ -8,7 +8,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.entities.Sub
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
@@ -16,7 +15,6 @@ import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.SelectableRecyclerViewAdapter
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
-import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.setColor
 import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.coroutines.GlobalScope
@@ -61,7 +59,7 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Tag
     override fun setListeners(holder: SubscribedTagViewHolder) {
         val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
         toolbar.setOnClickListener { clickHolder(holder) }
-        toolbar.setOnLongClickListener { onSelectViewHolder(holder); true }
+        toolbar.setOnLongClickListener { onLongClickViewHolder(holder); true }
     }
 
 

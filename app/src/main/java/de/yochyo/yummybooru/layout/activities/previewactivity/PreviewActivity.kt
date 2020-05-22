@@ -43,7 +43,7 @@ open class PreviewActivity : AppCompatActivity() {
     private lateinit var actionBarListener: ActionBarListener
 
     private val disableSwipeRefreshOnSelectionListener = Listener.create<StartSelectingEvent> { swipeRefreshLayout.isEnabled = false }
-    private val reEnableSwipeRefreshOnSelectionListener = Listener.create<StopSelectingEvent> { swipeRefreshLayout.isEnabled = true }
+    private val reEnableSwipeRefreshOnSelectionListener = Listener.create<StopSelectingEvent> { swipeRefreshLayout.isEnabled = true;swipeRefreshLayout.isEnabled = false }
     private var isLoadingView = false
     var isScrolling = false
 

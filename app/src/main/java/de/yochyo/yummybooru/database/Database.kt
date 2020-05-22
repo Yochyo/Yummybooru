@@ -41,7 +41,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
                 if (contains(element)) isContained = true
                 element.isFavorite = !element.isFavorite
             }
-            return if(isContained) true else super.add(element)
+            return if(isContained) false else super.add(element)
         }
     }
 

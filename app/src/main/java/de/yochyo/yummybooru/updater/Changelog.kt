@@ -52,9 +52,9 @@ class Changelog(val versionName: String, val version: Int, val description: Stri
 
         fun showChangelogIfChanges(context: Context) {
             if (BuildConfig.VERSION_CODE != context.db.lastVersion) {
-                context.db.lastVersion = BuildConfig.VERSION_CODE
                 showChangelogs(context)
             }
+            context.db.lastVersion = BuildConfig.VERSION_CODE
         }
 
         fun changeLogs(): List<Changelog> = logs

@@ -6,7 +6,6 @@ import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.view.MotionEvent
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
@@ -17,11 +16,11 @@ import de.yochyo.yummybooru.api.entities.Sub
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.saveDownload
 import de.yochyo.yummybooru.utils.ManagerWrapper
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
-import java.security.MessageDigest
-import kotlin.math.atan2
 
 fun Context.preview(id: Int) = "${id}P${currentServer.id}"
 fun Context.sample(id: Int) = "${id}S${currentServer.id}"
@@ -44,7 +43,8 @@ fun downloadImage(context: Context, p: Post) {
         saveDownload(context, url, id, p)
     }
 }
-fun getDownloadPathAndId(context: Context, p: Post): Pair<String, String>{
+
+fun getDownloadPathAndId(context: Context, p: Post): Pair<String, String> {
     val url: String
     val id: String
     if (context.db.downloadOriginal) {
@@ -144,13 +144,40 @@ val Context.currentServer: Server
         return _currentServer ?: Server("", "", "", "", "")
     }
 
+private val _managers = HashMap<String, ManagerWrapper?>()
 private var _currentManager: ManagerWrapper? = null
-var Context.currentManager: ManagerWrapper
-    get() {
-        val v = if (_currentManager == null) ManagerWrapper(ManagerWrapper.build(this, "*")) else _currentManager
-        _currentManager = null
-        return v!!
-    }
     set(value) {
-        _currentManager = value
+        _managers[value.toString()] = value
+        field = value
     }
+
+fun Context.getCurrentManager(name: String? = null): ManagerWrapper? {
+    val m = if (name == null) _currentManager else _managers[name]
+    return m
+}
+
+suspend fun Context.getOrRestoreManager(name: String, lastId: Int, lastPosition: Int): ManagerWrapper {
+    return withContext(Dispatchers.IO) {
+        db.join()
+        val m: ManagerWrapper
+        val manager = getCurrentManager(name)
+        if (manager?.toString() == name) m = manager
+        else {
+            m = ManagerWrapper.build(this@getOrRestoreManager, name)
+            m.downloadNextPages(lastPosition / db.limit + 1)
+            while (m.posts.indexOfFirst { it.id == lastId } == -1) m.downloadNextPage()
+            m.position = m.posts.indexOfFirst { it.id == lastId }
+        }
+        setCurrentManager(m)
+        m
+    }
+}
+
+fun Context.setCurrentManager(m: ManagerWrapper) {
+    _currentManager = m
+}
+
+fun clearCurrentManager() {
+    _managers.clear()
+    _currentManager = null
+}

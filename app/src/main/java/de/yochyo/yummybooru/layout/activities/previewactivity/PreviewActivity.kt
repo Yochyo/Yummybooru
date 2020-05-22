@@ -19,9 +19,7 @@ import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
 import de.yochyo.yummybooru.utils.ManagerWrapper
-import de.yochyo.yummybooru.utils.general.createTagAndOrChangeSubState
-import de.yochyo.yummybooru.utils.general.currentManager
-import de.yochyo.yummybooru.utils.general.currentServer
+import de.yochyo.yummybooru.utils.general.*
 import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +33,7 @@ open class PreviewActivity : AppCompatActivity() {
     companion object {
         private const val MANAGER = "MANAGER"
         fun startActivity(context: Context, tags: String) {
-            context.currentManager = ManagerWrapper.build(context, tags)
+            context.setCurrentManager(ManagerWrapper.build(context, tags))
             context.startActivity(Intent(context, PreviewActivity::class.java))
         }
     }
@@ -43,7 +41,7 @@ open class PreviewActivity : AppCompatActivity() {
     private lateinit var actionBarListener: ActionBarListener
 
     private val disableSwipeRefreshOnSelectionListener = Listener.create<StartSelectingEvent> { swipeRefreshLayout.isEnabled = false }
-    private val reEnableSwipeRefreshOnSelectionListener = Listener.create<StopSelectingEvent> { swipeRefreshLayout.isEnabled = true;swipeRefreshLayout.isEnabled = false }
+    private val reEnableSwipeRefreshOnSelectionListener = Listener.create<StopSelectingEvent> { swipeRefreshLayout.isEnabled = true;swipeRefreshLayout.isEnabled = false; swipeRefreshLayout.isEnabled = true }
     private var isLoadingView = false
     var isScrolling = false
 
@@ -70,11 +68,13 @@ open class PreviewActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
             withContext(Dispatchers.IO) {
                 db.join() //if app is killed in background
+
+                val oldTags = savedInstanceState?.getString("name")
+                val oldPos = savedInstanceState?.getInt("position")
+                val oldId = savedInstanceState?.getInt("id")
+                if (oldTags != null && oldPos != null && oldId != null) m = getOrRestoreManager(oldTags, oldId, oldPos)
+                else m = getCurrentManager()!!
             }
-            //onRestoreActivity
-            val tags = savedInstanceState?.getString(MANAGER)
-            if (tags != null) m = ManagerWrapper.build(this@PreviewActivity, tags)
-            else m = currentManager
 
             initToolbar()
 
@@ -97,6 +97,7 @@ open class PreviewActivity : AppCompatActivity() {
 
             initSwipeRefreshLayout()
             initScrollView()
+            recycler_view.scrollToPosition(m.position)
 
             loadNextPage()
             loadNextPage()
@@ -105,7 +106,9 @@ open class PreviewActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString(MANAGER, m.toString())
+        outState.putString("name", m.toString())
+        outState.putInt("position", m.position)
+        outState.putInt("id", m.posts.get(if (m.position == -1) 0 else m.position).id)
     }
 
     fun loadNextPage() {
@@ -120,7 +123,10 @@ open class PreviewActivity : AppCompatActivity() {
         recycler_view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 when (newState) {
-                    RecyclerView.SCROLL_STATE_IDLE -> isScrolling = false
+                    RecyclerView.SCROLL_STATE_IDLE -> {
+                        isScrolling = false
+                        m.position = layoutManager.findFirstCompletelyVisibleItemPosition()
+                    }
                     RecyclerView.SCROLL_STATE_DRAGGING -> isScrolling = true
                 }
                 if (!isLoadingView)

@@ -19,8 +19,10 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
 import de.yochyo.yummybooru.utils.ManagerWrapper
-import de.yochyo.yummybooru.utils.general.currentManager
 import de.yochyo.yummybooru.utils.general.downloadImage
+import de.yochyo.yummybooru.utils.general.getCurrentManager
+import de.yochyo.yummybooru.utils.general.getOrRestoreManager
+import de.yochyo.yummybooru.utils.general.setCurrentManager
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers
@@ -31,9 +33,9 @@ import kotlinx.coroutines.withContext
 
 class PictureActivity : AppCompatActivity() {
     companion object {
-        private const val ACTIVITY_DESTROYED = "CRASHED"
+        private const val MANAGER = "MANAGER"
         fun startActivity(context: Context, manager: ManagerWrapper) {
-            context.currentManager = manager
+            context.setCurrentManager(manager)
             context.startActivity(Intent(context, PictureActivity::class.java))
         }
     }
@@ -54,14 +56,18 @@ class PictureActivity : AppCompatActivity() {
 
     private fun initData(savedInstanceState: Bundle?) {
         GlobalScope.launch(Dispatchers.Main) {
-            withContext(Dispatchers.IO) { db.join() }
+
+            withContext(Dispatchers.IO) {
+                db.join() //if app is killed in background
+
+                val oldTags = savedInstanceState?.getString("name")
+                val oldPos = savedInstanceState?.getInt("position")
+                val oldId = savedInstanceState?.getInt("id")
+                if (oldTags != null && oldPos != null && oldId != null) m = getOrRestoreManager(oldTags, oldId, oldPos)
+                else m = getCurrentManager()!!
+            }
             setSupportActionBar(toolbar_picture)
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-            //onRestoreActivity
-            val destroyed = savedInstanceState?.getBoolean(ACTIVITY_DESTROYED) ?: false
-            if (destroyed) finish()
-            m = currentManager
 
             nav_view_picture.bringToFront()
 
@@ -94,7 +100,9 @@ class PictureActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBoolean(ACTIVITY_DESTROYED, true)
+        outState.putString("name", m.toString())
+        outState.putInt("position", m.position)
+        outState.putInt("id", m.posts.get(if(m.position == -1) 0 else m.position).id)
     }
 
     private fun Post.updateCurrentTags(wasCurrentPosition: Int) {

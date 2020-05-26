@@ -95,7 +95,7 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
         impl?.destroy()
         impl = null
         clearSurface()
-        surfaceTexture.release()
+        surfaceTexture?.release()
         mSurface?.release()
         mSurface = null
         return true

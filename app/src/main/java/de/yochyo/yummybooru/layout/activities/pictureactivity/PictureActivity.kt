@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import de.yochyo.booruapi.objects.Post
+import de.yochyo.booruapi.objects.Tag
 import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
@@ -110,7 +111,16 @@ class PictureActivity : AppCompatActivity() {
 
         tagInfoAdapter.updateInfoTags(emptyList())
         if (wasCurrentPosition == m.position) {
-            tagInfoAdapter.updateInfoTags(tags)
+            tagInfoAdapter.updateInfoTags(tags.sortedBy {
+                when(it.type){
+                    Tag.ARTIST -> 0
+                    Tag.COPYPRIGHT -> 1
+                    Tag.CHARACTER -> 2
+                    Tag.GENERAL -> 3
+                    Tag.META -> 4
+                    else -> 5
+                }
+            })
             tagRecyclerView.scrollToPosition(0)
         }
     }

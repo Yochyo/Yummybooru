@@ -60,7 +60,7 @@
         </activity>
 
         <service android:name=".downloadservice.DownloadService"/>
-        <service android:name=".downloadservice.SingleDownloadService"/>
+        <service android:name=".downloadservice.InAppDownloadService"/>
     </application>
 
 </manifest>

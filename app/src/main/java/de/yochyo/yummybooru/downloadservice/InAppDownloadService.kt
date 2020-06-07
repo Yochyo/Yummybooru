@@ -15,7 +15,7 @@ import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.network.CacheableDownloader
 import kotlinx.coroutines.*
 
-class SingleDownloadService : Service() {
+class InAppDownloadService : Service() {
 
     var job: Job? = null
     lateinit var notificationManager: NotificationManagerCompat
@@ -25,7 +25,7 @@ class SingleDownloadService : Service() {
         private val downloader = CacheableDownloader(2)
         fun startService(context: Context, url: String, id: String, callback: suspend (e: Resource) -> Unit) {
             downloader.download(context, url, id, callback)
-            context.startService(Intent(context, SingleDownloadService::class.java))
+            context.startService(Intent(context, InAppDownloadService::class.java))
         }
 
     }
@@ -56,6 +56,6 @@ class SingleDownloadService : Service() {
     override fun onBind(intent: Intent): IBinder? = null
 }
 
-fun saveDownload(context: Context, url: String, id: String, post: Post) = SingleDownloadService.startService(context, url, id) {
+fun saveDownload(context: Context, url: String, id: String, post: Post) = InAppDownloadService.startService(context, url, id) {
     FileUtils.writeFile(context, post, it, context.currentServer)
 }

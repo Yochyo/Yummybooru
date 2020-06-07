@@ -12,7 +12,6 @@ import de.yochyo.downloader.RegulatingDownloader
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Resource
 import de.yochyo.yummybooru.api.entities.Server
-import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
@@ -36,12 +35,12 @@ class DownloadService : Service() {
     private var position = 0
 
     companion object {
-        private var totalSize = 0
-        private var currentPos = 0
+        private var totalItemCount = 0
+        private var currentItem = 0
         private val downloadPosts = LinkedList<Posts>()
 
         fun startService(context: Context, tags: String, posts: List<Post>, server: Server) {
-            totalSize += posts.size
+            totalItemCount += posts.size
             downloadPosts += Posts(tags, posts, server)
             context.startService(Intent(context, DownloadService::class.java))
         }
@@ -64,7 +63,8 @@ class DownloadService : Service() {
                 if (image != null) FileUtils.writeFile(this@DownloadService, pair.first, image, pair.second, SafeFileEvent.SILENT)
                 pair = getNextElement()
             }
-            totalSize = 0
+            totalItemCount = 0
+            currentItem = 0
             stopSelf()
         }
     }
@@ -75,13 +75,13 @@ class DownloadService : Service() {
             return if (posts.posts.size > position) {
                 val post = posts.posts[position]
                 withContext(Dispatchers.Main) {
-                    notificationBuilder.setContentTitle("Downloading $currentPos/${totalSize}")
+                    notificationBuilder.setContentTitle("Downloading $currentItem/${totalItemCount}")
                     notificationBuilder.setContentText(posts.tags)
-                    notificationBuilder.setProgress(totalSize, currentPos, false)
+                    notificationBuilder.setProgress(totalItemCount, currentItem, false)
                     notificationManager.notify(1, notificationBuilder.build())
                 }
                 ++position
-                ++currentPos
+                ++currentItem
                 Pair(post, posts.server)
             } else {
                 position = 0

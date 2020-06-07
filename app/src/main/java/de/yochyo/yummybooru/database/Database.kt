@@ -155,8 +155,6 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
             if (!_savePathTested) {
                 _savePathTested = true
                 if (!field.exists()) {
-                    val uri = field.uri
-                    Logger.log("$uri does not exist anymore")
                     field = documentFile(context, createDefaultSavePath())
                 }
             }

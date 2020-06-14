@@ -5,6 +5,14 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 android {
+    signingConfigs {
+        debug {
+            storeFile file('D:\\Lizenzen\\yBooruApp-Android.jks')
+            keyAlias 'yBooru'
+            storePassword 'LYBTyiDdzMQOaqDGDDob'
+            keyPassword 'LYBTyiDdzMQOaqDGDDob'
+        }
+    }
     repositories {
         maven { url "https://jitpack.io" }
         mavenLocal()

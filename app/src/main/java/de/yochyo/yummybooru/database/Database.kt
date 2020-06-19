@@ -30,7 +30,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     private val lock = Mutex(true)
     suspend fun join() {
-        lock.withLock {  }
+        lock.withLock { }
     }
 
     val servers = object : ObservingEventCollection<Server, Int>(ArrayList()) {
@@ -80,6 +80,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     suspend fun loadDatabase() {
         withContext(Dispatchers.IO) {
+            if (!lock.isLocked) lock.lock()
             GlobalListeners.unregisterGlobalListeners(context)
             val se: List<Server> = serverDao.selectAll()
             servers.clear()

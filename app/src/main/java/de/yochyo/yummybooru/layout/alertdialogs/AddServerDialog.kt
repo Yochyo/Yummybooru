@@ -51,8 +51,7 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
                 password.hint = when(item){
                     "auto" -> "Password/Api key"
                     "danbooru" -> "Api key"
-                    "moebooru" -> "Password"
-                    else -> ""
+                    else -> "Password"
                 }
             }
 

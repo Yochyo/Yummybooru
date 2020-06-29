@@ -1,7 +1,7 @@
 package de.yochyo.yummybooru.api.entities
 
 import android.content.Context
-import de.yochyo.booruapi.api.IApi
+import de.yochyo.booruapi.api.IBooruApi
 import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventcollection.observable.IObservableObject
 import de.yochyo.eventmanager.EventHandler
@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import java.net.URL
 
 open class Server(name: String, url: String, apiName: String, username: String = "", password: String = "", var id: Int = -1) : Comparable<Server>, IObservableObject<Server, Int> {
-    var api: IApi = Apis.getApi(apiName, url)
+    var api: IBooruApi = Apis.getApi(apiName, url)
         private set
     var name = name
         set(value) {

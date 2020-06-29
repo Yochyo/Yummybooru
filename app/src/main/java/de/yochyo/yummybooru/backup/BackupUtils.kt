@@ -20,7 +20,7 @@ object BackupUtils {
     }
 
     suspend fun createBackup(context: Context) {
-        withContext(Dispatchers.IO){
+        withContext(Dispatchers.IO) {
             val json = JSONObject()
             val tagArray = JSONArray()
             val serverArray = JSONArray()
@@ -57,28 +57,46 @@ object BackupUtils {
     }
 
     fun updateRestoreObject(json: JSONObject): JSONObject {
-        val version = json["version"] as Int
-        if (version < 9) {
-            json.getJSONObject("preferences").put("downloadWebm", true)
-            val subs = json.getJSONArray("subs")
-            val tags = json.getJSONArray("tags")
-            for (tag in tags) {
-                val tag = tag as JSONObject
-                val name = tag.getString("name")
-                val serverID = tag.getInt("serverID")
-                val sub = subs.find { (it as JSONObject).getString("name") == name && it.getInt("serverID") == serverID } as JSONObject?
-                tag.put("lastID", sub?.getInt("lastID") ?: -1)
-                tag.put("lastCount", sub?.getInt("lastCount") ?: -1)
+        try {
+            val version = json["version"] as Int
+            if (version < 9) {
+                upgradeToVersion9(json)
             }
-            for (sub in subs) {
-                val sub = sub as JSONObject
-                val name = sub.getString("name")
-                val serverID = sub.getInt("serverID")
-                val tag = tags.find { (it as JSONObject).getString("name") == name && it.getInt("serverID") == serverID} as JSONObject?
-                if (tag == null) {
-                    tags.put(sub)
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+            Logger.log(e)
+        }
+        return json
+    }
+
+    private fun upgradeToVersion9(json: JSONObject): JSONObject {
+        try {
+            val version = json["version"] as Int
+            if (version < 9) {
+                json.getJSONObject("preferences").put("downloadWebm", true)
+                val subs = json.getJSONArray("subs")
+                val tags = json.getJSONArray("tags")
+                for (tag in tags) {
+                    val tag = tag as JSONObject
+                    val name = tag.getString("name")
+                    val serverID = tag.getInt("serverID")
+                    val sub = subs.find { (it as JSONObject).getString("name") == name && it.getInt("serverID") == serverID } as JSONObject?
+                    tag.put("lastID", sub?.getInt("lastID") ?: -1)
+                    tag.put("lastCount", sub?.getInt("lastCount") ?: -1)
+                }
+                for (sub in subs) {
+                    val sub = sub as JSONObject
+                    val name = sub.getString("name")
+                    val serverID = sub.getInt("serverID")
+                    val tag = tags.find { (it as JSONObject).getString("name") == name && it.getInt("serverID") == serverID } as JSONObject?
+                    if (tag == null) {
+                        tags.put(sub)
+                    }
                 }
             }
+        } catch (e: java.lang.Exception) {
+            Logger.log(e)
+            e.printStackTrace()
         }
         return json
     }

@@ -58,7 +58,6 @@ class ServerAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Serv
             val server = activity.db.servers.elementAt(holder.adapterPosition)
             GlobalScope.launch(Dispatchers.Main) {
                 activity.db.loadServer(server)
-                MainActivity.selectedTags.clear()
                 notifyDataSetChanged()
             }
         }

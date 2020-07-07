@@ -93,6 +93,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     suspend fun loadServer(server: Server) {
         withContext(Dispatchers.IO) {
+            val oldServer = context.currentServer
             GlobalListeners.unregisterGlobalListeners(context)
             withContext(Dispatchers.Main) { context.db.currentServerID = server.id }
             val t = tagDao.selectWhere(server)
@@ -102,7 +103,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
                 tags.notifyChange()
             }
             GlobalListeners.registerGlobalListeners(context)
-            SelectServerEvent.trigger(SelectServerEvent(context, context.currentServer, server))
+            SelectServerEvent.trigger(SelectServerEvent(context, oldServer, server))
         }
     }
 

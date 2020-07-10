@@ -108,14 +108,11 @@ fun parseURL(url: String): String {
     return b.toString()
 }
 
-fun Boolean.toInt() = if (this) 1 else 0
 fun createDefaultSavePath(): String {
     val f = File("${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_PICTURES}/Yummybooru/")
     f.mkdirs()
     return f.absolutePath
 }
-
-class MutablePair<A, B>(var first: A, var second: B)
 
 fun documentFile(context: Context, path: String): DocumentFile {
     return if (path.startsWith("content")) DocumentFile.fromTreeUri(context, Uri.parse(path))!!

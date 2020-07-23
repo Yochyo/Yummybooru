@@ -111,6 +111,22 @@ class PictureActivity : AppCompatActivity() {
 
         tagInfoAdapter.updateInfoTags(emptyList())
         if (wasCurrentPosition == m.position) {
+            tags.sortedWith(Comparator { o1, o2 ->
+                fun sortedType(type: Int): Int{
+                    return when(type){
+                        Tag.ARTIST -> 0
+                        Tag.COPYPRIGHT -> 1
+                        Tag.CHARACTER -> 2
+                        Tag.GENERAL -> 3
+                        Tag.META -> 4
+                        else -> 5
+                    }
+                }
+                val sortedType1 = sortedType(o1.type)
+                val sortedType2 = sortedType(o2.type)
+                if(sortedType1 == sortedType2) o1.name.compareTo(o2.name)
+                else sortedType1-sortedType2
+            })
             tagInfoAdapter.updateInfoTags(tags.sortedBy {
                 when(it.type){
                     Tag.ARTIST -> 0

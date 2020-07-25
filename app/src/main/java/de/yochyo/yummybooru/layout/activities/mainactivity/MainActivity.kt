@@ -24,7 +24,7 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.layout.activities.NewSettingsActivity
+import de.yochyo.yummybooru.layout.activities.SettingsActivity
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
 import de.yochyo.yummybooru.layout.activities.subscriptionactivity.SubscriptionActivity
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
@@ -188,7 +188,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_subs -> startActivity(Intent(this, SubscriptionActivity::class.java))
-            R.id.nav_settings -> startActivity(Intent(this, NewSettingsActivity::class.java))
+            R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
             R.id.community -> startActivity(Intent(Intent.ACTION_VIEW).apply { data = Uri.parse("https://discord.gg/tbGCHpF") })
             R.id.nav_help -> Toast.makeText(this, getString(R.string.join_discord), Toast.LENGTH_SHORT).show()
         }

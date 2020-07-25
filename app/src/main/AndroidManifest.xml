@@ -55,7 +55,7 @@
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-                android:name=".layout.activities.NewSettingsActivity"
+                android:name=".layout.activities.SettingsActivity"
                 android:label="Settings">
         </activity>
 

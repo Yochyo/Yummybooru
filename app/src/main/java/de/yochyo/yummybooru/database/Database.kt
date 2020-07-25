@@ -12,7 +12,6 @@ import de.yochyo.yummybooru.database.dao.TagDao
 import de.yochyo.yummybooru.database.utils.Upgrade
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.utils.GlobalListeners
-import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.createDefaultSavePath
 import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.documentFile
@@ -53,6 +52,13 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     }
 
     companion object {
+        private const val LIMIT = "limit"
+        private const val DOWNLOAD_WEBM = "downloadWebm"
+        private const val DOWNLOAD_ORIGINAL = "downloadOriginal"
+        private const val LAST_VERSION = "lastVersion"
+        private const val CURRENT_SERVER = "currentServer"
+        private const val SAVE_PATH = "savePath"
+
         private var instance: Database? = null
         fun getDatabase(context: Context): Database {
             if (instance == null) {
@@ -107,52 +113,30 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
         }
     }
 
-    var limit = prefs.getInt("limit", 30)
-        set(value) {
-            field = value
-            with(prefs.edit()) {
-                putInt("limit", value)
-                apply()
-            }
-        }
+    var limit: Int
+        get() = getPreference(LIMIT, 30)
+        set(value) = setPreference(LIMIT, value)
 
-    var currentServerID = prefs.getInt("currentServer", 0)
-        set(v) {
-            field = v
-            with(prefs.edit()) {
-                putInt("currentServer", v)
-                apply()
-            }
-        }
 
-    var lastVersion = prefs.getInt("lastVersion", BuildConfig.VERSION_CODE)
-        set(v) {
-            field = v
-            with(prefs.edit()) {
-                putInt("lastVersion", v)
-                apply()
-            }
-        }
+    var currentServerID: Int
+        get() = getPreference(CURRENT_SERVER, 30)
+        set(value) = setPreference(CURRENT_SERVER, value)
 
-    var downloadOriginal = prefs.getBoolean("downloadOriginal", true)
-        set(v) {
-            field = v
-            with(prefs.edit()) {
-                putBoolean("downloadOriginal", v)
-                apply()
-            }
-        }
-    var downloadWebm = prefs.getBoolean("downloadWebm", true)
-        set(value) {
-            field = value
-            with(prefs.edit()) {
-                putBoolean("downloadWebm", value)
-                apply()
-            }
-        }
+    var lastVersion: Int
+        get() = getPreference(LAST_VERSION, BuildConfig.VERSION_CODE)
+        set(value) = setPreference(LAST_VERSION, value)
+
+    var downloadOriginal: Boolean
+        get() = getPreference(DOWNLOAD_ORIGINAL, true)
+        set(value) = setPreference(DOWNLOAD_ORIGINAL, value)
+
+    var downloadWebm: Boolean
+        get() = getPreference(DOWNLOAD_WEBM, true)
+        set(value) = setPreference(DOWNLOAD_WEBM, value)
 
     private var _savePathTested = false
-    var saveFolder: DocumentFile = documentFile(context, prefs.getString("savePath", createDefaultSavePath())!!)
+
+    var saveFolder: DocumentFile = documentFile(context, getPreference(SAVE_PATH, createDefaultSavePath())!!)
         get() {
             if (!_savePathTested) {
                 _savePathTested = true
@@ -164,10 +148,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
         }
         set(value) {
             field = value
-            with(prefs.edit()) {
-                putString("savePath", value.uri.toString())
-                apply()
-            }
+            setPreference(SAVE_PATH, value.uri.toString())
         }
 
     suspend fun deleteEverything() {
@@ -187,6 +168,24 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
             for (prefToReset in p.entries)
                 remove(prefToReset.key).apply()
         }
+    }
+
+    private fun getPreference(name: String, default: String? = null) = prefs.getString(name, default)
+    private fun getPreference(name: String, default: Int = 0) = prefs.getInt(name, default)
+    private fun getPreference(name: String, default: Boolean = false) = prefs.getBoolean(name, default)
+    private fun setPreference(name: String, value: String) = with(prefs.edit()) {
+        putString(name, value)
+        apply()
+    }
+
+    private fun setPreference(name: String, value: Int) = with(prefs.edit()) {
+        putInt(name, value)
+        apply()
+    }
+
+    private fun setPreference(name: String, value: Boolean) = with(prefs.edit()) {
+        putBoolean(name, value)
+        apply()
     }
 
     val tagDao = TagDao(this)

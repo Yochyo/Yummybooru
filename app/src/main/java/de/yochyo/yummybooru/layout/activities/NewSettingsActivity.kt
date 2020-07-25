@@ -38,6 +38,7 @@ class MySettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
+        setSavePathSummary()
     }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean {

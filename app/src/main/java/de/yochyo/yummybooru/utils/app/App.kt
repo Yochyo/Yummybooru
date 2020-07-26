@@ -22,7 +22,6 @@ class App : Application() {
 
     private fun initListeners() {
         SelectServerEvent.registerListener(DisplayToastSelectServerListener())
-        SelectServerEvent.registerListener(ClearSelectedTagsInMainactivityListener())
         SafeFileEvent.registerListener(DisplayToastDownloadFileListener())
     }
 

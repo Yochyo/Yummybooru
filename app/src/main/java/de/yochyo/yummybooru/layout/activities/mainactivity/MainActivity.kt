@@ -29,21 +29,10 @@ import kotlinx.coroutines.withContext
 
 
 class MainActivity : AppCompatActivity() {
-
-
-    companion object {
-        private const val SELECTED = "SELECTED"
-        val selectedTags = ArrayList<String>()
-    }
-
+    private lateinit var mainDrawerFragment: MainDrawerFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        //onRestoreActivity
-        val array = savedInstanceState?.getStringArray(SELECTED)
-        if (array != null)
-            selectedTags += array
 
         val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
         if (!hasPermission) ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 122)
@@ -60,36 +49,20 @@ class MainActivity : AppCompatActivity() {
             initData()
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putStringArray(SELECTED, selectedTags.toTypedArray())
-    }
 
     fun initData() {
         GlobalScope.launch { cache.clearCache() }
-        val mainDrawer = MainDrawerFragment()
-        supportFragmentManager.beginTransaction().replace(R.id.container, mainDrawer).commit()
-        mainDrawer.withContainer { supportFragmentManager.beginTransaction().replace(it.id, ServerListViewFragment()).commit() }
+        mainDrawerFragment = MainDrawerFragment()
+        supportFragmentManager.beginTransaction().replace(R.id.container, mainDrawerFragment).commit()
+        mainDrawerFragment.withContainer { supportFragmentManager.beginTransaction().replace(it.id, ServerListViewFragment()).commit() }
 
-        initListeners()
         Changelog.showChangelogIfChanges(this)
         AutoUpdater().autoUpdate(this)
     }
 
-    private fun initListeners() {
-        val listener = Listener.create<OnRemoveElementsEvent<Tag>> { selectedTags.removeAll(it.elements.map { it.name }) }
-        GlobalListeners.addGlobalListener(db.tags.onRemoveElements,
-                listener)
-        //Global Listeners for whole app
-    }
-
 
     override fun onBackPressed() {
-        when {
-            drawer_layout.isDrawerOpen(GravityCompat.START) -> drawer_layout.closeDrawer(GravityCompat.START)
-            drawer_layout.isDrawerOpen(GravityCompat.END) -> drawer_layout.closeDrawer(GravityCompat.END)
-            else -> super.onBackPressed()
-        }
+        if (!mainDrawerFragment.onBackPress()) super.onBackPressed()
     }
 
     override fun onResume() {

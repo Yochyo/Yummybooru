@@ -4,7 +4,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.widget.CheckBox
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -17,28 +19,35 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import de.yochyo.eventcollection.events.OnRemoveElementsEvent
+import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.layout.activities.SettingsActivity
-import de.yochyo.yummybooru.layout.activities.mainactivity.MainActivity
-import de.yochyo.yummybooru.layout.activities.mainactivity.TagAdapter
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
 import de.yochyo.yummybooru.layout.activities.subscriptionactivity.SubscriptionActivity
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
-import de.yochyo.yummybooru.utils.general.FilteringEventCollection
-import de.yochyo.yummybooru.utils.general.ctx
-import de.yochyo.yummybooru.utils.general.currentServer
-import de.yochyo.yummybooru.utils.general.toTagString
+import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
+import de.yochyo.yummybooru.layout.menus.Menus
+import de.yochyo.yummybooru.utils.general.*
 import kotlinx.android.synthetic.main.main_drawer_fragment.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MainDrawerFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener, IFragment {
+class MainDrawerFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener, IFragmentWithContainer, OnBackPress {
+    val selectedTags = ArrayList<String>()
+    private val selectedTagRemovedListener = Listener.create<OnRemoveElementsEvent<Tag>> { selectedTags.removeAll(it.elements.map { it.name }) }
+    private val selectedServerChangedEvent = Listener.create<SelectServerEvent> {
+        if (it.oldServer != it.newServer)
+            selectedTags.clear()
+    }
+
     private lateinit var layout: DrawerLayout
     private var withContainer: ((container: ViewGroup) -> Unit)? = null
 
@@ -55,27 +64,40 @@ class MainDrawerFragment : Fragment(), NavigationView.OnNavigationItemSelectedLi
     private lateinit var tagAdapter: TagAdapter
     private lateinit var tagLayoutManager: LinearLayoutManager
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val l = inflater.inflate(R.layout.main_drawer_fragment, container, false) as DrawerLayout
-        if (withContainer != null) withContainer!!(l.findViewById(R.id.main_drawer_container))
-        layout = l
-        configureToolbar()
-        val navLayout = layout.findViewById<LinearLayout>(R.id.nav_search_layout)
-        configureDrawerToolbar(navLayout.findViewById(R.id.search_toolbar))
-        tagRecyclerView = navLayout.findViewById(R.id.recycler_view_search)
-        tagRecyclerView.layoutManager = LinearLayoutManager(ctx).apply { tagLayoutManager = this }
-        l.findViewById<SearchView>(R.id.tag_filter).setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextChange(newText: String?): Boolean {
-                if (newText != null) GlobalScope.launch { filter(newText) }
-                return true
-            }
+    companion object {
+        private const val SELECTED = "SELECTED"
+    }
 
-            override fun onQueryTextSubmit(query: String?) = true
-        })
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        ctx.db.tags.registerOnRemoveElementsListener(selectedTagRemovedListener)
+        SelectServerEvent.registerListener(selectedServerChangedEvent)
+        val array = savedInstanceState?.getStringArray(SELECTED)
+        if (array != null)
+            selectedTags += array
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        layout = (inflater.inflate(R.layout.main_drawer_fragment, container, false) as DrawerLayout).apply {
+            if (withContainer != null) withContainer!!(this.findViewById(R.id.main_drawer_container))
+        }
+
         filteringTagList = FilteringEventCollection({ ctx.db.tags }, { it.name })
-        tagAdapter = TagAdapter(ctx, filteringTagList).apply { tagRecyclerView.adapter = this }
+        configureToolbar()
+        configureTagDrawer()
         ctx.db.tags.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList) } }
         return layout
+    }
+
+    override fun onDestroy() {
+        ctx.db.tags.removeOnRemoveElementsListener(selectedTagRemovedListener)
+        SelectServerEvent.removeListener(selectedServerChangedEvent)
+        super.onDestroy()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putStringArray(SELECTED, selectedTags.toTypedArray())
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -96,6 +118,23 @@ class MainDrawerFragment : Fragment(), NavigationView.OnNavigationItemSelectedLi
         return super.onOptionsItemSelected(item)
     }
 
+    private fun configureTagDrawer() {
+        val navLayout = layout.findViewById<LinearLayout>(R.id.nav_search_layout)
+        configureDrawerToolbar(navLayout.findViewById(R.id.search_toolbar))
+        tagRecyclerView = navLayout.findViewById(R.id.recycler_view_search)
+        tagRecyclerView.layoutManager = LinearLayoutManager(ctx).apply { tagLayoutManager = this }
+        layout.findViewById<SearchView>(R.id.tag_filter).setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextChange(newText: String?): Boolean {
+                if (newText != null) GlobalScope.launch { filter(newText) }
+                return true
+            }
+
+            override fun onQueryTextSubmit(query: String?) = true
+        })
+
+        tagAdapter = TagAdapter(filteringTagList).apply { tagRecyclerView.adapter = this }
+    }
+
     private fun configureToolbar() {
         val activity = requireActivity()
         val toolbar = layout.findViewById<Toolbar>(R.id.main_drawer_toolbar)
@@ -114,7 +153,7 @@ class MainDrawerFragment : Fragment(), NavigationView.OnNavigationItemSelectedLi
         toolbar.setNavigationIcon(R.drawable.clear)
         toolbar.navigationContentDescription = "Unselect all tags"
         toolbar.setNavigationOnClickListener {
-            MainActivity.selectedTags.clear()
+            selectedTags.clear()
             Toast.makeText(ctx, "Unselected all tags", Toast.LENGTH_SHORT).show()
             tagAdapter.notifyDataSetChanged()
         }
@@ -123,7 +162,7 @@ class MainDrawerFragment : Fragment(), NavigationView.OnNavigationItemSelectedLi
             when (it.itemId) {
                 R.id.search -> {
                     drawer_layout.closeDrawer(GravityCompat.END)
-                    PreviewActivity.startActivity(ctx, if (MainActivity.selectedTags.isEmpty()) "*" else MainActivity.selectedTags.toTagString())
+                    PreviewActivity.startActivity(ctx, if (selectedTags.isEmpty()) "*" else selectedTags.toTagString())
                 }
                 R.id.add_tag -> {
                     AddTagDialog {
@@ -161,4 +200,72 @@ class MainDrawerFragment : Fragment(), NavigationView.OnNavigationItemSelectedLi
         if (!this::layout.isInitialized) withContainer = task
         else task(layout.findViewById(R.id.main_drawer_container))
     }
+
+    override fun onBackPress(): Boolean {
+        val drawerLayout = layout.findViewById<DrawerLayout>(R.id.drawer_layout)
+        when {
+            drawerLayout.isDrawerOpen(GravityCompat.START) -> drawerLayout.closeDrawer(GravityCompat.START)
+            drawerLayout.isDrawerOpen(GravityCompat.END) -> drawerLayout.closeDrawer(GravityCompat.END)
+            else -> return false
+        }
+        return true
+    }
+
+    inner class TagAdapter(t: Collection<Tag>) : RecyclerView.Adapter<TagViewHolder>() {
+        private var tags: Collection<Tag> = t
+
+        fun update(t: Collection<Tag>){
+            tags = t
+            notifyDataSetChanged()
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TagViewHolder = TagViewHolder((LayoutInflater.from(context).inflate(R.layout.search_item_layout, parent, false) as android.widget.Toolbar)).apply {
+            toolbar.inflateMenu(R.menu.activity_main_search_menu)
+            val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
+
+            fun onClick() {
+                if (check.isChecked) selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
+                else selectedTags.remove(toolbar.findViewById<TextView>(R.id.search_textview).text)
+            }
+            toolbar.setOnClickListener {
+                check.isChecked = !check.isChecked
+                onClick()
+            }
+            check.setOnClickListener {
+                onClick()
+            }
+
+            toolbar.setOnMenuItemClickListener {
+                val tag = tags.elementAt(adapterPosition)
+                when (it.itemId) {
+                    R.id.main_search_favorite_tag -> tag.isFavorite = !tag.isFavorite
+                    R.id.main_search_subscribe_tag -> {
+                        GlobalScope.launch {
+                            if(tag.sub == null) tag.addSub(ctx)
+                            else tag.sub = null
+                            withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
+                        }
+                    }
+                    R.id.main_search_delete_tag -> {
+                        ConfirmDialog {
+                            ctx.db.tags -= tag
+                        }.withTitle("Delete").withMessage("Delete tag ${tag.name}").build(ctx)
+                    }
+                }
+                true
+            }
+        }
+
+        override fun onBindViewHolder(holder: TagViewHolder, position: Int) {
+            val tag = tags.elementAt(position)
+            holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox).isChecked = selectedTags.contains(tag.name)
+            val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
+            textView.text = tag.name;textView.setColor(tag.color);textView.underline(tag.isFavorite)
+            Menus.initMainSearchTagMenu(ctx, holder.toolbar.menu, tag)
+        }
+
+        override fun getItemCount(): Int = tags.size
+    }
+
+    class TagViewHolder(val toolbar: android.widget.Toolbar) : RecyclerView.ViewHolder(toolbar)
 }

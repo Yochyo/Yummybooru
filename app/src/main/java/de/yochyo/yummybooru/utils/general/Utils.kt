@@ -9,6 +9,7 @@ import android.os.Environment
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
+import androidx.fragment.app.Fragment
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.booruapi.objects.Tag
 import de.yochyo.yummybooru.api.entities.Server
@@ -97,7 +98,7 @@ suspend fun createTagAndOrChangeSubState(context: Context, name: String): de.yoc
     }
     return null
 }
-
+val Fragment.ctx: Context get() = this.requireContext()
 fun parseURL(url: String): String {
     val b = StringBuffer()
     if (!url.startsWith("http"))

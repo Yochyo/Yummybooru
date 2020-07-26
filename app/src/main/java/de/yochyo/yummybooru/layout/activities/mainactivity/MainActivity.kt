@@ -25,6 +25,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.activities.SettingsActivity
+import de.yochyo.yummybooru.layout.activities.fragments.ServerListViewFragment
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
 import de.yochyo.yummybooru.layout.activities.subscriptionactivity.SubscriptionActivity
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
@@ -63,8 +64,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var tagRecyclerView: RecyclerView
     private lateinit var tagAdapter: TagAdapter
     private lateinit var tagLayoutManager: LinearLayoutManager
-
-    private lateinit var serverAdapter: ServerAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,10 +115,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         filteringTagList = FilteringEventCollection({ db.tags }, { it.name })
         GlobalScope.launch { cache.clearCache() }
         tagAdapter = TagAdapter(this, filteringTagList).apply { tagRecyclerView.adapter = this }
-        val serverRecyclerView = findViewById<RecyclerView>(R.id.server_recycler_view)
-        serverRecyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
-        serverAdapter = ServerAdapter(this).apply { serverRecyclerView.adapter = this }
-
+        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, ServerListViewFragment()).commit()
         initListeners()
         Changelog.showChangelogIfChanges(this)
         AutoUpdater().autoUpdate(this)
@@ -127,7 +123,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun initListeners() {
         db.tags.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList) } }
-        db.servers.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.notifyDataSetChanged() } }
         val listener = Listener.create<OnRemoveElementsEvent<Tag>> { selectedTags.removeAll(it.elements.map { it.name }) }
         GlobalListeners.addGlobalListener(db.tags.onRemoveElements,
                 listener)

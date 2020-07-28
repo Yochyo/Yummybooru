@@ -58,6 +58,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
         private const val LAST_VERSION = "lastVersion"
         private const val CURRENT_SERVER = "currentServer"
         private const val SAVE_PATH = "savePath"
+        private const val PRELOAD_IMAGES = "preloaded_pictures"
 
         private var instance: Database? = null
         fun getDatabase(context: Context): Database {
@@ -133,6 +134,9 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     var downloadWebm: Boolean
         get() = getPreference(DOWNLOAD_WEBM, true)
         set(value) = setPreference(DOWNLOAD_WEBM, value)
+    var preloadedImages: Int
+        get() = getPreference(PRELOAD_IMAGES, 1)
+        set(value) = setPreference(PRELOAD_IMAGES, value)
 
     private var _savePathTested = false
 

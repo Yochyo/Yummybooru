@@ -77,6 +77,7 @@ class PictureActivity : AppCompatActivity() {
             tagRecyclerView.layoutManager = LinearLayoutManager(this@PictureActivity)
             with(view_pager) {
                 adapter = PictureAdapter(this@PictureActivity, m).apply { this@PictureActivity.pictureAdapter = this }
+                this.offscreenPageLimit = db.preloadedImages
                 m.posts.registerOnUpdateListener(managerListener)
                 currentItem = m.position
                 this@PictureActivity.pictureAdapter.updatePosts(m.posts)

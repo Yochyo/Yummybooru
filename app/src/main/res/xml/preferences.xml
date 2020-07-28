@@ -1,51 +1,57 @@
-<androidx.preference.PreferenceScreen
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <androidx.preference.Preference
+        android:enabled="true"
         android:key="savePath"
         android:title="Save path"
-        android:enabled="true"
         app:allowDividerAbove="true"
-        app:allowDividerBelow="true"/>
+        app:allowDividerBelow="true" />
     <androidx.preference.SwitchPreference
+        android:defaultValue="true"
         android:key="downloadOriginal"
-        android:title="Download extra large picture"
         android:summary="Large pictures take longer to download"
-        android:defaultValue="true"
-        app:allowDividerAbove="true"/>
+        android:title="Download extra large picture"
+        app:allowDividerAbove="true" />
     <androidx.preference.SwitchPreference
-        android:key="downloadWebm"
-        android:title="Download ugoira as webm"
-        android:summary="Download as webm instead of zip"
         android:defaultValue="true"
-        app:allowDividerBelow="true"/>
+        android:key="downloadWebm"
+        android:summary="Download as webm instead of zip"
+        android:title="Download ugoira as webm"
+        app:allowDividerBelow="true" />
     <androidx.preference.ListPreference
-        android:key="limit"
-        android:title="Post per page"
-        android:summary="More posts can cause longer loading times."
         android:defaultValue="30"
         android:entries="@array/post_limit"
         android:entryValues="@array/post_limit"
-        app:allowDividerAbove="true"
-        app:allowDividerBelow="true"/>
+        android:key="limit"
+        android:summary="More posts can cause longer loading times."
+        android:title="Post per page"
+        app:allowDividerAbove="true" />
+    <androidx.preference.ListPreference
+        android:key="preloaded_pictures"
+        android:entries="@array/preloaded_images_entries"
+        android:entryValues="@array/preloaded_images_entries_values"
+        android:defaultValue="1"
+        android:title="Preload large images"
+        android:summary="Loads images left/right of the current image"
+        app:allowDividerBelow="true" />
     <androidx.preference.Preference
+        android:enabled="true"
         android:key="create_backup"
         android:title="Create Backup"
-        android:enabled="true"
-        app:allowDividerAbove="true"/>
+        app:allowDividerAbove="true" />
     <androidx.preference.Preference
+        android:enabled="true"
         android:key="restore_backup"
         android:title="Restore backup"
-        android:enabled="true"
-        app:allowDividerBelow="true"/>
+        app:allowDividerBelow="true" />
     <androidx.preference.Preference
+        android:enabled="true"
         android:key="updates"
         android:title="Check updates"
-        android:enabled="true"
-        app:allowDividerAbove="true"/>
+        app:allowDividerAbove="true" />
     <androidx.preference.Preference
+        android:enabled="true"
         android:key="changelogs"
-        android:title="Show Changelogs"
-        android:enabled="true"/>
+        android:title="Show Changelogs" />
 </androidx.preference.PreferenceScreen>

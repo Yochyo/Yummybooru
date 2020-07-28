@@ -26,6 +26,8 @@ import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.layout.activities.SettingsActivity
+import de.yochyo.yummybooru.layout.activities.fragments.interfaces.IFragmentWithContainer
+import de.yochyo.yummybooru.layout.activities.fragments.interfaces.OnBackPress
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
 import de.yochyo.yummybooru.layout.activities.subscriptionactivity.SubscriptionActivity
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog

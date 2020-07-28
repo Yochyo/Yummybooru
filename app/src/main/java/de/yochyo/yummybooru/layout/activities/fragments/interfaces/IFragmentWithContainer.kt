@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout.activities.fragments
+package de.yochyo.yummybooru.layout.activities.fragments.interfaces
 
 import android.view.ViewGroup
 

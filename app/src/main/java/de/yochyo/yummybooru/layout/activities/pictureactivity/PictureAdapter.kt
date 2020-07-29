@@ -57,46 +57,41 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
 
     private fun createView(post: Post, position: Int): View {
         var lastSwipeUp = 0L
+        fun onFlingUp(): Boolean{
+            val time = System.currentTimeMillis()
+            val p = m.posts.elementAt(position)
+            if (time - lastSwipeUp > 400L) { //download
+                downloadImage(activity, p)
+                val snack = Snackbar.make(activity.view_pager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT)
+                snack.show()
+                GlobalScope.launch(Dispatchers.Main) {
+                    delay(150)
+                    snack.dismiss()
+                }
+            } else { //double swipe
+                GlobalScope.launch {
+                    for (tag in p.tags.filter { it.type == Tag.ARTIST })
+                        db.tags += tag.toBooruTag(activity)
+                }
+            }
+            lastSwipeUp = time
+            return true
+        }
+        fun onFlipDown(): Boolean{
+            activity.finish()
+            return true
+        }
 
         fun forImage(): View {
             val view = PhotoView(activity)
             view.setAllowParentInterceptOnEdge(true)
-            view.setOnSingleFlingListener(object : OnSingleFlingListener {
-
-                fun onFlingUp(position: Int) {
-                    val time = System.currentTimeMillis()
-                    val p = m.posts.elementAt(position)
-                    if (time - lastSwipeUp > 400L) { //download
-                        downloadImage(activity, p)
-                        val snack = Snackbar.make(activity.view_pager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT)
-                        snack.show()
-                        GlobalScope.launch(Dispatchers.Main) {
-                            delay(150)
-                            snack.dismiss()
-                        }
-                    } else { //double swipe
-                        GlobalScope.launch {
-                            for (tag in p.tags.filter { it.type == Tag.ARTIST })
-                                db.tags += tag.toBooruTag(activity)
-                        }
-                    }
-                    lastSwipeUp = time
+            view.setOnSingleFlingListener { e1, e2, velocityX, velocityY ->
+                when (GestureListener.getDirection(e1, e2)) {
+                    GestureListener.Direction.DOWN -> onFlipDown()
+                    GestureListener.Direction.UP -> onFlingUp()
+                    else -> false
                 }
-
-                override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-                    return when (GestureListener.getDirection(e1, e2)) {
-                        GestureListener.Direction.DOWN -> {
-                            activity.finish()
-                            true
-                        }
-                        GestureListener.Direction.UP -> {
-                            onFlingUp(position)
-                            true
-                        }
-                        else -> return false
-                    }
-                }
-            })
+            }
             GlobalScope.launch {
                 try {
                     val preview = activity.cache.getCachedFile(activity.preview(post.id))
@@ -122,30 +117,8 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
             val detector = GestureDetector(activity, object : GestureListener() {
                 override fun onSwipe(direction: Direction): Boolean {
                     return when (direction) {
-                        Direction.UP -> {
-                            val time = System.currentTimeMillis()
-                            val p = m.posts.elementAt(position)
-                            if (time - lastSwipeUp > 400L) { //download
-                                downloadImage(activity, p)
-                                val snack = Snackbar.make(activity.view_pager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT)
-                                snack.show()
-                                GlobalScope.launch(Dispatchers.Main) {
-                                    delay(150)
-                                    snack.dismiss()
-                                }
-                            } else { //double swipe
-                                GlobalScope.launch {
-                                    for (tag in p.tags.filter { it.type == Tag.ARTIST })
-                                        db.tags += tag.toBooruTag(activity)
-                                }
-                            }
-                            lastSwipeUp = time
-                            true
-                        }
-                        Direction.DOWN -> {
-                            activity.finish()
-                            true
-                        }
+                        Direction.UP -> onFlingUp()
+                        Direction.DOWN -> onFlipDown()
                         else -> false
                     }
                 }
@@ -155,12 +128,10 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
             return layout
         }
 
-        val view = when (Resource.typeFromMimeType(post.fileSampleURL.mimeType ?: "")) {
+        return when (Resource.typeFromMimeType(post.fileSampleURL.mimeType ?: "")) {
             Resource.VIDEO -> forVideo()
             else -> forImage()
         }
-
-        return view
     }
 
     override fun destroyItem(container: ViewGroup, position: Int, obj: Any) {

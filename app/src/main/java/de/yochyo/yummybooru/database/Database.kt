@@ -39,7 +39,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
             else super.remove(element)
         }
     }
-    val tags = object : ObservingEventCollection<Tag, Int>(TreeSet<Tag>()) {
+    val tags = object : ObservingEventCollection<Tag, Int>(TreeSet()) {
         override fun add(element: Tag): Boolean {
             var isContained = false
             if (contains(element)) isContained = true
@@ -53,8 +53,6 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     }
 
     companion object {
-
-
         private var instance: Database? = null
         fun getDatabase(context: Context): Database {
             if (instance == null) {

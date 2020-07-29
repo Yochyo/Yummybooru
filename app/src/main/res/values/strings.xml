@@ -19,28 +19,6 @@
     </string>
 
     <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
-    <string-array name="post_limit">
-        <item>30</item>
-        <item>50</item>
-        <item>100</item>
-        <item>150</item>
-        <item>200</item>
-    </string-array>
-
-    <string-array name="preloaded_images_entries">
-        <item>0</item>
-        <item>1 (Default)</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-    </string-array>
-    <integer-array name="preloaded_images_entries_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-    </integer-array>
 
    <string-array name="tag_filter">
        <item>:</item>
@@ -49,7 +27,26 @@
        <item>:&lt;</item>
        <item>:&lt;=</item>
    </string-array>
-    <string name="save">Save</string>
+
+    <string-array name="post_limit">
+        <item>30</item>
+        <item>50</item>
+        <item>100</item>
+        <item>150</item>
+        <item>200</item>
+    </string-array>
+
+    <string name="page_size">page_size_string</string>
+    <string name="downloadWebm">downloadWebm</string>
+    <string name="downloadOriginal">downloadOriginal</string>
+    <string name="lastVersion">lastVersion</string>
+    <string name="currentServer">currentServer</string>
+    <string name="savePath">savePath</string>
+    <string name="preloaded_large_pictures">preloaded_large_pictures</string>
+    <string name="click_to_move_to_next_image">click_to_move_to_next_image</string>
+
+
+
     <string name="update_last_id">Update last id?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>

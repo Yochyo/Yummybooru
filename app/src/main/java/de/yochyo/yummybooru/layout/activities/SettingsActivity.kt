@@ -29,7 +29,6 @@ class SettingsActivity : AppCompatActivity() {
                 .commit()
     }
 
-
 }
 
 class MySettingsFragment : PreferenceFragmentCompat() {
@@ -38,6 +37,7 @@ class MySettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
+        preferenceManager.sharedPreferencesName = "default"
         setSavePathSummary()
     }
 
@@ -78,7 +78,7 @@ class MySettingsFragment : PreferenceFragmentCompat() {
                 requireContext().db.saveFolder = file!!
                 setSavePathSummary()
             }
-            if (requestCode == RESTORE_DATA_CODE) { //Daten wiederherstellen
+            if (requestCode == RESTORE_DATA_CODE) {
                 val stream = requireContext().contentResolver.openInputStream(data.data!!)
                 GlobalScope.launch(Dispatchers.IO) {
                     val bytes = stream!!.readBytes()

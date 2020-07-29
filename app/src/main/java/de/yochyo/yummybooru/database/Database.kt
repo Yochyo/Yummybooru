@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.eventcollection.observablecollection.ObservingEventCollection
 import de.yochyo.yummybooru.BuildConfig
+import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.dao.ServerDao
@@ -52,13 +53,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     }
 
     companion object {
-        private const val LIMIT = "limit"
-        private const val DOWNLOAD_WEBM = "downloadWebm"
-        private const val DOWNLOAD_ORIGINAL = "downloadOriginal"
-        private const val LAST_VERSION = "lastVersion"
-        private const val CURRENT_SERVER = "currentServer"
-        private const val SAVE_PATH = "savePath"
-        private const val PRELOAD_IMAGES = "preloaded_pictures"
+
 
         private var instance: Database? = null
         fun getDatabase(context: Context): Database {
@@ -115,45 +110,35 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     }
 
     var limit: Int
-        get() = getPreference(LIMIT, 30)
-        set(value) = setPreference(LIMIT, value)
+        get() = getPreference(context.getString(R.string.page_size), "30").toInt()
+        set(value) = setPreference(context.getString(R.string.page_size), value.toString())
 
 
     var currentServerID: Int
-        get() = getPreference(CURRENT_SERVER, 30)
-        set(value) = setPreference(CURRENT_SERVER, value)
+        get() = getPreference(context.getString(R.string.currentServer), 30)
+        set(value) = setPreference(context.getString(R.string.currentServer), value)
 
     var lastVersion: Int
-        get() = getPreference(LAST_VERSION, BuildConfig.VERSION_CODE)
-        set(value) = setPreference(LAST_VERSION, value)
+        get() = getPreference(context.getString(R.string.lastVersion), BuildConfig.VERSION_CODE)
+        set(value) = setPreference(context.getString(R.string.lastVersion), value)
 
     var downloadOriginal: Boolean
-        get() = getPreference(DOWNLOAD_ORIGINAL, true)
-        set(value) = setPreference(DOWNLOAD_ORIGINAL, value)
+        get() = getPreference(context.getString(R.string.downloadOriginal), true)
+        set(value) = setPreference(context.getString(R.string.downloadOriginal), value)
 
     var downloadWebm: Boolean
-        get() = getPreference(DOWNLOAD_WEBM, true)
-        set(value) = setPreference(DOWNLOAD_WEBM, value)
+        get() = getPreference(context.getString(R.string.downloadWebm), true)
+        set(value) = setPreference(context.getString(R.string.downloadWebm), value)
     var preloadedImages: Int
-        get() = getPreference(PRELOAD_IMAGES, 1)
-        set(value) = setPreference(PRELOAD_IMAGES, value)
+        get() = getPreference(context.getString(R.string.preloaded_large_pictures), 1)
+        set(value) = setPreference(context.getString(R.string.preloaded_large_pictures), value)
+    var clickToMoveToNextPicture: Boolean
+        get() = getPreference(context.getString(R.string.click_to_move_to_next_image), false)
+        set(value) = setPreference(context.getString(R.string.click_to_move_to_next_image), value)
 
-    private var _savePathTested = false
-
-    var saveFolder: DocumentFile = documentFile(context, getPreference(SAVE_PATH, createDefaultSavePath())!!)
-        get() {
-            if (!_savePathTested) {
-                _savePathTested = true
-                if (!field.exists()) {
-                    field = documentFile(context, createDefaultSavePath())
-                }
-            }
-            return field
-        }
-        set(value) {
-            field = value
-            setPreference(SAVE_PATH, value.uri.toString())
-        }
+    var saveFolder: DocumentFile
+        get() = documentFile(context, getPreference(context.getString(R.string.savePath), createDefaultSavePath()))
+        set(value) = setPreference(context.getString(R.string.savePath), value.uri.toString())
 
     suspend fun deleteEverything() {
         withContext(Dispatchers.Default) {
@@ -174,7 +159,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
         }
     }
 
-    private fun getPreference(name: String, default: String? = null) = prefs.getString(name, default)
+    private fun getPreference(name: String, default: String) = prefs.getString(name, default)!!
     private fun getPreference(name: String, default: Int = 0) = prefs.getInt(name, default)
     private fun getPreference(name: String, default: Boolean = false) = prefs.getBoolean(name, default)
     private fun setPreference(name: String, value: String) = with(prefs.edit()) {

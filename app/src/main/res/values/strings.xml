@@ -47,6 +47,7 @@
 
 
 
+    <string name="save">Save</string>
     <string name="update_last_id">Update last id?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>

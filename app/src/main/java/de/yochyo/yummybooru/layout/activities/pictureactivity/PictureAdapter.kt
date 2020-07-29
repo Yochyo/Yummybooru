@@ -57,7 +57,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
 
     private fun createView(post: Post, position: Int): View {
         var lastSwipeUp = 0L
-        fun onFlingUp(): Boolean{
+        fun onFlingUp(): Boolean {
             val time = System.currentTimeMillis()
             val p = m.posts.elementAt(position)
             if (time - lastSwipeUp > 400L) { //download
@@ -77,7 +77,8 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
             lastSwipeUp = time
             return true
         }
-        fun onFlipDown(): Boolean{
+
+        fun onFlipDown(): Boolean {
             activity.finish()
             return true
         }
@@ -112,7 +113,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
             val view = MediaView(activity)
             layout.addView(view)
             view.setVideoPath(post.fileSampleURL)
-            if (m.position == position) view.resume() //if first page is video, it would not play
+            if (m.position == position) view.resume() //video wouldn't start if the first (the visible one after starting the activity) post is a video
 
             val detector = GestureDetector(activity, object : GestureListener() {
                 override fun onSwipe(direction: Direction): Boolean {

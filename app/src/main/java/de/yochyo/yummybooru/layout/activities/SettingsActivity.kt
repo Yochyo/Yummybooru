@@ -36,8 +36,8 @@ class MySettingsFragment : PreferenceFragmentCompat() {
     private val RESTORE_DATA_CODE = 2
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        setPreferencesFromResource(R.xml.preferences, rootKey)
         preferenceManager.sharedPreferencesName = "default"
+        setPreferencesFromResource(R.xml.preferences, rootKey)
         setSavePathSummary()
     }
 

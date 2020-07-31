@@ -1,10 +1,12 @@
 package de.yochyo.yummybooru.layout.activities.pictureactivity
 
-import android.view.*
+import android.view.GestureDetector
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
 import android.widget.LinearLayout
-import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.PagerAdapter
-import com.github.chrisbanes.photoview.OnSingleFlingListener
+import androidx.viewpager.widget.ViewPager
 import com.github.chrisbanes.photoview.PhotoView
 import com.google.android.material.snackbar.Snackbar
 import de.yochyo.booruapi.objects.Post
@@ -16,13 +18,12 @@ import de.yochyo.yummybooru.layout.views.mediaview.MediaView
 import de.yochyo.yummybooru.utils.ManagerWrapper
 import de.yochyo.yummybooru.utils.general.*
 import de.yochyo.yummybooru.utils.network.download
-import kotlinx.android.synthetic.main.content_picture.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : PagerAdapter() {
+class PictureAdapter(val activity: PictureActivity, val viewPager: ViewPager, val m: ManagerWrapper) : PagerAdapter() {
     private val db = activity.db
 
     private var size = m.posts.size
@@ -62,7 +63,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
             val p = m.posts.elementAt(position)
             if (time - lastSwipeUp > 400L) { //download
                 downloadImage(activity, p)
-                val snack = Snackbar.make(activity.view_pager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT)
+                val snack = Snackbar.make(viewPager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT)
                 snack.show()
                 GlobalScope.launch(Dispatchers.Main) {
                     delay(150)
@@ -83,6 +84,11 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
             return true
         }
 
+        fun onClick() {
+            if (db.clickToMoveToNextPicture)
+                viewPager.currentItem = position + 1
+        }
+
         fun forImage(): View {
             val view = PhotoView(activity)
             view.setAllowParentInterceptOnEdge(true)
@@ -93,6 +99,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
                     else -> false
                 }
             }
+            view.setOnClickListener { onClick() }
             GlobalScope.launch {
                 try {
                     val preview = activity.cache.getCachedFile(activity.preview(post.id))
@@ -125,7 +132,7 @@ class PictureAdapter(val activity: AppCompatActivity, val m: ManagerWrapper) : P
                 }
             })
             layout.setOnTouchListener { _, event -> detector.onTouchEvent(event) }
-
+            layout.setOnClickListener { onClick() }
             return layout
         }
 

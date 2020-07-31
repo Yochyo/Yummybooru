@@ -76,7 +76,7 @@ class PictureActivity : AppCompatActivity() {
             tagInfoAdapter = TagInfoAdapter(this@PictureActivity).apply { tagRecyclerView.adapter = this }
             tagRecyclerView.layoutManager = LinearLayoutManager(this@PictureActivity)
             with(view_pager) {
-                adapter = PictureAdapter(this@PictureActivity, m).apply { this@PictureActivity.pictureAdapter = this }
+                adapter = PictureAdapter(this@PictureActivity, this, m).apply { this@PictureActivity.pictureAdapter = this }
                 this.offscreenPageLimit = db.preloadedImages
                 m.posts.registerOnUpdateListener(managerListener)
                 currentItem = m.position
@@ -104,7 +104,7 @@ class PictureActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         outState.putString("name", m.toString())
         outState.putInt("position", m.position)
-        outState.putInt("id", m.posts.get(if(m.position == -1) 0 else m.position).id)
+        outState.putInt("id", m.posts.get(if (m.position == -1) 0 else m.position).id)
     }
 
     private fun Post.updateCurrentTags(wasCurrentPosition: Int) {
@@ -113,8 +113,8 @@ class PictureActivity : AppCompatActivity() {
         tagInfoAdapter.updateInfoTags(emptyList())
         if (wasCurrentPosition == m.position) {
             tags.sortedWith(Comparator { o1, o2 ->
-                fun sortedType(type: Int): Int{
-                    return when(type){
+                fun sortedType(type: Int): Int {
+                    return when (type) {
                         Tag.ARTIST -> 0
                         Tag.COPYPRIGHT -> 1
                         Tag.CHARACTER -> 2
@@ -123,13 +123,14 @@ class PictureActivity : AppCompatActivity() {
                         else -> 5
                     }
                 }
+
                 val sortedType1 = sortedType(o1.type)
                 val sortedType2 = sortedType(o2.type)
-                if(sortedType1 == sortedType2) o1.name.compareTo(o2.name)
-                else sortedType1-sortedType2
+                if (sortedType1 == sortedType2) o1.name.compareTo(o2.name)
+                else sortedType1 - sortedType2
             })
             tagInfoAdapter.updateInfoTags(tags.sortedBy {
-                when(it.type){
+                when (it.type) {
                     Tag.ARTIST -> 0
                     Tag.COPYPRIGHT -> 1
                     Tag.CHARACTER -> 2
@@ -157,7 +158,7 @@ class PictureActivity : AppCompatActivity() {
                 if (post != null) {
                     val intent = Intent().apply {
                         action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_TEXT, if(post.extention == "zip" && db.downloadWebm) post.fileSampleURL else post.fileURL)
+                        putExtra(Intent.EXTRA_TEXT, if (post.extention == "zip" && db.downloadWebm) post.fileSampleURL else post.fileURL)
                         type = "text/plain"
                     }
                     startActivity(Intent.createChooser(intent, null))

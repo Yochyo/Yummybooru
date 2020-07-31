@@ -8,19 +8,19 @@
         app:allowDividerAbove="true"
         app:allowDividerBelow="true" />
     <androidx.preference.SwitchPreference
-        android:defaultValue="true"
+        android:defaultValue="@bool/downloadOriginal_default_value"
         android:key="@string/downloadOriginal"
         android:summary="Large pictures take longer to download"
         android:title="Download extra large picture"
         app:allowDividerAbove="true" />
     <androidx.preference.SwitchPreference
-        android:defaultValue="true"
+        android:defaultValue="@bool/downloadWebm_default_value"
         android:key="@string/downloadWebm"
         android:summary="Download as webm instead of zip"
         android:title="Download ugoira as webm"
         app:allowDividerBelow="true" />
     <androidx.preference.ListPreference
-        android:defaultValue="30"
+        android:defaultValue="@string/page_size_default_value"
         android:entries="@array/post_limit"
         android:entryValues="@array/post_limit"
         android:key="@string/page_size"
@@ -28,7 +28,7 @@
         android:title="Post per page"
         app:allowDividerAbove="true"/>
     <androidx.preference.SeekBarPreference
-        android:defaultValue="1"
+        android:defaultValue="@integer/preloaded_large_pictures_default_value"
         android:key="@string/preloaded_large_pictures"
         android:max="5"
         android:summary="Loads images left/right of the current image"
@@ -37,7 +37,7 @@
         app:min="0"
         app:showSeekBarValue="true" />
     <androidx.preference.SwitchPreference
-        android:defaultValue="false"
+        android:defaultValue="@bool/click_to_move_to_next_image_default_value"
         android:key="@string/click_to_move_to_next_image"
         android:summary="Allows you to click instead of having to swipe left"
         android:title="Click for next image"

@@ -108,12 +108,12 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     }
 
     var limit: Int
-        get() = getPreference(context.getString(R.string.page_size), "30").toInt()
+        get() = getPreference(context.getString(R.string.page_size), context.getString(R.string.page_size_default_value)).toInt()
         set(value) = setPreference(context.getString(R.string.page_size), value.toString())
 
 
     var currentServerID: Int
-        get() = getPreference(context.getString(R.string.currentServer), 30)
+        get() = getPreference(context.getString(R.string.currentServer), 0)
         set(value) = setPreference(context.getString(R.string.currentServer), value)
 
     var lastVersion: Int
@@ -121,17 +121,17 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
         set(value) = setPreference(context.getString(R.string.lastVersion), value)
 
     var downloadOriginal: Boolean
-        get() = getPreference(context.getString(R.string.downloadOriginal), true)
+        get() = getPreference(context.getString(R.string.downloadOriginal), context.resources.getBoolean(R.bool.downloadOriginal_default_value))
         set(value) = setPreference(context.getString(R.string.downloadOriginal), value)
 
     var downloadWebm: Boolean
-        get() = getPreference(context.getString(R.string.downloadWebm), true)
+        get() = getPreference(context.getString(R.string.downloadWebm), context.resources.getBoolean(R.bool.downloadWebm_default_value))
         set(value) = setPreference(context.getString(R.string.downloadWebm), value)
     var preloadedImages: Int
-        get() = getPreference(context.getString(R.string.preloaded_large_pictures), 1)
+        get() = getPreference(context.getString(R.string.preloaded_large_pictures), context.resources.getInteger(R.integer.preloaded_large_pictures_default_value))
         set(value) = setPreference(context.getString(R.string.preloaded_large_pictures), value)
     var clickToMoveToNextPicture: Boolean
-        get() = getPreference(context.getString(R.string.click_to_move_to_next_image), false)
+        get() = getPreference(context.getString(R.string.click_to_move_to_next_image), context.resources.getBoolean(R.bool.click_to_move_to_next_image_default_value))
         set(value) = setPreference(context.getString(R.string.click_to_move_to_next_image), value)
 
     var saveFolder: DocumentFile

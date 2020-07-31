@@ -45,6 +45,11 @@
     <string name="preloaded_large_pictures">preloaded_large_pictures</string>
     <string name="click_to_move_to_next_image">click_to_move_to_next_image</string>
 
+    <string name="page_size_default_value">30</string>
+    <bool name="downloadWebm_default_value">true</bool>
+    <bool name="downloadOriginal_default_value">true</bool>
+    <integer name="preloaded_large_pictures_default_value">1</integer>
+    <bool name="click_to_move_to_next_image_default_value">true</bool>
 
 
     <string name="save">Save</string>

@@ -17,7 +17,7 @@ class CacheableDownloader(max: Int) {
         }
     }
 
-    fun download(url: String, id: String, callback: suspend (e: Resource) -> Unit) = dl.download(url, callback, id)
+    fun download(url: String, callback: suspend (e: Resource) -> Unit) = dl.download(url, callback, url.mimeType ?: "")
     fun download(context: Context, url: String, id: String, callback: suspend (e: Resource) -> Unit, downloadFirst: Boolean = false, cacheFile: Boolean = false) {
         suspend fun doAfter(res: Resource?) {
             if (res != null) {

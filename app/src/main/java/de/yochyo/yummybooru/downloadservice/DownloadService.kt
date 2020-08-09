@@ -67,7 +67,7 @@ class DownloadService : Service() {
         while (pair != null) {
             val finalPair = pair
             val (url, _) = getDownloadPathAndId(this@DownloadService, pair.first)
-            downloader.download(url, "") {
+            downloader.download(url) {
                 FileUtils.writeFile(this@DownloadService, finalPair.first, it, finalPair.second.server, SafeFileEvent.SILENT)
                 withContext(Dispatchers.Main) {
                     updateNotification(finalPair.second)

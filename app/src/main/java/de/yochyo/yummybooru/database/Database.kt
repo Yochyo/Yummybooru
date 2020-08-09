@@ -133,6 +133,9 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     var clickToMoveToNextPicture: Boolean
         get() = getPreference(context.getString(R.string.click_to_move_to_next_image), context.resources.getBoolean(R.bool.click_to_move_to_next_image_default_value))
         set(value) = setPreference(context.getString(R.string.click_to_move_to_next_image), value)
+    var parallelBackgroundDownloads: Int
+        get() = getPreference(context.getString(R.string.parallel_background_downloads), context.resources.getInteger(R.integer.parallel_background_downloads_default_value))
+        set(value) = setPreference(context.getString(R.string.parallel_background_downloads), value)
 
     var saveFolder: DocumentFile
         get() = documentFile(context, getPreference(context.getString(R.string.savePath), createDefaultSavePath()))

@@ -8,25 +8,19 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import de.yochyo.booruapi.manager.IManager
 import de.yochyo.booruapi.objects.Post
-import de.yochyo.downloader.RegulatingDownloader
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.entities.Resource
 import de.yochyo.yummybooru.api.entities.Server
+import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SafeFileEvent
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.getDownloadPathAndId
-import de.yochyo.yummybooru.utils.general.mimeType
+import de.yochyo.yummybooru.utils.network.CacheableDownloader
 import kotlinx.coroutines.*
-import java.io.InputStream
 import java.util.*
 
 class DownloadService : Service() {
-    private val downloader = object : RegulatingDownloader<Resource>(1) {
-        override fun toResource(inputStream: InputStream, context: Any): Resource {
-            return Resource(inputStream.readBytes(), context as String)
-        }
-    }
+    private val downloader = CacheableDownloader(db.parallelBackgroundDownloads)
 
     var job: Job? = null
     lateinit var notificationManager: NotificationManagerCompat
@@ -56,12 +50,11 @@ class DownloadService : Service() {
 
         startForeground(1, notificationBuilder.build())
         job = GlobalScope.launch(Dispatchers.IO) {
-            var pair = getNextElement()
-            while (pair != null && isActive) {
-                val (url, _) = getDownloadPathAndId(this@DownloadService, pair.first)
-                val image = downloader.downloadSync(url, url.mimeType ?: "")
-                if (image != null) FileUtils.writeFile(this@DownloadService, pair.first, image, pair.second, SafeFileEvent.SILENT)
-                pair = getNextElement()
+
+            downloadPosts()
+            while (downloader.dl.activeCoroutines > 0) {
+                delay(2000)
+                downloadPosts()
             }
             totalItemCount = 0
             currentItem = 0
@@ -69,20 +62,28 @@ class DownloadService : Service() {
         }
     }
 
-    private suspend fun getNextElement(): Pair<Post, Server>? {
+    suspend fun downloadPosts() {
+        var pair = getNextElement()
+        while (pair != null) {
+            val finalPair = pair
+            val (url, _) = getDownloadPathAndId(this@DownloadService, pair.first)
+            downloader.download(url, "") {
+                FileUtils.writeFile(this@DownloadService, finalPair.first, it, finalPair.second.server, SafeFileEvent.SILENT)
+                withContext(Dispatchers.Main) {
+                    updateNotification(finalPair.second)
+                }
+            }
+            pair = getNextElement()
+        }
+    }
+
+    private suspend fun getNextElement(): Pair<Post, Posts>? {
         if (downloadPosts.isNotEmpty()) {
             val posts = downloadPosts[0]
             return if (posts.posts.size > position) {
                 val post = posts.posts[position]
-                withContext(Dispatchers.Main) {
-                    notificationBuilder.setContentTitle("Downloading $currentItem/${totalItemCount}")
-                    notificationBuilder.setContentText(posts.tags)
-                    notificationBuilder.setProgress(totalItemCount, currentItem, false)
-                    notificationManager.notify(1, notificationBuilder.build())
-                }
                 ++position
-                ++currentItem
-                Pair(post, posts.server)
+                Pair(post, posts)
             } else {
                 position = 0
                 downloadPosts.removeAt(0)
@@ -90,6 +91,16 @@ class DownloadService : Service() {
             }
         }
         return null
+    }
+
+    private suspend fun updateNotification(posts: Posts) {
+        withContext(Dispatchers.Main) {
+            notificationBuilder.setContentTitle("Downloading $currentItem/${totalItemCount}")
+            notificationBuilder.setContentText(posts.tags)
+            notificationBuilder.setProgress(totalItemCount, currentItem, false)
+            notificationManager.notify(1, notificationBuilder.build())
+        }
+        ++currentItem
     }
 
 

@@ -10,13 +10,14 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.InputStream
 
-class CacheableDownloader(maxThreads: Int) {
-    val dl = object : RegulatingDownloader<Resource>(maxThreads) {
+class CacheableDownloader(max: Int) {
+    val dl = object : RegulatingDownloader<Resource>(max) {
         override fun toResource(inputStream: InputStream, context: Any): Resource {
             return Resource(inputStream.readBytes(), context as String)
         }
     }
 
+    fun download(url: String, id: String, callback: suspend (e: Resource) -> Unit) = dl.download(url, callback, id)
     fun download(context: Context, url: String, id: String, callback: suspend (e: Resource) -> Unit, downloadFirst: Boolean = false, cacheFile: Boolean = false) {
         suspend fun doAfter(res: Resource?) {
             if (res != null) {
@@ -40,6 +41,6 @@ class CacheableDownloader(maxThreads: Int) {
     }
 }
 
-val downloader = CacheableDownloader(5)
+val downloader = CacheableDownloader(10)
 fun download(context: Context, url: String, id: String, callback: suspend (e: Resource) -> Unit, downloadFirst: Boolean = false, cacheFile: Boolean = false) = downloader.download(context, url, id, callback, downloadFirst, cacheFile)
 

@@ -9,25 +9,28 @@ import androidx.core.app.NotificationManagerCompat
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Resource
+import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.network.CacheableDownloader
 import kotlinx.coroutines.*
+import java.util.*
 
+private typealias Download = Triple<String, String, suspend (e: Resource) -> Unit>
 class InAppDownloadService : Service() {
+    private val downloader = CacheableDownloader(db.parallelBackgroundDownloads)
 
     var job: Job? = null
     lateinit var notificationManager: NotificationManagerCompat
     lateinit var notificationBuilder: NotificationCompat.Builder
 
     companion object {
-        private val downloader = CacheableDownloader(2)
+        private val downloads = LinkedList<Download>()
         fun startService(context: Context, url: String, id: String, callback: suspend (e: Resource) -> Unit) {
-            downloader.download(context, url, id, callback)
+            downloads += Download(url, id, callback)
             context.startService(Intent(context, InAppDownloadService::class.java))
         }
-
     }
 
     override fun onCreate() {
@@ -37,9 +40,14 @@ class InAppDownloadService : Service() {
                 .setOngoing(true).setLocalOnly(true)
         startForeground(2, notificationBuilder.build())
         job = GlobalScope.launch(Dispatchers.IO) {
-            while (downloader.dl.activeCoroutines > 0) {
+            do{
+                while(downloads.isNotEmpty()){
+                    val dl = downloads.removeFirst()
+                    downloader.download(this@InAppDownloadService, dl.first, dl.second, dl.third)
+                }
                 delay(5000)
-            }
+            } while (downloader.dl.activeCoroutines > 0)
+
             stopSelf()
         }
     }

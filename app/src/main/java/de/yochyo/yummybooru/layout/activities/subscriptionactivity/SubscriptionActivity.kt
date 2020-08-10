@@ -142,7 +142,6 @@ class SubscriptionActivity : AppCompatActivity() {
                             val tagInDb = db.getTag(tag.name)
                             tagInDb?.sub = Sub(id, tag.count)
                         }
-                        println("done with ${tag?.name}")
                     }
                 }
             }

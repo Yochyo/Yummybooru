@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.layout.activities.mainactivity.start
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.utils.general.ctx

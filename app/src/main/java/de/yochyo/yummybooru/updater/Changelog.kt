@@ -3,7 +3,6 @@ package de.yochyo.yummybooru.updater
 import android.content.Context
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.layout.activities.mainactivity.start
 import de.yochyo.yummybooru.layout.alertdialogs.ShowChangelogsDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

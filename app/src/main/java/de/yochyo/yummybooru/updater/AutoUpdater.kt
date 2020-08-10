@@ -9,7 +9,6 @@ import androidx.core.content.FileProvider
 import de.yochyo.utils.DownloadUtils
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.layout.activities.mainactivity.start
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.configPath

@@ -20,7 +20,6 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SelectServerEvent
-import de.yochyo.yummybooru.layout.activities.mainactivity.start
 import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
@@ -33,7 +32,7 @@ import kotlinx.coroutines.withContext
 
 private typealias OnSearch = (tags: List<String>) -> Unit
 
-class TagHistoryFragment(var onSearchButtonClick: OnSearch = {}) : Fragment() {
+class TagHistoryFragment(var onSearchButtonClick: OnSearch) : Fragment() {
     private var filteringTagList: FilteringEventCollection<Tag, Int>? = null
 
 

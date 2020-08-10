@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.layout.activities.mainactivity.start
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.utils.general.ctx
@@ -31,25 +32,34 @@ class ServerListViewFragment : Fragment() {
         val serverRecyclerView = layout.findViewById<RecyclerView>(R.id.server_recycler_view)
         serverRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         serverAdapter = ServerAdapter().apply { serverRecyclerView.adapter = this }
-        ctx.db.servers.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.notifyDataSetChanged() } }
+        GlobalScope.launch {
+            ctx.db.servers.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.update(it.collection) } }
+        }
         return layout
     }
 
     inner class ServerAdapter : RecyclerView.Adapter<ServerViewHolder>() {
-        override fun getItemCount(): Int = ctx.db.servers.size
+        var servers: Collection<Server> = emptyList()
+        override fun getItemCount(): Int = servers.size
 
         override fun onCreateViewHolder(parent: ViewGroup, position: Int): ServerViewHolder {
-            val holder = ServerViewHolder((LayoutInflater.from(context).inflate(R.layout.server_item_layout, parent, false) as LinearLayout))
+            val holder = ServerViewHolder((LayoutInflater.from(context).inflate(R.layout.server_item_layout, parent, false) as LinearLayout),
+            servers.elementAt(position))
             holder.layout.setOnClickListener(holder)
             holder.layout.setOnLongClickListener(holder)
             return holder
         }
 
         override fun onBindViewHolder(holder: ServerViewHolder, position: Int) {
-            val server = ctx.db.servers.elementAt(position)
+            val server = servers.elementAt(position)
+            holder.server = server
             fillServerLayoutFields(holder.layout, server, server.isSelected(ctx))
         }
 
+        fun update(s: Collection<Server>){
+            servers = s
+            notifyDataSetChanged()
+        }
 
         fun fillServerLayoutFields(layout: LinearLayout, server: Server, isSelected: Boolean = false) {
             val text1 = layout.findViewById<TextView>(R.id.server_text1)
@@ -62,10 +72,9 @@ class ServerListViewFragment : Fragment() {
 
     }
 
-    inner class ServerViewHolder(val layout: LinearLayout) : RecyclerView.ViewHolder(layout), View.OnClickListener, View.OnLongClickListener {
+    inner class ServerViewHolder(val layout: LinearLayout, var server: Server) : RecyclerView.ViewHolder(layout), View.OnClickListener, View.OnLongClickListener {
 
         override fun onClick(v: View?) {
-            val server = ctx.db.servers.elementAt(adapterPosition)
             GlobalScope.launch(Dispatchers.Main) {
                 ctx.db.loadServer(server)
                 serverAdapter.notifyDataSetChanged()
@@ -73,7 +82,6 @@ class ServerListViewFragment : Fragment() {
         }
 
         override fun onLongClick(v: View?): Boolean {
-            val server = ctx.db.servers.elementAt(adapterPosition)
             longClickDialog(server)
             return true
         }

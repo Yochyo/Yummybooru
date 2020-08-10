@@ -1,43 +1,51 @@
 package de.yochyo.yummybooru.layout.activities.mainactivity
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import de.yochyo.eventcollection.events.OnRemoveElementsEvent
-import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.layout.activities.fragments.MainDrawerFragment
+import de.yochyo.yummybooru.layout.activities.SettingsActivity
 import de.yochyo.yummybooru.layout.activities.fragments.ServerListViewFragment
+import de.yochyo.yummybooru.layout.activities.fragments.TagHistoryFragment
+import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
+import de.yochyo.yummybooru.layout.activities.subscriptionactivity.SubscriptionActivity
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
-import de.yochyo.yummybooru.utils.GlobalListeners
 import de.yochyo.yummybooru.utils.general.cache
-import kotlinx.android.synthetic.main.main_drawer_fragment.*
+import de.yochyo.yummybooru.utils.general.toTagString
+import kotlinx.android.synthetic.main.main_activity_layout.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+var start: Long = 0
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var mainDrawerFragment: MainDrawerFragment
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        start = System.currentTimeMillis()
         super.onCreate(savedInstanceState)
-
         val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
         if (!hasPermission) ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 122)
-        setContentView(R.layout.empty_layout)
 
+
+        setContentView(R.layout.main_activity_layout)
+        configureToolbar()
         if (hasPermission)
             initData()
     }
@@ -51,18 +59,59 @@ class MainActivity : AppCompatActivity() {
 
 
     fun initData() {
-        GlobalScope.launch { cache.clearCache() }
-        mainDrawerFragment = MainDrawerFragment()
-        supportFragmentManager.beginTransaction().replace(R.id.container, mainDrawerFragment).commit()
-        mainDrawerFragment.withContainer { supportFragmentManager.beginTransaction().replace(it.id, ServerListViewFragment()).commit() }
-
+          supportFragmentManager.beginTransaction().replace(R.id.main_activity_container, ServerListViewFragment()).commit()
+         supportFragmentManager.beginTransaction().replace(R.id.main_activity_right_drawer_container, TagHistoryFragment {
+             drawer_layout.closeDrawer(GravityCompat.END)
+             PreviewActivity.startActivity(this, if (it.isEmpty()) "*" else it.toTagString())
+         }).commit()
         Changelog.showChangelogIfChanges(this)
         AutoUpdater().autoUpdate(this)
+        GlobalScope.launch { cache.clearCache() }
     }
 
+    private fun configureToolbar() {
+        setSupportActionBar(main_activity_toolbar)
+
+        val toggle = ActionBarDrawerToggle(this, drawer_layout, main_activity_toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+        drawer_layout.addDrawerListener(toggle)
+        toggle.syncState()
+        drawer_layout.findViewById<NavigationView>(R.id.nav_view).setNavigationItemSelectedListener(this)
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.nav_subs -> startActivity(Intent(this, SubscriptionActivity::class.java))
+            R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
+            R.id.community -> startActivity(Intent(Intent.ACTION_VIEW).apply { data = Uri.parse("https://discord.gg/tbGCHpF") })
+            R.id.nav_help -> Toast.makeText(this, getString(R.string.join_discord), Toast.LENGTH_SHORT).show()
+        }
+        drawer_layout.closeDrawer(GravityCompat.START)
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_add_server -> AddServerDialog {
+                GlobalScope.launch {
+                    db.servers += it
+                    withContext(Dispatchers.Main) { Snackbar.make(drawer_layout, "Add server [${it.name}]", Snackbar.LENGTH_SHORT).show() }
+                }
+            }.build(this)
+            R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
 
     override fun onBackPressed() {
-        if (!mainDrawerFragment.onBackPress()) super.onBackPressed()
+        when {
+            drawer_layout.isDrawerOpen(GravityCompat.START) -> drawer_layout.closeDrawer(GravityCompat.START)
+            drawer_layout.isDrawerOpen(GravityCompat.END) -> drawer_layout.closeDrawer(GravityCompat.END)
+        }
     }
 
     override fun onResume() {

@@ -3,7 +3,12 @@ package de.yochyo.yummybooru.updater
 import android.content.Context
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.layout.activities.mainactivity.start
 import de.yochyo.yummybooru.layout.alertdialogs.ShowChangelogsDialog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class Changelog(val versionName: String, val version: Int, val description: String) {
     companion object {

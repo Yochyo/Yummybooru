@@ -23,6 +23,7 @@ import de.yochyo.yummybooru.layout.activities.fragments.TagHistoryFragment
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
 import de.yochyo.yummybooru.layout.activities.subscriptionactivity.SubscriptionActivity
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
+import de.yochyo.yummybooru.layout.menus.SettingsNavView
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
 import de.yochyo.yummybooru.utils.general.cache
@@ -33,7 +34,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +43,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 
         setContentView(R.layout.main_activity_layout)
-        configureToolbar()
+        configureToolbarAndNavView(nav_view)
         if (hasPermission)
             initData()
     }
@@ -56,34 +57,36 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 
     fun initData() {
-          supportFragmentManager.beginTransaction().replace(R.id.main_activity_container, ServerListViewFragment()).commit()
-         supportFragmentManager.beginTransaction().replace(R.id.main_activity_right_drawer_container, TagHistoryFragment {
-             drawer_layout.closeDrawer(GravityCompat.END)
-             PreviewActivity.startActivity(this, if (it.isEmpty()) "*" else it.toTagString())
-         }).commit()
+        supportFragmentManager.beginTransaction().replace(R.id.main_activity_container, ServerListViewFragment()).commit()
+        supportFragmentManager.beginTransaction().replace(R.id.main_activity_right_drawer_container, TagHistoryFragment {
+            drawer_layout.closeDrawer(GravityCompat.END)
+            PreviewActivity.startActivity(this, if (it.isEmpty()) "*" else it.toTagString())
+        }).commit()
         Changelog.showChangelogIfChanges(this)
         AutoUpdater().autoUpdate(this)
         GlobalScope.launch { cache.clearCache() }
     }
 
-    private fun configureToolbar() {
+    private fun configureToolbarAndNavView(navView: NavigationView) {
         setSupportActionBar(main_activity_toolbar)
-
         val toggle = ActionBarDrawerToggle(this, drawer_layout, main_activity_toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
-        drawer_layout.findViewById<NavigationView>(R.id.nav_view).setNavigationItemSelectedListener(this)
+        navView.setNavigationItemSelectedListener(SettingsNavView(navView)
+                .apply { inflateMenu(R.menu.activity_main_drawer_menu, this@MainActivity::onNavigationItemSelected) })
     }
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+    fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_subs -> startActivity(Intent(this, SubscriptionActivity::class.java))
             R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
             R.id.community -> startActivity(Intent(Intent.ACTION_VIEW).apply { data = Uri.parse("https://discord.gg/tbGCHpF") })
             R.id.nav_help -> Toast.makeText(this, getString(R.string.join_discord), Toast.LENGTH_SHORT).show()
+            else -> return false
         }
         drawer_layout.closeDrawer(GravityCompat.START)
-        return super.onOptionsItemSelected(item)
+        println("end")
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

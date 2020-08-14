@@ -58,9 +58,11 @@ class MainActivity : AppCompatActivity() {
 
     fun initData() {
         supportFragmentManager.beginTransaction().replace(R.id.main_activity_container, ServerListViewFragment()).commit()
-        supportFragmentManager.beginTransaction().replace(R.id.main_activity_right_drawer_container, TagHistoryFragment {
-            drawer_layout.closeDrawer(GravityCompat.END)
-            PreviewActivity.startActivity(this, if (it.isEmpty()) "*" else it.toTagString())
+        supportFragmentManager.beginTransaction().replace(R.id.main_activity_right_drawer_container, TagHistoryFragment().apply {
+            onSearchButtonClick = {
+                this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
+                PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
+            }
         }).commit()
         Changelog.showChangelogIfChanges(this)
         AutoUpdater().autoUpdate(this)

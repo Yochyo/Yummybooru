@@ -32,7 +32,8 @@ import kotlinx.coroutines.withContext
 
 private typealias OnSearch = (tags: List<String>) -> Unit
 
-class TagHistoryFragment(var onSearchButtonClick: OnSearch) : Fragment() {
+class TagHistoryFragment : Fragment() {
+    var onSearchButtonClick: OnSearch = {}
     private var filteringTagList: FilteringEventCollection<Tag, Int>? = null
 
 

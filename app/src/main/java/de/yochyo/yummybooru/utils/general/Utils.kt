@@ -23,9 +23,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
-fun Context.preview(id: Int) = "${id}P${currentServer.id}"
-fun Context.sample(id: Int) = "${id}S${currentServer.id}"
-fun Context.original(id: Int) = "${id}O${currentServer.id}"
+fun Context.preview(id: Int) = "${id}P${db.currentServer.id}"
+fun Context.sample(id: Int) = "${id}S${db.currentServer.id}"
+fun Context.original(id: Int) = "${id}O${db.currentServer.id}"
 
 fun String.toTagArray(): Array<String> = split(" ").toTypedArray()
 fun Array<String>.toTagString() = joinToString(" ")
@@ -69,10 +69,10 @@ fun TextView.underline(underline: Boolean) {
     else paintFlags = p.apply { isUnderlineText = false }.flags
 }
 
-fun Tag.toBooruTag(context: Context) = de.yochyo.yummybooru.api.entities.Tag(name, type, false, count, null, serverID = context.currentServer.id)
+fun Tag.toBooruTag(context: Context) = de.yochyo.yummybooru.api.entities.Tag(name, type, false, count, null, serverID = context.db.currentServer.id)
 
 suspend fun de.yochyo.yummybooru.api.entities.Tag.addSub(context: Context): Boolean {
-    val s = context.currentServer
+    val s = context.db.currentServer
     val t = s.getTag(context, name)
     val id = s.newestID()
     return if (t != null && id != null) {
@@ -89,7 +89,7 @@ suspend fun createTagAndOrChangeSubState(context: Context, name: String): de.yoc
         else tag.sub = null
         return tag
     } else {
-        val t = context.currentServer.getTag(context, name)
+        val t = context.db.currentServer.getTag(context, name)
         if (t != null) {
             t.addSub(context)
             db.tags += t
@@ -98,6 +98,7 @@ suspend fun createTagAndOrChangeSubState(context: Context, name: String): de.yoc
     }
     return null
 }
+
 val Fragment.ctx: Context get() = this.requireContext()
 fun parseURL(url: String): String {
     val b = StringBuffer()
@@ -131,17 +132,6 @@ val String.mimeType: String?
 fun Context.drawable(id: Int) = ContextCompat.getDrawable(this, id)
 
 
-private var _currentServer: Server? = null
-val Context.currentServer: Server
-    get() {
-        val s = _currentServer
-        if (s == null || s.id != db.currentServerID)
-            _currentServer = db.getServer(db.currentServerID)
-                    ?: if (db.servers.isNotEmpty()) db.servers.first() else null
-
-        return _currentServer ?: Server("", "", "", "", "")
-    }
-
 private val _managers = HashMap<String, ManagerWrapper?>()
 private var _currentManager: ManagerWrapper? = null
     set(value) {
@@ -156,7 +146,6 @@ fun Context.getCurrentManager(name: String? = null): ManagerWrapper? {
 
 suspend fun Context.getOrRestoreManager(name: String, lastId: Int, lastPosition: Int): ManagerWrapper {
     return withContext(Dispatchers.IO) {
-        db.join()
         val m: ManagerWrapper
         val manager = getCurrentManager(name)
         if (manager?.toString() == name) m = manager

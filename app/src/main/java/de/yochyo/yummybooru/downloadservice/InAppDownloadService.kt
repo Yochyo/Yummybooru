@@ -12,7 +12,6 @@ import de.yochyo.yummybooru.api.entities.Resource
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
-import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.network.CacheableDownloader
 import kotlinx.coroutines.*
 import java.util.*
@@ -65,5 +64,5 @@ class InAppDownloadService : Service() {
 }
 
 fun saveDownload(context: Context, url: String, id: String, post: Post) = InAppDownloadService.startService(context, url, id) {
-    FileUtils.writeFile(context, post, it, context.currentServer)
+    FileUtils.writeFile(context, post, it, context.db.currentServer)
 }

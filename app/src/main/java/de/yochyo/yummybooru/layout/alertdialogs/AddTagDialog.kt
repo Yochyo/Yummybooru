@@ -8,8 +8,8 @@ import android.view.*
 import android.widget.*
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
+import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
-import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.setColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -52,7 +52,7 @@ class AddTagDialog(val runOnPositive: (editText: AutoCompleteTextView) -> Unit) 
                 GlobalScope.launch {
                     val lastIndexOf = string.lastIndexOf(" ")
                     val a = if (lastIndexOf != -1) string.substring(0..lastIndexOf) else ""
-                    val tags = context.currentServer.getMatchingTags(context, name)?.map { Tag(a + it.name, it.type) } //damit der filter funktioniert
+                    val tags = context.db.currentServer.getMatchingTags(context, name)?.map { Tag(a + it.name, it.type) } //damit der filter funktioniert
                     if (tags != null) {
                         launch(Dispatchers.Main) {
                             if (!dialogIsDismissed) {

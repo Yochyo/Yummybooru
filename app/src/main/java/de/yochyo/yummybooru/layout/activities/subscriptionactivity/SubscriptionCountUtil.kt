@@ -5,7 +5,6 @@ import de.yochyo.eventcollection.events.OnAddElementsEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.tryCatchSuspended
 import kotlinx.coroutines.*
 
@@ -43,7 +42,7 @@ class SubscriptionCountUtil(val activity: SubscriptionActivity) {
             var newCount = 0
             tryCatchSuspended {
                 val oldValue = getRawCount(name)
-                val t = activity.currentServer.getTag(activity, name)
+                val t = activity.db.currentServer.getTag(activity, name)
                 newCount = t?.count ?: 0
                 setCount(name, newCount)
                 if (oldValue != newCount) {

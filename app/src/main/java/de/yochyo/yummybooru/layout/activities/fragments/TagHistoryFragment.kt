@@ -69,6 +69,7 @@ class TagHistoryFragment(var onSearchButtonClick: OnSearch) : Fragment() {
         GlobalScope.launch {
             filteringTagList = FilteringEventCollection({ ctx.db.tags }, { it.name })
             ctx.db.tags.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList!!) } }
+            withContext(Dispatchers.Main) { tagAdapter.update(ctx.db.tags) }
         }
         return layout
     }
@@ -105,7 +106,7 @@ class TagHistoryFragment(var onSearchButtonClick: OnSearch) : Fragment() {
                 R.id.add_tag -> {
                     AddTagDialog {
                         GlobalScope.launch {
-                            val t = ctx.currentServer.getTag(ctx, it.text.toString())
+                            val t = ctx.db.currentServer.getTag(ctx, it.text.toString())
                             if (t != null) {
                                 ctx.db.tags += t
                                 withContext(Dispatchers.Main) {
@@ -138,7 +139,7 @@ class TagHistoryFragment(var onSearchButtonClick: OnSearch) : Fragment() {
 
     suspend fun filter(name: String) {
         val result = filteringTagList?.filter(name) ?: null
-        if(result != null){
+        if (result != null) {
             withContext(Dispatchers.Main) {
                 tagLayoutManager.scrollToPosition(0)
                 tagAdapter.update(result)

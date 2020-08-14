@@ -6,7 +6,7 @@ import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventcollection.observable.IObservableObject
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.Apis
-import de.yochyo.yummybooru.utils.general.currentServer
+import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -81,7 +81,7 @@ open class Server(name: String, url: String, apiName: String, username: String =
     suspend fun newestID() = api.newestID()
 
 
-    fun isSelected(context: Context): Boolean = context.currentServer.id == id
+    fun isSelected(context: Context): Boolean = context.db.currentServer.id == id
 
     override fun compareTo(other: Server) = id.compareTo(other.id)
     override fun toString() = name

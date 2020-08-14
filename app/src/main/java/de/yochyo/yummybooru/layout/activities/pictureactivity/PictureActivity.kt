@@ -59,8 +59,6 @@ class PictureActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
 
             withContext(Dispatchers.IO) {
-                db.join() //if app is killed in background
-
                 val oldTags = savedInstanceState?.getString("name")
                 val oldPos = savedInstanceState?.getInt("position")
                 val oldId = savedInstanceState?.getInt("id")

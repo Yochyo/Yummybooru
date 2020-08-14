@@ -15,7 +15,6 @@ import de.yochyo.yummybooru.layout.selectableRecyclerView.SelectableRecyclerView
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
 import de.yochyo.yummybooru.utils.ManagerWrapper
-import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.preview
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import de.yochyo.yummybooru.utils.network.download
@@ -42,7 +41,7 @@ class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : Sel
             R.id.select_all -> if (selected.size == m.posts.size) unselectAll() else selectAll()
             R.id.download_selected -> {
                 val posts = selected.getSelected(m.posts)
-                DownloadService.startService(activity, m.toString(), posts, activity.currentServer)
+                DownloadService.startService(activity, m.toString(), posts, activity.db.currentServer)
                 unselectAll()
             }
             R.id.download_and_add_authors_selected -> {
@@ -54,7 +53,7 @@ class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : Sel
                         }
                     }
                 }
-                DownloadService.startService(activity, m.toString(), posts, activity.currentServer)
+                DownloadService.startService(activity, m.toString(), posts, activity.db.currentServer)
                 unselectAll()
             }
         }

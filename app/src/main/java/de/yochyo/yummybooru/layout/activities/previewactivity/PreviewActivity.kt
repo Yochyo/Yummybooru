@@ -67,8 +67,6 @@ open class PreviewActivity : AppCompatActivity() {
     private fun initData(savedInstanceState: Bundle?) {
         GlobalScope.launch(Dispatchers.Main) {
             withContext(Dispatchers.IO) {
-                db.join() //if app is killed in background
-
                 val oldTags = savedInstanceState?.getString("name")
                 val oldPos = savedInstanceState?.getInt("position")
                 val oldId = savedInstanceState?.getInt("id")
@@ -166,7 +164,7 @@ open class PreviewActivity : AppCompatActivity() {
                 val tag = db.getTag(m.toString())
 
                 if (tag == null) GlobalScope.launch {
-                    val t = currentServer.getTag(this@PreviewActivity, m.toString())
+                    val t = db.currentServer.getTag(this@PreviewActivity, m.toString())
                     if (t != null) db.tags += t.apply { isFavorite = true }
                 }
                 else tag.isFavorite = !tag.isFavorite
@@ -174,7 +172,7 @@ open class PreviewActivity : AppCompatActivity() {
             R.id.add_tag -> {
                 val tag = db.getTag(m.toString())
                 if (tag == null) GlobalScope.launch {
-                    val t = currentServer.getTag(this@PreviewActivity, m.toString())
+                    val t = db.currentServer.getTag(this@PreviewActivity, m.toString())
                     if (t != null) db.tags += t
                 }
                 else db.tags -= tag

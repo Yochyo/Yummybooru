@@ -33,6 +33,7 @@ class ServerListViewFragment : Fragment() {
         serverAdapter = ServerAdapter().apply { serverRecyclerView.adapter = this }
         GlobalScope.launch {
             ctx.db.servers.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.update(it.collection) } }
+            withContext(Dispatchers.Main) { serverAdapter.update(ctx.db.servers) }
         }
         return layout
     }

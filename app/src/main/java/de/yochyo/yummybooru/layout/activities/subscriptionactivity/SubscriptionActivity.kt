@@ -20,7 +20,6 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.utils.general.FilteringEventCollection
 import de.yochyo.yummybooru.utils.general.createTagAndOrChangeSubState
-import de.yochyo.yummybooru.utils.general.currentServer
 import kotlinx.android.synthetic.main.activity_subscription.*
 import kotlinx.android.synthetic.main.content_subscription.*
 import kotlinx.coroutines.Dispatchers
@@ -133,11 +132,11 @@ class SubscriptionActivity : AppCompatActivity() {
 
     suspend fun updateSubs(subs: Collection<Tag>) {
         withContext(Dispatchers.IO) {
-            val id = currentServer.newestID()
+            val id = db.currentServer.newestID()
             if (id != null) {
                 subs.map {
                     launch {
-                        val tag = currentServer.getTag(this@SubscriptionActivity, it.name)
+                        val tag = db.currentServer.getTag(this@SubscriptionActivity, it.name)
                         if (tag != null) {
                             val tagInDb = db.getTag(tag.name)
                             tagInDb?.sub = Sub(id, tag.count)

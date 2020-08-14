@@ -14,32 +14,35 @@ import de.yochyo.yummybooru.database.utils.Upgrade
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.utils.GlobalListeners
 import de.yochyo.yummybooru.utils.general.createDefaultSavePath
-import de.yochyo.yummybooru.utils.general.currentServer
 import de.yochyo.yummybooru.utils.general.documentFile
-import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.anko.db.ManagedSQLiteOpenHelper
 import org.jetbrains.anko.db.dropTable
 import java.util.*
+import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.collections.ArrayList
+import kotlin.concurrent.read
 
 
 class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 3) {
     private val prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
 
-    private val lock = Mutex(true)
-    suspend fun join() {
-        lock.withLock { }
-    }
+    val tagDao = TagDao(this)
+    val serverDao = ServerDao(this)
 
-    val servers = object : ObservingEventCollection<Server, Int>(ArrayList()) {
+    private val serverLock = ReentrantReadWriteLock()
+    private val tagLock = ReentrantReadWriteLock()
+    private val _servers = object : ObservingEventCollection<Server, Int>(ArrayList()) {
         override fun remove(element: Server): Boolean {
             return if (currentServerID == element.id) false
             else super.remove(element)
         }
     }
-    val tags = object : ObservingEventCollection<Tag, Int>(TreeSet()) {
+
+    val servers get() = serverLock.read { _servers }
+
+    private val _tags = object : ObservingEventCollection<Tag, Int>(TreeSet()) {
         override fun add(element: Tag): Boolean {
             var isContained = false
             if (contains(element)) isContained = true
@@ -51,61 +54,63 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
             return if (isContained) false else super.add(element)
         }
     }
+    val tags get() = tagLock.read { _tags }
 
     companion object {
         private var instance: Database? = null
         fun getDatabase(context: Context): Database {
             if (instance == null) {
                 instance = Database(context)
-                GlobalScope.launch {
-                    instance!!.loadDatabase()
-                }
+                instance!!.loadDatabaseBlocking(false)
             }
             return instance!!
         }
     }
 
-    override fun onCreate(db: SQLiteDatabase) {
-        serverDao.createTable(db)
-        tagDao.createTable(db)
-
-        db.execSQL("INSERT INTO servers VALUES ('Danbooru', 'https://danbooru.donmai.us/', 'danbooru', '', '', NULL);", emptyArray())
-        db.execSQL("INSERT INTO servers VALUES ('Konachan', 'https://konachan.com/', 'moebooru', '', '', NULL);", emptyArray())
-        db.execSQL("INSERT INTO servers VALUES ('Yande.re', 'https://yande.re/', 'moebooru', '', '', NULL);", emptyArray())
+    init {
+        serverLock.writeLock().lock()
+        tagLock.writeLock().lock()
     }
 
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        Upgrade.upgradeFromTo(db, oldVersion, newVersion)
-    }
-
-    suspend fun loadDatabase() {
-        withContext(Dispatchers.IO) {
-            if (!lock.isLocked) lock.lock()
+    suspend fun loadDatabase() = withContext(Dispatchers.IO) { loadDatabaseBlocking(true) }
+    private fun loadDatabaseBlocking(lock: Boolean) {
+        if(lock) serverLock.writeLock().lock()
             GlobalListeners.unregisterGlobalListeners(context)
             val se: List<Server> = serverDao.selectAll()
-            servers.clear()
-            servers += se
-            servers.notifyChange()
-            loadServer(context.currentServer)
-            lock.unlock()
-        }
+            _servers.clear()
+            _servers += se
+            _servers.notifyChange()
+        serverLock.writeLock().unlock()
+        loadServerBlocking(currentServer, false)
     }
 
-    suspend fun loadServer(server: Server) {
-        withContext(Dispatchers.IO) {
-            val oldServer = context.currentServer
+
+    suspend fun loadServer(server: Server) = withContext(Dispatchers.IO) { loadServerBlocking(server, true) }
+    private fun loadServerBlocking(server: Server, lock: Boolean) {
+        if(lock) tagLock.writeLock().lock()
+            val oldServer = currentServer
             GlobalListeners.unregisterGlobalListeners(context)
-            withContext(Dispatchers.Main) { context.db.currentServerID = server.id }
+            currentServerID = server.id
             val t = tagDao.selectWhere(server)
-            withContext(Dispatchers.Main) {
-                tags.clear()
-                tags += t
-                tags.notifyChange()
-            }
+            _tags.clear()
+            _tags += t
+            _tags.notifyChange()
             GlobalListeners.registerGlobalListeners(context)
             SelectServerEvent.trigger(SelectServerEvent(context, oldServer, server))
-        }
+        tagLock.writeLock().unlock()
     }
+
+    private var _currentServer: Server? = null
+    val currentServer: Server
+        get() {
+            val s = _currentServer
+            if (s == null || s.id != currentServerID)
+                _currentServer = getServer(currentServerID)
+                        ?: if (servers.isNotEmpty()) servers.first() else null
+
+            return _currentServer ?: Server("", "", "", "", "")
+        }
+
 
     var limit: Int
         get() = getPreference(context.getString(R.string.page_size), context.getString(R.string.page_size_default_value)).toInt()
@@ -178,8 +183,18 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
         apply()
     }
 
-    val tagDao = TagDao(this)
-    val serverDao = ServerDao(this)
+    override fun onCreate(db: SQLiteDatabase) {
+        serverDao.createTable(db)
+        tagDao.createTable(db)
+
+        db.execSQL("INSERT INTO servers VALUES ('Danbooru', 'https://danbooru.donmai.us/', 'danbooru', '', '', NULL);", emptyArray())
+        db.execSQL("INSERT INTO servers VALUES ('Konachan', 'https://konachan.com/', 'moebooru', '', '', NULL);", emptyArray())
+        db.execSQL("INSERT INTO servers VALUES ('Yande.re', 'https://yande.re/', 'moebooru', '', '', NULL);", emptyArray())
+    }
+
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        Upgrade.upgradeFromTo(db, oldVersion, newVersion)
+    }
 
     fun getTag(name: String) = tags.find { it.name == name }
     fun getServer(id: Int) = servers.find { it.id == id }

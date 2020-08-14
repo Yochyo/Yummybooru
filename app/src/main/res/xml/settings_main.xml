@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <androidx.preference.Preference
+        android:enabled="true"
+        android:icon="@drawable/save_black"
+        android:key="@string/savePath"
+        android:title="Save path"
+        app:allowDividerBelow="true" />
+    <Preference
+        android:icon="@drawable/download_black"
+        android:key="downloads"
+        android:title="Downloads"
+        app:allowDividerAbove="true"
+        app:fragment="de.yochyo.yummybooru.layout.activities.settingsactivity.DownloadSettingsFragment" />
+    <Preference
+        android:icon="@drawable/image_black"
+        android:key="preview_images"
+        android:title="Preview images"
+        app:fragment="de.yochyo.yummybooru.layout.activities.settingsactivity.PreviewActivitySettingsFragment" />
+    <Preference
+        android:icon="@drawable/image_black"
+        android:key="large_images"
+        android:title="Large images"
+        app:fragment="de.yochyo.yummybooru.layout.activities.settingsactivity.PictureActivitySettingsFragment" />
+
+    <androidx.preference.Preference
+        android:enabled="true"
+        android:icon="@drawable/backup_black"
+        android:key="create_backup"
+        android:title="Create Backup"
+        app:allowDividerAbove="true" />
+    <androidx.preference.Preference
+        android:enabled="true"
+        android:icon="@drawable/restore_black"
+        android:key="restore_backup"
+        android:title="Restore backup"
+        app:allowDividerBelow="true" />
+    <androidx.preference.Preference
+        android:enabled="true"
+        android:icon="@drawable/updates_black"
+        android:key="updates"
+        android:title="Check updates"
+        app:allowDividerAbove="true" />
+    <androidx.preference.Preference
+        android:enabled="true"
+        android:icon="@drawable/history_black"
+        android:key="changelogs"
+        android:title="Show Changelogs" />
+
+
+</PreferenceScreen>

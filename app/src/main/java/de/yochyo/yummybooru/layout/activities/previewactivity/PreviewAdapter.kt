@@ -70,7 +70,10 @@ class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : Sel
         notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
     }
 
-    override fun createViewHolder(parent: ViewGroup) = PreviewViewHolder(activity, m, (activity.layoutInflater.inflate(R.layout.preview_image_view, parent, false) as FrameLayout))
+    override fun createViewHolder(parent: ViewGroup) = PreviewViewHolder(activity, m,
+            if (activity.db.previewStaggeredMode)
+                (activity.layoutInflater.inflate(R.layout.preview_image_view_staggered, parent, false) as FrameLayout)
+            else (activity.layoutInflater.inflate(R.layout.preview_image_view, parent, false) as FrameLayout))
 
     override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
         val pos = holder.adapterPosition

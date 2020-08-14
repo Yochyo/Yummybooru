@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <androidx.preference.SwitchPreference
+        android:defaultValue="@bool/downloadOriginal_default_value"
+        android:key="@string/downloadOriginal"
+        android:summary="Large pictures take longer to download"
+        android:title="Download extra large picture"
+        app:allowDividerAbove="true" />
+    <androidx.preference.SwitchPreference
+        android:defaultValue="@bool/downloadWebm_default_value"
+        android:key="@string/downloadWebm"
+        android:summary="Download as webm instead of zip"
+        android:title="Download ugoira as webm" />
+    <androidx.preference.SeekBarPreference
+        android:defaultValue="@integer/parallel_background_downloads_default_value"
+        android:key="@string/parallel_background_downloads"
+        android:max="10"
+        android:summary="Number of images downloaded simultaneously"
+        android:title="Parallel downloads (default 2)"
+        app:allowDividerBelow="true"
+        app:min="1"
+        app:showSeekBarValue="true" />
+
+    <androidx.preference.ListPreference
+        android:defaultValue="@string/page_size_default_value"
+        android:entries="@array/post_limit"
+        android:entryValues="@array/post_limit"
+        android:key="@string/page_size"
+        android:summary="More posts can cause longer loading times."
+        android:title="Post per page"
+        app:allowDividerAbove="true" />
+</PreferenceScreen>

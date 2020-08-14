@@ -26,7 +26,7 @@ import kotlin.concurrent.read
 
 
 class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 3) {
-    private val prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
+    val prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
 
     val tagDao = TagDao(this)
     val serverDao = ServerDao(this)
@@ -141,6 +141,12 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     var parallelBackgroundDownloads: Int
         get() = getPreference(context.getString(R.string.parallel_background_downloads), context.resources.getInteger(R.integer.parallel_background_downloads_default_value))
         set(value) = setPreference(context.getString(R.string.parallel_background_downloads), value)
+    var previewColumns: Int
+        get() = getPreference(context.getString(R.string.preview_columns), context.resources.getInteger(R.integer.preview_columns_default_value))
+        set(value) = setPreference(context.getString(R.string.preview_columns), value)
+    var previewStaggeredMode: Boolean
+        get() = getPreference(context.getString(R.string.preview_staggered_mode), context.resources.getBoolean(R.bool.preview_staggered_mode_default_value))
+        set(value) = setPreference(context.getString(R.string.preview_staggered_mode), value)
 
     var saveFolder: DocumentFile
         get() = documentFile(context, getPreference(context.getString(R.string.savePath), createDefaultSavePath()))

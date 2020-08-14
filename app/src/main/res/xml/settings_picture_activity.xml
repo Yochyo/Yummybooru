@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <androidx.preference.SeekBarPreference
+        android:defaultValue="@integer/preloaded_large_pictures_default_value"
+        android:key="@string/preloaded_large_pictures"
+        android:max="5"
+        android:summary="Loads images left/right of the current image"
+        android:title="Preload large images (default 1)"
+        app:allowDividerAbove="true"
+        app:min="0"
+        app:showSeekBarValue="true" />
+    <androidx.preference.SwitchPreference
+        android:defaultValue="@bool/click_to_move_to_next_image_default_value"
+        android:key="@string/click_to_move_to_next_image"
+        android:summary="Allows you to click instead of having to swipe left"
+        android:title="Click for next image"
+        app:allowDividerBelow="true" />
+</PreferenceScreen>

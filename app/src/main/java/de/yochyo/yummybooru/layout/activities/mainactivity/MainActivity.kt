@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
         configureToolbarAndNavView(nav_view)
         if (hasPermission)
             initData()
+       // db.prefs.edit().clear().commit()
     }
 
 

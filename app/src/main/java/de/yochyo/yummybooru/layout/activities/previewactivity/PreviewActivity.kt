@@ -7,8 +7,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.eventcollection.events.OnAddElementsEvent
 import de.yochyo.eventmanager.Listener
@@ -19,13 +19,17 @@ import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
 import de.yochyo.yummybooru.utils.ManagerWrapper
-import de.yochyo.yummybooru.utils.general.*
+import de.yochyo.yummybooru.utils.general.createTagAndOrChangeSubState
+import de.yochyo.yummybooru.utils.general.getCurrentManager
+import de.yochyo.yummybooru.utils.general.getOrRestoreManager
+import de.yochyo.yummybooru.utils.general.setCurrentManager
 import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.max
 
 open class PreviewActivity : AppCompatActivity() {
     private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit / 2
@@ -45,7 +49,7 @@ open class PreviewActivity : AppCompatActivity() {
     private var isLoadingView = false
     var isScrolling = false
 
-    private lateinit var layoutManager: GridLayoutManager
+    private lateinit var layoutManager: StaggeredGridLayoutManager
     private lateinit var previewAdapter: PreviewAdapter
 
     private lateinit var m: ManagerWrapper
@@ -78,7 +82,7 @@ open class PreviewActivity : AppCompatActivity() {
 
             m.posts.registerOnAddElementsListener(managerListener)
 
-            recycler_view.layoutManager = object : GridLayoutManager(this@PreviewActivity, 3) {
+            recycler_view.layoutManager = object : StaggeredGridLayoutManager(db.previewColumns, RecyclerView.VERTICAL) {
                 override fun onLayoutChildren(recycler: RecyclerView.Recycler?, state: RecyclerView.State?) {
                     try {
                         super.onLayoutChildren(recycler, state)
@@ -87,6 +91,7 @@ open class PreviewActivity : AppCompatActivity() {
                     }
                 }
             }.apply { layoutManager = this }
+
             recycler_view.adapter = PreviewAdapter(this@PreviewActivity, m).apply { previewAdapter = this }
             previewAdapter.isDragSelectingEnabled(recycler_view, true)
             previewAdapter.onStartSelection.registerListener(disableSwipeRefreshOnSelectionListener)
@@ -125,12 +130,12 @@ open class PreviewActivity : AppCompatActivity() {
                 when (newState) {
                     RecyclerView.SCROLL_STATE_IDLE -> {
                         isScrolling = false
-                        m.position = layoutManager.findFirstCompletelyVisibleItemPosition()
+                              m.position = layoutManager.findFirstCompletelyVisibleItemPositions(null).max()!!
                     }
                     RecyclerView.SCROLL_STATE_DRAGGING -> isScrolling = true
                 }
-                if (!isLoadingView)
-                    if (layoutManager.findLastVisibleItemPosition() + OFFSET_BEFORE_LOAD_NEXT_PAGE + db.limit >= m.posts.size) loadNextPage()
+                  if (!isLoadingView)
+                       if (layoutManager.findFirstVisibleItemPositions(null).max()!! + OFFSET_BEFORE_LOAD_NEXT_PAGE + db.limit >= m.posts.size) loadNextPage()
                 return super.onScrollStateChanged(recyclerView, newState)
             }
         })

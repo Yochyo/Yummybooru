@@ -17,7 +17,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.layout.activities.SettingsActivity
+import de.yochyo.yummybooru.layout.activities.settingsactivity.SettingsActivity
 import de.yochyo.yummybooru.layout.activities.fragments.ServerListViewFragment
 import de.yochyo.yummybooru.layout.activities.fragments.TagHistoryFragment
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity

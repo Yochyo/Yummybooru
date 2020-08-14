@@ -132,7 +132,7 @@ class PictureAdapter(val activity: PictureActivity, val viewPager: ViewPager, va
                 }
             })
             layout.setOnTouchListener { _, event -> detector.onTouchEvent(event) }
-            layout.setOnClickListener { onClick() }
+            view.setOnClickListener { onClick() }
             return layout
         }
 

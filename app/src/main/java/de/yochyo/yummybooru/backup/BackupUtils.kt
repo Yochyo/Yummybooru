@@ -48,7 +48,7 @@ object BackupUtils {
                 PreferencesBackup.restoreEntity(obj.getJSONObject("preferences"), context)
                 servers.map { ServerBackup.restoreEntity(it as JSONObject, context) }
                 tags.map { launch { TagBackup.restoreEntity(it as JSONObject, context) } }.joinAll()
-                context.db.loadDatabase()
+                context.db.clearCache()
             }
         } catch (e: Exception) {
             Logger.log(e)

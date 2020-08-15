@@ -20,9 +20,6 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.anko.db.ManagedSQLiteOpenHelper
 import org.jetbrains.anko.db.dropTable
 import java.util.*
-import java.util.concurrent.locks.ReentrantReadWriteLock
-import kotlin.collections.ArrayList
-import kotlin.concurrent.read
 
 
 class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, "db", null, 3) {
@@ -31,73 +28,57 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     val tagDao = TagDao(this)
     val serverDao = ServerDao(this)
 
-    private val serverLock = ReentrantReadWriteLock()
-    private val tagLock = ReentrantReadWriteLock()
-    private val _servers = object : ObservingEventCollection<Server, Int>(ArrayList()) {
-        override fun remove(element: Server): Boolean {
-            return if (currentServerID == element.id) false
-            else super.remove(element)
-        }
-    }
-
-    val servers get() = serverLock.read { _servers }
-
-    private val _tags = object : ObservingEventCollection<Tag, Int>(TreeSet()) {
-        override fun add(element: Tag): Boolean {
-            var isContained = false
-            if (contains(element)) isContained = true
-            else {
-                element.isFavorite = !element.isFavorite
-                if (contains(element)) isContained = true
-                element.isFavorite = !element.isFavorite
+    private val serverLock = Any()
+    private var clearServerCache = true
+    val servers = ObservingEventCollection<Server, Int>(TreeSet())
+        get() = synchronized(serverLock) {
+            if (clearServerCache) {
+                field.replaceCollection(TreeSet(serverDao.selectAll()))
+                clearServerCache = false
             }
-            return if (isContained) false else super.add(element)
+            return field
         }
-    }
-    val tags get() = tagLock.read { _tags }
+
+    private val tagLock = Any()
+    private var clearTagCache = true
+    val tags = ObservingEventCollection<Tag, Int>(TreeSet())
+        get() = synchronized(tagLock) {
+            if (clearTagCache) {
+                field.replaceCollection(TreeSet(tagDao.selectWhere(currentServer)))
+                clearTagCache = false
+            }
+            return field
+        }
 
     companion object {
         private var instance: Database? = null
         fun getDatabase(context: Context): Database {
-            if (instance == null) {
+            if (instance == null)
                 instance = Database(context)
-                instance!!.loadDatabaseBlocking(false)
-            }
             return instance!!
         }
     }
 
-    init {
-        serverLock.writeLock().lock()
-        tagLock.writeLock().lock()
+    fun clearCache() {
+        clearServerCache()
+        clearTagCache()
     }
 
-    suspend fun loadDatabase() = withContext(Dispatchers.IO) { loadDatabaseBlocking(true) }
-    private fun loadDatabaseBlocking(lock: Boolean) {
-        if(lock) serverLock.writeLock().lock()
-            GlobalListeners.unregisterGlobalListeners(context)
-            val se: List<Server> = serverDao.selectAll()
-            _servers.clear()
-            _servers += se
-            _servers.notifyChange()
-        serverLock.writeLock().unlock()
-        loadServerBlocking(currentServer, false)
+    fun clearServerCache() = synchronized(clearTagCache) {
+        clearServerCache = true
+    }
+
+    fun clearTagCache() = synchronized(clearServerCache) {
+        clearTagCache = true
     }
 
 
-    suspend fun loadServer(server: Server) = withContext(Dispatchers.IO) { loadServerBlocking(server, true) }
-    private fun loadServerBlocking(server: Server, lock: Boolean) {
-        if(lock) tagLock.writeLock().lock()
-            val oldServer = currentServer
-            GlobalListeners.unregisterGlobalListeners(context)
-            currentServerID = server.id
-            val t = tagDao.selectWhere(server)
-            _tags.clear()
-            _tags += t
-            _tags.notifyChange()
-            GlobalListeners.registerGlobalListeners(context)
-            SelectServerEvent.trigger(SelectServerEvent(context, oldServer, server))
-        tagLock.writeLock().unlock()
+    fun loadServer(server: Server) {
+        val oldServer = currentServer
+        currentServerID = server.id
+        clearTagCache = true
+        tags
+        SelectServerEvent.trigger(SelectServerEvent(context, oldServer, server))
     }
 
     private var _currentServer: Server? = null

@@ -65,18 +65,14 @@ class TagHistoryFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_tag_history, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        view as ViewGroup
-        configureTagDrawer(view)
+        val layout = inflater.inflate(R.layout.fragment_tag_history, container, false) as ViewGroup
+        configureTagDrawer(layout)
         GlobalScope.launch {
-            filteringTagList = FilteringEventCollection({ ctx.db.tags }, { it.name })
-            ctx.db.tags.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList!!) } }
-            withContext(Dispatchers.Main) { tagAdapter.update(ctx.db.tags) }
+            filteringTagList = FilteringEventCollection({ inflater.context.db.tags }, { it.name })
+            inflater.context.db.tags.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList!!) } }
+            withContext(Dispatchers.Main) { tagAdapter.update(inflater.context.db.tags) }
         }
+        return layout
     }
 
     private fun configureTagDrawer(layout: ViewGroup) {

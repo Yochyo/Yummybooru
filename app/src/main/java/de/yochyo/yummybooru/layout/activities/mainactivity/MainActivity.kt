@@ -46,7 +46,6 @@ class MainActivity : AppCompatActivity() {
         configureToolbarAndNavView(nav_view)
         if (hasPermission)
             initData()
-       // db.prefs.edit().clear().commit()
     }
 
 
@@ -88,7 +87,6 @@ class MainActivity : AppCompatActivity() {
             else -> return false
         }
         drawer_layout.closeDrawer(GravityCompat.START)
-        println("end")
         return true
     }
 

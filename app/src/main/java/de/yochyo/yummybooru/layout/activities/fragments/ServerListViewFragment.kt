@@ -27,15 +27,18 @@ class ServerListViewFragment : Fragment() {
     private lateinit var serverAdapter: ServerAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val layout = inflater.inflate(R.layout.server_list_fragment, container, false)
-        val serverRecyclerView = layout.findViewById<RecyclerView>(R.id.server_recycler_view)
+        return inflater.inflate(R.layout.server_list_fragment, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val serverRecyclerView = view.findViewById<RecyclerView>(R.id.server_recycler_view)
         serverRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         serverAdapter = ServerAdapter().apply { serverRecyclerView.adapter = this }
         GlobalScope.launch {
             ctx.db.servers.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.update(it.collection) } }
             withContext(Dispatchers.Main) { serverAdapter.update(ctx.db.servers) }
         }
-        return layout
     }
 
     inner class ServerAdapter : RecyclerView.Adapter<ServerViewHolder>() {
@@ -44,7 +47,7 @@ class ServerListViewFragment : Fragment() {
 
         override fun onCreateViewHolder(parent: ViewGroup, position: Int): ServerViewHolder {
             val holder = ServerViewHolder((LayoutInflater.from(context).inflate(R.layout.server_item_layout, parent, false) as LinearLayout),
-            servers.elementAt(position))
+                    servers.elementAt(position))
             holder.layout.setOnClickListener(holder)
             holder.layout.setOnLongClickListener(holder)
             return holder
@@ -56,7 +59,7 @@ class ServerListViewFragment : Fragment() {
             fillServerLayoutFields(holder.layout, server, server.isSelected(ctx))
         }
 
-        fun update(s: Collection<Server>){
+        fun update(s: Collection<Server>) {
             servers = s
             notifyDataSetChanged()
         }

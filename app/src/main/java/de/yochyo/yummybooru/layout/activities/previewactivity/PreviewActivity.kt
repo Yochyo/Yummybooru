@@ -29,7 +29,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.max
 
 open class PreviewActivity : AppCompatActivity() {
     private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit / 2
@@ -69,41 +68,40 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     private fun initData(savedInstanceState: Bundle?) {
-        GlobalScope.launch(Dispatchers.Main) {
-            withContext(Dispatchers.IO) {
-                val oldTags = savedInstanceState?.getString("name")
-                val oldPos = savedInstanceState?.getInt("position")
-                val oldId = savedInstanceState?.getInt("id")
-                if (oldTags != null && oldPos != null && oldId != null) m = getOrRestoreManager(oldTags, oldId, oldPos)
-                else m = getCurrentManager()!!
-            }
+        GlobalScope.launch(Dispatchers.IO) {
+            val oldTags = savedInstanceState?.getString("name")
+            val oldPos = savedInstanceState?.getInt("position")
+            val oldId = savedInstanceState?.getInt("id")
+            m = if (oldTags != null && oldPos != null && oldId != null)
+                getOrRestoreManager(oldTags, oldId, oldPos)
+            else
+                getCurrentManager()!!
+            withContext(Dispatchers.Main) {
+                initToolbar()
+                m.posts.registerOnAddElementsListener(managerListener)
 
-            initToolbar()
-
-            m.posts.registerOnAddElementsListener(managerListener)
-
-            recycler_view.layoutManager = object : StaggeredGridLayoutManager(db.previewColumns, RecyclerView.VERTICAL) {
-                override fun onLayoutChildren(recycler: RecyclerView.Recycler?, state: RecyclerView.State?) {
-                    try {
-                        super.onLayoutChildren(recycler, state)
-                    } catch (e: java.lang.Exception) {
-                        e.printStackTrace()
+                recycler_view.layoutManager = object : StaggeredGridLayoutManager(db.previewColumns, RecyclerView.VERTICAL) {
+                    override fun onLayoutChildren(recycler: RecyclerView.Recycler?, state: RecyclerView.State?) {
+                        try {
+                            super.onLayoutChildren(recycler, state)
+                        } catch (e: java.lang.Exception) {
+                            e.printStackTrace()
+                        }
                     }
-                }
-            }.apply { layoutManager = this }
+                }.apply { layoutManager = this }
 
-            recycler_view.adapter = PreviewAdapter(this@PreviewActivity, m).apply { previewAdapter = this }
-            previewAdapter.isDragSelectingEnabled(recycler_view, true)
-            previewAdapter.onStartSelection.registerListener(disableSwipeRefreshOnSelectionListener)
-            previewAdapter.onStopSelection.registerListener(reEnableSwipeRefreshOnSelectionListener)
-            previewAdapter.dragListener.disableAutoScroll()
+                recycler_view.adapter = PreviewAdapter(this@PreviewActivity, m).apply { previewAdapter = this }
+                previewAdapter.isDragSelectingEnabled(recycler_view, true)
+                previewAdapter.onStartSelection.registerListener(disableSwipeRefreshOnSelectionListener)
+                previewAdapter.onStopSelection.registerListener(reEnableSwipeRefreshOnSelectionListener)
+                previewAdapter.dragListener.disableAutoScroll()
+                initSwipeRefreshLayout()
+                initScrollView()
+                recycler_view.scrollToPosition(m.position)
 
-            initSwipeRefreshLayout()
-            initScrollView()
-            recycler_view.scrollToPosition(m.position)
-
-            loadNextPage()
-            loadNextPage()
+                loadNextPage()
+                loadNextPage()
+            }
         }
     }
 
@@ -130,12 +128,12 @@ open class PreviewActivity : AppCompatActivity() {
                 when (newState) {
                     RecyclerView.SCROLL_STATE_IDLE -> {
                         isScrolling = false
-                              m.position = layoutManager.findFirstCompletelyVisibleItemPositions(null).max()!!
+                        m.position = layoutManager.findFirstCompletelyVisibleItemPositions(null).max()!!
                     }
                     RecyclerView.SCROLL_STATE_DRAGGING -> isScrolling = true
                 }
-                  if (!isLoadingView)
-                       if (layoutManager.findFirstVisibleItemPositions(null).max()!! + OFFSET_BEFORE_LOAD_NEXT_PAGE + db.limit >= m.posts.size) loadNextPage()
+                if (!isLoadingView)
+                    if (layoutManager.findFirstVisibleItemPositions(null).max()!! + OFFSET_BEFORE_LOAD_NEXT_PAGE + db.limit >= m.posts.size) loadNextPage()
                 return super.onScrollStateChanged(recyclerView, newState)
             }
         })

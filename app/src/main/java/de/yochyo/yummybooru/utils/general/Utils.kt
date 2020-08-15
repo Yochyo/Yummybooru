@@ -140,7 +140,8 @@ private var _currentManager: ManagerWrapper? = null
     }
 
 fun Context.getCurrentManager(name: String? = null): ManagerWrapper? {
-    val m = if (name == null) _currentManager else _managers[name]
+    val m = if (name == null) _currentManager
+    else _managers[name]
     return m
 }
 
@@ -151,9 +152,11 @@ suspend fun Context.getOrRestoreManager(name: String, lastId: Int, lastPosition:
         if (manager?.toString() == name) m = manager
         else {
             m = ManagerWrapper.build(this@getOrRestoreManager, name)
-            m.downloadNextPages(lastPosition / db.limit + 1)
-            while (m.posts.indexOfFirst { it.id == lastId } == -1) m.downloadNextPage()
-            m.position = m.posts.indexOfFirst { it.id == lastId }
+            if (lastId > 0) {
+                m.downloadNextPages(lastPosition / db.limit + 1)
+                while (m.posts.indexOfFirst { it.id == lastId } == -1) m.downloadNextPage()
+                m.position = m.posts.indexOfFirst { it.id == lastId }
+            }
         }
         setCurrentManager(m)
         m

@@ -15,13 +15,13 @@ import kotlin.collections.ArrayList
 
 class FilteringEventCollection<E : IObservableObject<E, A>, A>(private val getUnfilteredCollection: () -> IObservableCollection<E, A>, private val filterBy: (e: E) -> String) : Collection<E> {
     private val eventCollections = ArrayList<Pair<IObservableCollection<E, A>, String>>()
-    private val filterMutex = Mutex()
 
-    private val currentFilter: IObservableCollection<E, A> get() = eventCollections.last().first
-
-    init {
-        eventCollections += Pair(getUnfilteredCollection(), "")
+    private fun getLatestEventCollection(): IObservableCollection<E, A> {
+        if (eventCollections.isEmpty()) eventCollections += Pair(getUnfilteredCollection(), "")
+        return eventCollections.last().first
     }
+
+    private val filterMutex = Mutex()
 
     suspend fun filter(name: String): IObservableCollection<E, A> {
         filterMutex.withLock {
@@ -42,25 +42,26 @@ class FilteringEventCollection<E : IObservableObject<E, A>, A>(private val getUn
                 eventCollections += Pair(result, name)
             }
         }
-        return currentFilter
+        return getLatestEventCollection()
     }
 
     fun clear() {
         for (item in eventCollections) {
             val list = item.first
-            if (list is SubEventCollection<*>) list.destroy()
+            if (list is SubEventCollection<*>) list.close()
         }
         eventCollections.clear()
+        eventCollections += Pair(getUnfilteredCollection(), "")
     }
 
     override val size: Int
-        get() = currentFilter.size
+        get() = getLatestEventCollection().size
 
-    override fun contains(element: E) = currentFilter.contains(element)
+    override fun contains(element: E) = getLatestEventCollection().contains(element)
 
-    override fun containsAll(elements: Collection<E>) = currentFilter.containsAll(elements)
+    override fun containsAll(elements: Collection<E>) = getLatestEventCollection().containsAll(elements)
 
     override fun isEmpty(): Boolean = false
 
-    override fun iterator(): Iterator<E> = currentFilter.iterator()
+    override fun iterator(): Iterator<E> = getLatestEventCollection().iterator()
 }

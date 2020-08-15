@@ -22,7 +22,6 @@ class SettingsNavView(val navView: NavigationView) : NavigationView.OnNavigation
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         if (!onItemSelected(item)){
-            println("inloop")
             menuItemOnClickEvents.keys.forEach {
                 if (item.itemId == it) {
                     menuItemOnClickEvents[it]!!(item)

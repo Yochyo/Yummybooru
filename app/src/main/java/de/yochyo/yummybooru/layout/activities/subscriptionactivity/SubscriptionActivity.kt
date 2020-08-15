@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import de.yochyo.eventcollection.SubEventCollection
 import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventcollection.observablecollection.ObservingSubEventCollection
 import de.yochyo.eventmanager.Listener
@@ -47,6 +46,10 @@ class SubscriptionActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val oldName = savedInstanceState?.getString("name")
+        val oldId = savedInstanceState?.getInt("id")
+        val oldCount = savedInstanceState?.getInt("count")
+        if (oldName != null && oldId != null && oldCount != null) onClickedData = SubData(oldName, oldId, oldCount)
         filteringSubList = FilteringEventCollection({ ObservingSubEventCollection(TreeSet(), db.tags) { it.sub != null } }, { it.name })
         setContentView(R.layout.activity_subscription)
         setSupportActionBar(toolbar_subs)
@@ -80,12 +83,21 @@ class SubscriptionActivity : AppCompatActivity() {
         return true
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val finalOnCLickedData = onClickedData
+        if (finalOnCLickedData != null) {
+            outState.putString("name", finalOnCLickedData.name)
+            outState.putInt("id", finalOnCLickedData.idWhenClicked)
+            outState.putInt("count", finalOnCLickedData.countWhenClicked)
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         adapter.util.paused = false
         val clickedData = onClickedData
         if (clickedData != null) {
-
             val tag = filteringSubList.find { it.name == clickedData.name }
             if (tag != null) {
                 val builder = AlertDialog.Builder(this)

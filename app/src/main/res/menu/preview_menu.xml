@@ -9,8 +9,8 @@
           android:title="Add tag"
           android:icon="@drawable/remove"
           app:showAsAction="ifRoom"/>
-    <item android:id="@+id/subscribe"
-          android:title="Subscribe tag"
+    <item android:id="@+id/follow"
+          android:title="Follow tag"
           android:icon="@drawable/star_empty"
           app:showAsAction="never"/>
     <item android:id="@+id/download_all"

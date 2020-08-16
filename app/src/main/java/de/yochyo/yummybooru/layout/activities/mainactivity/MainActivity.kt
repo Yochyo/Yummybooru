@@ -21,7 +21,7 @@ import de.yochyo.yummybooru.layout.activities.settingsactivity.SettingsActivity
 import de.yochyo.yummybooru.layout.activities.fragments.ServerListViewFragment
 import de.yochyo.yummybooru.layout.activities.fragments.TagHistoryFragment
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
-import de.yochyo.yummybooru.layout.activities.subscriptionactivity.SubscriptionActivity
+import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.menus.SettingsNavView
 import de.yochyo.yummybooru.updater.AutoUpdater
@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
 
     fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.nav_subs -> startActivity(Intent(this, SubscriptionActivity::class.java))
+            R.id.nav_following -> startActivity(Intent(this, FollowingActivity::class.java))
             R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
             R.id.community -> startActivity(Intent(Intent.ACTION_VIEW).apply { data = Uri.parse("https://discord.gg/tbGCHpF") })
             R.id.nav_help -> Toast.makeText(this, getString(R.string.join_discord), Toast.LENGTH_SHORT).show()
@@ -88,6 +88,7 @@ class MainActivity : AppCompatActivity() {
         }
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

@@ -7,6 +7,6 @@
             android:id="@+id/picture_info_item_add_favorite"
             android:title=""/>
     <item
-            android:id="@+id/picture_info_item_subscribe"
+            android:id="@+id/picture_info_item_following"
             android:title=""/>
 </menu>

@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout.activities.subscriptionactivity
+package de.yochyo.yummybooru.layout.activities.followingactivity
 
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -20,14 +20,14 @@ import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Tag>) : SelectableRecyclerViewAdapter<SubscribedTagViewHolder>(activity, R.menu.subscription_activity_selection_menu) {
+class FollowingTagAdapter(val activity: FollowingActivity, s: Collection<Tag>) : SelectableRecyclerViewAdapter<FollowingTagViewHolder>(activity, R.menu.following_activity_selection_menu) {
     private val db = activity.db
-    val util = SubscriptionCountUtil(activity)
+    val util = FollowingCountUtil(activity)
 
-    private var subs: Collection<Tag> = s
+    private var following: Collection<Tag> = s
 
-    fun updateSubs(s: Collection<Tag>) {
-        subs = s
+    fun updateFollowing(s: Collection<Tag>) {
+        following = s
         notifyDataSetChanged()
     }
 
@@ -40,39 +40,39 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Tag
 
         onClickMenuItem.registerListener {
             when (it.menuItem.itemId) {
-                R.id.select_all -> if (selected.size == subs.size) unselectAll() else selectAll()
+                R.id.select_all -> if (selected.size == following.size) unselectAll() else selectAll()
                 R.id.open_selected -> {
                     Toast.makeText(activity, "Not yet implemented", Toast.LENGTH_SHORT).show()
                     unselectAll()
                 }
-                R.id.update_subs -> {
+                R.id.update_following -> {
                     ConfirmDialog {
-                        val select = selected.getSelected(subs)
+                        val select = selected.getSelected(following)
                         unselectAll()
-                        GlobalScope.launch { activity.updateSubs(select) }
-                    }.withTitle("Update selected subs?").build(activity)
+                        GlobalScope.launch { activity.updateFollowing(select) }
+                    }.withTitle("Update selected following?").build(activity)
                 }
             }
         }
     }
 
-    override fun setListeners(holder: SubscribedTagViewHolder) {
+    override fun setListeners(holder: FollowingTagViewHolder) {
         val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
         toolbar.setOnClickListener { clickHolder(holder) }
         toolbar.setOnLongClickListener { onLongClickViewHolder(holder); true }
     }
 
 
-    override fun createViewHolder(parent: ViewGroup): SubscribedTagViewHolder {
-        return SubscribedTagViewHolder(activity, activity.layoutInflater.inflate(R.layout.subscription_item_layout, parent, false) as FrameLayout)
+    override fun createViewHolder(parent: ViewGroup): FollowingTagViewHolder {
+        return FollowingTagViewHolder(activity, activity.layoutInflater.inflate(R.layout.subscription_item_layout, parent, false) as FrameLayout)
     }
 
     private fun deleteSubDialog(tag: Tag) {
         val b = AlertDialog.Builder(activity)
         b.setTitle(R.string.delete)
-        b.setMessage("${activity.getString(R.string.delete)} ${activity.getString(R.string.subscription)} ${tag.name}?")
+        b.setMessage("${activity.getString(R.string.delete)} ${activity.getString(R.string.following)} ${tag.name}?")
         b.setNegativeButton(R.string.no) { _, _ -> }
-        b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { tag.sub = null } }
+        b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { tag.following = null } }
         b.show()
     }
     private fun deleteTagDialog(tag: Tag) {
@@ -84,34 +84,34 @@ class SubscribedTagAdapter(val activity: SubscriptionActivity, s: Collection<Tag
         b.show()
     }
 
-    override fun getItemCount(): Int = subs.size
-    override fun onCreateViewHolder(parent: ViewGroup, position: Int): SubscribedTagViewHolder {
+    override fun getItemCount(): Int = following.size
+    override fun onCreateViewHolder(parent: ViewGroup, position: Int): FollowingTagViewHolder {
         val holder = super.onCreateViewHolder(parent, position)
         val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
         toolbar.inflateMenu(R.menu.activity_subscription_item_menu)
         toolbar.setOnMenuItemClickListener {
-            val sub = subs.elementAt(holder.adapterPosition)
+            val sub = following.elementAt(holder.adapterPosition)
             when (it.itemId) {
-                R.id.subscription_set_favorite -> sub.isFavorite = !sub.isFavorite
-                R.id.subscription_delete -> deleteSubDialog(sub)
-                R.id.subscription_delete_tag -> deleteTagDialog(sub)
+                R.id.following_set_favorite -> sub.isFavorite = !sub.isFavorite
+                R.id.unfollow -> deleteSubDialog(sub)
+                R.id.delete_tag -> deleteTagDialog(sub)
             }
             true
         }
         return holder
     }
 
-    override fun onBindViewHolder(holder: SubscribedTagViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: FollowingTagViewHolder, position: Int) {
         super.onBindViewHolder(holder, position)
         val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
         val text1 = toolbar.findViewById<TextView>(android.R.id.text1)
         val text2 = toolbar.findViewById<TextView>(android.R.id.text2)
-        val sub = subs.elementAt(position)
+        val sub = following.elementAt(position)
         text1.text = sub.name
         text1.setColor(sub.color)
         text1.underline(sub.isFavorite)
         text2.text = "${activity.getString(R.string.number_of_new_pictures)} ${util.getCount(sub)}"
-        Menus.initSubscriptionMenu(toolbar.menu, sub)
+        Menus.initFollowingMenu(toolbar.menu, sub)
         toolbar.menu.setGroupEnabled(0, selected.isEmpty()) //Cannot access menu when selecting items
     }
 }

@@ -5,7 +5,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".layout.activities.subscriptionactivity.SubscriptionActivity">
+        tools:context=".layout.activities.followingactivity.FollowingActivity">
 
     <com.google.android.material.appbar.AppBarLayout
             android:layout_height="wrap_content"
@@ -13,14 +13,14 @@
             android:theme="@style/AppTheme.AppBarOverlay">
 
         <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar_subs"
+                android:id="@+id/toolbar_following"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="?attr/colorPrimary"
                 app:popupTheme="@style/AppTheme.PopupOverlay"
                 app:layout_scrollFlags="scroll|enterAlwaysCollapsed|enterAlways">
             <androidx.appcompat.widget.SearchView
-                    android:id="@+id/sub_filter"
+                    android:id="@+id/following_filter"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
@@ -35,7 +35,7 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_subscription"/>
+    <include layout="@layout/content_following"/>
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

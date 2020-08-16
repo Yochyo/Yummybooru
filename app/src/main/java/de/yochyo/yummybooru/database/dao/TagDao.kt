@@ -1,9 +1,8 @@
 package de.yochyo.yummybooru.database.dao
 
-import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import de.yochyo.yummybooru.api.entities.Server
-import de.yochyo.yummybooru.api.entities.Sub
+import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.converter.ConvertBoolean
 import de.yochyo.yummybooru.database.converter.ConvertDate
@@ -11,8 +10,8 @@ import org.jetbrains.anko.db.*
 
 class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
     val parser = rowParser { name: String, type: Long, serverID: Long, isFavorite: Long, creation: Long, lastCount: Long?, lastID: Long? ->
-        val sub = if(lastID == null || lastCount == null) null else Sub(lastID.toInt(), lastCount.toInt())
-        Tag(name, type.toInt(), isFavorite > 0, 0, sub, ConvertDate.toDate(creation), serverID.toInt())
+        val following = if(lastID == null || lastCount == null) null else Following(lastID.toInt(), lastCount.toInt())
+        Tag(name, type.toInt(), isFavorite > 0, 0, following, ConvertDate.toDate(creation), serverID.toInt())
     }
 
     private companion object {
@@ -49,8 +48,8 @@ class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
                     SERVER_ID to tag.serverID,
                     IS_FAVORITE to ConvertBoolean.toInteger(tag.isFavorite),
                     CREATION to ConvertDate.toTimestamp(tag.creation),
-                    LAST_COUNT to tag.sub?.lastCount,
-                    LAST_ID to tag.sub?.lastID)
+                    LAST_COUNT to tag.following?.lastCount,
+                    LAST_ID to tag.following?.lastID)
         }
     }
 
@@ -72,8 +71,8 @@ class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
                     TYPE to tag.type,
                     IS_FAVORITE to ConvertBoolean.toInteger(tag.isFavorite),
                     CREATION to ConvertDate.toTimestamp(tag.creation),
-                    LAST_COUNT to tag.sub?.lastCount,
-                    LAST_ID to tag.sub?.lastID).whereArgs("$NAME = {$NAME} AND $SERVER_ID = {$SERVER_ID}", NAME to tag.name, SERVER_ID to tag.serverID).exec()
+                    LAST_COUNT to tag.following?.lastCount,
+                    LAST_ID to tag.following?.lastID).whereArgs("$NAME = {$NAME} AND $SERVER_ID = {$SERVER_ID}", NAME to tag.name, SERVER_ID to tag.serverID).exec()
         }
     }
 }

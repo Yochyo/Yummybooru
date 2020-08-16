@@ -5,12 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -174,10 +172,10 @@ class TagHistoryFragment : Fragment() {
                 val tag = tags.elementAt(adapterPosition)
                 when (it.itemId) {
                     R.id.main_search_favorite_tag -> tag.isFavorite = !tag.isFavorite
-                    R.id.main_search_subscribe_tag -> {
+                    R.id.main_search_follow_tag -> {
                         GlobalScope.launch {
-                            if (tag.sub == null) tag.addSub(ctx)
-                            else tag.sub = null
+                            if (tag.following == null) tag.addFollowing(ctx)
+                            else tag.following = null
                             withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
                         }
                     }

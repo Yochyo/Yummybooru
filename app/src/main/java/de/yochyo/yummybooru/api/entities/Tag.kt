@@ -6,7 +6,7 @@ import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.R
 import java.util.*
 
-open class Tag(val name: String, type: Int, isFavorite: Boolean = false, val count: Int = 0, sub: Sub? = null, val creation: Date = Date(), var serverID: Int = -1) : Comparable<Tag>, IObservableObject<Tag, Int> {
+open class Tag(val name: String, type: Int, isFavorite: Boolean = false, val count: Int = 0, following: Following? = null, val creation: Date = Date(), var serverID: Int = -1) : Comparable<Tag>, IObservableObject<Tag, Int> {
     var type = type
         set(value) {
             field = value
@@ -17,10 +17,10 @@ open class Tag(val name: String, type: Int, isFavorite: Boolean = false, val cou
             field = value
             trigger(CHANGED_FAVORITE)
         }
-    var sub = sub
+    var following = following
     set(value) {
-        var trig = CHANGED_SUB
-        if(field == null && value != null) trig = ADD_SUB
+        var trig = CHANGED_FOLLOWING
+        if(field == null && value != null) trig = FOLLOWING
         field = value
         trigger(trig)
     }
@@ -36,13 +36,15 @@ open class Tag(val name: String, type: Int, isFavorite: Boolean = false, val cou
 
         const val CHANGED_TYPE = 0
         const val CHANGED_FAVORITE = 1
-        const val CHANGED_SUB = 2
-        const val ADD_SUB = 3
+        const val CHANGED_FOLLOWING = 2
+        const val FOLLOWING = 3
     }
 
     //tag, change
     override val onChange = EventHandler<OnChangeObjectEvent<Tag, Int>>()
-    protected fun trigger(change: Int) = onChange.trigger(OnChangeObjectEvent(this, change))
+    protected fun trigger(change: Int){
+        onChange.trigger(OnChangeObjectEvent(this, change))
+    }
 
     val color: Int
         get() {

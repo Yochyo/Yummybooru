@@ -65,7 +65,7 @@ private object ToastListeners {
     fun registerListeners(context: Context) {
         val db = context.db
         onAddTags = db.tags.registerOnAddElementsListener { //On add (favorite) tag
-            GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(context, "Add ${if (element.sub != null) "sub" else if (element.isFavorite) "favorite tag" else "tag"} [${element.name}]", Toast.LENGTH_SHORT).show() } }
+            GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(context, "${if (element.following != null) "Following" else if (element.isFavorite) "Favorite tag" else "Add tag"} [${element.name}]", Toast.LENGTH_SHORT).show() } }
         }
         onRemoveTags = db.tags.registerOnRemoveElementsListener {//On remove tag
             GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(context, "\"Delete tag [${element.name}]\"", Toast.LENGTH_SHORT).show() } }
@@ -80,10 +80,10 @@ private object ToastListeners {
                     }
                     Tag.CHANGED_TYPE -> Toast.makeText(context,
                             "Changed tag [${it.new.name}]", Toast.LENGTH_SHORT).show()
-                    Tag.CHANGED_SUB -> Toast.makeText(context,
-                            "${if (it.new.sub == null) "Deleted" else "Changed"} sub [${it.new.name}]", Toast.LENGTH_SHORT).show()
-                    Tag.ADD_SUB -> Toast.makeText(context,
-                            "Add sub [${it.new.name}]", Toast.LENGTH_SHORT).show()
+                    Tag.CHANGED_FOLLOWING -> Toast.makeText(context,
+                            "${if (it.new.following == null) "Unfollowing" else "Updated following"} [${it.new.name}]", Toast.LENGTH_SHORT).show()
+                    Tag.FOLLOWING -> Toast.makeText(context,
+                            "Following [${it.new.name}]", Toast.LENGTH_SHORT).show()
                 }
             }
         }

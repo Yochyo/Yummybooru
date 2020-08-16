@@ -5,8 +5,8 @@
           android:title="Show images"
           android:icon="@drawable/play"
           app:showAsAction="ifRoom"/>
-    <item android:id="@+id/update_subs"
-          android:title="Update all subs"
+    <item android:id="@+id/update_following"
+          android:title="Update all following"
           android:icon="@drawable/sync"
           app:showAsAction="ifRoom"/>
     <item android:id="@+id/select_all"

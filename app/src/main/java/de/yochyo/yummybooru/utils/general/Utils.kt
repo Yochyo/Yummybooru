@@ -12,8 +12,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.booruapi.objects.Tag
-import de.yochyo.yummybooru.api.entities.Server
-import de.yochyo.yummybooru.api.entities.Sub
+import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.saveDownload
 import de.yochyo.yummybooru.utils.ManagerWrapper
@@ -71,27 +70,27 @@ fun TextView.underline(underline: Boolean) {
 
 fun Tag.toBooruTag(context: Context) = de.yochyo.yummybooru.api.entities.Tag(name, type, false, count, null, serverID = context.db.currentServer.id)
 
-suspend fun de.yochyo.yummybooru.api.entities.Tag.addSub(context: Context): Boolean {
+suspend fun de.yochyo.yummybooru.api.entities.Tag.addFollowing(context: Context): Boolean {
     val s = context.db.currentServer
     val t = s.getTag(context, name)
     val id = s.newestID()
     return if (t != null && id != null) {
-        this.sub = Sub(id, t.count)
+        this.following = Following(id, t.count)
         true
     } else false
 }
 
-suspend fun createTagAndOrChangeSubState(context: Context, name: String): de.yochyo.yummybooru.api.entities.Tag? {
+suspend fun createTagAndOrChangeFollowingState(context: Context, name: String): de.yochyo.yummybooru.api.entities.Tag? {
     val db = context.db
     val tag = db.getTag(name)
     if (tag != null) {
-        if (tag.sub == null) tag.addSub(context)
-        else tag.sub = null
+        if (tag.following == null) tag.addFollowing(context)
+        else tag.following = null
         return tag
     } else {
         val t = context.db.currentServer.getTag(context, name)
         if (t != null) {
-            t.addSub(context)
+            t.addFollowing(context)
             db.tags += t
             return t
         }

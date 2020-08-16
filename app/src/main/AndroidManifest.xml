@@ -50,8 +50,8 @@
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-                android:name="de.yochyo.yummybooru.layout.activities.subscriptionactivity.SubscriptionActivity"
-                android:label="Subs"
+                android:name="de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity"
+                android:label="Following"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity

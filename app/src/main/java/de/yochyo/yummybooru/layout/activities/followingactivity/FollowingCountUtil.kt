@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout.activities.subscriptionactivity
+package de.yochyo.yummybooru.layout.activities.followingactivity
 
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.eventcollection.events.OnAddElementsEvent
@@ -8,8 +8,8 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.general.tryCatchSuspended
 import kotlinx.coroutines.*
 
-class SubscriptionCountUtil(val activity: SubscriptionActivity) {
-    var adapter: RecyclerView.Adapter<SubscribedTagViewHolder>? = null
+class FollowingCountUtil(val activity: FollowingActivity) {
+    var adapter: RecyclerView.Adapter<FollowingTagViewHolder>? = null
     private val counts = HashMap<String, Int>()
     private val mutex = Any()
 
@@ -18,8 +18,8 @@ class SubscriptionCountUtil(val activity: SubscriptionActivity) {
         while (isActive) {
             tryCatchSuspended {
                 for (i in activity.layoutManager.findFirstVisibleItemPosition()..activity.layoutManager.findLastVisibleItemPosition()) {
-                    val sub = activity.filteringSubList.elementAt(i)
-                    cacheCount(sub.name)
+                    val follow = activity.filteringFollowingList.elementAt(i)
+                    cacheCount(follow.name)
                 }
             }
         }
@@ -33,7 +33,7 @@ class SubscriptionCountUtil(val activity: SubscriptionActivity) {
 
     fun getCount(tag: Tag): Int {
         GlobalScope.launch { cacheCount(tag.name) }
-        val countDifference = getRawCount(tag.name) - (tag.sub?.lastCount ?: 0)
+        val countDifference = getRawCount(tag.name) - (tag.following?.lastCount ?: 0)
         return if (countDifference > 0) countDifference else 0
     }
 
@@ -46,7 +46,7 @@ class SubscriptionCountUtil(val activity: SubscriptionActivity) {
                 newCount = t?.count ?: 0
                 setCount(name, newCount)
                 if (oldValue != newCount) {
-                    val newIndex = activity.filteringSubList.indexOfFirst { it.name == name }
+                    val newIndex = activity.filteringFollowingList.indexOfFirst { it.name == name }
                     if (newIndex >= 0)
                         withContext(Dispatchers.Main) { adapter?.notifyItemChanged(newIndex) }
                 }

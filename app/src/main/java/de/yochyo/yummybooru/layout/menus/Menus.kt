@@ -11,8 +11,8 @@ object Menus {
         with(menu.findItem(R.id.main_search_favorite_tag)) {
             title = if (tag.isFavorite) "Unfavorite" else "Favorite"
         }
-        with(menu.findItem(R.id.main_search_subscribe_tag)) {
-            title = if (tag.sub == null) "Subscribe" else "Unsubscribe"
+        with(menu.findItem(R.id.main_search_follow_tag)) {
+            title = if (tag.following == null) "Follow" else "Unfollow"
         }
         with(menu.findItem(R.id.main_search_delete_tag)) {
             title = "Delete"
@@ -24,7 +24,7 @@ object Menus {
             menu.findItem(R.id.add_tag).icon = context.drawable(R.drawable.add)
             menu.findItem(R.id.add_tag).title = "Add to history"
             menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.unfavorite)
-            menu.findItem(R.id.favorite).title = "Subscribe"
+            menu.findItem(R.id.favorite).title = "Follow"
         } else {
             menu.findItem(R.id.add_tag).icon = context.drawable(R.drawable.remove)
             menu.findItem(R.id.add_tag).title = "Remove from history"
@@ -36,12 +36,12 @@ object Menus {
                 menu.findItem(R.id.favorite).title = "Favorite"
             }
 
-            if (tag.sub == null) {
-                menu.findItem(R.id.subscribe).icon = context.drawable(R.drawable.star_empty)
-                menu.findItem(R.id.subscribe).title = "Subscribe"
+            if (tag.following == null) {
+                menu.findItem(R.id.follow).icon = context.drawable(R.drawable.star_empty)
+                menu.findItem(R.id.follow).title = "Follow"
             } else {
-                menu.findItem(R.id.subscribe).icon = context.drawable(R.drawable.star)
-                menu.findItem(R.id.subscribe).title = "Unsubscribe"
+                menu.findItem(R.id.follow).icon = context.drawable(R.drawable.star)
+                menu.findItem(R.id.follow).title = "Unfollow"
             }
         }
     }
@@ -53,19 +53,19 @@ object Menus {
         with(menu.findItem(R.id.picture_info_item_add_favorite)) {
             title = if (tag.isFavorite) "Unfavorite" else "Favorite"
         }
-        with(menu.findItem(R.id.picture_info_item_subscribe)) {
-            title = if (tag.sub == null) "Subscribe" else "Unsubscribe"
+        with(menu.findItem(R.id.picture_info_item_following)) {
+            title = if (tag.following == null) "Follow" else "Unfollow"
         }
     }
 
-    fun initSubscriptionMenu(menu: Menu, sub: Tag) {
-        with(menu.findItem(R.id.subscription_set_favorite)) {
-            title = if (sub.isFavorite) "Unfavorite" else "Favorite"
+    fun initFollowingMenu(menu: Menu, following: Tag) {
+        with(menu.findItem(R.id.following_set_favorite)) {
+            title = if (following.isFavorite) "Unfavorite" else "Favorite"
         }
-        with(menu.findItem(R.id.subscription_delete)) {
+        with(menu.findItem(R.id.unfollow)) {
             title = "Delete"
         }
-        with(menu.findItem(R.id.subscription_delete_tag)) {
+        with(menu.findItem(R.id.delete_tag)) {
             title = "Delete tag"
         }
     }

@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout.activities.subscriptionactivity
+package de.yochyo.yummybooru.layout.activities.followingactivity
 
 import android.os.Bundle
 import android.view.Menu
@@ -12,36 +12,36 @@ import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventcollection.observablecollection.ObservingSubEventCollection
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.entities.Sub
+import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.utils.general.FilteringEventCollection
-import de.yochyo.yummybooru.utils.general.createTagAndOrChangeSubState
-import kotlinx.android.synthetic.main.activity_subscription.*
-import kotlinx.android.synthetic.main.content_subscription.*
+import de.yochyo.yummybooru.utils.general.createTagAndOrChangeFollowingState
+import kotlinx.android.synthetic.main.activity_following.*
+import kotlinx.android.synthetic.main.content_following.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 
-class SubscriptionActivity : AppCompatActivity() {
-    lateinit var filteringSubList: FilteringEventCollection<Tag, Int>
+class FollowingActivity : AppCompatActivity() {
+    lateinit var filteringFollowingList: FilteringEventCollection<Tag, Int>
     suspend fun filter(name: String) {
-        val result = filteringSubList.filter(name)
+        val result = filteringFollowingList.filter(name)
         withContext(Dispatchers.Main) {
             layoutManager.scrollToPosition(0)
-            adapter.updateSubs(result)
+            adapter.updateFollowing(result)
         }
     }
 
-    private val updateSubsListener = Listener.create<OnUpdateEvent<Tag>> { GlobalScope.launch(Dispatchers.Main) { adapter.updateSubs(filteringSubList) } }
-    var onClickedData: SubData? = null
+    private val updateFollowingListener = Listener.create<OnUpdateEvent<Tag>> { GlobalScope.launch(Dispatchers.Main) { adapter.updateFollowing(filteringFollowingList) } }
+    var onClickedData: FollowingData? = null
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: SubscribedTagAdapter
+    private lateinit var adapter: FollowingTagAdapter
     lateinit var layoutManager: LinearLayoutManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,16 +49,16 @@ class SubscriptionActivity : AppCompatActivity() {
         val oldName = savedInstanceState?.getString("name")
         val oldId = savedInstanceState?.getInt("id")
         val oldCount = savedInstanceState?.getInt("count")
-        if (oldName != null && oldId != null && oldCount != null) onClickedData = SubData(oldName, oldId, oldCount)
-        filteringSubList = FilteringEventCollection({ ObservingSubEventCollection(TreeSet(), db.tags) { it.sub != null } }, { it.name })
-        setContentView(R.layout.activity_subscription)
-        setSupportActionBar(toolbar_subs)
+        if (oldName != null && oldId != null && oldCount != null) onClickedData = FollowingData(oldName, oldId, oldCount)
+        filteringFollowingList = FilteringEventCollection({ ObservingSubEventCollection(TreeSet(), db.tags) { it.following != null } }, { it.name })
+        setContentView(R.layout.activity_following)
+        setSupportActionBar(toolbar_following)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        recyclerView = subs_recycler
-        recyclerView.layoutManager = LinearLayoutManager(this@SubscriptionActivity).apply { layoutManager = this }
+        recyclerView = following_recycler
+        recyclerView.layoutManager = LinearLayoutManager(this@FollowingActivity).apply { layoutManager = this }
 
-        recyclerView.adapter = SubscribedTagAdapter(this, filteringSubList).apply { adapter = this;util.adapter = this }
-        sub_filter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        recyclerView.adapter = FollowingTagAdapter(this, filteringFollowingList).apply { adapter = this;util.adapter = this }
+        following_filter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
                 if (newText != null) GlobalScope.launch { filter(newText) }
                 return true
@@ -66,11 +66,11 @@ class SubscriptionActivity : AppCompatActivity() {
 
             override fun onQueryTextSubmit(query: String?) = true
         })
-        db.tags.registerOnUpdateListener(updateSubsListener)
-        subs_swipe_refresh_layout.setOnRefreshListener {
-            subs_swipe_refresh_layout.isRefreshing = false
+        db.tags.registerOnUpdateListener(updateFollowingListener)
+        following_swipe_refresh_layout.setOnRefreshListener {
+            following_swipe_refresh_layout.isRefreshing = false
             clear()
-            adapter.updateSubs(filteringSubList)
+            adapter.updateFollowing(filteringFollowingList)
         }
     }
 
@@ -79,7 +79,7 @@ class SubscriptionActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.subscription_menu, menu)
+        menuInflater.inflate(R.menu.following_menu, menu)
         return true
     }
 
@@ -98,7 +98,7 @@ class SubscriptionActivity : AppCompatActivity() {
         adapter.util.paused = false
         val clickedData = onClickedData
         if (clickedData != null) {
-            val tag = filteringSubList.find { it.name == clickedData.name }
+            val tag = filteringFollowingList.find { it.name == clickedData.name }
             if (tag != null) {
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
@@ -106,7 +106,7 @@ class SubscriptionActivity : AppCompatActivity() {
                 builder.setOnCancelListener { onClickedData = null }
                 builder.setPositiveButton(R.string.yes) { _, _ ->
                     GlobalScope.launch(Dispatchers.Main) {
-                        tag.sub = Sub(clickedData.idWhenClicked, clickedData.countWhenClicked)
+                        tag.following = Following(clickedData.idWhenClicked, clickedData.countWhenClicked)
                         onClickedData = null
                     }
                 }
@@ -123,35 +123,35 @@ class SubscriptionActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
-            R.id.add_subscription -> {
+            R.id.add_following -> {
                 AddTagDialog {
                     GlobalScope.launch {
-                        val sub = createTagAndOrChangeSubState(this@SubscriptionActivity, it.text.toString())
+                        val following = createTagAndOrChangeFollowingState(this@FollowingActivity, it.text.toString())
                         withContext(Dispatchers.Main) {
-                            layoutManager.scrollToPositionWithOffset(filteringSubList.indexOfFirst { it.name == sub?.name }, 0)
+                            layoutManager.scrollToPositionWithOffset(filteringFollowingList.indexOfFirst { it.name == following?.name }, 0)
                         }
                     }
-                }.withTitle(getString(R.string.add_subscription)).build(this)
+                }.withTitle(getString(R.string.add_following)).build(this)
             }
-            R.id.update_subs -> {
+            R.id.update_following -> {
                 ConfirmDialog {
-                    GlobalScope.launch { updateSubs(filteringSubList) }
-                }.withTitle("Update all subs?").build(this@SubscriptionActivity)
+                    GlobalScope.launch { updateFollowing(filteringFollowingList) }
+                }.withTitle("Update all following?").build(this@FollowingActivity)
             }
         }
         return super.onOptionsItemSelected(item)
     }
 
-    suspend fun updateSubs(subs: Collection<Tag>) {
+    suspend fun updateFollowing(following: Collection<Tag>) {
         withContext(Dispatchers.IO) {
             val id = db.currentServer.newestID()
             if (id != null) {
-                subs.map {
+                following.map {
                     launch {
-                        val tag = db.currentServer.getTag(this@SubscriptionActivity, it.name)
+                        val tag = db.currentServer.getTag(this@FollowingActivity, it.name)
                         if (tag != null) {
                             val tagInDb = db.getTag(tag.name)
-                            tagInDb?.sub = Sub(id, tag.count)
+                            tagInDb?.following = Following(id, tag.count)
                         }
                     }
                 }
@@ -161,11 +161,11 @@ class SubscriptionActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        db.tags.removeOnUpdateListener(updateSubsListener)
+        db.tags.removeOnUpdateListener(updateFollowingListener)
         adapter.util.close()
     }
 
 
 }
 
-class SubData(val name: String, val idWhenClicked: Int, val countWhenClicked: Int)
+class FollowingData(val name: String, val idWhenClicked: Int, val countWhenClicked: Int)

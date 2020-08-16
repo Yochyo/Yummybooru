@@ -19,7 +19,7 @@ import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
 import de.yochyo.yummybooru.utils.ManagerWrapper
-import de.yochyo.yummybooru.utils.general.createTagAndOrChangeSubState
+import de.yochyo.yummybooru.utils.general.createTagAndOrChangeFollowingState
 import de.yochyo.yummybooru.utils.general.getCurrentManager
 import de.yochyo.yummybooru.utils.general.getOrRestoreManager
 import de.yochyo.yummybooru.utils.general.setCurrentManager
@@ -180,9 +180,9 @@ open class PreviewActivity : AppCompatActivity() {
                 }
                 else db.tags -= tag
             }
-            R.id.subscribe -> {
+            R.id.follow -> {
                 GlobalScope.launch {
-                    createTagAndOrChangeSubState(this@PreviewActivity, m.toString())
+                    createTagAndOrChangeFollowingState(this@PreviewActivity, m.toString())
                 }
             }
         }

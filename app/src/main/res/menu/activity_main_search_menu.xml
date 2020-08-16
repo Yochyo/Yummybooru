@@ -4,7 +4,7 @@
             android:id="@+id/main_search_favorite_tag"
             android:title=""/>
     <item
-            android:id="@+id/main_search_subscribe_tag"
+            android:id="@+id/main_search_follow_tag"
             android:title=""/>
     <item
             android:id="@+id/main_search_delete_tag"

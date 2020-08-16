@@ -10,7 +10,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
 import de.yochyo.yummybooru.layout.menus.Menus
-import de.yochyo.yummybooru.utils.general.createTagAndOrChangeSubState
+import de.yochyo.yummybooru.utils.general.createTagAndOrChangeFollowingState
 import de.yochyo.yummybooru.utils.general.setColor
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import de.yochyo.yummybooru.utils.general.underline
@@ -48,9 +48,9 @@ class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Inf
                         withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
                     }
                 }
-                R.id.picture_info_item_subscribe -> {
+                R.id.picture_info_item_following -> {
                     GlobalScope.launch {
-                        createTagAndOrChangeSubState(activity, tag.name)
+                        createTagAndOrChangeFollowingState(activity, tag.name)
                     }
                 }
             }

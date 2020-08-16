@@ -1,9 +1,6 @@
 package de.yochyo.yummybooru.layout.activities.pictureactivity
 
-import android.view.GestureDetector
-import android.view.Gravity
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.LinearLayout
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
@@ -130,9 +127,13 @@ class PictureAdapter(val activity: PictureActivity, val viewPager: ViewPager, va
                         else -> false
                     }
                 }
+
+                override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+                    onClick()
+                    return true
+                }
             })
             layout.setOnTouchListener { _, event -> detector.onTouchEvent(event) }
-            view.setOnClickListener { onClick() }
             return layout
         }
 

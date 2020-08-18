@@ -92,10 +92,10 @@ class TagHistoryFragment : Fragment() {
     private fun configureDrawerToolbar(toolbar: Toolbar) {
         toolbar.inflateMenu(R.menu.main_search_nav_menu)
         toolbar.setNavigationIcon(R.drawable.clear)
-        toolbar.navigationContentDescription = "Unselect all tags"
+        toolbar.navigationContentDescription = getString(R.string.unselect_tags)
         toolbar.setNavigationOnClickListener {
             selectedTags.clear()
-            Toast.makeText(ctx, "Unselected all tags", Toast.LENGTH_SHORT).show()
+            Toast.makeText(ctx, getString(R.string.unselected_tags), Toast.LENGTH_SHORT).show()
             tagAdapter.notifyDataSetChanged()
         }
 
@@ -181,7 +181,7 @@ class TagHistoryFragment : Fragment() {
                     }
                     R.id.main_search_delete_tag -> {
                         ConfirmDialog { ctx.db.tags -= tag }
-                                .withTitle("Delete").withMessage("Delete tag ${tag.name}").build(ctx)
+                                .withTitle(getString(R.string.delete_tag)).withMessage(getString(R.string.delete_tag_with_name, tag.name)).build(ctx)
                     }
                 }
                 true

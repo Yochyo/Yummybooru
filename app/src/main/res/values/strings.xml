@@ -2,83 +2,111 @@
     <string name="app_name">Yummybooru</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="enter_r18">Enter R-18 mode</string>
-    <string name="leave_r18">Leave R-18 mode</string>
-    <string name="title_activity_preview">PreviewActivity</string>
-    <string name="title_activity_picture">PictureActivity</string>
-    <string name="title_activity_settings">SettingsActivity</string>
-    <string name="title_activity_following">FollowingActivity</string>
 
-    <!-- Strings related to Settings -->
-
-    <!-- Example General settings -->
-    <string name="pref_header_general">General</string>
-
-    <string name="pref_description_social_recommendations">Recommendations for people to contact based on your message
-        history
-    </string>
-
-    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
-
-   <string-array name="tag_filter">
-       <item>:</item>
-       <item>:></item>
-       <item>:>=</item>
-       <item>:&lt;</item>
-       <item>:&lt;=</item>
-   </string-array>
-
-    <string-array name="post_limit">
-        <item>30</item>
-        <item>50</item>
-        <item>100</item>
-        <item>150</item>
-        <item>200</item>
-    </string-array>
-
-    <string name="save">Save</string>
-    <string name="update_last_id">Update last id?</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
-    <string name="add_following">Following</string>
-    <string name="unfavorite">Unfavorite</string>
-    <string name="set_favorite">Set favorite</string>
-    <string name="favorite">Favorite</string>
+    <!-- General -->
+    <string name="add_tag">Add tag</string>
+    <string name="add_tag_with_name">Add tag [%s]</string>
     <string name="delete">Delete</string>
-    <string name="followed">Followed</string>
-    <string name="deleted">Deleted</string>
-    <string name="number_of_new_pictures">New pictures:</string>
-    <string name="not_inplemented">Not yet implemented</string>
-    <string name="add_tag">Add Tag</string>
-    <string name="add_favorite">Add Favorite</string>
+    <string name="not_implemented">Not yet implemented</string>
+    <string name="name">Name</string>
+
+    <!-- Activities -->
+    <string name="unfavorite">Unfavorite</string>
+    <string name="favorite">Favorite</string>
     <string name="unfollow">Unfollow</string>
-    <string name="download">Download</string>
-    <string name="downloaded">Downloaded</string>
-    <string name="add_server">Add Server</string>
+    <string name="follow">Follow</string>
+    <string name="add_to_history">Add to history</string>
+    <string name="remove_from_history">Remove from history</string>
+
+    <!-- Mainactivity -->
+    <string name="discord_link">https://discord.gg/tbGCHpF</string>
     <string name="join_discord">Join Discord</string>
-    <string name="edit_server">Edit Server</string>
-    <string name="delete_server">Delete Server</string>
-    <string name="cannot_delete_server">Cannot delete selected server</string>
-    <string name="edited">Edited</string>
-    <string name="do_you_want_to_delete_the_server">Do you want to delete the server</string>
-    <string name="selected_server">Selected Server</string>
-    <string name="change_server">Change Server</string>
-    <string name="ok">OK</string>
-    <string name="download_all">Download all</string>
-    <string name="show_info">Show info</string>
-    <string name="search">Search</string>
+    <string name="add_server">Add server</string>
+    <string name="add_server_with_name">Add server [%s]</string>
     <string name="following">Following</string>
     <string name="settings">Settings</string>
     <string name="community">Community</string>
     <string name="help">Help</string>
-    <string name="add">Add</string>
-    <string name="name">Name</string>
-    <string name="enable_safe_filter">Enable safe filter</string>
-    <string name="url">Url</string>
-    <string name="username">Username</string>
-    <string name="password">Password/Api</string>
-    <string name="tag">Tag</string>
-    <string name="download_all_pictures">Download all pictures</string>
-    <string name="download_all_visible">Download all visible pictures</string>
 
+
+    <!-- Previewactivity -->
+    <string name="manager_end">End</string>
+
+    <!-- PictureActivity -->
+    <string name="download">Download</string>
+    <string name="show_info">Show info</string>
+    <!-- FollowingActivity -->
+    <string name="save">Save</string>
+    <string name="follow_tag">Follow tag</string>
+    <string name="update_followed_tag">Update followed tag</string>
+    <string name="update_followed_tags">Update followed tags</string>
+    <string name="update_selected_followed_tags">Update selected followed tags</string>
+    <string name="update_followed_tag_with_name">Update tag [%s]</string>
+    <string name="unfollow_tag_with_name">Unfollow tag [%s]</string>
+    <string name="number_of_new_pictures">New pictures: %d</string>
+
+    <!-- SettingsActivity-->
+    <string name="new_backup">New backup at [%s]</string>
+    <string name="checking_for_updates">Checking for updates</string>
+    <string name="restored_backup">Restored backup</string>
+    <string name="wait_for_backup_restore">Please wait until the backup is restored</string>
+    <!-- ServerListFragment -->
+    <string name="edit_server">Edit server</string>
+    <string name="edit_server_with_name">Edit server [%s]</string>
+    <string name="delete_server">Delete server</string>
+    <string name="delete_server_with_name">Delete server [%s]</string>
+    <string name="cannot_delete_server">Cannot delete the selected server</string>
+
+    <!-- TagHistoryFragment -->
+    <string name="unselect_tags">Unselect all tags</string>
+    <string name="unselected_tags">Unselected all tags</string>
+    <string name="delete_tag">Delete tag</string>
+    <string name="delete_tag_with_name">Delete tag [%s]</string>
+
+
+    <!-- Dialogs -->
+    <string name="positive_button_name">Ok</string>
+    <string name="negative_button_name">No</string>
+    <string name="confirm">Confirm</string>
+
+    <!-- AddServerDialog -->
+    <string name="hint_password">Password</string>
+    <string name="hint_api_key">Api key</string>
+    <string name="hint_password_or_api_key">Password/Api key</string>
+    <string name="bad_login">(Probably) bad login</string>
+    <string name="url_not_supported">Url is wrong or not supported</string>
+
+    <!-- AddSpecialTagDialog -->
+    <string name="add_special_tag_dialog_title">Post filter</string>
+    <string-array name="tag_filter">
+        <item>:</item>
+        <item>:></item>
+        <item>:>=</item>
+        <item>:&lt;</item>
+        <item>:&lt;=</item>
+    </string-array>
+
+    <!-- AddTagDialog -->
+    <string name="search_tag">Search</string>
+    <string name="tag_hint">Tag</string>
+    <string name="url_hint">Url</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password/Api</string>
+
+    <!-- DownloadPostDialog -->
+    <string name="download_all">Download all</string>
+    <string name="check_storage_space">Make sure you have enough storage space</string>
+
+    <!-- ShowChangelogsDialog -->
+    <string name="changelogs">Changelogs</string>
+
+
+    <!-- Events -->
+    <string name="download_post_with_id">Download %d</string>
+    <string name="selected_server_with_name">Selected server [%s]</string>
+
+    <!-- Services -->
+    <string name="downloading">Downloading</string>
+    <string name="downloading_part_n_of_m">Downloading %d/%d</string>
+    <string name="update_to_version">Update now to version %s</string>
 </resources>

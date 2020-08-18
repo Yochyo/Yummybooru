@@ -42,7 +42,7 @@ class FollowingTagAdapter(val activity: FollowingActivity, s: Collection<Tag>) :
             when (it.menuItem.itemId) {
                 R.id.select_all -> if (selected.size == following.size) unselectAll() else selectAll()
                 R.id.open_selected -> {
-                    Toast.makeText(activity, "Not yet implemented", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, activity.getString(R.string.not_implemented), Toast.LENGTH_SHORT).show()
                     unselectAll()
                 }
                 R.id.update_following -> {
@@ -50,7 +50,7 @@ class FollowingTagAdapter(val activity: FollowingActivity, s: Collection<Tag>) :
                         val select = selected.getSelected(following)
                         unselectAll()
                         GlobalScope.launch { activity.updateFollowing(select) }
-                    }.withTitle("Update selected following?").build(activity)
+                    }.withTitle(activity.getString(R.string.update_selected_followed_tags)).build(activity)
                 }
             }
         }
@@ -70,17 +70,17 @@ class FollowingTagAdapter(val activity: FollowingActivity, s: Collection<Tag>) :
     private fun deleteSubDialog(tag: Tag) {
         val b = AlertDialog.Builder(activity)
         b.setTitle(R.string.delete)
-        b.setMessage("${activity.getString(R.string.delete)} ${activity.getString(R.string.following)} ${tag.name}?")
-        b.setNegativeButton(R.string.no) { _, _ -> }
-        b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { tag.following = null } }
+        b.setMessage(activity.getString(R.string.unfollow_tag_with_name, tag.name))
+        b.setNegativeButton(R.string.negative_button_name) { _, _ -> }
+        b.setPositiveButton(R.string.positive_button_name) { _, _ -> GlobalScope.launch { tag.following = null } }
         b.show()
     }
     private fun deleteTagDialog(tag: Tag) {
         val b = AlertDialog.Builder(activity)
         b.setTitle(R.string.delete)
-        b.setMessage("${activity.getString(R.string.delete)} ${activity.getString(R.string.tag)} ${tag.name}?")
-        b.setNegativeButton(R.string.no) { _, _ -> }
-        b.setPositiveButton(R.string.yes) { _, _ -> GlobalScope.launch { db.tags -= tag } }
+        b.setMessage(activity.getString(R.string.delete_tag_with_name, tag.name))
+        b.setNegativeButton(R.string.negative_button_name) { _, _ -> }
+        b.setPositiveButton(R.string.positive_button_name) { _, _ -> GlobalScope.launch { db.tags -= tag } }
         b.show()
     }
 
@@ -110,8 +110,8 @@ class FollowingTagAdapter(val activity: FollowingActivity, s: Collection<Tag>) :
         text1.text = sub.name
         text1.setColor(sub.color)
         text1.underline(sub.isFavorite)
-        text2.text = "${activity.getString(R.string.number_of_new_pictures)} ${util.getCount(sub)}"
-        Menus.initFollowingMenu(toolbar.menu, sub)
+        text2.text = activity.getString(R.string.number_of_new_pictures, util.getCount(sub))
+        Menus.initFollowingMenu(activity, toolbar.menu, sub)
         toolbar.menu.setGroupEnabled(0, selected.isEmpty()) //Cannot access menu when selecting items
     }
 }

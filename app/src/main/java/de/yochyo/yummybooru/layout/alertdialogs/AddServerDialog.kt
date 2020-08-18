@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 
 class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
     var server = Server("", "", "", "", "")
-    var title = "Add server"
+    var title: String? = null
 
     fun withServer(server: Server) = apply { this.server = server }
     fun withTitle(s: String) = apply { title = s }
@@ -30,28 +30,27 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
         adapter.add("auto")
         adapter.addAll(Apis.apis)
         spinner.adapter = adapter
-        builder.setMessage(context.getString(R.string.add_server))
+        builder.setTitle(title ?: context.getString(R.string.add_server))
+
+        for (spin in 0 until spinner.adapter.count)
+            if ((spinner.adapter.getItem(spin) as String).equals(server.apiName, true)) {
+                spinner.setSelection(spin)
+                break
+            }
+
 
         val url = layout.findViewById<TextView>(R.id.add_server_url).apply { text = server.url }
         val username = layout.findViewById<TextView>(R.id.add_server_username).apply { text = server.username }
         val password = layout.findViewById<TextView>(R.id.add_server_password).apply { text = server.password }
 
         val name = layout.findViewById<TextView>(R.id.add_server_name).apply { text = server.name }
-        val apiSpinner = layout.findViewById<Spinner>(R.id.add_server_api).apply {
-            //Falls ein Server übergeben wurde
-            for (spin in 0 until this.adapter.count)
-                if ((this.adapter.getItem(spin) as String).equals(server.apiName, true)) {
-                    this.setSelection(spin)
-                    break
-                }
-        }
-        apiSpinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val item = apiSpinner.selectedItem.toString()
-                password.hint = when(item){
-                    "auto" -> "Password/Api key"
-                    "danbooru" -> "Api key"
-                    else -> "Password"
+                val item = spinner.selectedItem.toString()
+                password.hint = when (item) {
+                    "auto" -> context.getString(R.string.hint_password_or_api_key)
+                    "danbooru" -> context.getString(R.string.hint_api_key)
+                    else -> context.getString(R.string.hint_password)
                 }
             }
 
@@ -60,18 +59,18 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
             }
         }
 
-        builder.setPositiveButton(context.getString(R.string.ok)) { _, _ ->
+        builder.setPositiveButton(context.getString(R.string.positive_button_name)) { _, _ ->
             GlobalScope.launch(Dispatchers.IO) {
                 try {
-                    val s = Server(name.text.toString(), parseURL(url.text.toString()), apiSpinner.selectedItem.toString(), username.text.toString(),
+                    val s = Server(name.text.toString(), parseURL(url.text.toString()), spinner.selectedItem.toString(), username.text.toString(),
                             password.text.toString(), id = server.id)
                     if (s.apiName == "Auto") s.apiName = getCorrectApi(context, s)
                     if (s.newestID() == null)
-                        withContext(Dispatchers.Main) { Toast.makeText(context, "(Probably) bad login", Toast.LENGTH_LONG).show() }
+                        withContext(Dispatchers.Main) { Toast.makeText(context, context.getString(R.string.bad_login), Toast.LENGTH_LONG).show() }
                     withContext(Dispatchers.Main) { runOnPositive(s) }
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    withContext(Dispatchers.Main) { Toast.makeText(context, "Url is wrong or not supported", Toast.LENGTH_LONG).show() }
+                    withContext(Dispatchers.Main) { Toast.makeText(context, context.getString(R.string.url_not_supported), Toast.LENGTH_LONG).show() }
                 }
             }
         }

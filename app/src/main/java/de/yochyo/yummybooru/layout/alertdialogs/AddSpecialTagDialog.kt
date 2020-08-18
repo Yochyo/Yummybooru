@@ -3,19 +3,15 @@ package de.yochyo.yummybooru.layout.alertdialogs
 import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import java.lang.StringBuilder
 
 class AddSpecialTagDialog {
-    var title = "Tag filter"
+    var title: String? = null
     fun withTitle(s: String) = apply { title = s }
 
     fun build(context: Context) {

@@ -34,7 +34,6 @@ import kotlinx.coroutines.withContext
 
 class PictureActivity : AppCompatActivity() {
     companion object {
-        private const val MANAGER = "MANAGER"
         fun startActivity(context: Context, manager: ManagerWrapper) {
             context.setCurrentManager(manager)
             context.startActivity(Intent(context, PictureActivity::class.java))
@@ -74,11 +73,11 @@ class PictureActivity : AppCompatActivity() {
             tagInfoAdapter = TagInfoAdapter(this@PictureActivity).apply { tagRecyclerView.adapter = this }
             tagRecyclerView.layoutManager = LinearLayoutManager(this@PictureActivity)
             with(view_pager) {
-                adapter = PictureAdapter(this@PictureActivity, this, m).apply { this@PictureActivity.pictureAdapter = this }
+                adapter = PictureAdapter(this@PictureActivity, this, m).apply { pictureAdapter = this }
                 this.offscreenPageLimit = db.preloadedImages
                 m.posts.registerOnUpdateListener(managerListener)
                 currentItem = m.position
-                this@PictureActivity.pictureAdapter.updatePosts(m.posts)
+                pictureAdapter.updatePosts(m.posts)
                 startMedia(m.position)
                 m.currentPost?.updateCurrentTags(m.position)
                 addOnPageChangeListener(object : ViewPager.OnPageChangeListener {

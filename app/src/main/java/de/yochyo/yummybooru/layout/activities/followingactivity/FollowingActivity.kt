@@ -101,10 +101,10 @@ class FollowingActivity : AppCompatActivity() {
             val tag = filteringFollowingList.find { it.name == clickedData.name }
             if (tag != null) {
                 val builder = AlertDialog.Builder(this)
-                builder.setTitle(R.string.save).setMessage(R.string.update_last_id)
-                builder.setNegativeButton(R.string.no) { _, _ -> onClickedData = null }
+                builder.setTitle(R.string.save).setMessage(R.string.update_followed_tag)
+                builder.setNegativeButton(R.string.negative_button_name) { _, _ -> onClickedData = null }
                 builder.setOnCancelListener { onClickedData = null }
-                builder.setPositiveButton(R.string.yes) { _, _ ->
+                builder.setPositiveButton(R.string.positive_button_name) { _, _ ->
                     GlobalScope.launch(Dispatchers.Main) {
                         tag.following = Following(clickedData.idWhenClicked, clickedData.countWhenClicked)
                         onClickedData = null
@@ -131,12 +131,12 @@ class FollowingActivity : AppCompatActivity() {
                             layoutManager.scrollToPositionWithOffset(filteringFollowingList.indexOfFirst { it.name == following?.name }, 0)
                         }
                     }
-                }.withTitle(getString(R.string.add_following)).build(this)
+                }.withTitle(getString(R.string.follow_tag)).build(this)
             }
             R.id.update_following -> {
                 ConfirmDialog {
                     GlobalScope.launch { updateFollowing(filteringFollowingList) }
-                }.withTitle("Update following?").build(this@FollowingActivity)
+                }.withTitle(getString(R.string.update_followed_tags)).build(this@FollowingActivity)
             }
         }
         return super.onOptionsItemSelected(item)

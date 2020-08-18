@@ -17,11 +17,11 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.layout.activities.settingsactivity.SettingsActivity
+import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
 import de.yochyo.yummybooru.layout.activities.fragments.ServerListViewFragment
 import de.yochyo.yummybooru.layout.activities.fragments.TagHistoryFragment
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
-import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
+import de.yochyo.yummybooru.layout.activities.settingsactivity.SettingsActivity
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.menus.SettingsNavView
 import de.yochyo.yummybooru.updater.AutoUpdater
@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.nav_following -> startActivity(Intent(this, FollowingActivity::class.java))
             R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
-            R.id.community -> startActivity(Intent(Intent.ACTION_VIEW).apply { data = Uri.parse("https://discord.gg/tbGCHpF") })
+            R.id.community -> startActivity(Intent(Intent.ACTION_VIEW).apply { data = Uri.parse(getString(R.string.discord_link)) })
             R.id.nav_help -> Toast.makeText(this, getString(R.string.join_discord), Toast.LENGTH_SHORT).show()
             else -> return false
         }
@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
             R.id.action_add_server -> AddServerDialog {
                 GlobalScope.launch {
                     db.servers += it
-                    withContext(Dispatchers.Main) { Snackbar.make(drawer_layout, "Add server [${it.name}]", Snackbar.LENGTH_SHORT).show() }
+                    withContext(Dispatchers.Main) { Snackbar.make(drawer_layout, getString(R.string.add_server_with_name, it.name), Snackbar.LENGTH_SHORT).show() }
                 }
             }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)

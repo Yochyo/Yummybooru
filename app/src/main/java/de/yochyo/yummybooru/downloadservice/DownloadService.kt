@@ -45,7 +45,7 @@ class DownloadService : Service() {
     override fun onCreate() {
         super.onCreate()
         notificationManager = NotificationManagerCompat.from(this)
-        notificationBuilder = NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.drawable.notification_icon).setContentTitle("Downloading")
+        notificationBuilder = NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.drawable.notification_icon).setContentTitle(getString(R.string.downloading))
                 .setOngoing(true).setLocalOnly(true).setProgress(100, 0, false)
 
         startForeground(1, notificationBuilder.build())
@@ -95,7 +95,7 @@ class DownloadService : Service() {
 
     private suspend fun updateNotification(posts: Posts) {
         withContext(Dispatchers.Main) {
-            notificationBuilder.setContentTitle("Downloading $currentItem/${totalItemCount}")
+            notificationBuilder.setContentTitle(getString(R.string.downloading_part_n_of_m, currentItem, totalItemCount))
             notificationBuilder.setContentText(posts.tags)
             notificationBuilder.setProgress(totalItemCount, currentItem, false)
             notificationManager.notify(1, notificationBuilder.build())

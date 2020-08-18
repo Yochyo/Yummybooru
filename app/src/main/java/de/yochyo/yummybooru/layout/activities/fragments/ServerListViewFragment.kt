@@ -93,8 +93,8 @@ class ServerListViewFragment : Fragment() {
                 when (i) {
                     0 -> editServerDialog(server)
                     1 -> {
-                        if (!server.isSelected(ctx)) ConfirmDialog { ctx.db.servers -= server }.withTitle(ctx.getString(R.string.delete) + " [${server.name}]").build(ctx)
-                        else Toast.makeText(ctx, ctx.getString(R.string.cannot_delete_server), Toast.LENGTH_SHORT).show()
+                        if (!server.isSelected(ctx)) ConfirmDialog { ctx.db.servers -= server }.withTitle(ctx.getString(R.string.delete_server_with_name, server.name)).build(ctx)
+                        else Toast.makeText(ctx, ctx.getString(R.string.cannot_delete_server), Toast.LENGTH_LONG).show()
                     }
                 }
             }
@@ -109,7 +109,7 @@ class ServerListViewFragment : Fragment() {
                     server.apiName = it.apiName
                     server.username = it.username
                     server.password = it.password
-                    withContext(Dispatchers.Main) { Toast.makeText(ctx, "Edit [${it.name}]", Toast.LENGTH_SHORT).show() }
+                    withContext(Dispatchers.Main) { Toast.makeText(ctx, getString(R.string.edit_server_with_name, it.name), Toast.LENGTH_SHORT).show() }
                 }
             }.withServer(server).withTitle(ctx.getString(R.string.edit_server)).build(ctx)
         }

@@ -14,7 +14,7 @@ import de.yochyo.eventcollection.events.OnAddElementsEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsAlertdialog
+import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsDialog
 import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
@@ -34,7 +34,6 @@ open class PreviewActivity : AppCompatActivity() {
     private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit / 2
 
     companion object {
-        private const val MANAGER = "MANAGER"
         fun startActivity(context: Context, tags: String) {
             context.setCurrentManager(ManagerWrapper.build(context, tags))
             context.startActivity(Intent(context, PreviewActivity::class.java))
@@ -55,7 +54,7 @@ open class PreviewActivity : AppCompatActivity() {
 
     private val managerListener = Listener.create<OnAddElementsEvent<Post>> {
         GlobalScope.launch(Dispatchers.Main) {
-            if (it.elements.isEmpty()) Toast.makeText(this@PreviewActivity, "End", Toast.LENGTH_SHORT).show()
+            if (it.elements.isEmpty()) Toast.makeText(this@PreviewActivity, getString(R.string.manager_end), Toast.LENGTH_SHORT).show()
             else previewAdapter.updatePosts(it.elements)
         }
     }
@@ -161,7 +160,7 @@ open class PreviewActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
-            R.id.download_all -> DownloadPostsAlertdialog(this, m)
+            R.id.download_all -> DownloadPostsDialog(this, m)
             R.id.select_all -> previewAdapter.selectAll()
             R.id.favorite -> {
                 val tag = db.getTag(m.toString())

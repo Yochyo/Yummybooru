@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 
 class AddTagDialog(val runOnPositive: (editText: AutoCompleteTextView) -> Unit) {
-    var title: String = "Add tag"
+    var title: String? = null
     var tagName: String = ""
 
     fun withTag(tag: String) = apply { tagName = tag }
@@ -75,11 +75,11 @@ class AddTagDialog(val runOnPositive: (editText: AutoCompleteTextView) -> Unit) 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
         })
-        builder.setMessage(title).setView(layout)
-        builder.setPositiveButton("OK") { _, _ ->
+        builder.setMessage(title ?: context.getString(R.string.add_tag)).setView(layout)
+        builder.setPositiveButton(context.getString(R.string.positive_button_name)) { _, _ ->
             runOnPositive(editText)
         }
-        builder.setNeutralButton("Search") { _, _ ->
+        builder.setNeutralButton(context.getString(R.string.search_tag)) { _, _ ->
             PreviewActivity.startActivity(context, editText.text.toString())
         }
 

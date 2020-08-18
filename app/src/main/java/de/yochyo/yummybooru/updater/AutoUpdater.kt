@@ -35,7 +35,7 @@ class AutoUpdater {
     }
 
     private fun throwUpdateNotification(context: Context, file: File) {
-        val builder = NotificationCompat.Builder(context, App.CHANNEL_ID).setContentTitle("Update now to version ${file.name.subSequence(0, file.name.lastIndex - 3)}")
+        val builder = NotificationCompat.Builder(context, App.CHANNEL_ID).setContentTitle(context.getString(R.string.update_to_version, file.name.subSequence(0, file.name.lastIndex - 3)))
                 .setSmallIcon(R.drawable.notification_icon).setAutoCancel(true)
         val intent = installIntent(context, file)
         builder.setContentIntent(PendingIntent.getActivity(context, 2, intent, 0))

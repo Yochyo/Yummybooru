@@ -39,7 +39,7 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
                     val context = requireContext()
                     BackupUtils.createBackup(context)
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "New backup in [${BackupUtils.directory}]", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, getString(R.string.new_backup, BackupUtils.directory), Toast.LENGTH_LONG).show()
                     }
                 }
             "restore_backup" -> {
@@ -50,7 +50,7 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
             }
             "updates" -> {
                 AutoUpdater().autoUpdate(requireContext())
-                Toast.makeText(requireContext(), "Checking for updates", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.checking_for_updates), Toast.LENGTH_SHORT).show()
             }
             "changelogs" -> Changelog.showChangelogs(requireContext())
         }
@@ -70,10 +70,10 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
                 GlobalScope.launch(Dispatchers.IO) {
                     val bytes = stream!!.readBytes()
                     stream.close()
-                    withContext(Dispatchers.Main) { Toast.makeText(context, "Please wait until the backup is restored", Toast.LENGTH_LONG).show() }
+                    withContext(Dispatchers.Main) { Toast.makeText(context, getString(R.string.wait_for_backup_restore), Toast.LENGTH_LONG).show() }
                     BackupUtils.restoreBackup(bytes, requireContext())
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "Restored backup", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, getString(R.string.restored_backup), Toast.LENGTH_LONG).show()
                     }
                 }
             }

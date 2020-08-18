@@ -5,7 +5,7 @@ import android.content.Context
 import de.yochyo.yummybooru.R
 
 class ConfirmDialog(val runOnPositive: () -> Unit) {
-    var title = "Confirm"
+    var title: String? = null
     var message = ""
 
     fun withMessage(s: String) = apply { message = s }
@@ -13,10 +13,10 @@ class ConfirmDialog(val runOnPositive: () -> Unit) {
 
     fun build(context: Context) {
         val builder = AlertDialog.Builder(context)
-        builder.setTitle(title)
-        if(message != "") builder.setMessage(message)
+        builder.setTitle(title ?: context.getString(R.string.confirm))
+        if (message != "") builder.setMessage(message)
 
-        builder.setPositiveButton(context.getString(R.string.ok)) { _, _ ->
+        builder.setPositiveButton(context.getString(R.string.positive_button_name)) { _, _ ->
             runOnPositive()
         }
         builder.show()

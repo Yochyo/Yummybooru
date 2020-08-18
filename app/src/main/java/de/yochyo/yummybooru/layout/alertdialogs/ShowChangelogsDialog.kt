@@ -15,9 +15,9 @@ class ShowChangelogsDialog {
 
     fun build(context: Context) {
         val builder = AlertDialog.Builder(context)
-        builder.setTitle("Changelogs")
+        builder.setTitle(context.getString(R.string.changelogs))
         builder.setView(createLayout(context))
-        builder.setPositiveButton("Ok") { _, _ -> }
+        builder.setPositiveButton(context.getString(R.string.positive_button_name)) { _, _ -> }
         builder.show()
     }
 

@@ -9,64 +9,66 @@ import de.yochyo.yummybooru.utils.general.drawable
 object Menus {
     fun initMainSearchTagMenu(context: Context, menu: Menu, tag: Tag) {
         with(menu.findItem(R.id.main_search_favorite_tag)) {
-            title = if (tag.isFavorite) "Unfavorite" else "Favorite"
+            title = if (tag.isFavorite) context.getString(R.string.unfavorite)
+            else context.getString(R.string.favorite)
         }
         with(menu.findItem(R.id.main_search_follow_tag)) {
-            title = if (tag.following == null) "Follow" else "Unfollow"
+            title = if (tag.following == null) context.getString(R.string.follow)
+            else context.getString(R.string.unfollow)
         }
         with(menu.findItem(R.id.main_search_delete_tag)) {
-            title = "Delete"
+            title = context.getString(R.string.delete)
         }
     }
 
     fun initPreviewMenu(context: Context, menu: Menu, tag: Tag?) {
         if (tag == null) {
             menu.findItem(R.id.add_tag).icon = context.drawable(R.drawable.add)
-            menu.findItem(R.id.add_tag).title = "Add to history"
+            menu.findItem(R.id.add_tag).title = context.getString(R.string.add_to_history)
             menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.unfavorite)
-            menu.findItem(R.id.favorite).title = "Follow"
+            menu.findItem(R.id.favorite).title = context.getString(R.string.follow)
         } else {
             menu.findItem(R.id.add_tag).icon = context.drawable(R.drawable.remove)
-            menu.findItem(R.id.add_tag).title = "Remove from history"
+            menu.findItem(R.id.add_tag).title = context.getString(R.string.remove_from_history)
             if (tag.isFavorite) {
                 menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.favorite)
-                menu.findItem(R.id.favorite).title = "Unfavorite"
+                menu.findItem(R.id.favorite).title = context.getString(R.string.unfavorite)
             } else {
                 menu.findItem(R.id.favorite).icon = context.drawable(R.drawable.unfavorite)
-                menu.findItem(R.id.favorite).title = "Favorite"
+                menu.findItem(R.id.favorite).title = context.getString(R.string.favorite)
             }
 
             if (tag.following == null) {
                 menu.findItem(R.id.follow).icon = context.drawable(R.drawable.star_empty)
-                menu.findItem(R.id.follow).title = "Follow"
+                menu.findItem(R.id.follow).title = context.getString(R.string.follow)
             } else {
                 menu.findItem(R.id.follow).icon = context.drawable(R.drawable.star)
-                menu.findItem(R.id.follow).title = "Unfollow"
+                menu.findItem(R.id.follow).title = context.getString(R.string.unfollow)
             }
         }
     }
 
-    fun initPictureInfoTagMenu(menu: Menu, tag: Tag) {
+    fun initPictureInfoTagMenu(context: Context, menu: Menu, tag: Tag) {
         with(menu.findItem(R.id.picture_info_item_add_history)) {
-            title = "Add to history"
+            title = context.getString(R.string.add_to_history)
         }
         with(menu.findItem(R.id.picture_info_item_add_favorite)) {
-            title = if (tag.isFavorite) "Unfavorite" else "Favorite"
+            title = if (tag.isFavorite) context.getString(R.string.unfavorite) else context.getString(R.string.favorite)
         }
         with(menu.findItem(R.id.picture_info_item_following)) {
-            title = if (tag.following == null) "Follow" else "Unfollow"
+            title = if (tag.following == null) context.getString(R.string.follow) else context.getString(R.string.unfavorite)
         }
     }
 
-    fun initFollowingMenu(menu: Menu, following: Tag) {
+    fun initFollowingMenu(context: Context, menu: Menu, following: Tag) {
         with(menu.findItem(R.id.following_set_favorite)) {
-            title = if (following.isFavorite) "Unfavorite" else "Favorite"
+            title = if (following.isFavorite) context.getString(R.string.unfavorite) else context.getString(R.string.favorite)
         }
         with(menu.findItem(R.id.unfollow)) {
-            title = "Delete"
+            title = context.getString(R.string.delete)
         }
         with(menu.findItem(R.id.delete_tag)) {
-            title = "Delete tag"
+            title = context.getString(R.string.delete_tag)
         }
     }
 }

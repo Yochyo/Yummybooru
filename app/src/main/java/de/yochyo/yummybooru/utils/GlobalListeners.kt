@@ -81,7 +81,7 @@ private object ToastListeners {
                     Tag.CHANGED_TYPE -> Toast.makeText(context,
                             "Changed tag [${it.new.name}]", Toast.LENGTH_SHORT).show()
                     Tag.CHANGED_FOLLOWING -> Toast.makeText(context,
-                            "${if (it.new.following == null) "Unfollowing" else "Updated following"} [${it.new.name}]", Toast.LENGTH_SHORT).show()
+                            "${if (it.new.following == null) "Unfollowing" else "Updated"} [${it.new.name}]", Toast.LENGTH_SHORT).show()
                     Tag.FOLLOWING -> Toast.makeText(context,
                             "Following [${it.new.name}]", Toast.LENGTH_SHORT).show()
                 }

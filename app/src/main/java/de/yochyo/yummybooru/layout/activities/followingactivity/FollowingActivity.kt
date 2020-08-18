@@ -136,7 +136,7 @@ class FollowingActivity : AppCompatActivity() {
             R.id.update_following -> {
                 ConfirmDialog {
                     GlobalScope.launch { updateFollowing(filteringFollowingList) }
-                }.withTitle("Update all following?").build(this@FollowingActivity)
+                }.withTitle("Update following?").build(this@FollowingActivity)
             }
         }
         return super.onOptionsItemSelected(item)

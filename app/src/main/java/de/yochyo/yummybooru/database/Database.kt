@@ -30,7 +30,12 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     private val serverLock = Any()
     private var clearServerCache = true
-    val servers = ObservingEventCollection<Server, Int>(TreeSet())
+    val servers = object : ObservingEventCollection<Server, Int>(TreeSet()) {
+        override fun remove(element: Server): Boolean {
+            return if (currentServerID == element.id) false
+            else super.remove(element)
+        }
+    }
         get() = synchronized(serverLock) {
             if (clearServerCache) {
                 field.replaceCollection(TreeSet(serverDao.selectAll()))
@@ -41,7 +46,18 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     private val tagLock = Any()
     private var clearTagCache = true
-    val tags = ObservingEventCollection<Tag, Int>(TreeSet())
+    val tags = object : ObservingEventCollection<Tag, Int>(TreeSet()) {
+        override fun add(element: Tag): Boolean {
+            var isContained = false
+            if (contains(element)) isContained = true
+            else {
+                element.isFavorite = !element.isFavorite
+                if (contains(element)) isContained = true
+                element.isFavorite = !element.isFavorite
+            }
+            return if (isContained) false else super.add(element)
+        }
+    }
         get() = synchronized(tagLock) {
             if (clearTagCache) {
                 field.replaceCollection(TreeSet(tagDao.selectWhere(currentServer)))

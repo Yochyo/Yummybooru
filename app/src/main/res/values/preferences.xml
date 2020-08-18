@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="page_size">page_size_string</string>
+    <string name="downloadWebm">downloadWebm</string>
+    <string name="downloadOriginal">downloadOriginal</string>
+    <string name="lastVersion">lastVersion</string>
+    <string name="currentServer">currentServer</string>
+    <string name="savePath">savePath</string>
+    <string name="preloaded_large_pictures">preloaded_large_pictures</string>
+    <string name="click_to_move_to_next_image">click_to_move_to_next_image</string>
+    <string name="parallel_background_downloads">parallel_background_downloads</string>
+    <string name="preview_columns">preview_columns</string>
+    <string name="preview_staggered_mode">preview_staggered_mode</string>
+
+    <string name="page_size_default_value">50</string>
+    <bool name="downloadWebm_default_value">true</bool>
+    <bool name="downloadOriginal_default_value">true</bool>
+    <integer name="preloaded_large_pictures_default_value">1</integer>
+    <bool name="click_to_move_to_next_image_default_value">true</bool>
+    <integer name="parallel_background_downloads_default_value">5</integer>
+    <integer name="preview_columns_default_value">3</integer>
+    <bool name="preview_staggered_mode_default_value">false</bool>
+
+</resources>

@@ -99,9 +99,11 @@ class PictureActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString("name", m.toString())
-        outState.putInt("position", m.position)
-        outState.putInt("id", m.posts.get(if (m.position == -1) 0 else m.position).id)
+        if (this::m.isInitialized) {
+            outState.putString("name", m.toString())
+            outState.putInt("position", m.position)
+            outState.putInt("id", m.posts.get(if (m.position == -1) 0 else m.position).id)
+        }
     }
 
     private fun Post.updateCurrentTags(wasCurrentPosition: Int) {

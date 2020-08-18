@@ -106,11 +106,13 @@ open class PreviewActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString("name", m.toString())
-        outState.putInt("position", m.position)
-        if (m.posts.isNotEmpty() && m.position != -1)
-            outState.putInt("id", m.posts.get(m.position).id)
-        else outState.putInt("id", 0)
+        if (this::m.isInitialized) {
+            outState.putString("name", m.toString())
+            outState.putInt("position", m.position)
+            if (m.posts.isNotEmpty() && m.position != -1)
+                outState.putInt("id", m.posts.get(m.position).id)
+            else outState.putInt("id", 0)
+        }
     }
 
     fun loadNextPage() {

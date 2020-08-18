@@ -144,6 +144,9 @@ open class PreviewActivity : AppCompatActivity() {
             if (previewAdapter.actionmode == null) {
                 GlobalScope.launch {
                     m.clear()
+                    withContext(Dispatchers.Main) {
+                        previewAdapter.notifyDataSetChanged()
+                    }
                     loadNextPage()
                 }
             }

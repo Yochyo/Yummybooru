@@ -26,6 +26,7 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.menus.SettingsNavView
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
+import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.cache
 import de.yochyo.yummybooru.utils.general.toTagString
 import kotlinx.android.synthetic.main.main_activity_layout.*
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         configureToolbarAndNavView(nav_view)
         if (hasPermission)
             initData()
+        Logger.sendMails()
     }
 
 

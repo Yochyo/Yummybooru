@@ -16,3 +16,4 @@ release/
 /app/src/main/java/de/yochyo/yummybooru/TODO.kt
 /app/src/main/java/de/yochyo/yummybooru/utils/useless/
 /settings.gradle
+/app/src/main/java/de/yochyo/yummybooru/utils/mail/MailData.kt

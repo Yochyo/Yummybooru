@@ -168,7 +168,7 @@ class PictureActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
-        pauseMedia(m.position)
+        if (this::m.isInitialized) pauseMedia(m.position)
         super.onPause()
     }
 

@@ -65,7 +65,7 @@ object Menus {
             title = if (following.isFavorite) context.getString(R.string.unfavorite) else context.getString(R.string.favorite)
         }
         with(menu.findItem(R.id.unfollow)) {
-            title = context.getString(R.string.delete)
+            title = context.getString(R.string.unfollow)
         }
         with(menu.findItem(R.id.delete_tag)) {
             title = context.getString(R.string.delete_tag)

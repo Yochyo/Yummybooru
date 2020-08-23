@@ -24,10 +24,10 @@ class FollowingTagAdapter(val activity: FollowingActivity, s: Collection<Tag>) :
     private val db = activity.db
     val util = FollowingCountUtil(activity)
 
-    private var following: Collection<Tag> = s
+    private var followedTags: Collection<Tag> = s
 
     fun updateFollowing(s: Collection<Tag>) {
-        following = s
+        followedTags = s
         notifyDataSetChanged()
     }
 
@@ -40,14 +40,14 @@ class FollowingTagAdapter(val activity: FollowingActivity, s: Collection<Tag>) :
 
         onClickMenuItem.registerListener {
             when (it.menuItem.itemId) {
-                R.id.select_all -> if (selected.size == following.size) unselectAll() else selectAll()
+                R.id.select_all -> if (selected.size == followedTags.size) unselectAll() else selectAll()
                 R.id.open_selected -> {
                     Toast.makeText(activity, activity.getString(R.string.not_implemented), Toast.LENGTH_SHORT).show()
                     unselectAll()
                 }
                 R.id.update_following -> {
                     ConfirmDialog {
-                        val select = selected.getSelected(following)
+                        val select = selected.getSelected(followedTags)
                         unselectAll()
                         GlobalScope.launch { activity.updateFollowing(select) }
                     }.withTitle(activity.getString(R.string.update_selected_followed_tags)).build(activity)
@@ -84,13 +84,13 @@ class FollowingTagAdapter(val activity: FollowingActivity, s: Collection<Tag>) :
         b.show()
     }
 
-    override fun getItemCount(): Int = following.size
+    override fun getItemCount(): Int = followedTags.size
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): FollowingTagViewHolder {
         val holder = super.onCreateViewHolder(parent, position)
         val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
         toolbar.inflateMenu(R.menu.activity_subscription_item_menu)
         toolbar.setOnMenuItemClickListener {
-            val sub = following.elementAt(holder.adapterPosition)
+            val sub = followedTags.elementAt(holder.adapterPosition)
             when (it.itemId) {
                 R.id.following_set_favorite -> sub.isFavorite = !sub.isFavorite
                 R.id.unfollow -> deleteSubDialog(sub)
@@ -106,12 +106,12 @@ class FollowingTagAdapter(val activity: FollowingActivity, s: Collection<Tag>) :
         val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
         val text1 = toolbar.findViewById<TextView>(android.R.id.text1)
         val text2 = toolbar.findViewById<TextView>(android.R.id.text2)
-        val sub = following.elementAt(position)
-        text1.text = sub.name
-        text1.setColor(sub.color)
-        text1.underline(sub.isFavorite)
-        text2.text = activity.getString(R.string.number_of_new_pictures, util.getCount(sub))
-        Menus.initFollowingMenu(activity, toolbar.menu, sub)
+        val tag = followedTags.elementAt(position)
+        text1.text = tag.name
+        text1.setColor(tag.color)
+        text1.underline(tag.isFavorite)
+        text2.text = activity.getString(R.string.number_of_new_pictures_from, tag.name, util.getCount(tag))
+        Menus.initFollowingMenu(activity, toolbar.menu, tag)
         toolbar.menu.setGroupEnabled(0, selected.isEmpty()) //Cannot access menu when selecting items
     }
 }

@@ -101,7 +101,7 @@ class FollowingActivity : AppCompatActivity() {
             val tag = filteringFollowingList.find { it.name == clickedData.name }
             if (tag != null) {
                 val builder = AlertDialog.Builder(this)
-                builder.setTitle(R.string.save).setMessage(R.string.update_followed_tag)
+                builder.setTitle(R.string.save).setMessage(getString(R.string.update_followed_tag_with_name, tag.name))
                 builder.setNegativeButton(R.string.negative_button_name) { _, _ -> onClickedData = null }
                 builder.setOnCancelListener { onClickedData = null }
                 builder.setPositiveButton(R.string.positive_button_name) { _, _ ->

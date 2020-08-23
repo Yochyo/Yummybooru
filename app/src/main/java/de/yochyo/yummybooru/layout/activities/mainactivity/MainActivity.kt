@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import de.yochyo.yummybooru.R
@@ -36,6 +37,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
+    private var serverListFragment: Fragment? = null
+    private var tagHistoryFragment: TagHistoryFragment? = null
+
+    companion object {
+        private const val TAG_FRAGMENT = "tag_fragment"
+        private const val SERVER_FRAGMENT = "server_fragment"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +54,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity_layout)
         configureToolbarAndNavView(nav_view)
         if (hasPermission)
-            initData()
+            initData(savedInstanceState)
         Logger.sendMails()
     }
 
@@ -54,18 +62,25 @@ class MainActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults.none { it != PackageManager.PERMISSION_GRANTED })
-            initData()
+            initData(null)
     }
 
 
-    fun initData() {
-        supportFragmentManager.beginTransaction().replace(R.id.main_activity_container, ServerListViewFragment()).commit()
-        supportFragmentManager.beginTransaction().replace(R.id.main_activity_right_drawer_container, TagHistoryFragment().apply {
-            onSearchButtonClick = {
-                this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
-                PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
-            }
-        }).commit()
+    fun initData(bundle: Bundle?) {
+        if (bundle != null) {
+            tagHistoryFragment = supportFragmentManager.getFragment(bundle, TAG_FRAGMENT) as TagHistoryFragment
+            serverListFragment = supportFragmentManager.getFragment(bundle, SERVER_FRAGMENT)
+        }
+        if (serverListFragment == null) serverListFragment = ServerListViewFragment()
+        if (tagHistoryFragment == null) tagHistoryFragment = TagHistoryFragment()
+
+        tagHistoryFragment!!.onSearchButtonClick = {
+            this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
+            PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
+        }
+
+        supportFragmentManager.beginTransaction().replace(R.id.main_activity_container, serverListFragment!!).commit()
+        supportFragmentManager.beginTransaction().replace(R.id.main_activity_right_drawer_container, tagHistoryFragment!!).commit()
         Changelog.showChangelogIfChanges(this)
         AutoUpdater().autoUpdate(this)
         GlobalScope.launch { cache.clearCache() }
@@ -90,7 +105,16 @@ class MainActivity : AppCompatActivity() {
         }
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
+    }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val finalServerListFragment = serverListFragment
+        val finalTagHistoryFragment = tagHistoryFragment
+        if (finalServerListFragment != null)
+            supportFragmentManager.putFragment(outState, SERVER_FRAGMENT, finalServerListFragment)
+        if (finalTagHistoryFragment != null)
+            supportFragmentManager.putFragment(outState, TAG_FRAGMENT, finalTagHistoryFragment)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

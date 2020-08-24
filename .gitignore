@@ -3,17 +3,9 @@
 build/
 gradle/
 in app/
-*.iml
-local.properties
-gradlew.bat
-gradlew
-gradle.properties
 /build/
-libs/
-proguard-rules.pro
 release/
-/app/schemas/de.yochyo.yummybooru.database.Database/
 /app/src/main/java/de/yochyo/yummybooru/TODO.kt
 /app/src/main/java/de/yochyo/yummybooru/utils/useless/
-/settings.gradle
 /app/src/main/java/de/yochyo/yummybooru/utils/mail/MailData.kt
+/local.properties

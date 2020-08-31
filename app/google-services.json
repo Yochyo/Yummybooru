@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "594310852260",
+    "firebase_url": "https://yummybooru-firebase.firebaseio.com",
+    "project_id": "yummybooru-firebase",
+    "storage_bucket": "yummybooru-firebase.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:594310852260:android:78f02ee622aca15a4e8031",
+        "android_client_info": {
+          "package_name": "de.yochyo.yummybooru"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "594310852260-lckc6qatf3t5jqnb0kucq2cjfi4v4jut.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD74_-GEgVrcO2q2KNob2Be34mkvnYMjHQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "594310852260-lckc6qatf3t5jqnb0kucq2cjfi4v4jut.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

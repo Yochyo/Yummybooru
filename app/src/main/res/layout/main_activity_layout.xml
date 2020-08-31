@@ -33,7 +33,6 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/dark_grey"
-        android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_main"
         app:itemTextColor="@color/white"
         app:menu="@menu/activity_main_drawer_menu">
@@ -46,7 +45,6 @@
         android:layout_height="match_parent"
         android:layout_gravity="end"
         android:background="@color/dark_grey"
-        android:fitsSystemWindows="true"
         app:itemTextColor="@color/white">
 
         <LinearLayout

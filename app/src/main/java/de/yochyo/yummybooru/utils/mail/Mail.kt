@@ -1,3 +1,4 @@
+/*
 package de.yochyo.yummybooru.utils.mail
 
 import java.util.*
@@ -83,3 +84,4 @@ class Mail() : Authenticator() {
         CommandMap.setDefaultCommandMap(mc)
     }
 }
+ */

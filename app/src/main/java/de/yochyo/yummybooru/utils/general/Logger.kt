@@ -1,23 +1,17 @@
 package de.yochyo.yummybooru.utils.general
 
-import de.yochyo.yummybooru.BuildConfig
-import de.yochyo.yummybooru.utils.mail.Mail
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import java.io.File
 import kotlin.system.exitProcess
 
 
 object Logger : de.yochyo.utils.Logger(configPath) {
     override fun log(message: String, filePrefix: String) {
         super.log(message, filePrefix)
-        if (BuildConfig.BUILD_TYPE.equals("release", true)) {
+        /*if (BuildConfig.BUILD_TYPE.equals("release", true)) {
             sendMails()
-        }
+        }*/
     }
 
-    fun sendMails() {
+  /*  fun sendMails() {
         for (file in directory.listFiles())
             sendMail(file)
     }
@@ -33,7 +27,7 @@ object Logger : de.yochyo.utils.Logger(configPath) {
             }
         }
 
-    }
+    }*/
 }
 
 class ThreadExceptionHandler : Thread.UncaughtExceptionHandler {

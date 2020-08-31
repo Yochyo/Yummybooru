@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +17,7 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.analytics.FirebaseAnalytics
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
@@ -47,19 +49,45 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-        if (!hasPermission) ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 122)
+        /*
+           val button = Button(this)
+           button.setOnClickListener { throw RuntimeException("test") }
+           setContentView(button)
 
+           val mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+           val bundle = Bundle()
+           bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "id")
+           bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "name")
+           bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "image")
+           mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle)
+         */
 
         setContentView(R.layout.main_activity_layout)
+        val hasPermission = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!hasPermission)
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                122
+            )
+
+
+
         configureToolbarAndNavView(nav_view)
         if (hasPermission)
             initData(savedInstanceState)
-        Logger.sendMails()
+
     }
 
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults.none { it != PackageManager.PERMISSION_GRANTED })
             initData(null)
@@ -68,7 +96,8 @@ class MainActivity : AppCompatActivity() {
 
     fun initData(bundle: Bundle?) {
         if (bundle != null) {
-            tagHistoryFragment = supportFragmentManager.getFragment(bundle, TAG_FRAGMENT) as TagHistoryFragment
+            tagHistoryFragment =
+                supportFragmentManager.getFragment(bundle, TAG_FRAGMENT) as TagHistoryFragment
             serverListFragment = supportFragmentManager.getFragment(bundle, SERVER_FRAGMENT)
         }
         if (serverListFragment == null) serverListFragment = ServerListViewFragment()
@@ -76,11 +105,16 @@ class MainActivity : AppCompatActivity() {
 
         tagHistoryFragment!!.onSearchButtonClick = {
             this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
-            PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
+            PreviewActivity.startActivity(
+                this@MainActivity,
+                if (it.isEmpty()) "*" else it.toTagString()
+            )
         }
 
-        supportFragmentManager.beginTransaction().replace(R.id.main_activity_container, serverListFragment!!).commit()
-        supportFragmentManager.beginTransaction().replace(R.id.main_activity_right_drawer_container, tagHistoryFragment!!).commit()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_activity_container, serverListFragment!!).commit()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_activity_right_drawer_container, tagHistoryFragment!!).commit()
         Changelog.showChangelogIfChanges(this)
         AutoUpdater().autoUpdate(this)
         GlobalScope.launch { cache.clearCache() }
@@ -88,19 +122,36 @@ class MainActivity : AppCompatActivity() {
 
     private fun configureToolbarAndNavView(navView: NavigationView) {
         setSupportActionBar(main_activity_toolbar)
-        val toggle = ActionBarDrawerToggle(this, drawer_layout, main_activity_toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+        val toggle = ActionBarDrawerToggle(
+            this,
+            drawer_layout,
+            main_activity_toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
+        )
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         navView.setNavigationItemSelectedListener(SettingsNavView(navView)
-                .apply { inflateMenu(R.menu.activity_main_drawer_menu, this@MainActivity::onNavigationItemSelected) })
+            .apply {
+                inflateMenu(
+                    R.menu.activity_main_drawer_menu,
+                    this@MainActivity::onNavigationItemSelected
+                )
+            })
     }
 
     fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_following -> startActivity(Intent(this, FollowingActivity::class.java))
             R.id.nav_settings -> startActivity(Intent(this, SettingsActivity::class.java))
-            R.id.community -> startActivity(Intent(Intent.ACTION_VIEW).apply { data = Uri.parse(getString(R.string.discord_link)) })
-            R.id.nav_help -> Toast.makeText(this, getString(R.string.join_discord), Toast.LENGTH_SHORT).show()
+            R.id.community -> startActivity(Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse(getString(R.string.discord_link))
+            })
+            R.id.nav_help -> Toast.makeText(
+                this,
+                getString(R.string.join_discord),
+                Toast.LENGTH_SHORT
+            ).show()
             else -> return false
         }
         drawer_layout.closeDrawer(GravityCompat.START)
@@ -122,7 +173,13 @@ class MainActivity : AppCompatActivity() {
             R.id.action_add_server -> AddServerDialog {
                 GlobalScope.launch {
                     db.servers += it
-                    withContext(Dispatchers.Main) { Snackbar.make(drawer_layout, getString(R.string.add_server_with_name, it.name), Snackbar.LENGTH_SHORT).show() }
+                    withContext(Dispatchers.Main) {
+                        Snackbar.make(
+                            drawer_layout,
+                            getString(R.string.add_server_with_name, it.name),
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
@@ -137,7 +194,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         when {
-            drawer_layout.isDrawerOpen(GravityCompat.START) -> drawer_layout.closeDrawer(GravityCompat.START)
+            drawer_layout.isDrawerOpen(GravityCompat.START) -> drawer_layout.closeDrawer(
+                GravityCompat.START
+            )
             drawer_layout.isDrawerOpen(GravityCompat.END) -> drawer_layout.closeDrawer(GravityCompat.END)
         }
     }

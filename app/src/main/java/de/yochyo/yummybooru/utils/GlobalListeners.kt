@@ -20,21 +20,6 @@ private class ListenerPair<E : Event>(val eventHandler: EventHandler<E>, val lis
 object GlobalListeners {
     private val listeners = LinkedList<ListenerPair<Event>>()
     private var registered = false
-    fun <E : Event> addGlobalListener(eventHandler: EventHandler<E>, listener: Listener<E>) {
-        val p: ListenerPair<E> = ListenerPair(eventHandler, listener)
-        this.listeners.add(p as ListenerPair<Event>)
-    }
-
-    fun <E : Event> removeGlobalListener(eventHandler: EventHandler<E>, listener: Listener<E>) {
-        val iter = listeners.iterator()
-        while (iter.hasNext()) {
-            val next = iter.next()
-            if (next.eventHandler == eventHandler && next.listener == listener) {
-                iter.remove()
-                break
-            }
-        }
-    }
 
     fun registerGlobalListeners(context: Context) {
         if (!registered) {

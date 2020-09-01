@@ -2,9 +2,8 @@ package de.yochyo.yummybooru.api.entities
 
 import android.widget.ImageView
 import com.bumptech.glide.Glide
-import de.yochyo.yummybooru.utils.general.Logger
+import de.yochyo.yummybooru.utils.general.log
 import de.yochyo.yummybooru.utils.general.toBitmap
-import de.yochyo.yummybooru.utils.general.tryCatch
 import java.io.*
 
 class Resource(val resource: ByteArray, val mimetype: String) : Serializable {
@@ -33,7 +32,7 @@ class Resource(val resource: ByteArray, val mimetype: String) : Serializable {
                 return obj
             } catch (e: Exception) {
                 e.printStackTrace()
-                Logger.log(e, file.name)
+                e.log()
             }
             return null
         }
@@ -42,7 +41,11 @@ class Resource(val resource: ByteArray, val mimetype: String) : Serializable {
     fun loadIntoImageView(imageView: ImageView) {
         when (type) {
             IMAGE -> imageView.setImageBitmap(resource.toBitmap())
-            ANIMATED -> tryCatch { Glide.with(imageView).load(resource).into(imageView) }
+            ANIMATED -> try {
+                Glide.with(imageView).load(resource).into(imageView)
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -54,7 +57,7 @@ class Resource(val resource: ByteArray, val mimetype: String) : Serializable {
             file.writeBytes(outputStream.toByteArray())
         } catch (e: Exception) {
             e.printStackTrace()
-            Logger.log(e, file.name)
+            e.log()
         } finally {
             objStream.close()
             outputStream.close()

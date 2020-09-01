@@ -11,7 +11,6 @@ import de.yochyo.booruapi.objects.Post
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.events.events.SafeFileEvent
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.getDownloadPathAndId
@@ -68,7 +67,7 @@ class DownloadService : Service() {
             val finalPair = pair
             val (url, _) = getDownloadPathAndId(this@DownloadService, pair.first)
             downloader.download(url) {
-                FileUtils.writeFile(this@DownloadService, finalPair.first, it, finalPair.second.server, SafeFileEvent.SILENT)
+                FileUtils.writeFile(this@DownloadService, finalPair.first, it, finalPair.second.server)
                 withContext(Dispatchers.Main) {
                     updateNotification(finalPair.second)
                 }
@@ -77,7 +76,7 @@ class DownloadService : Service() {
         }
     }
 
-    private suspend fun getNextElement(): Pair<Post, Posts>? {
+    private fun getNextElement(): Pair<Post, Posts>? {
         if (downloadPosts.isNotEmpty()) {
             val posts = downloadPosts[0]
             return if (posts.posts.size > position) {

@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
+apply plugin: 'com.google.firebase.firebase-perf'
 
 android {
     compileSdkVersion 29
@@ -58,4 +59,5 @@ dependencies {
     implementation 'com.afollestad:drag-select-recyclerview:2.4.0'
     implementation 'com.google.android.material:material:1.2.0'
     implementation 'com.google.firebase:firebase-crashlytics:17.2.1'
+    implementation 'com.google.firebase:firebase-perf:19.0.8'
 }

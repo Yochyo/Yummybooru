@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.booruapi.objects.Tag
 import de.yochyo.yummybooru.api.entities.Following
@@ -43,6 +44,9 @@ fun downloadImage(context: Context, p: Post) {
         saveDownload(context, url, id, p)
     }
 }
+
+fun Exception.log() = FirebaseCrashlytics.getInstance().recordException(this)
+fun Error.log() = FirebaseCrashlytics.getInstance().recordException(this)
 
 fun getDownloadPathAndId(context: Context, p: Post): Pair<String, String> {
     val url: String

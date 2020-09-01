@@ -1,4 +1,3 @@
-git remote add origin /.gradle/
 /.idea/
 build/
 gradle/
@@ -7,6 +6,5 @@ in app/
 release/
 /app/src/main/java/de/yochyo/yummybooru/TODO.kt
 /app/src/main/java/de/yochyo/yummybooru/utils/useless/
-/app/src/main/java/de/yochyo/yummybooru/utils/mail/MailData.kt
 /local.properties
 /.gradle/

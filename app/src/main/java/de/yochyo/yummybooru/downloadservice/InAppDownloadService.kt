@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import de.yochyo.booruapi.objects.Post
@@ -16,7 +17,8 @@ import de.yochyo.yummybooru.utils.network.CacheableDownloader
 import kotlinx.coroutines.*
 import java.util.*
 
-private typealias Download = Triple<String, String, suspend (e: Resource) -> Unit>
+private typealias Download = Triple<String, String, suspend (e: Resource) -> Unit> //url, id, callback
+
 class InAppDownloadService : Service() {
     private val downloader = CacheableDownloader(db.parallelBackgroundDownloads)
 
@@ -36,13 +38,18 @@ class InAppDownloadService : Service() {
         super.onCreate()
         notificationManager = NotificationManagerCompat.from(this)
         notificationBuilder = NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.drawable.notification_icon).setContentTitle("Downloading ...")
-                .setOngoing(true).setLocalOnly(true)
+            .setOngoing(true).setLocalOnly(true)
         startForeground(2, notificationBuilder.build())
         job = GlobalScope.launch(Dispatchers.IO) {
-            do{
-                while(downloads.isNotEmpty()){
+            do {
+                while (downloads.isNotEmpty()) {
                     val dl = downloads.removeFirst()
-                    downloader.download(this@InAppDownloadService, dl.first, dl.second, dl.third)
+                    downloader.download(this@InAppDownloadService, dl.first, dl.second, {
+                        dl.third(it)
+                        Toast.makeText(this@InAppDownloadService, getString(R.string.download_post_with_id, dl.second.filter {
+                            it in '0'..'9'
+                        }.toInt()), Toast.LENGTH_SHORT).show()
+                    })
                 }
                 delay(5000)
             } while (downloader.dl.activeCoroutines > 0)

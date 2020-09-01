@@ -10,8 +10,8 @@ import de.yochyo.utils.DownloadUtils
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.utils.app.App
-import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.configPath
+import de.yochyo.yummybooru.utils.general.log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -92,7 +92,7 @@ class AutoUpdater {
             return url?.split("/")?.last()
         } catch (e: Exception) {
             e.printStackTrace()
-            Logger.log(e, "Error when splitting $url")
+            e.log()
         }
         return null
     }

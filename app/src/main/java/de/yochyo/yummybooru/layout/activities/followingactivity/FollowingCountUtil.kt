@@ -5,7 +5,6 @@ import de.yochyo.eventcollection.events.OnAddElementsEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.utils.general.tryCatchSuspended
 import kotlinx.coroutines.*
 
 class FollowingCountUtil(val activity: FollowingActivity) {
@@ -16,11 +15,13 @@ class FollowingCountUtil(val activity: FollowingActivity) {
     var paused = false
     private val job = GlobalScope.launch(Dispatchers.IO) {
         while (isActive) {
-            tryCatchSuspended {
+            try {
                 for (i in activity.layoutManager.findFirstVisibleItemPosition()..activity.layoutManager.findLastVisibleItemPosition()) {
                     val follow = activity.filteringFollowingList.elementAt(i)
                     cacheCount(follow.name)
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -40,7 +41,7 @@ class FollowingCountUtil(val activity: FollowingActivity) {
     private suspend fun cacheCount(name: String): Int {
         return withContext(Dispatchers.IO) {
             var newCount = 0
-            tryCatchSuspended {
+            try {
                 val oldValue = getRawCount(name)
                 val t = activity.db.currentServer.getTag(activity, name)
                 newCount = t?.count ?: 0
@@ -50,6 +51,8 @@ class FollowingCountUtil(val activity: FollowingActivity) {
                     if (newIndex >= 0)
                         withContext(Dispatchers.Main) { adapter?.notifyItemChanged(newIndex) }
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
             newCount
         }

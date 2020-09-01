@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -17,7 +16,6 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.analytics.FirebaseAnalytics
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
@@ -29,7 +27,6 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.menus.SettingsNavView
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
-import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.cache
 import de.yochyo.yummybooru.utils.general.toTagString
 import kotlinx.android.synthetic.main.main_activity_layout.*
@@ -49,45 +46,19 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        /*
-           val button = Button(this)
-           button.setOnClickListener { throw RuntimeException("test") }
-           setContentView(button)
-
-           val mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-           val bundle = Bundle()
-           bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "id")
-           bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "name")
-           bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "image")
-           mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle)
-         */
-
         setContentView(R.layout.main_activity_layout)
-        val hasPermission = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        ) == PackageManager.PERMISSION_GRANTED
+        val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
         if (!hasPermission)
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                122
-            )
-
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 122)
 
 
         configureToolbarAndNavView(nav_view)
         if (hasPermission)
             initData(savedInstanceState)
-
     }
 
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults.none { it != PackageManager.PERMISSION_GRANTED })
             initData(null)
@@ -105,10 +76,7 @@ class MainActivity : AppCompatActivity() {
 
         tagHistoryFragment!!.onSearchButtonClick = {
             this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
-            PreviewActivity.startActivity(
-                this@MainActivity,
-                if (it.isEmpty()) "*" else it.toTagString()
-            )
+            PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
         }
 
         supportFragmentManager.beginTransaction()
@@ -122,22 +90,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun configureToolbarAndNavView(navView: NavigationView) {
         setSupportActionBar(main_activity_toolbar)
-        val toggle = ActionBarDrawerToggle(
-            this,
-            drawer_layout,
-            main_activity_toolbar,
-            R.string.navigation_drawer_open,
-            R.string.navigation_drawer_close
-        )
+        val toggle = ActionBarDrawerToggle(this, drawer_layout, main_activity_toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         navView.setNavigationItemSelectedListener(SettingsNavView(navView)
-            .apply {
-                inflateMenu(
-                    R.menu.activity_main_drawer_menu,
-                    this@MainActivity::onNavigationItemSelected
-                )
-            })
+            .apply { inflateMenu(R.menu.activity_main_drawer_menu, this@MainActivity::onNavigationItemSelected) })
     }
 
     fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -147,11 +104,7 @@ class MainActivity : AppCompatActivity() {
             R.id.community -> startActivity(Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse(getString(R.string.discord_link))
             })
-            R.id.nav_help -> Toast.makeText(
-                this,
-                getString(R.string.join_discord),
-                Toast.LENGTH_SHORT
-            ).show()
+            R.id.nav_help -> Toast.makeText(this, getString(R.string.join_discord), Toast.LENGTH_SHORT).show()
             else -> return false
         }
         drawer_layout.closeDrawer(GravityCompat.START)
@@ -174,11 +127,7 @@ class MainActivity : AppCompatActivity() {
                 GlobalScope.launch {
                     db.servers += it
                     withContext(Dispatchers.Main) {
-                        Snackbar.make(
-                            drawer_layout,
-                            getString(R.string.add_server_with_name, it.name),
-                            Snackbar.LENGTH_SHORT
-                        ).show()
+                        Snackbar.make(drawer_layout, getString(R.string.add_server_with_name, it.name), Snackbar.LENGTH_SHORT).show()
                     }
                 }
             }.build(this)

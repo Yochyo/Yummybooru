@@ -5,7 +5,7 @@ import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.utils.general.Logger
+import de.yochyo.yummybooru.utils.general.log
 import java.util.*
 
 object TagBackup : BackupableEntity<Tag> {
@@ -30,7 +30,7 @@ object TagBackup : BackupableEntity<Tag> {
                             0, following, Date(json.getLong("creation")), json.getInt("serverID")))
         } catch (e: Exception) {
             e.printStackTrace()
-            Logger.log(e)
+            e.log()
         }
     }
 

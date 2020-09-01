@@ -6,22 +6,20 @@ import de.yochyo.booruapi.objects.Post
 import de.yochyo.yummybooru.api.entities.Resource
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.events.events.SafeFileEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 object FileUtils {
 
-    suspend fun writeFile(context: Context, post: Post, res: Resource, server: Server, source: Int = SafeFileEvent.DEFAULT) {
+    suspend fun writeFile(context: Context, post: Post, res: Resource, server: Server) {
         withContext(Dispatchers.IO) {
             val file = createFileToWrite(context, post, server, res.mimetype)
             if (file != null) {
                 try {
                     context.contentResolver.openOutputStream(file.uri)!!.write(res.resource)
-                    withContext(Dispatchers.Main) { SafeFileEvent.trigger(SafeFileEvent(context, file, post, source)) }
                 } catch (e: Exception) {
-                    Logger.log(e)
                     e.printStackTrace()
+                    e.log()
                 }
             }
         }
@@ -35,8 +33,9 @@ object FileUtils {
 
     }
 
-    private suspend fun postToFilename(p: Post, mimeType: String, server: Server): String {
-        val s = "${server.urlHost} ${p.id} ${p.tagString}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '[' && it != ']' }
+    private fun postToFilename(p: Post, mimeType: String, server: Server): String {
+        val s =
+            "${server.urlHost} ${p.id} ${p.tagString}".filter { it != '/' && it != '\\' && it != '|' && it != ':' && it != '*' && it != '?' && it != '"' && it != '[' && it != ']' }
         var last = s.length
         if (last > 127 - (mimeType.length + 1)) last = 127 - (mimeType.length + 1)
         return s.substring(0, last) + ".$mimeType"

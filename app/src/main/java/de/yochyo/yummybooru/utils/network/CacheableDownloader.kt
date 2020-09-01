@@ -3,8 +3,8 @@ package de.yochyo.yummybooru.utils.network
 import android.content.Context
 import de.yochyo.downloader.RegulatingDownloader
 import de.yochyo.yummybooru.api.entities.Resource
-import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.cache
+import de.yochyo.yummybooru.utils.general.log
 import de.yochyo.yummybooru.utils.general.mimeType
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -36,11 +36,12 @@ class CacheableDownloader(max: Int) {
             }
         } catch (e: OutOfMemoryError) {
             e.printStackTrace()
-            Logger.log(e, filePrefix = "OutOfMemory")
+            e.log()
         }
     }
 }
 
 val downloader = CacheableDownloader(10)
-fun download(context: Context, url: String, id: String, callback: suspend (e: Resource) -> Unit, downloadFirst: Boolean = false, cacheFile: Boolean = false) = downloader.download(context, url, id, callback, downloadFirst, cacheFile)
+fun download(context: Context, url: String, id: String, callback: suspend (e: Resource) -> Unit, downloadFirst: Boolean = false, cacheFile: Boolean = false) =
+    downloader.download(context, url, id, callback, downloadFirst, cacheFile)
 

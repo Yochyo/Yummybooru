@@ -16,8 +16,8 @@ class Cache(context: Context) {
     companion object {
         private var _instance: Cache? = null
         private val cacheLock = Any()
-        fun getCache(context: Context): Cache{
-            synchronized(cacheLock){
+        fun getCache(context: Context): Cache {
+            synchronized(cacheLock) {
                 _instance = Cache(context)
             }
             return _instance!!
@@ -41,8 +41,8 @@ class Cache(context: Context) {
                         notYetCached.remove(id)
                     }
                 } catch (e: Exception) {
-                    Logger.log(e, id)
                     e.printStackTrace()
+                    e.log()
                 }
             }
         }
@@ -64,8 +64,8 @@ class Cache(context: Context) {
             File(directory, id).delete()
             notYetCached.remove(id)
         } catch (e: Exception) {
-            Logger.log(e)
             e.printStackTrace()
+            e.log()
         }
     }
 
@@ -79,7 +79,7 @@ class Cache(context: Context) {
                         it.delete()
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        Logger.log(e)
+                        e.log()
                     }
                 }
             }

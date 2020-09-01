@@ -5,9 +5,12 @@ import de.yochyo.json.JSONArray
 import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.utils.general.Logger
 import de.yochyo.yummybooru.utils.general.configPath
-import kotlinx.coroutines.*
+import de.yochyo.yummybooru.utils.general.log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 object BackupUtils {
@@ -51,8 +54,8 @@ object BackupUtils {
                 context.db.clearCache()
             }
         } catch (e: Exception) {
-            Logger.log(e)
             e.printStackTrace()
+            e.log()
         }
     }
 
@@ -64,7 +67,7 @@ object BackupUtils {
             }
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
-            Logger.log(e)
+            e.log()
         }
         return json
     }
@@ -95,8 +98,8 @@ object BackupUtils {
                 }
             }
         } catch (e: java.lang.Exception) {
-            Logger.log(e)
             e.printStackTrace()
+            e.log()
         }
         return json
     }

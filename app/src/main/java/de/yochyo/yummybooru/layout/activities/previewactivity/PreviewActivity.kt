@@ -13,12 +13,15 @@ import de.yochyo.booruapi.objects.Post
 import de.yochyo.eventcollection.events.OnAddElementsEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsDialog
 import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
 import de.yochyo.yummybooru.utils.ManagerWrapper
+import de.yochyo.yummybooru.utils.analytics.AnalyticsSearchTagEvent
+import de.yochyo.yummybooru.utils.analytics.AnalyticsUtils
 import de.yochyo.yummybooru.utils.general.createTagAndOrChangeFollowingState
 import de.yochyo.yummybooru.utils.general.getCurrentManager
 import de.yochyo.yummybooru.utils.general.getOrRestoreManager
@@ -34,16 +37,20 @@ open class PreviewActivity : AppCompatActivity() {
     private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit / 2
 
     companion object {
-        fun startActivity(context: Context, tags: String) {
-            context.setCurrentManager(ManagerWrapper.build(context, tags))
+        fun startActivity(context: Context, tag: Tag) {
+            context.setCurrentManager(ManagerWrapper.build(context, tag.name))
             context.startActivity(Intent(context, PreviewActivity::class.java))
+            AnalyticsUtils.sendAnalytics(AnalyticsSearchTagEvent(tag))
         }
+
+        fun startActivity(context: Context, tag: String) = startActivity(context, Tag(tag, Tag.UNKNOWN))
     }
 
     private lateinit var actionBarListener: ActionBarListener
 
     private val disableSwipeRefreshOnSelectionListener = Listener.create<StartSelectingEvent> { swipeRefreshLayout.isEnabled = false }
-    private val reEnableSwipeRefreshOnSelectionListener = Listener.create<StopSelectingEvent> { swipeRefreshLayout.isEnabled = true;swipeRefreshLayout.isEnabled = false; swipeRefreshLayout.isEnabled = true }
+    private val reEnableSwipeRefreshOnSelectionListener =
+        Listener.create<StopSelectingEvent> { swipeRefreshLayout.isEnabled = true;swipeRefreshLayout.isEnabled = false; swipeRefreshLayout.isEnabled = true }
     private var isLoadingView = false
     var isScrolling = false
 

@@ -13,6 +13,8 @@ import de.yochyo.yummybooru.database.dao.TagDao
 import de.yochyo.yummybooru.database.utils.Upgrade
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.utils.GlobalListeners
+import de.yochyo.yummybooru.utils.analytics.AnalyticsSelectServerEvent
+import de.yochyo.yummybooru.utils.analytics.AnalyticsUtils
 import de.yochyo.yummybooru.utils.general.createDefaultSavePath
 import de.yochyo.yummybooru.utils.general.documentFile
 import kotlinx.coroutines.Dispatchers
@@ -101,9 +103,11 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     val currentServer: Server
         get() {
             val s = _currentServer
-            if (s == null || s.id != currentServerID)
+            if (s == null || s.id != currentServerID) {
                 _currentServer = getServer(currentServerID)
-                        ?: if (servers.isNotEmpty()) servers.first() else null
+                    ?: if (servers.isNotEmpty()) servers.first() else null
+                AnalyticsUtils.sendAnalytics(AnalyticsSelectServerEvent(_currentServer!!))
+            }
 
             return _currentServer ?: Server("", "", "", "", "")
         }

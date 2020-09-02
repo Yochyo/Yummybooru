@@ -6,7 +6,8 @@ import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.R
 import java.util.*
 
-open class Tag(val name: String, type: Int, isFavorite: Boolean = false, val count: Int = 0, following: Following? = null, val creation: Date = Date(), var serverID: Int = -1) : Comparable<Tag>, IObservableObject<Tag, Int> {
+open class Tag(val name: String, type: Int, isFavorite: Boolean = false, val count: Int = 0, following: Following? = null, val creation: Date = Date(), var serverID: Int = -1) :
+    Comparable<Tag>, IObservableObject<Tag, Int> {
     var type = type
         set(value) {
             field = value
@@ -60,13 +61,24 @@ open class Tag(val name: String, type: Int, isFavorite: Boolean = false, val cou
 
     override fun toString(): String = name
 
-    override fun equals(other: Any?) = if(other is Tag) (compareTo(other) == 0) else false
+    override fun equals(other: Any?) = if (other is Tag) (compareTo(other) == 0) else false
     override fun compareTo(other: Tag): Int {
-        if(name == other.name) return 0
+        if (name == other.name) return 0
         if (isFavorite && !other.isFavorite)
             return -1
         if (!isFavorite && other.isFavorite)
             return 1
         return name.compareTo(other.name)
+    }
+}
+
+fun Tag.typeAsString(): String {
+    return when (type) {
+        Tag.GENERAL -> "GENERAL"
+        Tag.CHARACTER -> "CHARACTER"
+        Tag.COPYPRIGHT -> "COPYPRIGHT"
+        Tag.ARTIST -> "ARTIST"
+        Tag.META -> "META"
+        else -> "UNKNOWN"
     }
 }

@@ -28,7 +28,6 @@ import de.yochyo.yummybooru.layout.menus.SettingsNavView
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
 import de.yochyo.yummybooru.utils.general.cache
-import de.yochyo.yummybooru.utils.general.toTagString
 import kotlinx.android.synthetic.main.main_activity_layout.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -76,7 +75,7 @@ class MainActivity : AppCompatActivity() {
 
         tagHistoryFragment!!.onSearchButtonClick = {
             this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
-            PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
+            PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.joinToString(" ") { it.name })
         }
 
         supportFragmentManager.beginTransaction()

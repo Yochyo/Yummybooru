@@ -14,7 +14,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.eventcollection.events.OnRemoveElementsEvent
 import de.yochyo.eventmanager.Listener
+import de.yochyo.json.JSONArray
+import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SelectServerEvent
@@ -27,8 +30,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.*
+import kotlin.collections.ArrayList
 
-private typealias OnSearch = (tags: List<String>) -> Unit
+private typealias OnSearch = (tags: List<Tag>) -> Unit
 
 class TagHistoryFragment : Fragment() {
     var onSearchButtonClick: OnSearch = {}
@@ -39,7 +44,7 @@ class TagHistoryFragment : Fragment() {
     private lateinit var tagLayoutManager: LinearLayoutManager
 
 
-    val selectedTags = ArrayList<String>()
+    val selectedTags = ArrayList<Tag>()
 
     private val selectedTagRemovedListener = Listener.create<OnRemoveElementsEvent<Tag>> { selectedTags.removeAll(it.elements.map { it.name }) }
     private val selectedServerChangedEvent = Listener.create<SelectServerEvent> {
@@ -53,9 +58,9 @@ class TagHistoryFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val array = savedInstanceState?.getStringArray(SELECTED)
-        if (array != null)
-            selectedTags += array
+        val selectedTagsJson = savedInstanceState?.getString(SELECTED)
+        if (selectedTagsJson != null)
+            selectedTags += restoreSelectedTags(selectedTagsJson)
         GlobalScope.launch {
             ctx.db.tags.registerOnRemoveElementsListener(selectedTagRemovedListener)
             SelectServerEvent.registerListener(selectedServerChangedEvent)
@@ -110,7 +115,7 @@ class TagHistoryFragment : Fragment() {
                                 ctx.db.tags += t
                                 withContext(Dispatchers.Main) {
                                     tagLayoutManager.scrollToPositionWithOffset(filteringTagList?.indexOfFirst { it.name == t.name }
-                                            ?: 0, 0)
+                                        ?: 0, 0)
                                 }
                             }
                         }
@@ -126,7 +131,7 @@ class TagHistoryFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putStringArray(SELECTED, selectedTags.toTypedArray())
+        outState.putString(SELECTED, backupSelectedTags())
     }
 
     override fun onDestroy() {
@@ -154,43 +159,44 @@ class TagHistoryFragment : Fragment() {
             notifyDataSetChanged()
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TagViewHolder = TagViewHolder((LayoutInflater.from(context).inflate(R.layout.search_item_layout, parent, false) as android.widget.Toolbar)).apply {
-            toolbar.inflateMenu(R.menu.activity_main_search_menu)
-            val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TagViewHolder =
+            TagViewHolder((LayoutInflater.from(context).inflate(R.layout.search_item_layout, parent, false) as android.widget.Toolbar)).apply {
+                toolbar.inflateMenu(R.menu.activity_main_search_menu)
+                val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
 
-            fun onClick() {
-                if (check.isChecked) selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
-                else selectedTags.remove(toolbar.findViewById<TextView>(R.id.search_textview).text)
-            }
-            toolbar.setOnClickListener {
-                check.isChecked = !check.isChecked
-                onClick()
-            }
-            check.setOnClickListener { onClick() }
+                fun onClick() {
+                    if (check.isChecked) selectedTags.add(tags.elementAt(adapterPosition))
+                    else selectedTags.remove(tags.elementAt(adapterPosition))
+                }
+                toolbar.setOnClickListener {
+                    check.isChecked = !check.isChecked
+                    onClick()
+                }
+                check.setOnClickListener { onClick() }
 
-            toolbar.setOnMenuItemClickListener {
-                val tag = tags.elementAt(adapterPosition)
-                when (it.itemId) {
-                    R.id.main_search_favorite_tag -> tag.isFavorite = !tag.isFavorite
-                    R.id.main_search_follow_tag -> {
-                        GlobalScope.launch {
-                            if (tag.following == null) tag.addFollowing(ctx)
-                            else tag.following = null
-                            withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
+                toolbar.setOnMenuItemClickListener {
+                    val tag = tags.elementAt(adapterPosition)
+                    when (it.itemId) {
+                        R.id.main_search_favorite_tag -> tag.isFavorite = !tag.isFavorite
+                        R.id.main_search_follow_tag -> {
+                            GlobalScope.launch {
+                                if (tag.following == null) tag.addFollowing(ctx)
+                                else tag.following = null
+                                withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
+                            }
+                        }
+                        R.id.main_search_delete_tag -> {
+                            ConfirmDialog { ctx.db.tags -= tag }
+                                .withTitle(getString(R.string.delete_tag)).withMessage(getString(R.string.delete_tag_with_name, tag.name)).build(ctx)
                         }
                     }
-                    R.id.main_search_delete_tag -> {
-                        ConfirmDialog { ctx.db.tags -= tag }
-                                .withTitle(getString(R.string.delete_tag)).withMessage(getString(R.string.delete_tag_with_name, tag.name)).build(ctx)
-                    }
+                    true
                 }
-                true
             }
-        }
 
         override fun onBindViewHolder(holder: TagViewHolder, position: Int) {
             val tag = tags.elementAt(position)
-            holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox).isChecked = selectedTags.contains(tag.name)
+            holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox).isChecked = selectedTags.find { it.name == tag.name } != null
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
             textView.text = tag.name;textView.setColor(tag.color);textView.underline(tag.isFavorite)
             Menus.initMainSearchTagMenu(ctx, holder.toolbar.menu, tag)
@@ -200,4 +206,33 @@ class TagHistoryFragment : Fragment() {
     }
 
     class TagViewHolder(val toolbar: android.widget.Toolbar) : RecyclerView.ViewHolder(toolbar)
+
+    private fun backupSelectedTags(): String {
+        val array = JSONArray()
+        for (tag in selectedTags) {
+            val json = JSONObject()
+            json.put("name", tag.name)
+            json.put("type", tag.type)
+            json.put("count", tag.count)
+            json.put("favorite", tag.isFavorite)
+            json.put("creation", tag.creation.time)
+            json.put("followed_id", tag.following?.lastID ?: -1)
+            json.put("followed_count", tag.following?.lastCount ?: -1)
+            array.put(json)
+        }
+        return array.toString()
+    }
+
+    private fun restoreSelectedTags(jsonString: String): List<Tag> {
+        val json = JSONArray(jsonString)
+        val tags = ArrayList<Tag>()
+        for (tag in json) {
+            with(tag as JSONObject) {
+                val following = if (getInt("followed_id") == -1) null else Following(getInt("followed_id"), getInt("followed_count"))
+                tags += Tag(getString("name"), getInt("type"), getBoolean("favorite"), getInt("count"), following, Date(getLong("creation")))
+            }
+
+        }
+        return tags
+    }
 }

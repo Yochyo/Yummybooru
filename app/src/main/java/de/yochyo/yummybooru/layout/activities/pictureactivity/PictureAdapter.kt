@@ -99,9 +99,26 @@ class PictureAdapter(val activity: PictureActivity, val viewPager: ViewPager, va
             view.setOnClickListener { onClick() }
             GlobalScope.launch {
                 try {
+                    var downloadedOriginalImage = false
+                    download(activity, post.fileSampleURL, activity.sample(post.id), {
+                        GlobalScope.launch(Dispatchers.Main) {
+                            synchronized(downloadedOriginalImage) { downloadedOriginalImage = true }
+                            it.loadIntoImageView(view)
+                        }
+                    }, downloadFirst = true, cacheFile = true)
+                    download(
+                        activity, post.filePreviewURL, activity.preview(post.id), {
+                            GlobalScope.launch(Dispatchers.Main) {
+                                synchronized(downloadedOriginalImage) {
+                                    if (!downloadedOriginalImage) it.loadIntoImageView(view)
+                                }
+                            }
+                        }, downloadFirst = true, cacheFile = true
+                    )
+
                     val preview = activity.cache.getCachedFile(activity.preview(post.id))
                     if (preview != null) launch(Dispatchers.Main) { preview.loadIntoImageView(view) }
-                    download(activity, post.fileSampleURL, activity.sample(post.id), { GlobalScope.launch(Dispatchers.Main) { it.loadIntoImageView(view) } }, downloadFirst = true, cacheFile = true)
+
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

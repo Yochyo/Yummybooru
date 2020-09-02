@@ -46,9 +46,13 @@ class InAppDownloadService : Service() {
                     val dl = downloads.removeFirst()
                     downloader.download(this@InAppDownloadService, dl.first, dl.second, {
                         dl.third(it)
-                        Toast.makeText(this@InAppDownloadService, getString(R.string.download_post_with_id, dl.second.filter {
+                        val toast = dl.second.filter {
                             it in '0'..'9'
-                        }.toInt()), Toast.LENGTH_SHORT).show()
+                        }
+                        GlobalScope.launch(Dispatchers.Main) {
+                            Toast.makeText(this@InAppDownloadService, getString(R.string.download_post_with_id, dl.second.takeWhile { it in '0'..'9' }.toInt()), Toast.LENGTH_SHORT)
+                                .show()
+                        }
                     })
                 }
                 delay(5000)

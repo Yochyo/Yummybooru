@@ -10,6 +10,6 @@ import kotlinx.coroutines.launch
 
 class DisplayToastSelectServerListener : Listener<SelectServerEvent>() {
     override fun onEvent(e: SelectServerEvent) {
-        GlobalScope.launch(Dispatchers.Main) { Toast.makeText(e.context, e.context.getString(R.string.selected_server_with_name), Toast.LENGTH_SHORT).show() }
+        GlobalScope.launch(Dispatchers.Main) { Toast.makeText(e.context, e.context.getString(R.string.selected_server_with_name, e.newServer.name), Toast.LENGTH_SHORT).show() }
     }
 }

@@ -88,6 +88,7 @@ class ServerListViewFragment : Fragment() {
 
         private fun longClickDialog(server: Server) {
             val builder = AlertDialog.Builder(ctx)
+            builder.setTitle(server.name)
             builder.setItems(arrayOf(ctx.getString(R.string.edit_server), ctx.getString(R.string.delete_server))) { dialog, i ->
                 dialog.cancel()
                 when (i) {

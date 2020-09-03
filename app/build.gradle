@@ -52,7 +52,7 @@ dependencies {
     implementation "de.yochyo.eventcollection:EventCollection:1.5.4"
     implementation "de.yochyo.eventmanager:EventManager:1.4.2"
     implementation "de.yochyo.downloader:Downloader:1.6"
-    implementation "de.yochyo.booruapi:BooruAPI:1.6.0"
+    implementation "de.yochyo.booruapi:BooruAPI:1.7.0"
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     implementation "org.jetbrains.anko:anko-sqlite:0.10.8"
     implementation 'com.google.android.exoplayer:exoplayer:2.11.8'

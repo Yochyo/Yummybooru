@@ -16,7 +16,11 @@ object FileUtils {
             val file = createFileToWrite(context, post, server, res.mimetype)
             if (file != null) {
                 try {
-                    context.contentResolver.openOutputStream(file.uri)!!.write(res.resource)
+                    val stream = context.contentResolver.openOutputStream(file.uri)
+                    if (stream != null) {
+                        stream.write(res.resource)
+                        stream.close()
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
                     e.log()

@@ -61,4 +61,5 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics:17.2.1'
     implementation 'com.google.firebase:firebase-perf:19.0.8'
     implementation 'com.google.firebase:firebase-analytics-ktx:17.5.0'
+    implementation 'com.jakewharton:disklrucache:2.0.2'
 }

@@ -3,7 +3,7 @@ package de.yochyo.yummybooru.utils.network
 import android.content.Context
 import de.yochyo.downloader.RegulatingDownloader
 import de.yochyo.yummybooru.api.entities.Resource
-import de.yochyo.yummybooru.utils.general.cache
+import de.yochyo.yummybooru.utils.cache.cache
 import de.yochyo.yummybooru.utils.general.log
 import de.yochyo.yummybooru.utils.general.mimeType
 import kotlinx.coroutines.GlobalScope
@@ -21,13 +21,13 @@ class CacheableDownloader(max: Int) {
     fun download(context: Context, url: String, id: String, callback: suspend (e: Resource) -> Unit, downloadFirst: Boolean = false, cacheFile: Boolean = false) {
         suspend fun doAfter(res: Resource?) {
             if (res != null) {
-                if (cacheFile) GlobalScope.launch { context.cache.cacheFile(id, res) }
+                if (cacheFile) GlobalScope.launch { context.cache.cache(id, res) }
                 callback(res)
             }
         }
         try {
             GlobalScope.launch {
-                val res = context.cache.getCachedFile(id)
+                val res = context.cache.getResource(id)
                 when {
                     res != null -> doAfter(res)
                     downloadFirst -> dl.downloadNow(url, { doAfter(it) }, url.mimeType ?: "")

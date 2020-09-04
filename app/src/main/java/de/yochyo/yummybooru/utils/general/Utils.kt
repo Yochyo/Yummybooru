@@ -23,9 +23,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
-fun Context.preview(id: Int) = "${id}P${db.currentServer.id}"
-fun Context.sample(id: Int) = "${id}S${db.currentServer.id}"
-fun Context.original(id: Int) = "${id}O${db.currentServer.id}"
+fun Context.preview(id: Int) = "${id}p${db.currentServer.id}"
+fun Context.sample(id: Int) = "${id}s${db.currentServer.id}"
+fun Context.original(id: Int) = "${id}o${db.currentServer.id}"
 
 fun String.toTagArray(): Array<String> = split(" ").toTypedArray()
 fun Array<String>.toTagString() = joinToString(" ")

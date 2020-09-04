@@ -27,7 +27,6 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.menus.SettingsNavView
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
-import de.yochyo.yummybooru.utils.general.cache
 import kotlinx.android.synthetic.main.main_activity_layout.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -84,7 +83,6 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.main_activity_right_drawer_container, tagHistoryFragment!!).commit()
         Changelog.showChangelogIfChanges(this)
         AutoUpdater().autoUpdate(this)
-        GlobalScope.launch { cache.clearCache() }
     }
 
     private fun configureToolbarAndNavView(navView: NavigationView) {
@@ -147,10 +145,5 @@ class MainActivity : AppCompatActivity() {
             )
             drawer_layout.isDrawerOpen(GravityCompat.END) -> drawer_layout.closeDrawer(GravityCompat.END)
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        GlobalScope.launch { cache.clearCache() }
     }
 }

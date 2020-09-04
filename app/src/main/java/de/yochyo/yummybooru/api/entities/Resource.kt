@@ -4,7 +4,10 @@ import android.widget.ImageView
 import com.bumptech.glide.Glide
 import de.yochyo.yummybooru.utils.general.log
 import de.yochyo.yummybooru.utils.general.toBitmap
-import java.io.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.ObjectOutputStream
+import java.io.Serializable
 
 class Resource(val resource: ByteArray, val mimetype: String) : Serializable {
     val type = typeFromMimeType(mimetype)
@@ -20,21 +23,6 @@ class Resource(val resource: ByteArray, val mimetype: String) : Serializable {
             "gif" -> ANIMATED
             "mp4", "webm" -> VIDEO
             else -> IMAGE
-        }
-
-        fun fromFile(file: File): Resource? {
-            try {
-                val fileStream = file.inputStream()
-                val inputStream = ObjectInputStream(fileStream)
-                val obj = inputStream.readObject() as Resource
-                fileStream.close()
-                inputStream.close()
-                return obj
-            } catch (e: Exception) {
-                e.printStackTrace()
-                e.log()
-            }
-            return null
         }
     }
 

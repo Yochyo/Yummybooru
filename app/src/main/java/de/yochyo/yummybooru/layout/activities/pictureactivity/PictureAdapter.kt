@@ -13,7 +13,6 @@ import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
 import de.yochyo.yummybooru.utils.ManagerWrapper
-import de.yochyo.yummybooru.utils.cache.cache
 import de.yochyo.yummybooru.utils.general.*
 import de.yochyo.yummybooru.utils.network.download
 import kotlinx.coroutines.Dispatchers
@@ -116,10 +115,6 @@ class PictureAdapter(val activity: PictureActivity, val viewPager: ViewPager, va
                             }
                         }, downloadFirst = true, cacheFile = true
                     )
-
-                    val preview = activity.cache.getResource(activity.preview(post.id))
-                    if (preview != null) launch(Dispatchers.Main) { preview.loadIntoImageView(view) }
-
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

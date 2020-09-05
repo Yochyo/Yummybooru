@@ -12,7 +12,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.net.URL
 
-open class Server(name: String, url: String, apiName: String, username: String = "", password: String = "", var id: Int = -1) : Comparable<Server>, IObservableObject<Server, Int> {
+open class Server(name: String, url: String, apiName: String, username: String = "", password: String = "", var id: Int = Int.MAX_VALUE) : Comparable<Server>,
+    IObservableObject<Server,
+            Int> {
     var api: IBooruApi = Apis.getApi(apiName, url)
         private set
     var name = name

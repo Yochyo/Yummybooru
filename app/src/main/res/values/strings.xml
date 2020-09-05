@@ -59,8 +59,8 @@
     <string name="cannot_delete_server">Cannot delete the selected server</string>
 
     <!-- TagHistoryFragment -->
-    <string name="unselect_tags">Unselect all tags</string>
-    <string name="unselected_tags">Unselected all tags</string>
+    <string name="deselect_tags">Deselect all tags</string>
+    <string name="deselected_tags">Deselected all tags</string>
     <string name="delete_tag">Delete tag</string>
     <string name="delete_tag_with_name">Delete tag [%s]</string>
 

@@ -92,10 +92,10 @@ class TagHistoryFragment : Fragment() {
     private fun configureDrawerToolbar(toolbar: Toolbar) {
         toolbar.inflateMenu(R.menu.main_search_nav_menu)
         toolbar.setNavigationIcon(R.drawable.clear)
-        toolbar.navigationContentDescription = getString(R.string.unselect_tags)
+        toolbar.navigationContentDescription = getString(R.string.deselect_tags)
         toolbar.setNavigationOnClickListener {
             selectedTags.clear()
-            Toast.makeText(ctx, getString(R.string.unselected_tags), Toast.LENGTH_SHORT).show()
+            Toast.makeText(ctx, getString(R.string.deselected_tags), Toast.LENGTH_SHORT).show()
             tagAdapter.notifyDataSetChanged()
         }
 

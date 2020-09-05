@@ -4,10 +4,6 @@ import android.content.Context
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.alertdialogs.ShowChangelogsDialog
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class Changelog(val versionName: String, val version: Int, val description: String) {
     companion object {
@@ -31,22 +27,24 @@ class Changelog(val versionName: String, val version: Int, val description: Stri
             logs += Changelog("1.5", 5, "- You can now filter tags in the startscreen (Thanks to Water_LP for suggesting it in Discord)\n" +
                     "- You can now update several Subscriptions directly and more comfortable\n" +
                     "- App will now update automatically when an new version is out (Yay)")
-            logs += Changelog("2.0", 6, "- You can now see the changelog in the settings\n" +
-                    "- Gifs can now be displayed and downloaded\n" +
-                    "- Reduced app size\n" +
-                    "- You can now add/favorite/subscribe a tag while scrolling through the images\n" +
-                    "- You can now loose your internet connection for several hours and continue using the app without errors\n" +
-                    "- Tags for Moebooru Clients are now displayed in the right order\n" +
-                    "- Backups were overworked (please create new backups, old ones will no longer work)\n" +
-                    "- You can now search for tags with special characters (for example 6+girls)\n" +
-                    "- Add an auto mode when adding a server\n" +
-                    "- You can now add special tags (width/height of image)\n" +
-                    "- You can now search for Subscriptions\n" +
-                    "- You can now unselect all selected tags on the startscreen\n" +
-                    "- The current amount of new images (Subscriptions) is now better displayed\n" +
-                    "- Fixed the bug where the app crashed while scrolling through images\n" +
-                    "- A lot of bug fixes and small changes\n" +
-                    "- New icon")
+            logs += Changelog(
+                "2.0", 6, "- You can now see the changelog in the settings\n" +
+                        "- Gifs can now be displayed and downloaded\n" +
+                        "- Reduced app size\n" +
+                        "- You can now add/favorite/subscribe a tag while scrolling through the images\n" +
+                        "- You can now loose your internet connection for several hours and continue using the app without errors\n" +
+                        "- Tags for Moebooru Clients are now displayed in the right order\n" +
+                        "- Backups were overworked (please create new backups, old ones will no longer work)\n" +
+                        "- You can now search for tags with special characters (for example 6+girls)\n" +
+                        "- Add an auto mode when adding a server\n" +
+                        "- You can now add special tags (width/height of image)\n" +
+                        "- You can now search for Subscriptions\n" +
+                        "- You can now deselect all selected tags on the startscreen\n" +
+                        "- The current amount of new images (Subscriptions) is now better displayed\n" +
+                        "- Fixed the bug where the app crashed while scrolling through images\n" +
+                        "- A lot of bug fixes and small changes\n" +
+                        "- New icon"
+            )
             logs += Changelog("2.01", 7, "- Small bug fixes")
             logs += Changelog("2.2", 9, "Added gelbooru Support\n" +
                     "Can now display videos\n" +

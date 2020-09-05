@@ -26,7 +26,7 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
 
 
     private val receiver = object : DragSelectReceiver {
-        //tells setSelected() if we're in selection- or unselection-mode
+        //tells setSelected() if we're in selection- or deselection-mode
         private var isDragSelecting = false
         private val SELECTING_MODE = true
         private val UNSELECTING_MODE = false
@@ -44,11 +44,11 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
                 isDragSelecting = !current
             }
             if(startedLongClick == SELECT_BY_DRAG){
-                if(!current && isDragSelecting == SELECTING_MODE) select(index)
-                else if(current && isDragSelecting == UNSELECTING_MODE) unselect(index)
+                if (!current && isDragSelecting == SELECTING_MODE) select(index)
+                else if (current && isDragSelecting == UNSELECTING_MODE) deselect(index)
             }
             else {
-                if(current) unselect(index)
+                if (current) deselect(index)
                 else select(index)
             }
         }
@@ -71,7 +71,7 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
         }
 
         override fun onActionItemClicked(p0: ActionMode, p1: MenuItem) = true.apply { onClickMenuItem.trigger(ActionModeClickEvent(p0, p1)) }
-        override fun onDestroyActionMode(p0: ActionMode) = unselectAll()
+        override fun onDestroyActionMode(p0: ActionMode) = deselectAll()
         override fun onPrepareActionMode(p0: ActionMode?, p1: Menu?) = false
     }
 
@@ -146,7 +146,7 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
         onUpdateSelection.trigger(UpdateSelectionEvent(activity))
     }
 
-    fun unselect(position: Int) {
+    fun deselect(position: Int) {
         selected.remove(position)
         if (selected.isEmpty()) onStopSelection.trigger(StopSelectingEvent(activity))
         notifyItemChanged(position)
@@ -164,7 +164,7 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
         }
     }
 
-    fun unselectAll() {
+    fun deselectAll() {
         if (!selected.isEmpty()) {
             onStopSelection.trigger(StopSelectingEvent(activity))
             selected.clear()

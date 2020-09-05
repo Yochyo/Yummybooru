@@ -38,11 +38,11 @@ class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : Sel
 
     private val clickMenuItemListener = Listener.create<ActionModeClickEvent> {
         when (it.menuItem.itemId) {
-            R.id.select_all -> if (selected.size == m.posts.size) unselectAll() else selectAll()
+            R.id.select_all -> if (selected.size == m.posts.size) deselectAll() else selectAll()
             R.id.download_selected -> {
                 val posts = selected.getSelected(m.posts)
                 DownloadService.startService(activity, m.toString(), posts, activity.db.currentServer)
-                unselectAll()
+                deselectAll()
             }
             R.id.download_and_add_authors_selected -> {
                 val posts = selected.getSelected(m.posts)
@@ -54,7 +54,7 @@ class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : Sel
                     }
                 }
                 DownloadService.startService(activity, m.toString(), posts, activity.db.currentServer)
-                unselectAll()
+                deselectAll()
             }
         }
     }

@@ -40,15 +40,15 @@ class FollowingTagAdapter(val activity: FollowingActivity, s: Collection<Tag>) :
 
         onClickMenuItem.registerListener {
             when (it.menuItem.itemId) {
-                R.id.select_all -> if (selected.size == followedTags.size) unselectAll() else selectAll()
+                R.id.select_all -> if (selected.size == followedTags.size) deselectAll() else selectAll()
                 R.id.open_selected -> {
                     Toast.makeText(activity, activity.getString(R.string.not_implemented), Toast.LENGTH_SHORT).show()
-                    unselectAll()
+                    deselectAll()
                 }
                 R.id.update_following -> {
                     ConfirmDialog {
                         val select = selected.getSelected(followedTags)
-                        unselectAll()
+                        deselectAll()
                         GlobalScope.launch { activity.updateFollowing(select) }
                     }.withTitle(activity.getString(R.string.update_selected_followed_tags)).build(activity)
                 }

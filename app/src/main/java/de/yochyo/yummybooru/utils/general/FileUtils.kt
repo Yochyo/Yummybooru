@@ -31,18 +31,29 @@ object FileUtils {
 
     suspend fun writeFile(context: Context, post: Post, res: Resource, server: Server) {
         withContext(Dispatchers.IO) {
-            val file = createFile(context, post, server, res.mimetype)
+            val file = createFileOrNull(context, post, server, res.mimetype)
             if (file != null) {
                 writeBytes(context, file, res.resource)
             }
         }
     }
 
-    private suspend fun createFile(context: Context, post: Post, server: Server, mimeType: String): DocumentFile? {
-        return createFile(context, server.urlHost, postToFilename(post, mimeType, server), mimeType)
+    private suspend fun createFileOrNull(context: Context, post: Post, server: Server, mimeType: String): DocumentFile? {
+        return createFileOrNull(context, server.urlHost, postToFilename(post, mimeType, server), mimeType)
     }
 
-    public suspend fun createFile(context: Context, subfolder: String? = null, name: String, mimeType: String): DocumentFile? {
+    public suspend fun getFile(context: Context, subfolder: String? = null, name: String): DocumentFile? {
+        return withContext(Dispatchers.IO) {
+            val root = getOrCreateFolder(context.db.saveFolder, context.getString(R.string.app_name))
+            if (root != null) {
+                val folder = if (subfolder == null) root else getOrCreateFolder(root, subfolder)
+                if (folder != null) return@withContext folder.findFile(name)
+            }
+            null
+        }
+    }
+
+    public suspend fun createFileOrNull(context: Context, subfolder: String? = null, name: String, mimeType: String): DocumentFile? {
         return withContext(Dispatchers.IO) {
             val root = getOrCreateFolder(context.db.saveFolder, context.getString(R.string.app_name))
             if (root != null) {

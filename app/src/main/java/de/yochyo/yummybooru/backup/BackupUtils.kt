@@ -101,6 +101,6 @@ object BackupUtils {
     }
 
     private suspend fun createBackupFile(context: Context): DocumentFile? {
-        return FileUtils.createFile(context, "backup", "${Date()}.yBooru", "ybooru")
+        return FileUtils.createFileOrNull(context, "backup", "${Date()}.yBooru", "ybooru")
     }
 }

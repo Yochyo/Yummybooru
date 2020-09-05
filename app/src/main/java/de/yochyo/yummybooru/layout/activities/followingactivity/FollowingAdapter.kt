@@ -110,7 +110,7 @@ class FollowingTagAdapter(val activity: FollowingActivity, s: Collection<Tag>) :
         text1.text = tag.name
         text1.setColor(tag.color)
         text1.underline(tag.isFavorite)
-        text2.text = activity.getString(R.string.number_of_new_pictures_from, tag.name, util.getCount(tag))
+        text2.text = activity.getString(R.string.number_of_new_pictures, util.getCount(tag))
         Menus.initFollowingMenu(activity, toolbar.menu, tag)
         toolbar.menu.setGroupEnabled(0, selected.isEmpty()) //Cannot access menu when selecting items
     }

@@ -43,7 +43,7 @@
     <string name="update_selected_followed_tags">Update selected followed tags</string>
     <string name="update_followed_tag_with_name">Update tag [%s]</string>
     <string name="unfollow_tag_with_name">Unfollow tag [%s]</string>
-    <string name="number_of_new_pictures_from">New pictures from %s: %d</string>
+    <string name="number_of_new_pictures">New pictures: %d</string>
 
     <!-- SettingsActivity-->
     <string name="new_backup">New backup at [%s]</string>

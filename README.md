@@ -33,7 +33,7 @@ https://discord.gg/tbGCHpF
 #### Followed tags
 <img src="https://i.ibb.co/BN2XS3N/Screenshot-Followingactivity.png" height="300" hspace="20">
 
-- Following tags are the major feature of Yummybooru. Following a tag allows you to see all images posted since the last time you checked them.
+- Following tags is the major feature of Yummybooru. Following a tag allows you to see all images posted since the last time you checked them.
 
 - When following a tag, you can see new posts by clicking on "following" in the left navigation view of the start screen
 - You will see all followed tags and how many new posts were made since the last time you checked them

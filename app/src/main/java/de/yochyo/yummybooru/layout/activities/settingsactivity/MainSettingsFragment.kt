@@ -12,6 +12,7 @@ import de.yochyo.yummybooru.backup.BackupUtils
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
+import de.yochyo.yummybooru.utils.general.ctx
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -31,15 +32,20 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
         val res = super.onPreferenceTreeClick(preference)
         when (preference.key) {
             "savePath" ->
-                startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                        .apply { putExtra("android.content.extra.SHOW_ADVANCED", true) }, SAVE_PATH_CODE)
+                startActivityForResult(
+                    Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+                        .apply { putExtra("android.content.extra.SHOW_ADVANCED", true) }, SAVE_PATH_CODE
+                )
 
             "create_backup" ->
                 GlobalScope.launch {
                     val context = requireContext()
-                    BackupUtils.createBackup(context)
+                    val backupResult = BackupUtils.createBackup(context)
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, getString(R.string.new_backup, BackupUtils.directory), Toast.LENGTH_LONG).show()
+                        if (backupResult)
+                            Toast.makeText(context, getString(R.string.new_backup, ctx.db.saveFolder.uri), Toast.LENGTH_LONG).show()
+                        else
+                            Toast.makeText(context, getString(R.string.backup_failed), Toast.LENGTH_LONG).show()
                     }
                 }
             "restore_backup" -> {
@@ -85,6 +91,7 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
         if (pref != null) {
             val file = requireContext().db.saveFolder
             pref.summary = file.name
+            file.parentFile
         }
     }
 }

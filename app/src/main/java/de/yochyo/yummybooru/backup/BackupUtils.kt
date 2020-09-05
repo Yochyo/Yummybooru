@@ -1,29 +1,22 @@
 package de.yochyo.yummybooru.backup
 
 import android.content.Context
+import androidx.documentfile.provider.DocumentFile
 import de.yochyo.json.JSONArray
 import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.utils.general.configPath
+import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
+import java.util.*
 
 object BackupUtils {
-    val directory = "$configPath/backup"
-
-    val dir = File(directory)
-
-    init {
-        dir.mkdirs()
-    }
-
-    suspend fun createBackup(context: Context) {
-        withContext(Dispatchers.IO) {
+    suspend fun createBackup(context: Context): Boolean {
+        return withContext(Dispatchers.IO) {
             val json = JSONObject()
             val tagArray = JSONArray()
             val serverArray = JSONArray()
@@ -36,8 +29,11 @@ object BackupUtils {
             json.put("preferences", PreferencesBackup.toJSONObject("", context))
             json.put("version", BuildConfig.VERSION_CODE)
 
-            val f = createBackupFile()
-            f.writeBytes(json.toString().toByteArray())
+            val f = createBackupFile(context)
+            if (f != null) {
+                FileUtils.writeBytes(context, f, json.toString().toByteArray())
+                true
+            } else false
         }
     }
 
@@ -104,9 +100,7 @@ object BackupUtils {
         return json
     }
 
-    private fun createBackupFile(): File {
-        val file = File("$directory/backup" + System.currentTimeMillis() + ".yBooru")
-        file.createNewFile()
-        return file
+    private suspend fun createBackupFile(context: Context): DocumentFile? {
+        return FileUtils.createFile(context, "backup", "${Date()}.yBooru", "ybooru")
     }
 }

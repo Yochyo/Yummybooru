@@ -12,34 +12,45 @@ import kotlinx.coroutines.withContext
 
 object FileUtils {
 
+    suspend fun writeBytes(context: Context, documentFile: DocumentFile, bytes: ByteArray): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val stream = context.contentResolver.openOutputStream(documentFile.uri)
+                if (stream != null) {
+                    stream.write(bytes)
+                    stream.close()
+                    return@withContext true
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                e.log()
+            }
+            false
+        }
+    }
+
     suspend fun writeFile(context: Context, post: Post, res: Resource, server: Server) {
         withContext(Dispatchers.IO) {
-            val file = createFileToWrite(context, post, server, res.mimetype)
+            val file = createFile(context, post, server, res.mimetype)
             if (file != null) {
-                try {
-                    val stream = context.contentResolver.openOutputStream(file.uri)
-                    if (stream != null) {
-                        stream.write(res.resource)
-                        stream.close()
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    e.log()
-                }
+                writeBytes(context, file, res.resource)
             }
         }
     }
 
-    private suspend fun createFileToWrite(context: Context, post: Post, server: Server, mimeType: String): DocumentFile? {
+    private suspend fun createFile(context: Context, post: Post, server: Server, mimeType: String): DocumentFile? {
+        return createFile(context, server.urlHost, postToFilename(post, mimeType, server), mimeType)
+    }
+
+    public suspend fun createFile(context: Context, subfolder: String? = null, name: String, mimeType: String): DocumentFile? {
         return withContext(Dispatchers.IO) {
             val root = getOrCreateFolder(context.db.saveFolder, context.getString(R.string.app_name))
             if (root != null) {
-                val folder = getOrCreateFolder(root, server.urlHost)
-                if (folder != null) return@withContext createFileOrNull(folder, postToFilename(post, mimeType, server), mimeType)
+                val folder = if (subfolder == null) root else getOrCreateFolder(root, subfolder)
+                if (folder != null) return@withContext createFileOrNull(folder, name, mimeType)
             }
             null
         }
-
     }
 
     private fun postToFilename(p: Post, mimeType: String, server: Server): String {

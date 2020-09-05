@@ -11,6 +11,8 @@
     <string name="parallel_background_downloads">parallel_background_downloads</string>
     <string name="preview_columns">preview_columns</string>
     <string name="preview_staggered_mode">preview_staggered_mode</string>
+    <string name="is_first_app_usage">first_usage</string>
+
 
     <string name="page_size_default_value">50</string>
     <bool name="downloadWebm_default_value">true</bool>
@@ -20,6 +22,7 @@
     <integer name="parallel_background_downloads_default_value">5</integer>
     <integer name="preview_columns_default_value">3</integer>
     <bool name="preview_staggered_mode_default_value">false</bool>
+    <bool name="is_first_app_usage_default_value">true</bool>
 
     <string-array name="post_limit">
         <item>30</item>

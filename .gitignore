@@ -8,3 +8,4 @@ release/
 /app/src/main/java/de/yochyo/yummybooru/utils/useless/
 /local.properties
 /.gradle/
+/app/signing.properties

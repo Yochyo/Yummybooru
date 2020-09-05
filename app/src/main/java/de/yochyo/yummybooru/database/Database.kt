@@ -152,6 +152,9 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     var saveFolder: DocumentFile
         get() = documentFile(context, getPreference(context.getString(R.string.savePath), createDefaultSavePath()))
         set(value) = setPreference(context.getString(R.string.savePath), value.uri.toString())
+    var isFirstStart: Boolean
+        get() = getPreference(context.getString(R.string.is_first_app_usage), context.resources.getBoolean(R.bool.is_first_app_usage_default_value))
+        set(value) = setPreference(context.getString(R.string.is_first_app_usage), value)
 
     suspend fun deleteEverything() {
         withContext(Dispatchers.Default) {

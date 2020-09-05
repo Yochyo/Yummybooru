@@ -37,6 +37,9 @@
         <activity
             android:name=".layout.activities.settingsactivity.SettingsActivity"
             android:label="Settings" />
+        <activity
+            android:name=".layout.activities.introactivity.IntroActivity"
+            android:label="" />
 
         <service android:name=".downloadservice.DownloadService" />
         <service android:name=".downloadservice.InAppDownloadService" />

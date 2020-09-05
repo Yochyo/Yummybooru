@@ -5,9 +5,21 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'com.google.firebase.firebase-perf'
 
+Properties props = new Properties()
+props.load(new FileInputStream(file('../signing.properties')))
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
+
+    signingConfigs {
+        debug {
+            storeFile file(props['STORE_FILE'])
+            keyAlias props['KEY_ALIAS']
+            storePassword props['STORE_PASSWORD']
+            keyPassword props['KEY_PASSWORD']
+        }
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -62,4 +74,5 @@ dependencies {
     implementation 'com.google.firebase:firebase-perf:19.0.8'
     implementation 'com.google.firebase:firebase-analytics-ktx:17.5.0'
     implementation 'com.jakewharton:disklrucache:2.0.2'
+    implementation 'com.github.AppIntro:AppIntro:6.0.0'
 }

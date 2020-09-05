@@ -1,8 +1,6 @@
 package de.yochyo.yummybooru.layout.activities.mainactivity
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
@@ -10,8 +8,6 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
@@ -21,6 +17,7 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
 import de.yochyo.yummybooru.layout.activities.fragments.ServerListViewFragment
 import de.yochyo.yummybooru.layout.activities.fragments.TagHistoryFragment
+import de.yochyo.yummybooru.layout.activities.introactivity.IntroActivity
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
 import de.yochyo.yummybooru.layout.activities.settingsactivity.SettingsActivity
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
@@ -45,23 +42,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity_layout)
-        val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-        if (!hasPermission)
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 122)
 
+        if (db.isFirstStart) startActivity(Intent(this, IntroActivity::class.java))
 
         configureToolbarAndNavView(nav_view)
-        if (hasPermission)
-            initData(savedInstanceState)
+        initData(savedInstanceState)
     }
-
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (grantResults.none { it != PackageManager.PERMISSION_GRANTED })
-            initData(null)
-    }
-
 
     fun initData(bundle: Bundle?) {
         if (bundle != null) {

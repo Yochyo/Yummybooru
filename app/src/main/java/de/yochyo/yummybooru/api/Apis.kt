@@ -11,9 +11,9 @@ object Apis {
     val apis = arrayListOf(DANBOORU, MOEBOORU, GELBOORU, MY_IMOUTO)
     fun getApi(name: String, url: String): IBooruApi {
         return when (name.toLowerCase(Locale.ENGLISH)) {
-            MOEBOORU -> return MoebooruApi(url)
-            GELBOORU -> return GelbooruApi(url)
-            MY_IMOUTO -> MyImoutoApi(url)
+            MOEBOORU.toLowerCase(Locale.ENGLISH) -> return MoebooruApi(url)
+            GELBOORU.toLowerCase(Locale.ENGLISH) -> return GelbooruApi(url)
+            MY_IMOUTO.toLowerCase(Locale.ENGLISH) -> MyImoutoApi(url)
             else -> DanbooruApi(url)
         }
     }

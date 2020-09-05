@@ -5,8 +5,6 @@ import android.widget.Toast
 import de.yochyo.eventcollection.events.OnAddElementsEvent
 import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventcollection.events.OnRemoveElementsEvent
-import de.yochyo.eventmanager.Event
-import de.yochyo.eventmanager.EventHandler
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
@@ -14,28 +12,23 @@ import de.yochyo.yummybooru.database.db
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.util.*
 
-private class ListenerPair<E : Event>(val eventHandler: EventHandler<E>, val listener: Listener<E>)
 object GlobalListeners {
-    private val listeners = LinkedList<ListenerPair<Event>>()
     private var registered = false
 
     fun registerGlobalListeners(context: Context) {
         if (!registered) {
             registered = true
-            listeners.forEach { it.eventHandler.registerListener(it.listener) }
-            ToastListeners.registerListeners(context)
             DatabaseListeners.registerListeners(context)
+            ToastListeners.registerListeners(context)
         }
     }
 
     fun unregisterGlobalListeners(context: Context) {
         if (registered) {
             registered = false
-            listeners.forEach { it.eventHandler.removeListener(it.listener) }
-            ToastListeners.unregisterListeners(context)
             DatabaseListeners.unregisterListeners(context)
+            ToastListeners.unregisterListeners(context)
         }
     }
 }
@@ -50,7 +43,15 @@ private object ToastListeners {
     fun registerListeners(context: Context) {
         val db = context.db
         onAddTags = db.tags.registerOnAddElementsListener { //On add (favorite) tag
-            GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(context, "${if (element.following != null) "Following" else if (element.isFavorite) "Favorite tag" else "Add tag"} [${element.name}]", Toast.LENGTH_SHORT).show() } }
+            GlobalScope.launch(Dispatchers.Main) {
+                it.elements.forEach { element ->
+                    Toast.makeText(
+                        context,
+                        "${if (element.following != null) "Following" else if (element.isFavorite) "Favorite tag" else "Add tag"} [${element.name}]",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
         }
         onRemoveTags = db.tags.registerOnRemoveElementsListener {//On remove tag
             GlobalScope.launch(Dispatchers.Main) { it.elements.forEach { element -> Toast.makeText(context, "\"Delete tag [${element.name}]\"", Toast.LENGTH_SHORT).show() } }
@@ -60,15 +61,23 @@ private object ToastListeners {
             GlobalScope.launch(Dispatchers.Main) {
                 when (it.arg) {
                     Tag.CHANGED_FAVORITE -> {
-                        Toast.makeText(context,
-                                "${if (it.new.isFavorite) "Favorite" else "Unfavorite"} tag [${it.new.name}]", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "${if (it.new.isFavorite) "Favorite" else "Unfavorite"} tag [${it.new.name}]", Toast.LENGTH_SHORT
+                        ).show()
                     }
-                    Tag.CHANGED_TYPE -> Toast.makeText(context,
-                            "Changed tag [${it.new.name}]", Toast.LENGTH_SHORT).show()
-                    Tag.CHANGED_FOLLOWING -> Toast.makeText(context,
-                            "${if (it.new.following == null) "Unfollowing" else "Updated"} [${it.new.name}]", Toast.LENGTH_SHORT).show()
-                    Tag.FOLLOWING -> Toast.makeText(context,
-                            "Following [${it.new.name}]", Toast.LENGTH_SHORT).show()
+                    Tag.CHANGED_TYPE -> Toast.makeText(
+                        context,
+                        "Changed tag [${it.new.name}]", Toast.LENGTH_SHORT
+                    ).show()
+                    Tag.CHANGED_FOLLOWING -> Toast.makeText(
+                        context,
+                        "${if (it.new.following == null) "Unfollowing" else "Updated"} [${it.new.name}]", Toast.LENGTH_SHORT
+                    ).show()
+                    Tag.FOLLOWING -> Toast.makeText(
+                        context,
+                        "Following [${it.new.name}]", Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -114,7 +123,8 @@ private object DatabaseListeners {
                     server.id = db.serverDao.insert(server)
             }
         }
-        removeServerListener = db.servers.registerOnRemoveElementsListener { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> db.serverDao.delete(element) } } }
+        removeServerListener =
+            db.servers.registerOnRemoveElementsListener { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> db.serverDao.delete(element) } } }
         changeServerListener = db.servers.registerOnElementChangeListener { GlobalScope.launch(Dispatchers.IO) { db.serverDao.update(it.new) } }
 
 

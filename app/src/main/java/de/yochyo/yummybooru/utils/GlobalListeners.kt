@@ -91,7 +91,7 @@ private object ToastListeners {
         onRemoveServers = db.servers.registerOnRemoveElementsListener { //On add server
             GlobalScope.launch(Dispatchers.Main) {
                 it.elements.forEach { element ->
-                    Toast.makeText(context, "Remove server [${element.name}]", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Removed server [${element.name}]", Toast.LENGTH_SHORT).show()
                 }
             }
         }

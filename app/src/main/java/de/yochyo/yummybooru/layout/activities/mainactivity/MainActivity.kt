@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
@@ -26,10 +25,6 @@ import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
 import de.yochyo.yummybooru.utils.general.toTagString
 import kotlinx.android.synthetic.main.main_activity_layout.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
     private var serverListFragment: Fragment? = null
@@ -107,14 +102,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_add_server -> AddServerDialog {
-                GlobalScope.launch {
-                    db.servers += it
-                    withContext(Dispatchers.Main) {
-                        Snackbar.make(drawer_layout, getString(R.string.add_server_with_name, it.name), Snackbar.LENGTH_SHORT).show()
-                    }
-                }
-            }.build(this)
+            R.id.action_add_server -> AddServerDialog { db.servers += it }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
         }
         return super.onOptionsItemSelected(item)

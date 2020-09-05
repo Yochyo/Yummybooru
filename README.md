@@ -7,10 +7,10 @@ https://discord.gg/tbGCHpF
 ###### Start screen
 <img src="https://i.ibb.co/3FCQzHF/Screenshot-Mainactivity.png" height="300" hspace="20"><img src="https://i.ibb.co/ZKHWwfp/Screenshot-Mainactivity2.png" height="300" hspace="20">
 - You can add a new server by clicking on the `+` icon
-- Press the search icon to start a search
+- Pressing the search icon allows you to choose tags to search for
 
 - You can select one or more tags (danbooru has a limit of 2 tags) before searching
-- Click on the search icon to start the search for real
+- Click on the search icon to start the search
 
 - The plus icon allows you to search and add tags to your history
 - The X icon will deselect all selected tags
@@ -59,7 +59,7 @@ https://discord.gg/tbGCHpF
 - You can enable "Click for next image" to replace swiping left with a click
 
 ###### Backups
-- "Create backup" will create a backup in your save directory
+- "Create backup" will create a backup of your settings, tag history and servers in your save directory
 - "Restore backup" will restore a backup
 
 #### Thanks to

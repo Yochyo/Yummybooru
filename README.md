@@ -51,7 +51,6 @@ https://discord.gg/tbGCHpF
 
 #### Preview images
 <img src="https://i.ibb.co/SRZRwZQ/Screenshot-Previewactivity.png" height="300" hspace="20"><img src="https://i.ibb.co/M5g0cjK/Screenshot-Previewactivity2.png" height="300" hspace="20">
-- "Amount of columns of preview images" is self-explanatory
 - Enable "staggered mode" to use staggered mode (right screenshot). I recommend setting the amount of columns to 2
 
 #### Large images

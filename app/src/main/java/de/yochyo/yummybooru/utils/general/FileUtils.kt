@@ -3,6 +3,7 @@ package de.yochyo.yummybooru.utils.general
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.booruapi.objects.Post
+import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Resource
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
@@ -31,8 +32,12 @@ object FileUtils {
 
     private suspend fun createFileToWrite(context: Context, post: Post, server: Server, mimeType: String): DocumentFile? {
         return withContext(Dispatchers.IO) {
-            val folder = getOrCreateFolder(context.db.saveFolder, server.urlHost)
-            if (folder != null) createFileOrNull(folder, postToFilename(post, mimeType, server), mimeType) else null
+            val root = getOrCreateFolder(context.db.saveFolder, context.getString(R.string.app_name))
+            if (root != null) {
+                val folder = getOrCreateFolder(root, server.urlHost)
+                if (folder != null) return@withContext createFileOrNull(folder, postToFilename(post, mimeType, server), mimeType)
+            }
+            null
         }
 
     }

@@ -23,7 +23,7 @@
         android:key="@string/parallel_background_downloads"
         android:max="10"
         android:summary="Number of images downloaded simultaneously"
-        android:title="Parallel downloads (default 2)"
+        android:title="Parallel downloads (default 5)"
         app:allowDividerBelow="true"
         app:min="1"
         app:showSeekBarValue="true" />

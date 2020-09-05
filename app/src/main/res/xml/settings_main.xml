@@ -28,7 +28,7 @@
         android:enabled="true"
         android:icon="@drawable/backup_black"
         android:key="create_backup"
-        android:title="Create Backup"
+        android:title="Create backup"
         app:allowDividerAbove="true" />
     <androidx.preference.Preference
         android:enabled="true"

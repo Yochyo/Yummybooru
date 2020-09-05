@@ -2,6 +2,12 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <androidx.preference.SwitchPreference
+        android:defaultValue="@bool/use_nomedia_default_value"
+        android:key="@string/use_nomedia"
+        android:summary="Creates a .nomedia file"
+        android:title="Hide images from gallery"
+        app:allowDividerBelow="true" />
+    <androidx.preference.SwitchPreference
         android:defaultValue="@bool/downloadOriginal_default_value"
         android:key="@string/downloadOriginal"
         android:summary="Large pictures take longer to download"

@@ -13,8 +13,6 @@ import de.yochyo.yummybooru.database.dao.TagDao
 import de.yochyo.yummybooru.database.utils.Upgrade
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.utils.GlobalListeners
-import de.yochyo.yummybooru.utils.analytics.AnalyticsSelectServerEvent
-import de.yochyo.yummybooru.utils.analytics.AnalyticsUtils
 import de.yochyo.yummybooru.utils.general.createDefaultSavePath
 import de.yochyo.yummybooru.utils.general.documentFile
 import kotlinx.coroutines.Dispatchers
@@ -106,7 +104,6 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
             if (s == null || s.id != currentServerID) {
                 _currentServer = getServer(currentServerID)
                     ?: if (servers.isNotEmpty()) servers.first() else null
-                AnalyticsUtils.sendAnalytics(AnalyticsSelectServerEvent(_currentServer!!))
             }
 
             return _currentServer ?: Server("", "", "", "", "")
@@ -155,6 +152,9 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     var isFirstStart: Boolean
         get() = getPreference(context.getString(R.string.is_first_app_usage), context.resources.getBoolean(R.bool.is_first_app_usage_default_value))
         set(value) = setPreference(context.getString(R.string.is_first_app_usage), value)
+    var useNomedia: Boolean
+        get() = getPreference(context.getString(R.string.use_nomedia), context.resources.getBoolean(R.bool.use_nomedia_default_value))
+        set(value) = setPreference(context.getString(R.string.use_nomedia), value)
 
     suspend fun deleteEverything() {
         withContext(Dispatchers.Default) {

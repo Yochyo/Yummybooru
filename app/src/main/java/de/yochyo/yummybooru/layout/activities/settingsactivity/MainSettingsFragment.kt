@@ -87,7 +87,7 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun setSavePathSummary() {
-        val pref = findPreference<Preference>("savePath")
+        val pref = findPreference<Preference>(getString(R.string.savePath))
         if (pref != null) {
             val file = requireContext().db.saveFolder
             pref.summary = file.name

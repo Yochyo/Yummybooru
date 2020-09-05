@@ -14,10 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.eventcollection.events.OnRemoveElementsEvent
 import de.yochyo.eventmanager.Listener
-import de.yochyo.json.JSONArray
-import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.events.events.SelectServerEvent
@@ -30,10 +27,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
-import kotlin.collections.ArrayList
 
-private typealias OnSearch = (tags: List<Tag>) -> Unit
+private typealias OnSearch = (tags: List<String>) -> Unit
 
 class TagHistoryFragment : Fragment() {
     var onSearchButtonClick: OnSearch = {}
@@ -44,7 +39,7 @@ class TagHistoryFragment : Fragment() {
     private lateinit var tagLayoutManager: LinearLayoutManager
 
 
-    val selectedTags = ArrayList<Tag>()
+    val selectedTags = ArrayList<String>()
 
     private val selectedTagRemovedListener = Listener.create<OnRemoveElementsEvent<Tag>> { selectedTags.removeAll(it.elements.map { it.name }) }
     private val selectedServerChangedEvent = Listener.create<SelectServerEvent> {
@@ -58,9 +53,9 @@ class TagHistoryFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val selectedTagsJson = savedInstanceState?.getString(SELECTED)
-        if (selectedTagsJson != null)
-            selectedTags += restoreSelectedTags(selectedTagsJson)
+        val array = savedInstanceState?.getStringArray(SELECTED)
+        if (array != null)
+            selectedTags += array
         GlobalScope.launch {
             ctx.db.tags.registerOnRemoveElementsListener(selectedTagRemovedListener)
             SelectServerEvent.registerListener(selectedServerChangedEvent)
@@ -131,7 +126,7 @@ class TagHistoryFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString(SELECTED, backupSelectedTags())
+        outState.putStringArray(SELECTED, selectedTags.toTypedArray())
     }
 
     override fun onDestroy() {
@@ -165,7 +160,7 @@ class TagHistoryFragment : Fragment() {
                 val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
 
                 fun onClick() {
-                    if (check.isChecked) selectedTags.add(tags.elementAt(adapterPosition))
+                    if (check.isChecked) selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
                     else selectedTags.remove(tags.elementAt(adapterPosition))
                 }
                 toolbar.setOnClickListener {
@@ -196,7 +191,7 @@ class TagHistoryFragment : Fragment() {
 
         override fun onBindViewHolder(holder: TagViewHolder, position: Int) {
             val tag = tags.elementAt(position)
-            holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox).isChecked = selectedTags.find { it.name == tag.name } != null
+            holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox).isChecked = selectedTags.contains(tag.name)
             val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
             textView.text = tag.name;textView.setColor(tag.color);textView.underline(tag.isFavorite)
             Menus.initMainSearchTagMenu(ctx, holder.toolbar.menu, tag)
@@ -206,33 +201,4 @@ class TagHistoryFragment : Fragment() {
     }
 
     class TagViewHolder(val toolbar: android.widget.Toolbar) : RecyclerView.ViewHolder(toolbar)
-
-    private fun backupSelectedTags(): String {
-        val array = JSONArray()
-        for (tag in selectedTags) {
-            val json = JSONObject()
-            json.put("name", tag.name)
-            json.put("type", tag.type)
-            json.put("count", tag.count)
-            json.put("favorite", tag.isFavorite)
-            json.put("creation", tag.creation.time)
-            json.put("followed_id", tag.following?.lastID ?: -1)
-            json.put("followed_count", tag.following?.lastCount ?: -1)
-            array.put(json)
-        }
-        return array.toString()
-    }
-
-    private fun restoreSelectedTags(jsonString: String): List<Tag> {
-        val json = JSONArray(jsonString)
-        val tags = ArrayList<Tag>()
-        for (tag in json) {
-            with(tag as JSONObject) {
-                val following = if (getInt("followed_id") == -1) null else Following(getInt("followed_id"), getInt("followed_count"))
-                tags += Tag(getString("name"), getInt("type"), getBoolean("favorite"), getInt("count"), following, Date(getLong("creation")))
-            }
-
-        }
-        return tags
-    }
 }

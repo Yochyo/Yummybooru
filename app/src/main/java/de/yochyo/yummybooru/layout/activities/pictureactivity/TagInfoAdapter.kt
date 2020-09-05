@@ -33,7 +33,7 @@ class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Inf
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InfoButtonHolder = InfoButtonHolder(activity.layoutInflater.inflate(R.layout.info_item_button, parent, false) as Toolbar).apply {
         toolbar.inflateMenu(R.menu.picture_info_menu)
         toolbar.setOnClickListener {
-            PreviewActivity.startActivity(activity, tags.elementAt(adapterPosition).toBooruTag(activity))
+            PreviewActivity.startActivity(activity, toolbar.findViewById<TextView>(R.id.info_textview).text.toString())
             activity.drawer_picture.closeDrawer(GravityCompat.END)
         }
         toolbar.setOnMenuItemClickListener {

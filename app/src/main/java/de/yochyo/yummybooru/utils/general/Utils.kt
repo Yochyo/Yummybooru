@@ -43,6 +43,13 @@ fun downloadImage(context: Context, p: Post) {
     }
 }
 
+fun updateNomediaFile(context: Context, newValue: Boolean? = null) {
+    GlobalScope.launch {
+        if (newValue == true || context.db.useNomedia) FileUtils.createFileOrNull(context, null, ".nomedia", "")
+        else FileUtils.getFile(context, null, ".nomedia")?.delete()
+    }
+}
+
 fun Exception.log() = FirebaseCrashlytics.getInstance().recordException(this)
 fun Error.log() = FirebaseCrashlytics.getInstance().recordException(this)
 

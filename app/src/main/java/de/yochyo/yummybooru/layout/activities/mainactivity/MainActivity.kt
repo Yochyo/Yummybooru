@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.main_activity_right_drawer_container, tagHistoryFragment!!).commit()
         Changelog.showChangelogIfChanges(this)
-        AutoUpdater().autoUpdate(this)
+        AutoUpdater(this).autoUpdate()
     }
 
     private fun configureToolbarAndNavView(navView: NavigationView) {

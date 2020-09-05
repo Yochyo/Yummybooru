@@ -31,8 +31,6 @@ fun String.toTagArray(): Array<String> = split(" ").toTypedArray()
 fun Array<String>.toTagString() = joinToString(" ")
 fun List<String>.toTagString() = joinToString(" ")
 
-val configPath = "${Environment.getExternalStorageDirectory().absolutePath}/.Yummybooru"
-
 fun TextView.setColor(colorCode: Int) {
     if (Build.VERSION.SDK_INT > 22) setTextColor(context.getColor(colorCode))
     else setTextColor(context.resources.getColor(colorCode))

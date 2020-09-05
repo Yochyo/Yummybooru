@@ -55,7 +55,7 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
                 startActivityForResult(intent, RESTORE_DATA_CODE)
             }
             "updates" -> {
-                AutoUpdater().autoUpdate(requireContext())
+                AutoUpdater(ctx).autoUpdate()
                 Toast.makeText(requireContext(), getString(R.string.checking_for_updates), Toast.LENGTH_SHORT).show()
             }
             "changelogs" -> Changelog.showChangelogs(requireContext())

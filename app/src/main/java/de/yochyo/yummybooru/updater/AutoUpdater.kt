@@ -10,7 +10,6 @@ import de.yochyo.utils.DownloadUtils
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.utils.app.App
-import de.yochyo.yummybooru.utils.general.configPath
 import de.yochyo.yummybooru.utils.general.log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -21,33 +20,34 @@ import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
 
-class AutoUpdater {
-    private val saveDirectory = File("$configPath/updates").apply { mkdirs() }
+class AutoUpdater(private val context: Context) {
+    private val saveDirectory = File("${context.filesDir}/updates").apply { mkdirs() }
 
-    fun autoUpdate(context: Context) {
+    fun autoUpdate() {
         GlobalScope.launch {
             if (!isNewestVersion()) {
                 val file = downloadNewestFile()
                 if (file != null)
-                    throwUpdateNotification(context, file)
+                    throwUpdateNotification(file)
             }
         }
     }
 
-    private fun throwUpdateNotification(context: Context, file: File) {
-        val builder = NotificationCompat.Builder(context, App.CHANNEL_ID).setContentTitle(context.getString(R.string.update_to_version, file.name.subSequence(0, file.name.lastIndex - 3)))
+    private fun throwUpdateNotification(file: File) {
+        val builder =
+            NotificationCompat.Builder(context, App.CHANNEL_ID).setContentTitle(context.getString(R.string.update_to_version, file.name.subSequence(0, file.name.lastIndex - 3)))
                 .setSmallIcon(R.drawable.notification_icon).setAutoCancel(true)
-        val intent = installIntent(context, file)
+        val intent = installIntent(file)
         builder.setContentIntent(PendingIntent.getActivity(context, 2, intent, 0))
         NotificationManagerCompat.from(context).notify(2, builder.build())
     }
 
-    private fun installUpdate(context: Context, file: File) {
-        val intent = installIntent(context, file)
+    private fun installUpdate(file: File) {
+        val intent = installIntent(file)
         context.startActivity(intent)
     }
 
-    private fun installIntent(context: Context, file: File): Intent {
+    private fun installIntent(file: File): Intent {
         val intent = Intent(Intent.ACTION_VIEW)
         intent.setDataAndType(FileProvider.getUriForFile(context, context.applicationContext.packageName + ".fileprovider", file), "application/vnd.android.package-archive")
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK

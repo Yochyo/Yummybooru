@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory
 import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
@@ -116,12 +115,6 @@ fun parseURL(url: String): String {
     if (!url.endsWith("/"))
         b.append("/")
     return b.toString()
-}
-
-fun createDefaultSavePath(): String {
-    val f = File("${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_PICTURES}/Yummybooru/")
-    f.mkdirs()
-    return f.absolutePath
 }
 
 fun documentFile(context: Context, path: String): DocumentFile {

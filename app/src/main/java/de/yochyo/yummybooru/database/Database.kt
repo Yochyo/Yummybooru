@@ -13,7 +13,6 @@ import de.yochyo.yummybooru.database.dao.TagDao
 import de.yochyo.yummybooru.database.utils.Upgrade
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.utils.GlobalListeners
-import de.yochyo.yummybooru.utils.general.createDefaultSavePath
 import de.yochyo.yummybooru.utils.general.documentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -147,7 +146,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
         set(value) = setPreference(context.getString(R.string.preview_staggered_mode), value)
 
     var saveFolder: DocumentFile
-        get() = documentFile(context, getPreference(context.getString(R.string.savePath), createDefaultSavePath()))
+        get() = documentFile(context, getPreference(context.getString(R.string.savePath), ""))
         set(value) = setPreference(context.getString(R.string.savePath), value.uri.toString())
     var isFirstStart: Boolean
         get() = getPreference(context.getString(R.string.is_first_app_usage), context.resources.getBoolean(R.bool.is_first_app_usage_default_value))

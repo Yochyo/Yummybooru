@@ -57,7 +57,7 @@ class FollowingActivity : AppCompatActivity() {
         recyclerView = following_recycler
         recyclerView.layoutManager = LinearLayoutManager(this@FollowingActivity).apply { layoutManager = this }
 
-        recyclerView.adapter = FollowingTagAdapter(this, filteringFollowingList).apply { adapter = this;util.adapter = this }
+        recyclerView.adapter = FollowingTagAdapter(this, recyclerView, filteringFollowingList).apply { adapter = this;util.adapter = this }
         following_filter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
                 if (newText != null) GlobalScope.launch { filter(newText) }

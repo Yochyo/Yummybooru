@@ -1,11 +1,14 @@
 package de.yochyo.yummybooru.layout.selectableRecyclerView
 
+import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
+import androidx.core.view.children
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.dragselectrecyclerview.DragSelectReceiver
 import com.afollestad.dragselectrecyclerview.DragSelectTouchListener
@@ -14,7 +17,9 @@ import de.yochyo.eventmanager.Event
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.R
 
-abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private val activity: AppCompatActivity, actionbarLayout: Int) : RecyclerView.Adapter<T>() {
+abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private val activity: AppCompatActivity, private val recyclerView: RecyclerView, actionbarLayout: Int) :
+    RecyclerView.Adapter<T>() {
+
     private var isSelecting = false
     val selected = SelectionArray()
 
@@ -79,7 +84,7 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
         override fun trigger(e: StartSelectingEvent) {
             isSelecting = true
             if (actionmode == null) {
-                actionmode = e.activity.startSupportActionMode(actionModeCallback)
+                actionmode = activity.startSupportActionMode(actionModeCallback)
                 onUpdateSelection.trigger(UpdateSelectionEvent(activity))
             }
             super.trigger(e)
@@ -142,14 +147,15 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
     fun select(position: Int) {
         if (selected.isEmpty()) onStartSelection.trigger(StartSelectingEvent(activity))
         selected.put(position)
-        notifyItemChanged(position)
+        (recyclerView.layoutManager?.findViewByPosition(position) as FrameLayout?)?.foreground = ColorDrawable(activity.resources.getColor(R.color.darker))
         onUpdateSelection.trigger(UpdateSelectionEvent(activity))
     }
 
     fun deselect(position: Int) {
         selected.remove(position)
         if (selected.isEmpty()) onStopSelection.trigger(StopSelectingEvent(activity))
-        notifyItemChanged(position)
+        (recyclerView.layoutManager?.findViewByPosition(position) as FrameLayout?)?.foreground = ColorDrawable(activity.resources.getColor(R.color.transparent))
+
         onUpdateSelection.trigger(UpdateSelectionEvent(activity))
     }
 
@@ -160,7 +166,9 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
             for (i in 0 until itemCount)
                 selected.put(i)
             onUpdateSelection.trigger(UpdateSelectionEvent(activity))
-            notifyDataSetChanged()
+            recyclerView.children.forEach {
+                (it as FrameLayout?)?.foreground = ColorDrawable(activity.resources.getColor(R.color.darker))
+            }
         }
     }
 
@@ -169,13 +177,16 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
             onStopSelection.trigger(StopSelectingEvent(activity))
             selected.clear()
             onUpdateSelection.trigger(UpdateSelectionEvent(activity))
-            notifyDataSetChanged()
+            recyclerView.children.forEach {
+                (it as FrameLayout?)?.foreground = ColorDrawable(activity.resources.getColor(R.color.transparent))
+            }
         }
     }
 
+
 }
 
-class StopSelectingEvent(val activity: AppCompatActivity) : Event()
-class StartSelectingEvent(val activity: AppCompatActivity) : Event()
-class UpdateSelectionEvent(val activity: AppCompatActivity) : Event()
+class StopSelectingEvent(val context: Context) : Event()
+class StartSelectingEvent(val context: Context) : Event()
+class UpdateSelectionEvent(val context: Context) : Event()
 class ActionModeClickEvent(val actionmode: ActionMode, val menuItem: MenuItem) : Event()

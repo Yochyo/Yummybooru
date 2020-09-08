@@ -6,6 +6,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
+import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
@@ -20,7 +21,9 @@ import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class FollowingTagAdapter(val activity: FollowingActivity, s: Collection<Tag>) : SelectableRecyclerViewAdapter<FollowingTagViewHolder>(activity, R.menu.following_activity_selection_menu) {
+class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: RecyclerView, s: Collection<Tag>) : SelectableRecyclerViewAdapter<FollowingTagViewHolder>(
+    activity, recyclerView, R.menu.following_activity_selection_menu
+) {
     private val db = activity.db
     val util = FollowingCountUtil(activity)
 
@@ -75,6 +78,7 @@ class FollowingTagAdapter(val activity: FollowingActivity, s: Collection<Tag>) :
         b.setPositiveButton(R.string.positive_button_name) { _, _ -> GlobalScope.launch { tag.following = null } }
         b.show()
     }
+
     private fun deleteTagDialog(tag: Tag) {
         val b = AlertDialog.Builder(activity)
         b.setTitle(R.string.delete)

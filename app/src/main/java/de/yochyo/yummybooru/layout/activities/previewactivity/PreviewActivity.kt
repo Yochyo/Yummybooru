@@ -90,7 +90,7 @@ open class PreviewActivity : AppCompatActivity() {
                     }
                 }.apply { layoutManager = this }
 
-                recycler_view.adapter = PreviewAdapter(this@PreviewActivity, m).apply { previewAdapter = this }
+                recycler_view.adapter = PreviewAdapter(this@PreviewActivity, recycler_view, m).apply { previewAdapter = this }
                 previewAdapter.isDragSelectingEnabled(recycler_view, true)
                 previewAdapter.onStartSelection.registerListener(disableSwipeRefreshOnSelectionListener)
                 previewAdapter.onStopSelection.registerListener(reEnableSwipeRefreshOnSelectionListener)

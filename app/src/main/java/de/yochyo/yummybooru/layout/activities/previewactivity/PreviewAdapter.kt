@@ -3,6 +3,7 @@ package de.yochyo.yummybooru.layout.activities.previewactivity
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
@@ -22,7 +23,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class PreviewAdapter(val activity: PreviewActivity, val m: ManagerWrapper) : SelectableRecyclerViewAdapter<PreviewViewHolder>(activity, R.menu.preview_activity_selection_menu) {
+class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, val m: ManagerWrapper) : SelectableRecyclerViewAdapter<PreviewViewHolder>(
+    activity, recyclerView,
+    R.menu
+        .preview_activity_selection_menu
+) {
     private val loadManagerPageUpdateActionModeListener = Listener.create<OnUpdateEvent<Post>> {
         GlobalScope.launch(Dispatchers.Main) { actionmode?.title = "${selected.size}/${m.posts.size}" }
     }

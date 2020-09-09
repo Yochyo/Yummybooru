@@ -3,11 +3,9 @@ package de.yochyo.yummybooru.utils.general
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Paint
-import android.net.Uri
 import android.os.Build
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import de.yochyo.booruapi.objects.Post
@@ -20,7 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 
 fun Context.preview(id: Int) = "${id}p${db.currentServer.id}"
 fun Context.sample(id: Int) = "${id}s${db.currentServer.id}"
@@ -115,11 +112,6 @@ fun parseURL(url: String): String {
     if (!url.endsWith("/"))
         b.append("/")
     return b.toString()
-}
-
-fun documentFile(context: Context, path: String): DocumentFile {
-    return if (path.startsWith("content")) DocumentFile.fromTreeUri(context, Uri.parse(path))!!
-    else DocumentFile.fromFile(File(path))
 }
 
 fun ByteArray.toBitmap() = BitmapFactory.decodeByteArray(this, 0, this.size)

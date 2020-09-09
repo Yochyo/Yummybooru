@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.documentfile.provider.DocumentFile
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import de.yochyo.yummybooru.R
@@ -12,6 +11,7 @@ import de.yochyo.yummybooru.backup.BackupUtils
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
+import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.ctx
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -67,8 +67,7 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && data != null) {
             if (requestCode == SAVE_PATH_CODE) { //Speicherpfad ändern
-                val file = DocumentFile.fromTreeUri(requireContext(), data.data!!)
-                requireContext().db.saveFolder = file!!
+                FileUtils.setSaveFolder(ctx, data.data!!)
                 setSavePathSummary()
             }
             if (requestCode == RESTORE_DATA_CODE) {

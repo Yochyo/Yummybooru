@@ -18,6 +18,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".layout.activities.welcomeactivity.WaitingForSystemActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".layout.activities.mainactivity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -39,7 +42,7 @@
             android:label="Settings" />
         <activity
             android:name=".layout.activities.introactivity.IntroActivity"
-            android:label="" />
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <service android:name=".downloadservice.DownloadService" />
         <service android:name=".downloadservice.InAppDownloadService" />

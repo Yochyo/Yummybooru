@@ -19,6 +19,7 @@ import de.yochyo.yummybooru.layout.activities.fragments.TagHistoryFragment
 import de.yochyo.yummybooru.layout.activities.introactivity.IntroActivity
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
 import de.yochyo.yummybooru.layout.activities.settingsactivity.SettingsActivity
+import de.yochyo.yummybooru.layout.activities.welcomeactivity.WaitingForSystemActivity
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.menus.SettingsNavView
 import de.yochyo.yummybooru.updater.AutoUpdater
@@ -39,8 +40,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity_layout)
 
-        if (db.isFirstStart) startActivity(Intent(this, IntroActivity::class.java))
-
+        if (db.isFirstStart)
+            startActivity(Intent(this, IntroActivity::class.java))
+        if (!db.saveFolder.exists())
+            startActivity(Intent(this, WaitingForSystemActivity::class.java))
         configureToolbarAndNavView(nav_view)
         initData(savedInstanceState)
     }

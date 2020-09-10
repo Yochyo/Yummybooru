@@ -161,7 +161,7 @@ class TagHistoryFragment : Fragment() {
 
                 fun onClick() {
                     if (check.isChecked) selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
-                    else selectedTags.remove(tags.elementAt(adapterPosition))
+                    else selectedTags.remove(tags.elementAt(adapterPosition).name)
                 }
                 toolbar.setOnClickListener {
                     check.isChecked = !check.isChecked

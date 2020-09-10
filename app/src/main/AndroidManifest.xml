@@ -18,9 +18,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".layout.activities.welcomeactivity.WaitingForSystemActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".layout.activities.mainactivity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -41,7 +38,10 @@
             android:name=".layout.activities.settingsactivity.SettingsActivity"
             android:label="Settings" />
         <activity
-            android:name=".layout.activities.introactivity.IntroActivity"
+            android:name="de.yochyo.yummybooru.layout.activities.introactivities.introactivity.IntroActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name="de.yochyo.yummybooru.layout.activities.introactivities.savefolderactivity.SaveFolderChangerActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <service android:name=".downloadservice.DownloadService" />

@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout.activities.introactivity
+package de.yochyo.yummybooru.layout.activities.introactivities.introactivity
 
 import android.Manifest
 import android.os.Bundle
@@ -7,8 +7,9 @@ import androidx.fragment.app.Fragment
 import com.github.appintro.AppIntro2
 import com.github.appintro.R
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.layout.activities.introactivities.IIntroActivity
 
-class IntroActivity : AppIntro2() {
+class IntroActivity : AppIntro2(), IIntroActivity {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -25,8 +26,7 @@ class IntroActivity : AppIntro2() {
 
     }
 
-    fun nextSlide() = goToNextSlide()
-
+    override fun moveToNextSlide() = goToNextSlide()
     override fun onPageSelected(position: Int) {
         super.onPageSelected(position)
         setSwipeLock(true)

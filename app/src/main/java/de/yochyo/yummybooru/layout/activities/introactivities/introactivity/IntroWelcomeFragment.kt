@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout.activities.introactivity
+package de.yochyo.yummybooru.layout.activities.introactivities.introactivity
 
 import android.os.Bundle
 import android.view.View

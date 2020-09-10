@@ -1,20 +1,24 @@
-package de.yochyo.yummybooru.layout.activities.introactivity
+package de.yochyo.yummybooru.layout.activities.introactivities.introactivity
 
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.layout.activities.introactivities.IIntroActivity
 import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.ctx
 import kotlinx.android.synthetic.main.intro_activity_select_save_folder_layout.*
 
-class IntroSelectDirFragment : Fragment(R.layout.intro_activity_select_save_folder_layout) {
+class IntroSelectDirFragment(val text: String = "Save directory", val des: String = "Now, select your save directory") : Fragment(
+    R.layout
+        .intro_activity_select_save_folder_layout
+) {
     private val SELECT_DIR = 1
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        title.text = "Save directory"
-        description.text = "Now, select your save directory"
+        title.text = text
+        description.text = des
         button.visibility = View.VISIBLE
         button.setOnClickListener { startActivityForResult(FileUtils.getSaveFolderIntent(view.context), SELECT_DIR) }
     }
@@ -25,7 +29,7 @@ class IntroSelectDirFragment : Fragment(R.layout.intro_activity_select_save_fold
             if (uri != null) {
                 FileUtils.setSaveFolder(ctx, uri)
                 val activity = activity
-                if (activity is IntroActivity) activity.nextSlide()
+                if (activity is IIntroActivity) activity.moveToNextSlide()
             }
         }
     }

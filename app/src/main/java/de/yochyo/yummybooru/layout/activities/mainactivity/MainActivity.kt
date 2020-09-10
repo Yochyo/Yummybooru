@@ -16,10 +16,10 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
 import de.yochyo.yummybooru.layout.activities.fragments.ServerListViewFragment
 import de.yochyo.yummybooru.layout.activities.fragments.TagHistoryFragment
-import de.yochyo.yummybooru.layout.activities.introactivity.IntroActivity
+import de.yochyo.yummybooru.layout.activities.introactivities.introactivity.IntroActivity
+import de.yochyo.yummybooru.layout.activities.introactivities.savefolderactivity.SaveFolderChangerActivity
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
 import de.yochyo.yummybooru.layout.activities.settingsactivity.SettingsActivity
-import de.yochyo.yummybooru.layout.activities.welcomeactivity.WaitingForSystemActivity
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.menus.SettingsNavView
 import de.yochyo.yummybooru.updater.AutoUpdater
@@ -43,7 +43,8 @@ class MainActivity : AppCompatActivity() {
         if (db.isFirstStart)
             startActivity(Intent(this, IntroActivity::class.java))
         if (!db.saveFolder.exists())
-            startActivity(Intent(this, WaitingForSystemActivity::class.java))
+            startActivity(Intent(this, SaveFolderChangerActivity::class.java))
+
         configureToolbarAndNavView(nav_view)
         initData(savedInstanceState)
     }
@@ -68,6 +69,8 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.main_activity_right_drawer_container, tagHistoryFragment!!).commit()
         Changelog.showChangelogIfChanges(this)
         AutoUpdater(this).autoUpdate()
+
+
     }
 
     private fun configureToolbarAndNavView(navView: NavigationView) {

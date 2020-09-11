@@ -26,7 +26,7 @@ class FollowingCountUtil(val activity: FollowingActivity) {
         }
     }
 
-    private val onAddElementListener = Listener.create<OnAddElementsEvent<Tag>> { GlobalScope.launch { it.elements.forEach { element -> cacheCount(element.name) } } }
+    private val onAddElementListener = Listener<OnAddElementsEvent<Tag>> { GlobalScope.launch { it.elements.forEach { element -> cacheCount(element.name) } } }
 
     init {
         activity.db.tags.registerOnAddElementsListener(onAddElementListener)

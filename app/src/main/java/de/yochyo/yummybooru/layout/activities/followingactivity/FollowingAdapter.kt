@@ -34,8 +34,8 @@ class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: Recycle
         notifyDataSetChanged()
     }
 
-    private val disableMenuClick = Listener.create<StartSelectingEvent> { notifyDataSetChanged() }
-    private val reEnableMenuClick = Listener.create<StopSelectingEvent> { notifyDataSetChanged() }
+    private val disableMenuClick = Listener<StartSelectingEvent> { notifyDataSetChanged() }
+    private val reEnableMenuClick = Listener<StopSelectingEvent> { notifyDataSetChanged() }
 
     init {
         onStartSelection.registerListener(disableMenuClick)

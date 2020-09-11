@@ -37,7 +37,7 @@ class FollowingActivity : AppCompatActivity() {
         }
     }
 
-    private val updateFollowingListener = Listener.create<OnUpdateEvent<Tag>> { GlobalScope.launch(Dispatchers.Main) { adapter.updateFollowing(filteringFollowingList) } }
+    private val updateFollowingListener = Listener<OnUpdateEvent<Tag>> { GlobalScope.launch(Dispatchers.Main) { adapter.updateFollowing(filteringFollowingList) } }
     var onClickedData: FollowingData? = null
 
     private lateinit var recyclerView: RecyclerView

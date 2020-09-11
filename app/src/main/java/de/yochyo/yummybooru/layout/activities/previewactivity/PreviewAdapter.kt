@@ -28,20 +28,20 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
     R.menu
         .preview_activity_selection_menu
 ) {
-    private val loadManagerPageUpdateActionModeListener = Listener.create<OnUpdateEvent<Post>> {
+    private val loadManagerPageUpdateActionModeListener = Listener<OnUpdateEvent<Post>> {
         GlobalScope.launch(Dispatchers.Main) { actionmode?.title = "${selected.size}/${m.posts.size}" }
     }
 
-    private val startSelectionListener = Listener.create<StartSelectingEvent> {
+    private val startSelectionListener = Listener<StartSelectingEvent> {
         m.posts.registerOnUpdateListener(loadManagerPageUpdateActionModeListener)
     }
-    private val stopSelectionListener = Listener.create<StopSelectingEvent> {
+    private val stopSelectionListener = Listener<StopSelectingEvent> {
         m.posts.removeOnUpdateListener(loadManagerPageUpdateActionModeListener)
     }
 
     private var size = m.posts.size
 
-    private val clickMenuItemListener = Listener.create<ActionModeClickEvent> {
+    private val clickMenuItemListener = Listener<ActionModeClickEvent> {
         when (it.menuItem.itemId) {
             R.id.select_all -> if (selected.size == m.posts.size) deselectAll() else selectAll()
             R.id.download_selected -> {

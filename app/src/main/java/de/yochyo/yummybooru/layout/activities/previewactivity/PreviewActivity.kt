@@ -42,9 +42,9 @@ open class PreviewActivity : AppCompatActivity() {
 
     private lateinit var actionBarListener: ActionBarListener
 
-    private val disableSwipeRefreshOnSelectionListener = Listener.create<StartSelectingEvent> { swipeRefreshLayout.isEnabled = false }
+    private val disableSwipeRefreshOnSelectionListener = Listener<StartSelectingEvent> { swipeRefreshLayout.isEnabled = false }
     private val reEnableSwipeRefreshOnSelectionListener =
-        Listener.create<StopSelectingEvent> { swipeRefreshLayout.isEnabled = true;swipeRefreshLayout.isEnabled = false; swipeRefreshLayout.isEnabled = true }
+        Listener<StopSelectingEvent> { swipeRefreshLayout.isEnabled = true;swipeRefreshLayout.isEnabled = false; swipeRefreshLayout.isEnabled = true }
     private var isLoadingView = false
     var isScrolling = false
 
@@ -53,7 +53,7 @@ open class PreviewActivity : AppCompatActivity() {
 
     private lateinit var m: ManagerWrapper
 
-    private val managerListener = Listener.create<OnAddElementsEvent<Post>> {
+    private val managerListener = Listener<OnAddElementsEvent<Post>> {
         GlobalScope.launch(Dispatchers.Main) {
             if (it.elements.isEmpty()) Toast.makeText(this@PreviewActivity, getString(R.string.manager_end), Toast.LENGTH_SHORT).show()
             else previewAdapter.updatePosts(it.elements)

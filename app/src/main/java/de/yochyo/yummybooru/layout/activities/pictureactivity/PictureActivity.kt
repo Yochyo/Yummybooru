@@ -44,7 +44,7 @@ class PictureActivity : AppCompatActivity() {
     private lateinit var pictureAdapter: PictureAdapter
     private lateinit var tagInfoAdapter: TagInfoAdapter
 
-    private val managerListener = Listener.create<OnUpdateEvent<Post>> { GlobalScope.launch(Dispatchers.Main) { this@PictureActivity.pictureAdapter.updatePosts(it.collection) } }
+    private val managerListener = Listener<OnUpdateEvent<Post>> { GlobalScope.launch(Dispatchers.Main) { this@PictureActivity.pictureAdapter.updatePosts(it.collection) } }
     lateinit var m: ManagerWrapper
 
     override fun onCreate(savedInstanceState: Bundle?) {

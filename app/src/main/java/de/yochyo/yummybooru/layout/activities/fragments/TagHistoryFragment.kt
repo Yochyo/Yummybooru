@@ -41,8 +41,8 @@ class TagHistoryFragment : Fragment() {
 
     val selectedTags = ArrayList<String>()
 
-    private val selectedTagRemovedListener = Listener.create<OnRemoveElementsEvent<Tag>> { selectedTags.removeAll(it.elements.map { it.name }) }
-    private val selectedServerChangedEvent = Listener.create<SelectServerEvent> {
+    private val selectedTagRemovedListener = Listener<OnRemoveElementsEvent<Tag>> { selectedTags.removeAll(it.elements.map { it.name }) }
+    private val selectedServerChangedEvent = Listener<SelectServerEvent> {
         if (it.oldServer != it.newServer)
             selectedTags.clear()
     }

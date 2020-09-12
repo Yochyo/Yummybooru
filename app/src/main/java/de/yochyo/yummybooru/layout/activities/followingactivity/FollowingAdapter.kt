@@ -72,7 +72,7 @@ class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: Recycle
 
     private fun deleteSubDialog(tag: Tag) {
         val b = AlertDialog.Builder(activity)
-        b.setTitle(R.string.delete)
+        b.setTitle(R.string.unfollow)
         b.setMessage(activity.getString(R.string.unfollow_tag_with_name, tag.name))
         b.setNegativeButton(R.string.negative_button_name) { _, _ -> }
         b.setPositiveButton(R.string.positive_button_name) { _, _ -> GlobalScope.launch { tag.following = null } }

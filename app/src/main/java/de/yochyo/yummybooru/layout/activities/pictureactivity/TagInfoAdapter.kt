@@ -14,7 +14,7 @@ import de.yochyo.yummybooru.utils.general.createTagAndOrChangeFollowingState
 import de.yochyo.yummybooru.utils.general.setColor
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import de.yochyo.yummybooru.utils.general.underline
-import kotlinx.android.synthetic.main.content_picture.*
+import kotlinx.android.synthetic.main.picture_activity_drawer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -34,7 +34,7 @@ class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Inf
         toolbar.inflateMenu(R.menu.picture_info_menu)
         toolbar.setOnClickListener {
             PreviewActivity.startActivity(activity, toolbar.findViewById<TextView>(R.id.info_textview).text.toString())
-            activity.drawer_picture.closeDrawer(GravityCompat.END)
+            activity.drawer_picture2.closeDrawer(GravityCompat.END)
         }
         toolbar.setOnMenuItemClickListener {
             val tag = tags.elementAt(adapterPosition)

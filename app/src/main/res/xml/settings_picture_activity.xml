@@ -8,7 +8,7 @@
         android:summary="Loads images left/right of the current image"
         android:title="Preload large images (default 1)"
         app:allowDividerAbove="true"
-        app:min="0"
+        app:min="1"
         app:showSeekBarValue="true" />
     <androidx.preference.SwitchPreference
         android:defaultValue="@bool/click_to_move_to_next_image_default_value"

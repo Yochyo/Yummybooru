@@ -68,8 +68,6 @@ class PictureViewHolder(
 
     fun loadVideo(post: Post) {
         mediaView.setVideoPath(post.fileSampleURL)
-        //TODO  if (m.position == position) view.resume() //video wouldn't start if the first (the visible one after starting the activity) post is a video
-
         currentChild = mediaView
     }
 

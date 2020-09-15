@@ -46,12 +46,21 @@ class Changelog(val versionName: String, val version: Int, val description: Stri
                         "- New icon"
             )
             logs += Changelog("2.01", 7, "- Small bug fixes")
-            logs += Changelog("2.2", 9, "Added gelbooru Support\n" +
-                    "Can now display videos\n" +
-                    "Fixed some bugs\n" +
-                    "Can now login into danbooru again\n" +
-                    "Added 'Download All' feature\n" +
-                    "...")
+            logs += Changelog(
+                "2.2", 9, "Added gelbooru Support\n" +
+                        "Can now display videos\n" +
+                        "Fixed some bugs\n" +
+                        "Can now login into danbooru again\n" +
+                        "Added 'Download All' feature\n" +
+                        "..."
+            )
+            logs += Changelog(
+                "2.3", 10, "Fixed bug where the save path was reset after a reboot\n" +
+                        "Added Intro screen\n" +
+                        "Added server templatesd and MyImouto api\n" +
+                        "Added a lot of new settings\n" +
+                        "Faster cache"
+            )
         }
 
         fun showChangelogs(context: Context) {

@@ -21,7 +21,7 @@ import javax.net.ssl.HttpsURLConnection
 
 
 class AutoUpdater(private val context: Context) {
-    private val saveDirectory = File("${context.filesDir}/updates").apply { mkdirs() }
+    private val saveDirectory = File(context.filesDir, "updates").apply { mkdirs() }
 
     fun autoUpdate() {
         GlobalScope.launch {
@@ -42,7 +42,7 @@ class AutoUpdater(private val context: Context) {
         NotificationManagerCompat.from(context).notify(2, builder.build())
     }
 
-    private fun installUpdate(file: File) {
+    fun installUpdate(file: File) {
         val intent = installIntent(file)
         context.startActivity(intent)
     }

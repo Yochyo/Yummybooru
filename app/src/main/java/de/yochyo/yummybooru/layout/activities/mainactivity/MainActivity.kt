@@ -25,6 +25,7 @@ import de.yochyo.yummybooru.layout.menus.SettingsNavView
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
 import de.yochyo.yummybooru.utils.general.toTagString
+import de.yochyo.yummybooru.utils.general.updateNomediaFile
 import kotlinx.android.synthetic.main.main_activity_layout.*
 
 class MainActivity : AppCompatActivity() {
@@ -42,8 +43,13 @@ class MainActivity : AppCompatActivity() {
 
         if (db.isFirstStart)
             startActivity(Intent(this, IntroActivity::class.java))
-        if (!db.saveFolder.exists())
-            startActivity(Intent(this, SaveFolderChangerActivity::class.java))
+        try {
+            if (!db.saveFolder.exists())
+                startActivity(Intent(this, SaveFolderChangerActivity::class.java))
+            updateNomediaFile(applicationContext)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
         configureToolbarAndNavView(nav_view)
         initData(savedInstanceState)

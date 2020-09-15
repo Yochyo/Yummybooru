@@ -57,7 +57,7 @@ class Changelog(val versionName: String, val version: Int, val description: Stri
             logs += Changelog(
                 "2.3", 10, "Fixed bug where the save path was reset after a reboot\n" +
                         "Added Intro screen\n" +
-                        "Added server templatesd and MyImouto api\n" +
+                        "Added server templates and MyImouto api\n" +
                         "Added a lot of new settings\n" +
                         "Faster cache"
             )

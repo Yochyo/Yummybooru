@@ -49,6 +49,7 @@ class MainActivity : AppCompatActivity() {
             updateNomediaFile(applicationContext)
         } catch (e: Exception) {
             e.printStackTrace()
+            startActivity(Intent(this, SaveFolderChangerActivity::class.java))
         }
 
         configureToolbarAndNavView(nav_view)

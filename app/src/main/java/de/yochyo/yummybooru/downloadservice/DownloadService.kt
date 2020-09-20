@@ -45,7 +45,7 @@ class DownloadService : Service() {
         super.onCreate()
         notificationManager = NotificationManagerCompat.from(this)
         notificationBuilder = NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.drawable.notification_icon).setContentTitle(getString(R.string.downloading))
-                .setOngoing(true).setLocalOnly(true).setProgress(100, 0, false)
+            .setOngoing(true).setLocalOnly(true).setProgress(100, 0, false)
 
         startForeground(1, notificationBuilder.build())
         job = GlobalScope.launch(Dispatchers.IO) {
@@ -66,12 +66,12 @@ class DownloadService : Service() {
         while (pair != null) {
             val finalPair = pair
             val (url, _) = getDownloadPathAndId(this@DownloadService, pair.first)
-            downloader.download(url) {
+            downloader.download(url, {
                 FileUtils.writeFile(this@DownloadService, finalPair.first, it, finalPair.second.server)
                 withContext(Dispatchers.Main) {
                     updateNotification(finalPair.second)
                 }
-            }
+            })
             pair = getNextElement()
         }
     }

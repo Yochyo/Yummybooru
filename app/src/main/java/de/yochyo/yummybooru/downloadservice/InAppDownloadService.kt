@@ -9,7 +9,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.entities.Resource
+import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
@@ -17,7 +17,7 @@ import de.yochyo.yummybooru.utils.network.CacheableDownloader
 import kotlinx.coroutines.*
 import java.util.*
 
-private typealias Download = Triple<String, String, suspend (e: Resource) -> Unit> //url, id, callback
+private typealias Download = Triple<String, String, suspend (e: Resource2) -> Unit> //url, id, callback
 
 class InAppDownloadService : Service() {
     private val downloader = CacheableDownloader(db.parallelBackgroundDownloads)
@@ -28,7 +28,7 @@ class InAppDownloadService : Service() {
 
     companion object {
         private val downloads = LinkedList<Download>()
-        fun startService(context: Context, url: String, id: String, callback: suspend (e: Resource) -> Unit) {
+        fun startService(context: Context, url: String, id: String, callback: suspend (e: Resource2) -> Unit) {
             downloads += Download(url, id, callback)
             context.startService(Intent(context, InAppDownloadService::class.java))
         }
@@ -44,7 +44,7 @@ class InAppDownloadService : Service() {
             do {
                 while (downloads.isNotEmpty()) {
                     val dl = downloads.removeFirst()
-                    downloader.download(this@InAppDownloadService, dl.first, dl.second, {
+                    downloader.download(dl.first, {
                         dl.third(it)
                         val toast = dl.second.filter {
                             it in '0'..'9'

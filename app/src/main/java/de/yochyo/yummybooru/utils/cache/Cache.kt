@@ -1,7 +1,7 @@
 package de.yochyo.yummybooru.utils.cache
 
 import android.content.Context
-import de.yochyo.yummybooru.api.entities.Resource
+import de.yochyo.yummybooru.api.entities.BitmapResource
 
 class Cache(context: Context) {
     private val memoryCache = MemoryCache()
@@ -18,13 +18,13 @@ class Cache(context: Context) {
         }
     }
 
-    suspend fun cache(key: String, res: Resource) {
+    suspend fun cache(key: String, res: BitmapResource) {
         memoryCache.put(key, res)
         diskCache.cacheResource(key, res)
         memoryCache.remove(key)
     }
 
-    suspend fun getResource(key: String): Resource? {
+    suspend fun getResource(key: String): BitmapResource? {
         var res = memoryCache.get(key)
         if (res == null)
             res = diskCache.getResource(key)

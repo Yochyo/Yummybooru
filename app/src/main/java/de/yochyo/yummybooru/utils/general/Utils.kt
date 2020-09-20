@@ -1,16 +1,21 @@
 package de.yochyo.yummybooru.utils.general
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Paint
 import android.os.Build
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.booruapi.objects.Tag
 import de.yochyo.yummybooru.api.entities.Following
+import de.yochyo.yummybooru.api.entities.IResource
+import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.saveDownload
 import de.yochyo.yummybooru.utils.ManagerWrapper
@@ -18,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.InputStream
 
 fun Context.preview(id: Int) = "${id}p${db.currentServer.id}"
 fun Context.sample(id: Int) = "${id}s${db.currentServer.id}"
@@ -114,7 +120,34 @@ fun parseURL(url: String): String {
     return b.toString()
 }
 
+fun InputStream.toBitmap(): Bitmap? {
+    val buffered = this.buffered()
+    var result: Bitmap? = null
+    try {
+        result = BitmapFactory.decodeStream(buffered)
+
+    } catch (e: java.lang.Exception) {
+        e.printStackTrace()
+        e.log()
+    } finally {
+        buffered.close()
+        return result
+    }
+}
+
 fun ByteArray.toBitmap() = BitmapFactory.decodeByteArray(this, 0, this.size)
+
+fun Resource2.loadIntoImageView(imageView: ImageView) {
+    when (type) {
+        IResource.IMAGE -> imageView.setImageBitmap(input.toBitmap())
+        IResource.ANIMATED -> try {
+            Glide.with(imageView).load(input.readBytes().apply { input.close() }).into(imageView)
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+    }
+}
+
 val String.mimeType: String?
     get() {
         val lastIndex = lastIndexOf(".")

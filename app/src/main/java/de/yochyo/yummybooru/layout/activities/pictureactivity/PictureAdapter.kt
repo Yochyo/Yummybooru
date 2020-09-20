@@ -2,7 +2,7 @@ package de.yochyo.yummybooru.layout.activities.pictureactivity
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import de.yochyo.yummybooru.api.entities.Resource
+import de.yochyo.yummybooru.api.entities.IResource
 import de.yochyo.yummybooru.utils.general.mimeType
 
 class PictureAdapter(val activity: PictureActivity) : RecyclerView.Adapter<PictureViewHolder>() {
@@ -21,8 +21,8 @@ class PictureAdapter(val activity: PictureActivity) : RecyclerView.Adapter<Pictu
     override fun onBindViewHolder(holder: PictureViewHolder, position: Int) {
         holder.layout.tag = position
         val post = m.posts.elementAt(position)
-        when (Resource.typeFromMimeType(post.fileSampleURL.mimeType ?: "")) {
-            Resource.VIDEO -> holder.loadVideo(post)
+        when (IResource.typeFromMimeType(post.fileSampleURL.mimeType ?: "")) {
+            IResource.VIDEO -> holder.loadVideo(post)
             else -> holder.loadImage(post)
         }
         if (position == activity.m.position) holder.resume()

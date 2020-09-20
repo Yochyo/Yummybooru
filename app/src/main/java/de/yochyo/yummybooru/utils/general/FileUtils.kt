@@ -6,21 +6,23 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.entities.Resource
+import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.InputStream
 
 object FileUtils {
 
-    suspend fun writeBytes(context: Context, documentFile: DocumentFile, bytes: ByteArray): Boolean {
+    suspend fun writeBytes(context: Context, documentFile: DocumentFile, input: InputStream): Boolean {
         return withContext(Dispatchers.IO) {
             try {
                 val stream = context.contentResolver.openOutputStream(documentFile.uri)
                 if (stream != null) {
-                    stream.write(bytes)
-                    stream.close()
+                    stream.use {
+                        input.copyTo(it)
+                    }
                     return@withContext true
                 }
             } catch (e: Exception) {
@@ -31,11 +33,12 @@ object FileUtils {
         }
     }
 
-    suspend fun writeFile(context: Context, post: Post, res: Resource, server: Server) {
+    suspend fun writeFile(context: Context, post: Post, res: Resource2, server: Server) {
         withContext(Dispatchers.IO) {
             val file = createFileOrNull(context, post, server, res.mimetype)
             if (file != null) {
-                writeBytes(context, file, res.resource)
+                writeBytes(context, file, res.input)
+                res.input.close()
             }
         }
     }

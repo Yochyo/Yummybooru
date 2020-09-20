@@ -11,15 +11,18 @@ import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
 import de.yochyo.yummybooru.utils.general.downloadImage
+import de.yochyo.yummybooru.utils.general.loadIntoImageView
 import de.yochyo.yummybooru.utils.general.preview
-import de.yochyo.yummybooru.utils.general.sample
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import de.yochyo.yummybooru.utils.network.download
+import de.yochyo.yummybooru.utils.network.downloadBitmap
 import kotlinx.android.synthetic.main.picture_activity_drawer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class PictureViewHolder(
     val activity: PictureActivity,
@@ -47,21 +50,22 @@ class PictureViewHolder(
     fun loadImage(post: Post) {
         GlobalScope.launch {
             var downloadedOriginalImage = false
-            download(activity, post.fileSampleURL, activity.sample(post.id), {
+            val mutex = Mutex()
+            download(post.fileSampleURL, {
                 GlobalScope.launch(Dispatchers.Main) {
-                    synchronized(downloadedOriginalImage) { downloadedOriginalImage = true }
-                    it.loadIntoImageView(photoView)
-                }
-            }, downloadFirst = true, cacheFile = true)
-            download(
-                activity, post.filePreviewURL, activity.preview(post.id), {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        synchronized(downloadedOriginalImage) {
-                            if (!downloadedOriginalImage) it.loadIntoImageView(photoView)
-                        }
+                    mutex.withLock {
+                        downloadedOriginalImage = true
+                        it.loadIntoImageView(photoView)
                     }
-                }, downloadFirst = true, cacheFile = true
-            )
+                }
+            }, downloadNow = true)
+            downloadBitmap(activity, post.filePreviewURL, activity.preview(post.id), {
+                GlobalScope.launch(Dispatchers.Main) {
+                    mutex.withLock {
+                        if (!downloadedOriginalImage) it.loadIntoImageView(photoView)
+                    }
+                }
+            }, downloadFirst = true)
         }
         currentChild = photoView
     }

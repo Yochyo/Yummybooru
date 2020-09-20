@@ -31,7 +31,7 @@ object BackupUtils {
 
             val f = createBackupFile(context)
             if (f != null) {
-                FileUtils.writeBytes(context, f, json.toString().toByteArray())
+                FileUtils.writeBytes(context, f, json.toString().toByteArray().inputStream())
                 true
             } else false
         }

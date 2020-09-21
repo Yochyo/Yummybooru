@@ -43,13 +43,19 @@ class MainActivity : AppCompatActivity() {
 
         if (db.isFirstStart)
             startActivity(Intent(this, IntroActivity::class.java))
-        try {
-            if (!db.saveFolder.exists())
+        else {
+            try {
+                if (!db.saveFolder.exists())
+                    startActivity(Intent(this, SaveFolderChangerActivity::class.java))
+            } catch (e: Exception) {
+                e.printStackTrace()
                 startActivity(Intent(this, SaveFolderChangerActivity::class.java))
-            updateNomediaFile(applicationContext)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            startActivity(Intent(this, SaveFolderChangerActivity::class.java))
+            }
+            try {
+                updateNomediaFile(applicationContext)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
 
         configureToolbarAndNavView(nav_view)

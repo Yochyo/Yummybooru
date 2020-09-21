@@ -140,7 +140,8 @@ class PictureActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        m.posts.removeOnUpdateListener(managerListener)
+        if (this::m.isInitialized)
+            m.posts.removeOnUpdateListener(managerListener)
         super.onDestroy()
     }
 

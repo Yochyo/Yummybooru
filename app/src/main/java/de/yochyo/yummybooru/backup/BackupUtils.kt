@@ -7,7 +7,6 @@ import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.general.FileUtils
-import de.yochyo.yummybooru.utils.general.logFirebase
 import de.yochyo.yummybooru.utils.general.sendFirebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.joinAll
@@ -64,7 +63,7 @@ object BackupUtils {
             }
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
-            e.logFirebase("failed upgrade to version 9")
+            e.sendFirebase()
         }
         return json
     }

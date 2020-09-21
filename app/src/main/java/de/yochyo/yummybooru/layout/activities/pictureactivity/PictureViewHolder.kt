@@ -10,12 +10,10 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
-import de.yochyo.yummybooru.utils.general.downloadImage
+import de.yochyo.yummybooru.utils.general.downloadAndSaveImage
 import de.yochyo.yummybooru.utils.general.loadIntoImageView
-import de.yochyo.yummybooru.utils.general.preview
 import de.yochyo.yummybooru.utils.general.toBooruTag
-import de.yochyo.yummybooru.utils.network.download
-import de.yochyo.yummybooru.utils.network.downloadBitmap
+import de.yochyo.yummybooru.utils.network.downloader
 import kotlinx.android.synthetic.main.picture_activity_drawer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -51,7 +49,7 @@ class PictureViewHolder(
         GlobalScope.launch {
             var downloadedOriginalImage = false
             val mutex = Mutex()
-            download(post.fileSampleURL, {
+            downloader.download(post.fileSampleURL, {
                 GlobalScope.launch(Dispatchers.Main) {
                     mutex.withLock {
                         downloadedOriginalImage = true
@@ -59,7 +57,7 @@ class PictureViewHolder(
                     }
                 }
             }, downloadNow = true)
-            downloadBitmap(activity, post.filePreviewURL, activity.preview(post.id), {
+            downloader.downloadPostPreviewIMG(activity, post, {
                 GlobalScope.launch(Dispatchers.Main) {
                     mutex.withLock {
                         if (!downloadedOriginalImage) it.loadIntoImageView(photoView)
@@ -135,7 +133,7 @@ class PictureViewHolder(
     private fun onFlingUp(post: Post): Boolean {
         val time = System.currentTimeMillis()
         if (time - lastSwipeUp > 400L) { //download
-            downloadImage(activity, post)
+            downloadAndSaveImage(activity, post)
             val snack = Snackbar.make(viewPager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT)
             snack.show()
             GlobalScope.launch(Dispatchers.Main) {

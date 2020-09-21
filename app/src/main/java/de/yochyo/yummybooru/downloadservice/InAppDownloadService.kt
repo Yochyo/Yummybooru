@@ -7,12 +7,10 @@ import android.os.IBinder
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import de.yochyo.booruapi.objects.Post
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.app.App
-import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.network.CacheableDownloader
 import kotlinx.coroutines.*
 import java.util.*
@@ -72,8 +70,4 @@ class InAppDownloadService : Service() {
     }
 
     override fun onBind(intent: Intent): IBinder? = null
-}
-
-fun saveDownload(context: Context, url: String, id: String, post: Post) = InAppDownloadService.startService(context, url, id) {
-    FileUtils.writeFile(context, post, it, context.db.currentServer)
 }

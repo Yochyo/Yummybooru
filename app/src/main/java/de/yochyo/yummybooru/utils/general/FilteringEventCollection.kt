@@ -1,7 +1,5 @@
 package de.yochyo.yummybooru.utils.general
 
-import de.yochyo.eventcollection.EventCollection
-import de.yochyo.eventcollection.IEventCollection
 import de.yochyo.eventcollection.SubEventCollection
 import de.yochyo.eventcollection.observable.IObservableObject
 import de.yochyo.eventcollection.observablecollection.IObservableCollection

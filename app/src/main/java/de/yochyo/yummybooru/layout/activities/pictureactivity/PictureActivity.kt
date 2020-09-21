@@ -20,7 +20,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
 import de.yochyo.yummybooru.utils.ManagerWrapper
-import de.yochyo.yummybooru.utils.general.downloadImage
+import de.yochyo.yummybooru.utils.general.downloadAndSaveImage
 import de.yochyo.yummybooru.utils.general.getCurrentManager
 import de.yochyo.yummybooru.utils.general.getOrRestoreManager
 import de.yochyo.yummybooru.utils.general.setCurrentManager
@@ -123,7 +123,7 @@ class PictureActivity : AppCompatActivity() {
         when (item.itemId) {
             android.R.id.home -> finish()
             R.id.show_info -> drawer_picture2.openDrawer(GravityCompat.END)
-            R.id.save -> m.currentPost?.apply { downloadImage(this@PictureActivity, this) }
+            R.id.save -> m.currentPost?.apply { downloadAndSaveImage(this@PictureActivity, this) }
             R.id.share -> {
                 val post = m.currentPost
                 if (post != null) {

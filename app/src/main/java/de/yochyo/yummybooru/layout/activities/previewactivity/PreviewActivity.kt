@@ -130,12 +130,12 @@ open class PreviewActivity : AppCompatActivity() {
                 when (newState) {
                     RecyclerView.SCROLL_STATE_IDLE -> {
                         isScrolling = false
-                        m.position = layoutManager.findFirstCompletelyVisibleItemPositions(null).max()!!
+                        m.position = layoutManager.findFirstCompletelyVisibleItemPositions(null).maxOrNull()!!
                     }
                     RecyclerView.SCROLL_STATE_DRAGGING -> isScrolling = true
                 }
                 if (!isLoadingView)
-                    if (layoutManager.findFirstVisibleItemPositions(null).max()!! + OFFSET_BEFORE_LOAD_NEXT_PAGE + db.limit >= m.posts.size) loadNextPage()
+                    if (layoutManager.findFirstVisibleItemPositions(null).maxOrNull()!! + OFFSET_BEFORE_LOAD_NEXT_PAGE + db.limit >= m.posts.size) loadNextPage()
                 return super.onScrollStateChanged(recyclerView, newState)
             }
         })

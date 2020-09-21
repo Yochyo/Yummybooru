@@ -47,7 +47,7 @@ object FileUtils {
         return createFileOrNull(context, server.urlHost, postToFilename(post, mimeType, server), mimeType)
     }
 
-    public suspend fun getFile(context: Context, subfolder: String? = null, name: String): DocumentFile? {
+    suspend fun getFile(context: Context, subfolder: String? = null, name: String): DocumentFile? {
         return withContext(Dispatchers.IO) {
             val root = getOrCreateFolder(context.db.saveFolder, context.getString(R.string.app_name))
             if (root != null) {
@@ -58,7 +58,7 @@ object FileUtils {
         }
     }
 
-    public suspend fun createFileOrNull(context: Context, subfolder: String? = null, name: String, mimeType: String): DocumentFile? {
+    suspend fun createFileOrNull(context: Context, subfolder: String? = null, name: String, mimeType: String): DocumentFile? {
         return withContext(Dispatchers.IO) {
             val folder = context.db.saveFolder
             val root = getOrCreateFolder(context.db.saveFolder, context.getString(R.string.app_name))
@@ -70,10 +70,10 @@ object FileUtils {
         }
     }
 
-    public fun getSaveFolderIntent(context: Context) =
+    fun getSaveFolderIntent(context: Context) =
         Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION).putExtra("android.content.extra.SHOW_ADVANCED", true)
 
-    public fun setSaveFolder(context: Context, uri: Uri) {
+    fun setSaveFolder(context: Context, uri: Uri) {
         context.contentResolver.takePersistableUriPermission(
             uri,
             Intent.FLAG_GRANT_READ_URI_PERMISSION or

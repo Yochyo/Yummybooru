@@ -1,8 +1,8 @@
 package de.yochyo.yummybooru.database.dao
 
 import android.database.sqlite.SQLiteDatabase
-import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Following
+import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.converter.ConvertBoolean
 import de.yochyo.yummybooru.database.converter.ConvertDate

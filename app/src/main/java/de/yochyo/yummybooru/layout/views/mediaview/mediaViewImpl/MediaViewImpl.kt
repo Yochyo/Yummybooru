@@ -1,8 +1,6 @@
 package de.yochyo.mediaview.mediaViewImpl
 
-import android.graphics.Point
 import android.net.Uri
-import java.net.URL
 
 interface MediaViewImpl{
     var onSizeChange: (Int, Int) -> Unit

@@ -146,7 +146,7 @@ class TagHistoryFragment : Fragment() {
         }
     }
 
-    inner class TagAdapter() : RecyclerView.Adapter<TagViewHolder>() {
+    inner class TagAdapter : RecyclerView.Adapter<TagViewHolder>() {
         private var tags: Collection<Tag> = emptyList()
 
         fun update(t: Collection<Tag>) {

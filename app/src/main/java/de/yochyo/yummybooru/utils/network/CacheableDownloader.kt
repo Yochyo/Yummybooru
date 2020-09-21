@@ -1,12 +1,12 @@
 package de.yochyo.yummybooru.utils.network
 
 import android.content.Context
+import de.yochyo.booruapi.objects.Post
 import de.yochyo.downloader.RegulatingDownloader
 import de.yochyo.yummybooru.api.entities.BitmapResource
 import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.utils.cache.cache
-import de.yochyo.yummybooru.utils.general.log
-import de.yochyo.yummybooru.utils.general.mimeType
+import de.yochyo.yummybooru.utils.general.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.InputStream
@@ -23,7 +23,19 @@ class CacheableDownloader(max: Int) {
         else dl.download(url, callback, url.mimeType ?: "")
     }
 
-    fun downloadBitmap(context: Context, url: String, id: String, callback: suspend (e: BitmapResource) -> Unit, downloadFirst: Boolean = false) {
+    fun downloadPostPreviewIMG(context: Context, post: Post, callback: suspend (e: BitmapResource) -> Unit, downloadFirst: Boolean = false) {
+        return downloadBitmap(context, post.filePreviewURL, context.preview(post.id), callback, downloadFirst)
+    }
+
+    fun downloadPostSampleIMG(context: Context, post: Post, callback: suspend (e: BitmapResource) -> Unit, downloadFirst: Boolean = false) {
+        return downloadBitmap(context, post.fileSampleURL, context.sample(post.id), callback, downloadFirst)
+    }
+
+    fun downloadPostOriginalIMG(context: Context, post: Post, callback: suspend (e: BitmapResource) -> Unit, downloadFirst: Boolean = false) {
+        return downloadBitmap(context, post.fileURL, context.original(post.id), callback, downloadFirst)
+    }
+
+    private fun downloadBitmap(context: Context, url: String, id: String, callback: suspend (e: BitmapResource) -> Unit, downloadFirst: Boolean = false) {
         suspend fun doAfter(res: BitmapResource?) {
             if (res != null) {
                 GlobalScope.launch { context.cache.cache(id, res) }
@@ -47,7 +59,3 @@ class CacheableDownloader(max: Int) {
 }
 
 val downloader = CacheableDownloader(10)
-fun downloadBitmap(context: Context, url: String, id: String, callback: suspend (e: BitmapResource) -> Unit, downloadFirst: Boolean = false, cacheFile: Boolean = false) =
-    downloader.downloadBitmap(context, url, id, callback, downloadFirst)
-
-fun download(url: String, callback: suspend (e: Resource2) -> Unit, downloadNow: Boolean = false) = downloader.download(url, callback, downloadNow)

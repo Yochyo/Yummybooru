@@ -13,6 +13,7 @@ import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
 import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.ctx
+import de.yochyo.yummybooru.utils.general.logFirebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -86,11 +87,17 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun setSavePathSummary() {
-        val pref = findPreference<Preference>(getString(R.string.savePath))
-        if (pref != null) {
-            val file = requireContext().db.saveFolder
-            pref.summary = file.name
-            file.parentFile
+        try {
+            val pref = findPreference<Preference>(getString(R.string.savePath))
+            if (pref != null) {
+                val file = ctx.db.saveFolder
+                pref.summary = file.name
+                file.parentFile
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            e.logFirebase(ctx.db.saveFolderUri).send()
+            //TODO this try catch block shouldn't be necessary, but sometimes
         }
     }
 }

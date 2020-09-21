@@ -62,7 +62,7 @@ class CacheableDownloader(max: Int) {
             }
         } catch (e: OutOfMemoryError) {
             e.printStackTrace()
-            e.log()
+            e.logFirebase(url).log(id).send()
         }
     }
 }

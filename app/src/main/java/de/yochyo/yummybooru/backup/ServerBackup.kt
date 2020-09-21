@@ -4,7 +4,7 @@ import android.content.Context
 import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.utils.general.log
+import de.yochyo.yummybooru.utils.general.sendFirebase
 
 object ServerBackup : BackupableEntity<Server> {
     override fun toJSONObject(e: Server, context: Context): JSONObject {
@@ -27,7 +27,7 @@ object ServerBackup : BackupableEntity<Server> {
             context.db.serverDao.insertWithID(server, server.id)
         } catch (e: Exception) {
             e.printStackTrace()
-            e.log()
+            e.sendFirebase()
         }
     }
 }

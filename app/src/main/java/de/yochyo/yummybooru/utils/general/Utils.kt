@@ -10,7 +10,6 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.booruapi.objects.Tag
 import de.yochyo.yummybooru.api.entities.Following
@@ -55,9 +54,6 @@ fun updateNomediaFile(context: Context, newValue: Boolean? = null) {
         else FileUtils.getFile(context, null, ".nomedia")?.delete()
     }
 }
-
-fun Exception.log() = FirebaseCrashlytics.getInstance().recordException(this)
-fun Error.log() = FirebaseCrashlytics.getInstance().recordException(this)
 
 fun getDownloadPathAndId(context: Context, p: Post): Pair<String, String> {
     val url: String
@@ -131,7 +127,7 @@ fun InputStream.toBitmap(): Bitmap? {
 
     } catch (e: java.lang.Exception) {
         e.printStackTrace()
-        e.log()
+        e.sendFirebase()
     } finally {
         close()
         return result

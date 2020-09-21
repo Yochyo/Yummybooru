@@ -145,9 +145,14 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
         get() = getPreference(context.getString(R.string.preview_staggered_mode), context.resources.getBoolean(R.bool.preview_staggered_mode_default_value))
         set(value) = setPreference(context.getString(R.string.preview_staggered_mode), value)
 
+    var saveFolderUri: String
+        get() = getPreference(context.getString(R.string.savePath), "")
+        set(value) = setPreference(context.getString(R.string.savePath), value)
     var saveFolder: DocumentFile
-        get() = DocumentFile.fromTreeUri(context, Uri.parse(getPreference(context.getString(R.string.savePath), "")))!!
-        set(value) = setPreference(context.getString(R.string.savePath), value.uri.toString())
+        get() = DocumentFile.fromTreeUri(context, Uri.parse(saveFolderUri))!!
+        set(value) {
+            saveFolderUri = value.uri.toString()
+        }
 
     var isFirstStart: Boolean
         get() = getPreference(context.getString(R.string.is_first_app_usage), context.resources.getBoolean(R.bool.is_first_app_usage_default_value))

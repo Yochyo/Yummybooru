@@ -10,7 +10,8 @@ import de.yochyo.utils.DownloadUtils
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.utils.app.App
-import de.yochyo.yummybooru.utils.general.log
+import de.yochyo.yummybooru.utils.general.logFirebase
+import de.yochyo.yummybooru.utils.general.sendFirebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -92,7 +93,9 @@ class AutoUpdater(private val context: Context) {
             return url?.split("/")?.last()
         } catch (e: Exception) {
             e.printStackTrace()
-            e.log()
+            if (url == null) e.logFirebase("null")
+            else e.logFirebase(url)
+            e.sendFirebase()
         }
         return null
     }

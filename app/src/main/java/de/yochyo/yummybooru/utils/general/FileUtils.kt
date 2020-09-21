@@ -27,7 +27,7 @@ object FileUtils {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                e.log()
+                e.sendFirebase()
             }
             false
         }

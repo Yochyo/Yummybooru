@@ -5,12 +5,19 @@ import de.yochyo.yummybooru.utils.general.toBitmap
 import java.io.InputStream
 
 class BitmapResource(input: InputStream) : Resource2("png", input) {
-    val bitmap: Bitmap = input.readBytes().toBitmap()!!
+    val bitmap: Bitmap = input.toBitmap()!!
+
+    @Deprecated("InputStream is already closed, use bitmap")
+    override val input: InputStream = input
+
+    init {
+        input.close()
+    }
 
     companion object {
         fun from(resource2: Resource2): BitmapResource {
-            return BitmapResource(resource2.input)
-            resource2.input.close()
+            val res = BitmapResource(resource2.input)
+            return res
         }
     }
 

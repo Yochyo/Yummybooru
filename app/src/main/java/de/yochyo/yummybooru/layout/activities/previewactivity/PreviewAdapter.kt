@@ -16,7 +16,6 @@ import de.yochyo.yummybooru.layout.selectableRecyclerView.SelectableRecyclerView
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
 import de.yochyo.yummybooru.utils.ManagerWrapper
-import de.yochyo.yummybooru.utils.general.loadIntoImageView
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import de.yochyo.yummybooru.utils.network.downloader
 import kotlinx.coroutines.Dispatchers
@@ -85,7 +84,7 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
         val p = m.posts[holder.adapterPosition]
         downloader.downloadPostPreviewIMG(activity, p, {
             if (pos == holder.adapterPosition)
-                GlobalScope.launch(Dispatchers.Main) { it.loadIntoImageView(holder.layout.findViewById<ImageView>(R.id.preview_picture)) }
+                GlobalScope.launch(Dispatchers.Main) { holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it.bitmap) }
         }, activity.isScrolling)
     }
 

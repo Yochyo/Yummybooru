@@ -125,27 +125,36 @@ fun parseURL(url: String): String {
 }
 
 fun InputStream.toBitmap(): Bitmap? {
-    val buffered = this.buffered()
     var result: Bitmap? = null
     try {
-        result = BitmapFactory.decodeStream(buffered)
+        result = BitmapFactory.decodeStream(this)
 
     } catch (e: java.lang.Exception) {
         e.printStackTrace()
         e.log()
     } finally {
-        buffered.close()
+        close()
         return result
     }
 }
 
 fun ByteArray.toBitmap() = BitmapFactory.decodeByteArray(this, 0, this.size)
 
-fun Resource2.loadIntoImageView(imageView: ImageView) {
+suspend fun Resource2.loadIntoImageView(imageView: ImageView) {
     when (type) {
-        IResource.IMAGE -> imageView.setImageBitmap(input.toBitmap())
+        IResource.IMAGE -> {
+            withContext(Dispatchers.IO) {
+                val bitmap = input.toBitmap()
+                withContext(Dispatchers.Main) { imageView.setImageBitmap(bitmap) }
+            }
+        }
         IResource.ANIMATED -> try {
-            Glide.with(imageView).load(input.readBytes().apply { input.close() }).into(imageView)
+            withContext(Dispatchers.IO) {
+                val byteArray = input.use { it.readBytes() }
+                withContext(Dispatchers.Main) {
+                    Glide.with(imageView).load(byteArray).into(imageView)
+                }
+            }
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
         }

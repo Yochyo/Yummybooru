@@ -13,6 +13,10 @@ import java.io.InputStream
 
 class CacheableDownloader(max: Int) {
     val dl = object : RegulatingDownloader<Resource2>(max) {
+        init {
+            config.closeStreamAfterDownload = false
+        }
+
         override fun toResource(inputStream: InputStream, context: Any): Resource2 {
             return Resource2(context as String, inputStream)
         }
@@ -37,6 +41,7 @@ class CacheableDownloader(max: Int) {
 
     private fun downloadBitmap(context: Context, url: String, id: String, callback: suspend (e: BitmapResource) -> Unit, downloadFirst: Boolean = false) {
         suspend fun doAfter(res: BitmapResource?) {
+            println()
             if (res != null) {
                 GlobalScope.launch { context.cache.cache(id, res) }
                 callback(res)
@@ -47,8 +52,12 @@ class CacheableDownloader(max: Int) {
                 val res = context.cache.getResource(id)
                 when {
                     res != null -> doAfter(res)
-                    downloadFirst -> dl.downloadNow(url, { doAfter(BitmapResource.from(it)) }, url.mimeType ?: "")
-                    else -> dl.download(url, { doAfter(BitmapResource.from(it)) }, url.mimeType ?: "")
+                    downloadFirst -> dl.downloadNow(url, {
+                        doAfter(BitmapResource.from(it))
+                    }, url.mimeType ?: "")
+                    else -> dl.download(url, {
+                        doAfter(BitmapResource.from(it))
+                    }, url.mimeType ?: "")
                 }
             }
         } catch (e: OutOfMemoryError) {

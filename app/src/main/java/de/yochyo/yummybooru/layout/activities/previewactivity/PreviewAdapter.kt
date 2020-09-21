@@ -81,11 +81,13 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
 
     override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
         val pos = holder.adapterPosition
-        val p = m.posts[holder.adapterPosition]
-        downloader.downloadPostPreviewIMG(activity, p, {
-            if (pos == holder.adapterPosition)
-                GlobalScope.launch(Dispatchers.Main) { holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it.bitmap) }
-        }, activity.isScrolling)
+        if (pos in m.posts.indices) {
+            val p = m.posts[holder.adapterPosition]
+            downloader.downloadPostPreviewIMG(activity, p, {
+                if (pos == holder.adapterPosition)
+                    GlobalScope.launch(Dispatchers.Main) { holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it.bitmap) }
+            }, activity.isScrolling)
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): PreviewViewHolder {

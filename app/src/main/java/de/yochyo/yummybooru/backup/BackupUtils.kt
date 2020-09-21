@@ -58,9 +58,10 @@ object BackupUtils {
     fun updateRestoreObject(json: JSONObject): JSONObject {
         try {
             val version = json["version"] as Int
-            if (version < 9) {
+            if (version < 9)
                 upgradeToVersion9(json)
-            }
+            if (version < 10)
+                upgradeToVersion10(json)
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
             e.sendFirebase()
@@ -92,6 +93,34 @@ object BackupUtils {
                         tags.put(follow)
                     }
                 }
+            }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+            e.sendFirebase()
+        }
+        return json
+    }
+
+    private fun upgradeToVersion10(json: JSONObject): JSONObject {
+        try {
+            val preferences = json.getJSONObject("preferences")
+            val version = json["version"] as Int
+            if (version < 10) {
+                val strings = JSONObject()
+                val integers = JSONObject()
+                val longs = JSONObject()
+                val booleans = JSONObject()
+                val floats = JSONObject()
+                preferences.put("strings", strings)
+                preferences.put("integers", integers)
+                preferences.put("longs", longs)
+                preferences.put("booleans", booleans)
+                preferences.put("floats", floats)
+
+                integers.put("limit", preferences.getInt("limit"))
+                integers.put("currentServerID", preferences.getInt("currentServerID"))
+                booleans.put("downloadOriginal", preferences.getBoolean("downloadOriginal"))
+                booleans.put("downloadWebm", preferences.getBoolean("downloadWebm"))
             }
         } catch (e: java.lang.Exception) {
             e.printStackTrace()

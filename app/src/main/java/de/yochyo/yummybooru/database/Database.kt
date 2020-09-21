@@ -173,11 +173,6 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
                 serverDao.createTable(this)
             }
         }
-        val p = prefs.all
-        with(prefs.edit()) {
-            for (prefToReset in p.entries)
-                remove(prefToReset.key).apply()
-        }
     }
 
     private fun getPreference(name: String, default: String) = prefs.getString(name, default)!!

@@ -91,19 +91,17 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
 
         builder.setPositiveButton(context.getString(R.string.positive_button_name)) { _, _ ->
             GlobalScope.launch(Dispatchers.IO) {
+                val s = Server(serverName, parseURL(url), apiName, username, password, id = server.id)
+                if (s.apiName == "auto") s.apiName = getCorrectApi(s)
                 try {
-                    val s = Server(
-                        serverName, parseURL(url), apiName, username,
-                        password, id = server.id
-                    )
-                    if (s.apiName == "auto") s.apiName = getCorrectApi(s)
                     if (s.newestID() == null)
-                        withContext(Dispatchers.Main) { Toast.makeText(context, context.getString(R.string.bad_login), Toast.LENGTH_LONG).show() }
-                    withContext(Dispatchers.Main) { runOnPositive(s) }
+                        throw Exception("")
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    withContext(Dispatchers.Main) { Toast.makeText(context, context.getString(R.string.url_not_supported), Toast.LENGTH_LONG).show() }
+                    withContext(Dispatchers.Main) { Toast.makeText(context, context.getString(R.string.bad_login), Toast.LENGTH_LONG).show() }
                 }
+
+                withContext(Dispatchers.Main) { runOnPositive(s) }
             }
         }
         builder.show()
@@ -112,7 +110,11 @@ class AddServerDialog(val runOnPositive: (s: Server) -> Unit) {
 
     private suspend fun getCorrectApi(s: Server): String {
         for (api in Apis.apis) {
-            if (s.newestID() != 0) return api
+            try {
+                if (s.newestID() != null) return api
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
         return Apis.apis.first()
     }

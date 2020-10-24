@@ -98,7 +98,7 @@ class PictureActivity : AppCompatActivity() {
                         }
                         getMediaView(position)?.resume()
                         lastSelected = position
-                        if (position + 3 >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
+                        if (position + 2 + db.preloadedImages >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
                     }
 
                 })

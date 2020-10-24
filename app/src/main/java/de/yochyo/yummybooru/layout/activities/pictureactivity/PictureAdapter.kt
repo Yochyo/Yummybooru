@@ -9,6 +9,7 @@ class PictureAdapter(val activity: PictureActivity) : RecyclerView.Adapter<Pictu
     private val m = activity.m
 
     private var size = m.posts.size
+
     fun updatePosts() {
         if (size != m.posts.size) {
             size = m.posts.size

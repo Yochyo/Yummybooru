@@ -30,6 +30,41 @@ class PictureViewHolder(
         layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
     }
 ) : RecyclerView.ViewHolder(layout) {
+
+    var lastSwipeUp = 0L
+    var onSwipe: (GestureListener.Direction) -> Boolean = { direction: GestureListener.Direction ->
+        fun onSwipeLeft() = activity.view_pager2.currentItem++
+        fun onSwipeRight() = activity.view_pager2.currentItem--
+        fun onSwipeUp() {
+            val post = activity.m.posts[adapterPosition]
+            val time = System.currentTimeMillis()
+            if (time - lastSwipeUp > 400L) { //download
+                downloadAndSaveImage(activity, post)
+                val snack = Snackbar.make(viewPager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT)
+                snack.show()
+                GlobalScope.launch(Dispatchers.Main) {
+                    delay(150)
+                    snack.dismiss()
+                }
+            } else { //double swipe
+                GlobalScope.launch {
+                    for (tag in post.tags.filter { it.type == Tag.ARTIST })
+                        activity.db.tags += tag.toBooruTag(activity)
+                }
+            }
+            lastSwipeUp = time
+
+        }
+        when (direction) {
+            GestureListener.Direction.DOWN -> activity.finish()
+            GestureListener.Direction.UP -> onSwipeUp()
+            GestureListener.Direction.LEFT -> onSwipeLeft()
+            GestureListener.Direction.RIGHT -> onSwipeRight()
+        }
+        true
+    }
+
+
     private val viewPager = activity.view_pager2
 
     private val photoView = createPhotoView()
@@ -74,12 +109,8 @@ class PictureViewHolder(
         val view = PhotoView(activity)
         view.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         view.setAllowParentInterceptOnEdge(true)
-        view.setOnSingleFlingListener { e1, e2, velocityX, velocityY ->
-            when (GestureListener.getDirection(e1, e2)) {
-                GestureListener.Direction.DOWN -> onFlingDown()
-                GestureListener.Direction.UP -> onFlingUp(activity.m.posts[adapterPosition])
-                else -> false
-            }
+        view.setOnSingleFlingListener { e1, e2, _, _ ->
+            onSwipe(GestureListener.getDirection(e1, e2))
         }
         view.setOnClickListener { onClick(adapterPosition) }
         return view
@@ -89,11 +120,7 @@ class PictureViewHolder(
         val view = MediaView(activity)
         val detector = GestureDetector(activity, object : GestureListener() {
             override fun onSwipe(direction: Direction): Boolean {
-                return when (direction) {
-                    Direction.UP -> onFlingUp(activity.m.posts[adapterPosition])
-                    Direction.DOWN -> onFlingDown()
-                    else -> false
-                }
+                return onSwipe(direction)
             }
 
             override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
@@ -124,32 +151,6 @@ class PictureViewHolder(
         if (child != null && child is MediaView) {
             child.destroy()
         }
-    }
-
-    var lastSwipeUp = 0L
-    private fun onFlingUp(post: Post): Boolean {
-        val time = System.currentTimeMillis()
-        if (time - lastSwipeUp > 400L) { //download
-            downloadAndSaveImage(activity, post)
-            val snack = Snackbar.make(viewPager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT)
-            snack.show()
-            GlobalScope.launch(Dispatchers.Main) {
-                delay(150)
-                snack.dismiss()
-            }
-        } else { //double swipe
-            GlobalScope.launch {
-                for (tag in post.tags.filter { it.type == Tag.ARTIST })
-                    activity.db.tags += tag.toBooruTag(activity)
-            }
-        }
-        lastSwipeUp = time
-        return true
-    }
-
-    private fun onFlingDown(): Boolean {
-        activity.finish()
-        return true
     }
 
     private fun onClick(position: Int) {

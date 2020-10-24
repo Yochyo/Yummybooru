@@ -75,8 +75,8 @@ class PictureActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
             restoreManager(savedInstanceState)
             with(view_pager2) {
-
-            pictureAdapter = PictureAdapter(this@PictureActivity).apply { this@with.adapter = this }
+                this.isUserInputEnabled = false
+                pictureAdapter = PictureAdapter(this@PictureActivity).apply { this@with.adapter = this }
                 this.offscreenPageLimit = db.preloadedImages
                 m.posts.registerOnUpdateListener(managerListener)
                 pictureAdapter.updatePosts()

@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.utils
+package de.yochyo.yummybooru.api.manager
 
 import android.content.Context
 import de.yochyo.booruapi.manager.IManager
@@ -17,9 +17,15 @@ class ManagerWrapper(private val manager: IManager) : IManager by manager {
 
     override fun toString() = manager.toString()
 
-    //This will let the activities know that the end was reached
-    override suspend fun downloadNextPage() = downloadNextPages(1)
-    //This will let the activities know that the end was reached
+    private var bool = true
+    override suspend fun downloadNextPage(): List<Post>? {
+        if (bool) {
+            bool = false
+            return downloadNextPages(1)
+        }
+        return null
+    }
+
     override suspend fun downloadNextPages(amount: Int): List<Post>? {
         val result = manager.downloadNextPages(amount)
         if (result != null && result.isEmpty()) posts.triggerOnAddElementsEvent(OnAddElementsEvent(posts, emptyList()))

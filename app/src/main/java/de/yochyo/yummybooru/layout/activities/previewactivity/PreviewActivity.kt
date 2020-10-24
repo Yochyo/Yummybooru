@@ -13,16 +13,16 @@ import de.yochyo.booruapi.objects.Post
 import de.yochyo.eventcollection.events.OnAddElementsEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.api.manager.ManagerDistributor
+import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsDialog
 import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
-import de.yochyo.yummybooru.utils.ManagerWrapper
+import de.yochyo.yummybooru.utils.distributor.Pointer
 import de.yochyo.yummybooru.utils.general.createTagAndOrChangeFollowingState
-import de.yochyo.yummybooru.utils.general.getCurrentManager
-import de.yochyo.yummybooru.utils.general.getOrRestoreManager
-import de.yochyo.yummybooru.utils.general.setCurrentManager
+import de.yochyo.yummybooru.utils.general.restoreManager
 import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*
 import kotlinx.coroutines.Dispatchers
@@ -34,9 +34,14 @@ open class PreviewActivity : AppCompatActivity() {
     private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit / 2
 
     companion object {
+        private const val TAGS = "tags"
+        private const val POSITION = "pos"
+        private const val LAST_ID = "id"
+
         fun startActivity(context: Context, tags: String) {
-            context.setCurrentManager(ManagerWrapper.build(context, tags))
-            context.startActivity(Intent(context, PreviewActivity::class.java))
+            context.startActivity(Intent(context, PreviewActivity::class.java).apply {
+                putExtra(TAGS, tags)
+            })
         }
     }
 
@@ -51,7 +56,9 @@ open class PreviewActivity : AppCompatActivity() {
     private lateinit var layoutManager: StaggeredGridLayoutManager
     private lateinit var previewAdapter: PreviewAdapter
 
-    private lateinit var m: ManagerWrapper
+
+    lateinit var managerPointer: Pointer<ManagerWrapper>
+    val m: ManagerWrapper get() = managerPointer.value
 
     private val managerListener = Listener<OnAddElementsEvent<Post>> {
         GlobalScope.launch(Dispatchers.Main) {
@@ -68,14 +75,8 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     private fun initData(savedInstanceState: Bundle?) {
-        GlobalScope.launch(Dispatchers.IO) {
-            val oldTags = savedInstanceState?.getString("name")
-            val oldPos = savedInstanceState?.getInt("position")
-            val oldId = savedInstanceState?.getInt("id")
-            m = if (oldTags != null && oldPos != null && oldId != null)
-                getOrRestoreManager(oldTags, oldId, oldPos)
-            else
-                getCurrentManager()!!
+        GlobalScope.launch {
+            restoreManager(savedInstanceState)
             withContext(Dispatchers.Main) {
                 initToolbar()
                 m.posts.registerOnAddElementsListener(managerListener)
@@ -107,12 +108,13 @@ open class PreviewActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        if (this::m.isInitialized) {
-            outState.putString("name", m.toString())
-            outState.putInt("position", m.position)
-            if (m.posts.isNotEmpty() && m.position != -1)
-                outState.putInt("id", m.posts.get(m.position).id)
-            else outState.putInt("id", 0)
+        if (this::managerPointer.isInitialized) {
+            outState.putString(TAGS, m.toString())
+            if (m.position > 0) {
+                outState.putInt(POSITION, m.position)
+                if (m.posts.isNotEmpty())
+                    outState.putInt(LAST_ID, m.posts[m.position].id)
+            }
         }
     }
 
@@ -209,11 +211,26 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        m.posts.removeOnAddElementsListener(managerListener)
-        actionBarListener.unregisterListeners()
-        previewAdapter.onStartSelection.removeListener(disableSwipeRefreshOnSelectionListener)
-        previewAdapter.onStopSelection.removeListener(reEnableSwipeRefreshOnSelectionListener)
+        if (this::managerPointer.isInitialized)
+            m.posts.removeOnAddElementsListener(managerListener)
+        if (this::actionBarListener.isInitialized)
+            actionBarListener.unregisterListeners()
+        if (this::previewAdapter.isInitialized) {
+            previewAdapter.onStartSelection.removeListener(disableSwipeRefreshOnSelectionListener)
+            previewAdapter.onStopSelection.removeListener(reEnableSwipeRefreshOnSelectionListener)
+        }
         super.onDestroy()
     }
 
+
+    private suspend fun restoreManager(savedInstanceState: Bundle?) {
+        withContext(Dispatchers.IO) {
+            val oldTags = savedInstanceState?.getString(TAGS) ?: intent.extras?.getString(TAGS) ?: "*"
+            val oldPos = savedInstanceState?.getInt(POSITION) ?: 0
+            val oldId = savedInstanceState?.getInt(LAST_ID) ?: 0
+
+            managerPointer = ManagerDistributor.getPointer(this@PreviewActivity, oldTags)
+            if (oldPos != 0 && oldId != 0) m.restoreManager(this@PreviewActivity, oldId, oldPos)
+        }
+    }
 }

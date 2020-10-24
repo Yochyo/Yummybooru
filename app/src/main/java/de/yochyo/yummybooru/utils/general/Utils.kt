@@ -15,9 +15,9 @@ import de.yochyo.booruapi.objects.Tag
 import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.IResource
 import de.yochyo.yummybooru.api.entities.Resource2
+import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.InAppDownloadService
-import de.yochyo.yummybooru.utils.ManagerWrapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -166,43 +166,10 @@ val String.mimeType: String?
 
 fun Context.drawable(id: Int) = ContextCompat.getDrawable(this, id)
 
-
-private val _managers = HashMap<String, ManagerWrapper?>()
-private var _currentManager: ManagerWrapper? = null
-    set(value) {
-        _managers[value.toString()] = value
-        field = value
+suspend fun ManagerWrapper.restoreManager(context: Context, lastId: Int, lastPosition: Int) {
+    if (lastId > 0) {
+        downloadNextPages(lastPosition / context.db.limit + 1)
+        while (this.posts.indexOfFirst { it.id == lastId } == -1) downloadNextPage()
+        this.position = this.posts.indexOfFirst { it.id == lastId }
     }
-
-fun Context.getCurrentManager(name: String? = null): ManagerWrapper? {
-    val m = if (name == null) _currentManager
-    else _managers[name]
-    return m
-}
-
-suspend fun Context.getOrRestoreManager(name: String, lastId: Int, lastPosition: Int): ManagerWrapper {
-    return withContext(Dispatchers.IO) {
-        val m: ManagerWrapper
-        val manager = getCurrentManager(name)
-        if (manager?.toString() == name) m = manager
-        else {
-            m = ManagerWrapper.build(this@getOrRestoreManager, name)
-            if (lastId > 0) {
-                m.downloadNextPages(lastPosition / db.limit + 1)
-                while (m.posts.indexOfFirst { it.id == lastId } == -1) m.downloadNextPage()
-                m.position = m.posts.indexOfFirst { it.id == lastId }
-            }
-        }
-        setCurrentManager(m)
-        m
-    }
-}
-
-fun Context.setCurrentManager(m: ManagerWrapper) {
-    _currentManager = m
-}
-
-fun clearCurrentManager() {
-    _managers.clear()
-    _currentManager = null
 }

@@ -9,13 +9,13 @@ import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
+import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.DownloadService
 import de.yochyo.yummybooru.layout.selectableRecyclerView.ActionModeClickEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.SelectableRecyclerViewAdapter
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
-import de.yochyo.yummybooru.utils.ManagerWrapper
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import de.yochyo.yummybooru.utils.network.downloader
 import kotlinx.coroutines.Dispatchers

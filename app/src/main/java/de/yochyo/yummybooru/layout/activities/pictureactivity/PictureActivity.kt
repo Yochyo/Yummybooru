@@ -17,30 +17,37 @@ import de.yochyo.booruapi.objects.Tag
 import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.api.manager.ManagerDistributor
+import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
-import de.yochyo.yummybooru.utils.ManagerWrapper
+import de.yochyo.yummybooru.utils.distributor.Pointer
 import de.yochyo.yummybooru.utils.general.downloadAndSaveImage
-import de.yochyo.yummybooru.utils.general.getCurrentManager
-import de.yochyo.yummybooru.utils.general.getOrRestoreManager
-import de.yochyo.yummybooru.utils.general.setCurrentManager
+import de.yochyo.yummybooru.utils.general.restoreManager
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.picture_activity_drawer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.collections.sortedWith as sortedWith1
 
 class PictureActivity : AppCompatActivity() {
 
     companion object {
+        private const val TAGS = "tags"
+        private const val POSITION = "pos"
+        private const val LAST_ID = "id"
+
         fun startActivity(context: Context, manager: ManagerWrapper) {
-            context.setCurrentManager(manager)
-            context.startActivity(Intent(context, PictureActivity::class.java))
+            context.startActivity(Intent(context, PictureActivity::class.java).apply {
+                putExtra(TAGS, manager.toString())
+            })
         }
     }
 
-    lateinit var m: ManagerWrapper
+    lateinit var managerPointer: Pointer<ManagerWrapper>
+    val m: ManagerWrapper get() = managerPointer.value
 
     private lateinit var tagRecyclerView: RecyclerView
     private lateinit var tagInfoAdapter: TagInfoAdapter
@@ -68,7 +75,8 @@ class PictureActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
             restoreManager(savedInstanceState)
             with(view_pager2) {
-                pictureAdapter = PictureAdapter(this@PictureActivity).apply { this@with.adapter = this }
+
+            pictureAdapter = PictureAdapter(this@PictureActivity).apply { this@with.adapter = this }
                 this.offscreenPageLimit = db.preloadedImages
                 m.posts.registerOnUpdateListener(managerListener)
                 pictureAdapter.updatePosts()
@@ -107,10 +115,13 @@ class PictureActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        if (this::m.isInitialized) {
-            outState.putString("name", m.toString())
-            outState.putInt("position", m.position)
-            outState.putInt("id", m.posts.get(if (m.position == -1) 0 else m.position).id)
+        if (this::managerPointer.isInitialized) {
+            outState.putString(TAGS, m.toString())
+            if (m.position > 0) {
+                outState.putInt(POSITION, m.position)
+                if (m.posts.isNotEmpty())
+                    outState.putInt(LAST_ID, m.posts[m.position].id)
+            }
         }
     }
 
@@ -140,20 +151,22 @@ class PictureActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        if (this::m.isInitialized)
+        if (this::managerPointer.isInitialized) {
             m.posts.removeOnUpdateListener(managerListener)
+            ManagerDistributor.releasePointer(m.toString(), managerPointer)
+        }
         super.onDestroy()
     }
 
     override fun onPause() {
         super.onPause()
-        if (this::m.isInitialized)
+        if (this::managerPointer.isInitialized)
             getMediaView(m.position)?.pause()
     }
 
     override fun onResume() {
         super.onResume()
-        if (this::m.isInitialized)
+        if (this::managerPointer.isInitialized)
             getMediaView(m.position)?.resume()
     }
 
@@ -161,7 +174,7 @@ class PictureActivity : AppCompatActivity() {
         supportActionBar?.title = id.toString()
 
         GlobalScope.launch {
-            val sorted = tags.sortedWith { o1, o2 ->
+            val sorted = tags.sortedWith1 { o1, o2 ->
                 fun sortedType(type: Int): Int {
                     return when (type) {
                         Tag.ARTIST -> 0
@@ -187,11 +200,12 @@ class PictureActivity : AppCompatActivity() {
 
     private suspend fun restoreManager(savedInstanceState: Bundle?) {
         withContext(Dispatchers.IO) {
-            val oldTags = savedInstanceState?.getString("name")
-            val oldPos = savedInstanceState?.getInt("position")
-            val oldId = savedInstanceState?.getInt("id")
-            if (oldTags != null && oldPos != null && oldId != null) m = getOrRestoreManager(oldTags, oldId, oldPos)
-            else m = getCurrentManager()!!
+            val oldTags = savedInstanceState?.getString(TAGS) ?: intent.extras?.getString(TAGS) ?: "*"
+            val oldPos = savedInstanceState?.getInt(POSITION) ?: 0
+            val oldId = savedInstanceState?.getInt(LAST_ID) ?: 0
+
+            managerPointer = ManagerDistributor.getPointer(this@PictureActivity, oldTags)
+            if (oldPos != 0 && oldId != 0) m.restoreManager(this@PictureActivity, oldId, oldPos)
         }
     }
 }

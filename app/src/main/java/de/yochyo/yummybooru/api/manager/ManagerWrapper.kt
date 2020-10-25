@@ -17,13 +17,8 @@ class ManagerWrapper(private val manager: IManager) : IManager by manager {
 
     override fun toString() = manager.toString()
 
-    private var bool = true
     override suspend fun downloadNextPage(): List<Post>? {
-        if (bool) {
-            bool = false
-            return downloadNextPages(1)
-        }
-        return null
+        return downloadNextPages(1)
     }
 
     override suspend fun downloadNextPages(amount: Int): List<Post>? {

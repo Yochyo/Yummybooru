@@ -10,6 +10,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
+import de.yochyo.yummybooru.layout.views.photoview.PhotoViewWithoutSecondDoubleTap
 import de.yochyo.yummybooru.utils.general.downloadAndSaveImage
 import de.yochyo.yummybooru.utils.general.loadIntoImageView
 import de.yochyo.yummybooru.utils.general.toBooruTag
@@ -106,7 +107,10 @@ class PictureViewHolder(
     }
 
     private fun createPhotoView(): PhotoView {
-        val view = PhotoView(activity)
+        val view = PhotoViewWithoutSecondDoubleTap(activity)
+        view.setOnScaleChangeListener { scaleFactor, _, _ ->
+            activity.view_pager2.isUserInputEnabled = scaleFactor != 1f
+        }
         view.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         view.setAllowParentInterceptOnEdge(true)
         view.setOnSingleFlingListener { e1, e2, _, _ ->
@@ -115,6 +119,7 @@ class PictureViewHolder(
         view.setOnClickListener { onClick(adapterPosition) }
         return view
     }
+
 
     private fun createMediaView(): MediaView {
         val view = MediaView(activity)

@@ -125,7 +125,7 @@ class PictureViewHolder(
         val view = MediaView(activity)
         val detector = GestureDetector(activity, object : GestureListener() {
             override fun onSwipe(direction: Direction): Boolean {
-                return onSwipe(direction)
+                return this@PictureViewHolder.onSwipe(direction)
             }
 
             override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
@@ -137,25 +137,21 @@ class PictureViewHolder(
         return view
     }
 
-    fun resume() {
+    fun isZoomed() = getPhotoViewIfVisible()?.scale == 1.0f
+    fun resume() = getMediaViewIfVisible()?.resume()
+    fun pause() = getMediaViewIfVisible()?.pause()
+    fun destroy() = getMediaViewIfVisible()?.destroy()
+
+    fun getPhotoViewIfVisible(): PhotoView? {
         val child = currentChild
-        if (child != null && child is MediaView) {
-            child.resume()
-        }
+        return if (child != null && child is PhotoView) child
+        else null
     }
 
-    fun pause() {
+    fun getMediaViewIfVisible(): MediaView? {
         val child = currentChild
-        if (child != null && child is MediaView) {
-            child.pause()
-        }
-    }
-
-    fun destroy() {
-        val child = currentChild
-        if (child != null && child is MediaView) {
-            child.destroy()
-        }
+        return if (child != null && child is MediaView) child
+        else null
     }
 
     private fun onClick(position: Int) {

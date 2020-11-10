@@ -12,6 +12,7 @@ import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.booruapi.objects.Post
 import de.yochyo.booruapi.objects.Tag
 import de.yochyo.eventcollection.events.OnUpdateEvent
@@ -75,30 +76,20 @@ class PictureActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.Main) {
             restoreManager(savedInstanceState)
             with(view_pager2) {
-                this.isUserInputEnabled = false
                 pictureAdapter = PictureAdapter(this@PictureActivity).apply { this@with.adapter = this }
                 this.offscreenPageLimit = db.preloadedImages
                 m.posts.registerOnUpdateListener(managerListener)
                 pictureAdapter.updatePosts()
-                m.currentPost?.updateCurrentTags()
                 setCurrentItem(m.position, false)
+                onPageSelected(-1, m.position)
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-                    override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-                        if (positionOffset == 0.0F && m.position != position) {
-                            m.position = position
-                            m.currentPost?.updateCurrentTags()
-                        }
-                    }
+                    override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
 
-                    private var lastSelected = m.position
 
+                    var lastSelected = -1
                     override fun onPageSelected(position: Int) {
-                        if (lastSelected != -1) {
-                            getMediaView(lastSelected)?.pause()
-                        }
-                        getMediaView(position)?.resume()
+                        onPageSelected(lastSelected, position)
                         lastSelected = position
-                        if (position + 2 + db.preloadedImages >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
                     }
 
                 })
@@ -107,10 +98,30 @@ class PictureActivity : AppCompatActivity() {
         }
     }
 
+    fun onPageSelected(old: Int, position: Int) {
+        m.position = position
+        m.currentPost?.updateCurrentTags()
+        if (old != -1) getMediaView(old)?.pause()
+        getMediaView(position)?.resume()
+        if (position + 2 + db.preloadedImages >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
+        view_pager2.isUserInputEnabled = if (old == -1) false
+        else getPhotoView(position)?.scale != 1f
+    }
+
     private fun getMediaView(position: Int): MediaView? {
-        val child = (view_pager2.findViewWithTag<View>(position) as ViewGroup?)?.getChildAt(0)
+        val child = getViewAtPosition(position)
         return if (child is MediaView) child
         else null
+    }
+
+    private fun getPhotoView(position: Int): PhotoView? {
+        val child = getViewAtPosition(position)
+        return if (child is PhotoView) child
+        else null
+    }
+
+    private fun getViewAtPosition(position: Int): View? {
+        return (view_pager2.findViewWithTag<View>(position) as ViewGroup?)?.getChildAt(0)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

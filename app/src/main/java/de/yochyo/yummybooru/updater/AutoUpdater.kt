@@ -6,7 +6,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
-import de.yochyo.utils.DownloadUtils
+import de.yochyo.downloader.DownloadUtils
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.utils.app.App

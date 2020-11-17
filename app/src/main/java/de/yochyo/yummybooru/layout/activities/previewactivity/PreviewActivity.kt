@@ -9,7 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import de.yochyo.booruapi.objects.Post
+import de.yochyo.booruapi.api.Post
 import de.yochyo.eventcollection.events.OnAddElementsEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R

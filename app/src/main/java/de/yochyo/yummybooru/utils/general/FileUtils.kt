@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
-import de.yochyo.booruapi.objects.Post
+import de.yochyo.booruapi.api.Post
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.api.entities.Server

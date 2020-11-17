@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
+import de.yochyo.booruapi.api.TagType
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
@@ -27,7 +28,7 @@ class AddSpecialTagDialog {
                 stringBuilder.append("height")
                 stringBuilder.append(layout.findViewById<Spinner>(R.id.height_spinner).selectedItem.toString())
                 stringBuilder.append(text)
-                val tag = Tag(stringBuilder.toString(), Tag.SPECIAL)
+                val tag = Tag(stringBuilder.toString(), TagType.UNKNOWN)
                 context.db.tags += tag
             }
         }
@@ -38,7 +39,7 @@ class AddSpecialTagDialog {
                 stringBuilder.append("width")
                 stringBuilder.append(layout.findViewById<Spinner>(R.id.width_spinner).selectedItem.toString())
                 stringBuilder.append(text)
-                val tag = Tag(stringBuilder.toString(), Tag.SPECIAL)
+                val tag = Tag(stringBuilder.toString(), TagType.UNKNOWN)
                 context.db.tags += tag
             }
         }

@@ -5,9 +5,9 @@ import android.widget.LinearLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.github.chrisbanes.photoview.PhotoView
 import com.google.android.material.snackbar.Snackbar
-import de.yochyo.booruapi.objects.Post
+import de.yochyo.booruapi.api.Post
+import de.yochyo.booruapi.api.TagType
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
 import de.yochyo.yummybooru.layout.views.photoview.PhotoViewWithoutSecondDoubleTap
@@ -49,7 +49,7 @@ class PictureViewHolder(
                 }
             } else { //double swipe
                 GlobalScope.launch {
-                    for (tag in post.tags.filter { it.type == Tag.ARTIST })
+                    for (tag in post.getTags().filter { it.tagType == TagType.ARTIST })
                         activity.db.tags += tag.toBooruTag(activity)
                 }
             }

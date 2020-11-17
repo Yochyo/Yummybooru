@@ -1,6 +1,7 @@
 package de.yochyo.yummybooru.database.dao
 
 import android.database.sqlite.SQLiteDatabase
+import de.yochyo.booruapi.api.TagType
 import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
@@ -10,8 +11,8 @@ import org.jetbrains.anko.db.*
 
 class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
     val parser = rowParser { name: String, type: Long, serverID: Long, isFavorite: Long, creation: Long, lastCount: Long?, lastID: Long? ->
-        val following = if(lastID == null || lastCount == null) null else Following(lastID.toInt(), lastCount.toInt())
-        Tag(name, type.toInt(), isFavorite > 0, 0, following, ConvertDate.toDate(creation), serverID.toInt())
+        val following = if (lastID == null || lastCount == null) null else Following(lastID.toInt(), lastCount.toInt())
+        Tag(name, TagType.valueOf(type.toInt()), isFavorite > 0, 0, following, ConvertDate.toDate(creation), serverID.toInt())
     }
 
     private companion object {
@@ -27,11 +28,13 @@ class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
     }
 
     override fun createTable(database: SQLiteDatabase) {
-        database.execSQL("CREATE TABLE IF NOT EXISTS tags(name TEXT NOT NULL, type INTEGER NOT NULL, server_id INTEGER NOT NULL, " +
-                "isFavorite INTEGER NOT NULL, creation INTEGER NOT NULL, last_count INTEGER, last_id INTEGER, " +
-                "PRIMARY KEY(name, server_id), " +
-                "FOREIGN KEY(server_id) REFERENCES servers(id) " +
-                "ON UPDATE CASCADE ON DELETE CASCADE)")
+        database.execSQL(
+            "CREATE TABLE IF NOT EXISTS tags(name TEXT NOT NULL, type INTEGER NOT NULL, server_id INTEGER NOT NULL, " +
+                    "isFavorite INTEGER NOT NULL, creation INTEGER NOT NULL, last_count INTEGER, last_id INTEGER, " +
+                    "PRIMARY KEY(name, server_id), " +
+                    "FOREIGN KEY(server_id) REFERENCES servers(id) " +
+                    "ON UPDATE CASCADE ON DELETE CASCADE)"
+        )
     }
 
     fun delete(tag: Tag) {
@@ -42,14 +45,16 @@ class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
 
     fun insert(tag: Tag) {
         database.use {
-            insert(TABLE_NAME,
-                    NAME to tag.name,
-                    TYPE to tag.type,
-                    SERVER_ID to tag.serverID,
-                    IS_FAVORITE to ConvertBoolean.toInteger(tag.isFavorite),
-                    CREATION to ConvertDate.toTimestamp(tag.creation),
-                    LAST_COUNT to tag.following?.lastCount,
-                    LAST_ID to tag.following?.lastID)
+            insert(
+                TABLE_NAME,
+                NAME to tag.name,
+                TYPE to tag.type.value,
+                SERVER_ID to tag.serverID,
+                IS_FAVORITE to ConvertBoolean.toInteger(tag.isFavorite),
+                CREATION to ConvertDate.toTimestamp(tag.creation),
+                LAST_COUNT to tag.following?.lastCount,
+                LAST_ID to tag.following?.lastID
+            )
         }
     }
 
@@ -67,12 +72,14 @@ class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
 
     fun update(tag: Tag) {
         database.use {
-            update(TABLE_NAME,
-                    TYPE to tag.type,
-                    IS_FAVORITE to ConvertBoolean.toInteger(tag.isFavorite),
-                    CREATION to ConvertDate.toTimestamp(tag.creation),
-                    LAST_COUNT to tag.following?.lastCount,
-                    LAST_ID to tag.following?.lastID).whereArgs("$NAME = {$NAME} AND $SERVER_ID = {$SERVER_ID}", NAME to tag.name, SERVER_ID to tag.serverID).exec()
+            update(
+                TABLE_NAME,
+                TYPE to tag.type.value,
+                IS_FAVORITE to ConvertBoolean.toInteger(tag.isFavorite),
+                CREATION to ConvertDate.toTimestamp(tag.creation),
+                LAST_COUNT to tag.following?.lastCount,
+                LAST_ID to tag.following?.lastID
+            ).whereArgs("$NAME = {$NAME} AND $SERVER_ID = {$SERVER_ID}", NAME to tag.name, SERVER_ID to tag.serverID).exec()
         }
     }
 }

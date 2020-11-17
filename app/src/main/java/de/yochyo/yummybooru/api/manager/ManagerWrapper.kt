@@ -1,9 +1,9 @@
 package de.yochyo.yummybooru.api.manager
 
 import android.content.Context
+import de.yochyo.booruapi.api.Post
 import de.yochyo.booruapi.manager.IManager
 import de.yochyo.booruapi.manager.ManagerBuilder
-import de.yochyo.booruapi.objects.Post
 import de.yochyo.eventcollection.events.OnAddElementsEvent
 import de.yochyo.yummybooru.database.db
 

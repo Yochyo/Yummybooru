@@ -23,9 +23,9 @@ import kotlinx.coroutines.withContext
 class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<InfoButtonHolder>() {
     private val db = activity.db
 
-    private var tags: Collection<de.yochyo.booruapi.objects.Tag> = emptyList()
+    private var tags: Collection<de.yochyo.booruapi.api.Tag> = emptyList()
 
-    fun updateInfoTags(t: Collection<de.yochyo.booruapi.objects.Tag>) {
+    fun updateInfoTags(t: Collection<de.yochyo.booruapi.api.Tag>) {
         tags = t
         notifyDataSetChanged()
     }

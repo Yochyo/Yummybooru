@@ -4,11 +4,11 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
-import de.yochyo.booruapi.objects.Post
+import de.yochyo.booruapi.api.Post
+import de.yochyo.booruapi.api.TagType
 import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.DownloadService
@@ -52,8 +52,8 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
                 val posts = selected.getSelected(m.posts)
                 GlobalScope.launch {
                     for (post in posts) {
-                        for (tag in post.tags) {
-                            if (tag.type == Tag.ARTIST) activity.db.tags += tag.toBooruTag(activity)
+                        for (tag in post.getTags()) {
+                            if (tag.tagType == TagType.ARTIST) activity.db.tags += tag.toBooruTag(activity)
                         }
                     }
                 }
@@ -74,10 +74,12 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
         notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
     }
 
-    override fun createViewHolder(parent: ViewGroup) = PreviewViewHolder(activity, m,
-            if (activity.db.previewStaggeredMode)
-                (activity.layoutInflater.inflate(R.layout.preview_image_view_staggered, parent, false) as FrameLayout)
-            else (activity.layoutInflater.inflate(R.layout.preview_image_view, parent, false) as FrameLayout))
+    override fun createViewHolder(parent: ViewGroup) = PreviewViewHolder(
+        activity, m,
+        if (activity.db.previewStaggeredMode)
+            (activity.layoutInflater.inflate(R.layout.preview_image_view_staggered, parent, false) as FrameLayout)
+        else (activity.layoutInflater.inflate(R.layout.preview_image_view, parent, false) as FrameLayout)
+    )
 
     override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
         val pos = holder.adapterPosition

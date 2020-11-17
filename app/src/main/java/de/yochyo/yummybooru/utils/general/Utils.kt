@@ -10,8 +10,8 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
-import de.yochyo.booruapi.objects.Post
-import de.yochyo.booruapi.objects.Tag
+import de.yochyo.booruapi.api.Post
+import de.yochyo.booruapi.api.Tag
 import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.IResource
 import de.yochyo.yummybooru.api.entities.Resource2
@@ -79,7 +79,7 @@ fun TextView.underline(underline: Boolean) {
     else paintFlags = p.apply { isUnderlineText = false }.flags
 }
 
-fun Tag.toBooruTag(context: Context) = de.yochyo.yummybooru.api.entities.Tag(name, type, false, count, null, serverID = context.db.currentServer.id)
+fun Tag.toBooruTag(context: Context) = de.yochyo.yummybooru.api.entities.Tag(name, tagType, false, count, null, serverID = context.db.currentServer.id)
 
 suspend fun de.yochyo.yummybooru.api.entities.Tag.addFollowing(context: Context): Boolean {
     val s = context.db.currentServer

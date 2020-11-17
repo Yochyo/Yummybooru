@@ -1,6 +1,9 @@
 package de.yochyo.yummybooru.api
 
-import de.yochyo.booruapi.api.*
+import de.yochyo.booruapi.api.IBooruApi
+import de.yochyo.booruapi.api.danbooru.DanbooruApi
+import de.yochyo.booruapi.api.gelbooru.GelbooruApi
+import de.yochyo.booruapi.api.moebooru.MoebooruApi
 import java.util.*
 
 object Apis {
@@ -13,7 +16,7 @@ object Apis {
         return when (name.toLowerCase(Locale.ENGLISH)) {
             MOEBOORU.toLowerCase(Locale.ENGLISH) -> return MoebooruApi(url)
             GELBOORU.toLowerCase(Locale.ENGLISH) -> return GelbooruApi(url)
-            MY_IMOUTO.toLowerCase(Locale.ENGLISH) -> MyImoutoApi(url)
+            //TODO  MY_IMOUTO.toLowerCase(Locale.ENGLISH) -> MyImoutoApi(url)
             else -> DanbooruApi(url)
         }
     }

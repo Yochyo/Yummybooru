@@ -6,8 +6,8 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import de.yochyo.booruapi.api.Post
 import de.yochyo.booruapi.manager.IManager
-import de.yochyo.booruapi.objects.Post
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db

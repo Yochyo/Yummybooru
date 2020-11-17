@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.github.chrisbanes.photoview.PhotoView
-import de.yochyo.booruapi.objects.Post
-import de.yochyo.booruapi.objects.Tag
+import de.yochyo.booruapi.api.Post
+import de.yochyo.booruapi.api.TagType
 import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
@@ -151,7 +151,7 @@ class PictureActivity : AppCompatActivity() {
                 if (post != null) {
                     val intent = Intent().apply {
                         action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_TEXT, if (post.extention == "zip" && db.downloadWebm) post.fileSampleURL else post.fileURL)
+                        putExtra(Intent.EXTRA_TEXT, if (post.extension == "zip" && db.downloadWebm) post.fileSampleURL else post.fileURL)
                         type = "text/plain"
                     }
                     startActivity(Intent.createChooser(intent, null))
@@ -185,20 +185,20 @@ class PictureActivity : AppCompatActivity() {
         supportActionBar?.title = id.toString()
 
         GlobalScope.launch {
-            val sorted = tags.sortedWith1 { o1, o2 ->
-                fun sortedType(type: Int): Int {
+            val sorted = getTags().sortedWith1 { o1, o2 ->
+                fun sortedType(type: TagType): Int {
                     return when (type) {
-                        Tag.ARTIST -> 0
-                        Tag.COPYPRIGHT -> 1
-                        Tag.CHARACTER -> 2
-                        Tag.GENERAL -> 3
-                        Tag.META -> 4
+                        TagType.ARTIST -> 0
+                        TagType.COPYRIGHT -> 1
+                        TagType.CHARACTER -> 2
+                        TagType.GENERAL -> 3
+                        TagType.META -> 4
                         else -> 5
                     }
                 }
 
-                val sortedType1 = sortedType(o1.type)
-                val sortedType2 = sortedType(o2.type)
+                val sortedType1 = sortedType(o1.tagType)
+                val sortedType2 = sortedType(o2.tagType)
                 if (sortedType1 == sortedType2) o1.name.compareTo(o2.name)
                 else sortedType1 - sortedType2
             }

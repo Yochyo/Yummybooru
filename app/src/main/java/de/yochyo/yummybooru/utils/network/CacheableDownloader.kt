@@ -1,7 +1,7 @@
 package de.yochyo.yummybooru.utils.network
 
 import android.content.Context
-import de.yochyo.booruapi.objects.Post
+import de.yochyo.booruapi.api.Post
 import de.yochyo.downloader.RegulatingDownloader
 import de.yochyo.yummybooru.api.entities.BitmapResource
 import de.yochyo.yummybooru.api.entities.Resource2
@@ -41,7 +41,6 @@ class CacheableDownloader(max: Int) {
 
     private fun downloadBitmap(context: Context, url: String, id: String, callback: suspend (e: BitmapResource) -> Unit, downloadFirst: Boolean = false) {
         suspend fun doAfter(res: BitmapResource?) {
-            println()
             if (res != null) {
                 GlobalScope.launch { context.cache.cache(id, res) }
                 callback(res)

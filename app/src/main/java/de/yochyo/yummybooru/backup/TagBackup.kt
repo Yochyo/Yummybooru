@@ -1,6 +1,7 @@
 package de.yochyo.yummybooru.backup
 
 import android.content.Context
+import de.yochyo.booruapi.api.TagType
 import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.Tag
@@ -12,7 +13,7 @@ object TagBackup : BackupableEntity<Tag> {
     override fun toJSONObject(e: Tag, context: Context): JSONObject {
         val json = JSONObject()
         json.put("name", e.name)
-        json.put("type", e.type)
+        json.put("type", e.type.value)
         json.put("isFavorite", e.isFavorite)
         json.put("creation", e.creation.time)
         json.put("serverID", e.serverID)
@@ -26,8 +27,11 @@ object TagBackup : BackupableEntity<Tag> {
             var following: Following? = Following(json.getInt("lastID"), json.getInt("lastCount"))
             if (following?.lastID == -1 && following.lastCount == -1) following = null
             context.db.tagDao.insert(
-                    Tag(json.getString("name"), json.getInt("type"), json.getBoolean("isFavorite"),
-                            0, following, Date(json.getLong("creation")), json.getInt("serverID")))
+                Tag(
+                    json.getString("name"), TagType.valueOf(json.getInt("type")), json.getBoolean("isFavorite"),
+                    0, following, Date(json.getLong("creation")), json.getInt("serverID")
+                )
+            )
         } catch (e: Exception) {
             e.printStackTrace()
             e.sendFirebase()

@@ -44,13 +44,7 @@ class InAppDownloadService : Service() {
                     val dl = downloads.removeFirst()
                     downloader.download(dl.first, {
                         dl.third(it)
-                        val toast = dl.second.filter {
-                            it in '0'..'9'
-                        }
-                        GlobalScope.launch(Dispatchers.Main) {
-                            Toast.makeText(this@InAppDownloadService, getString(R.string.download_post_with_id, dl.second.takeWhile { it in '0'..'9' }.toInt()), Toast.LENGTH_SHORT)
-                                .show()
-                        }
+                        onFinishDownload(dl)
                     })
                 }
                 delay(5000)
@@ -58,6 +52,16 @@ class InAppDownloadService : Service() {
 
             stopSelf()
         }
+    }
+
+    private fun onFinishDownload(dl: Download) {
+        if (!db.hideDownloadToast)
+            GlobalScope.launch(Dispatchers.Main) {
+                Toast.makeText(
+                    this@InAppDownloadService,
+                    getString(R.string.download_post_with_id, dl.second.takeWhile { it in '0'..'9' }.toInt()), Toast.LENGTH_SHORT
+                ).show()
+            }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

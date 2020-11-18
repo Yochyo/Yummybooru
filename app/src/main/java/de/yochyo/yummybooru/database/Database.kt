@@ -160,6 +160,9 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     var useNomedia: Boolean
         get() = getPreference(context.getString(R.string.use_nomedia), context.resources.getBoolean(R.bool.use_nomedia_default_value))
         set(value) = setPreference(context.getString(R.string.use_nomedia), value)
+    var hideDownloadToast: Boolean
+        get() = getPreference(context.getString(R.string.hide_download_toast), context.resources.getBoolean(R.bool.hide_download_toast_default_value))
+        set(value) = setPreference(context.getString(R.string.hide_download_toast), value)
 
     suspend fun deleteEverything() {
         withContext(Dispatchers.Default) {

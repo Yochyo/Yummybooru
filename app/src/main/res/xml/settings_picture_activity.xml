@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
     <androidx.preference.SeekBarPreference
         android:defaultValue="@integer/preloaded_large_pictures_default_value"
         android:key="@string/preloaded_large_pictures"
@@ -9,11 +9,17 @@
         android:title="Preload large images (default 1)"
         app:allowDividerAbove="true"
         app:min="1"
-        app:showSeekBarValue="true" />
+        app:showSeekBarValue="true"/>
     <androidx.preference.SwitchPreference
         android:defaultValue="@bool/click_to_move_to_next_image_default_value"
         android:key="@string/click_to_move_to_next_image"
         android:summary="Allows you to click instead of having to swipe left"
         android:title="Click for next image"
-        app:allowDividerBelow="true" />
+        app:allowDividerBelow="false"/>
+    <androidx.preference.SwitchPreference
+        android:defaultValue="@bool/hide_download_toast_default_value"
+        android:key="@string/hide_download_toast"
+        android:summary="Hide download Toast"
+        android:title="Hide download Toast"
+        app:allowDividerBelow="true"/>
 </PreferenceScreen>

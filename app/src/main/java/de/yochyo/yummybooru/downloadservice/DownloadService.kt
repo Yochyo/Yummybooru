@@ -65,11 +65,14 @@ class DownloadService : Service() {
         var pair = getNextElement()
         while (pair != null) {
             val finalPair = pair
-            val (url, _) = getDownloadPathAndId(this@DownloadService, pair.first)
+            val (url, id) = getDownloadPathAndId(this@DownloadService, pair.first)
             downloader.download(url, {
-                FileUtils.writeFile(this@DownloadService, finalPair.first, it, finalPair.second.server)
-                withContext(Dispatchers.Main) {
-                    updateNotification(finalPair.second)
+                if (it != null) {
+                    val success = FileUtils.writeFile(this@DownloadService, finalPair.first, it, finalPair.second.server)
+                    withContext(Dispatchers.Main) {
+                        if (success)
+                            updateNotification(finalPair.second)
+                    }
                 }
             })
             pair = getNextElement()

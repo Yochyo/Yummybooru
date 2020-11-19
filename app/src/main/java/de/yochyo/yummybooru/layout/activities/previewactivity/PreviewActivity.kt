@@ -211,8 +211,10 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        if (this::managerPointer.isInitialized)
+        if (this::managerPointer.isInitialized) {
             m.posts.removeOnAddElementsListener(managerListener)
+            ManagerDistributor.releasePointer(m.toString(), managerPointer)
+        }
         if (this::actionBarListener.isInitialized)
             actionBarListener.unregisterListeners()
         if (this::previewAdapter.isInitialized) {

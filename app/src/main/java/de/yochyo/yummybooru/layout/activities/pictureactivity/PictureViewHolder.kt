@@ -87,13 +87,13 @@ class PictureViewHolder(
             val mutex = Mutex()
             downloader.download(post.fileSampleURL, {
                 mutex.withLock {
-                    downloadedOriginalImage = true
-                    it.loadIntoImageView(photoView)
+                    downloadedOriginalImage = it != null
+                    it?.loadIntoImageView(photoView)
                 }
             }, downloadNow = true)
             downloader.downloadPostPreviewIMG(activity, post, {
                 mutex.withLock {
-                    if (!downloadedOriginalImage)
+                    if (!downloadedOriginalImage && it != null)
                         GlobalScope.launch(Dispatchers.Main) { photoView.setImageBitmap(it.bitmap) }
                 }
             }, downloadFirst = true)

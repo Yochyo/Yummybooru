@@ -7,15 +7,17 @@ import android.os.IBinder
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import de.yochyo.booruapi.api.Post
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.app.App
+import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.network.CacheableDownloader
 import kotlinx.coroutines.*
 import java.util.*
 
-private typealias Download = Triple<String, String, suspend (e: Resource2) -> Unit> //url, id, callback
+private typealias Download = Triple<String, String, suspend (e: Resource2?) -> Unit> //url, id, callback
 
 class InAppDownloadService : Service() {
     private val downloader = CacheableDownloader(db.parallelBackgroundDownloads)
@@ -26,7 +28,7 @@ class InAppDownloadService : Service() {
 
     companion object {
         private val downloads = LinkedList<Download>()
-        fun startService(context: Context, url: String, id: String, callback: suspend (e: Resource2) -> Unit) {
+        fun startService(context: Context, url: String, id: String, callback: suspend (e: Resource2?) -> Unit) {
             downloads += Download(url, id, callback)
             context.startService(Intent(context, InAppDownloadService::class.java))
         }
@@ -59,7 +61,7 @@ class InAppDownloadService : Service() {
             GlobalScope.launch(Dispatchers.Main) {
                 Toast.makeText(
                     this@InAppDownloadService,
-                    getString(R.string.download_post_with_id, dl.second.takeWhile { it in '0'..'9' }.toInt()), Toast.LENGTH_SHORT
+                    getString(R.string.download_post_with_id, getIdFromMergedId(dl.second).toInt()), Toast.LENGTH_SHORT
                 ).show()
             }
     }
@@ -75,3 +77,12 @@ class InAppDownloadService : Service() {
 
     override fun onBind(intent: Intent): IBinder? = null
 }
+
+fun saveDownload(context: Context, url: String, id: String, post: Post) = InAppDownloadService.startService(context, url, id) {
+    if (it != null) {
+        if (!FileUtils.writeFile(context, post, it, context.db.currentServer))
+            withContext(Dispatchers.Main) { Toast.makeText(context, "Saving ${getIdFromMergedId(id)} failed", Toast.LENGTH_SHORT).show() }
+    } else withContext(Dispatchers.Main) { Toast.makeText(context, "Failed downloading ${getIdFromMergedId(id)}", Toast.LENGTH_SHORT).show() }
+}
+
+private fun getIdFromMergedId(id: String): String = id.takeWhile { it in '0'..'9' }

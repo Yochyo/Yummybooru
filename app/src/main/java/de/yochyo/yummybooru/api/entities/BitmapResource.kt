@@ -15,9 +15,9 @@ class BitmapResource(input: InputStream) : Resource2("png", input) {
     }
 
     companion object {
-        fun from(resource2: Resource2): BitmapResource {
-            val res = BitmapResource(resource2.input)
-            return res
+        fun from(resource2: Resource2?): BitmapResource? {
+            return if (resource2 == null) null
+            else BitmapResource(resource2.input)
         }
     }
 

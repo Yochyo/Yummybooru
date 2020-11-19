@@ -33,13 +33,19 @@ object FileUtils {
         }
     }
 
-    suspend fun writeFile(context: Context, post: Post, res: Resource2, server: Server) {
-        withContext(Dispatchers.IO) {
-            val file = createFileOrNull(context, post, server, res.mimetype)
-            if (file != null) {
-                writeBytes(context, file, res.input)
-                res.input.close()
+    suspend fun writeFile(context: Context, post: Post, res: Resource2, server: Server): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val file = createFileOrNull(context, post, server, res.mimetype)
+                if (file != null) {
+                    writeBytes(context, file, res.input)
+                    res.input.close()
+                    return@withContext true
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
+            false
         }
     }
 

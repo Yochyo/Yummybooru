@@ -17,7 +17,7 @@ import de.yochyo.yummybooru.api.entities.IResource
 import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.downloadservice.InAppDownloadService
+import de.yochyo.yummybooru.downloadservice.saveDownload
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -42,10 +42,6 @@ fun downloadAndSaveImage(context: Context, post: Post) {
     GlobalScope.launch {
         saveDownload(context, url, id, post)
     }
-}
-
-fun saveDownload(context: Context, url: String, id: String, post: Post) = InAppDownloadService.startService(context, url, id) {
-    FileUtils.writeFile(context, post, it, context.db.currentServer)
 }
 
 fun updateNomediaFile(context: Context, newValue: Boolean? = null) {

@@ -86,7 +86,7 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
         if (pos in m.posts.indices) {
             val p = m.posts[holder.adapterPosition]
             downloader.downloadPostPreviewIMG(activity, p, {
-                if (pos == holder.adapterPosition)
+                if (pos == holder.adapterPosition && it != null)
                     GlobalScope.launch(Dispatchers.Main) { holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it.bitmap) }
             }, activity.isScrolling)
         }

@@ -8,6 +8,9 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import de.yochyo.booruapi.api.Post
+import de.yochyo.eventcollection.EventCollection
+import de.yochyo.eventcollection.events.OnAddElementsEvent
+import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.database.db
@@ -21,13 +24,17 @@ private typealias Download = Triple<String, String, suspend (e: Resource2?) -> U
 
 class InAppDownloadService : Service() {
     private val downloader = CacheableDownloader(db.parallelBackgroundDownloads)
+    private val onAddDownloadListener = Listener<OnAddElementsEvent<Download>> {
+        if (this::notificationManager.isInitialized && this::notificationBuilder.isInitialized)
+            updateNotification()
+    }
 
     var job: Job? = null
     lateinit var notificationManager: NotificationManagerCompat
     lateinit var notificationBuilder: NotificationCompat.Builder
 
     companion object {
-        private val downloads = LinkedList<Download>()
+        private val downloads = EventCollection(LinkedList<Download>())
         fun startService(context: Context, url: String, id: String, callback: suspend (e: Resource2?) -> Unit) {
             downloads += Download(url, id, callback)
             context.startService(Intent(context, InAppDownloadService::class.java))
@@ -36,17 +43,20 @@ class InAppDownloadService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        downloads.registerOnAddElementsListener(onAddDownloadListener)
         notificationManager = NotificationManagerCompat.from(this)
-        notificationBuilder = NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.drawable.notification_icon).setContentTitle("Downloading ...")
-            .setOngoing(true).setLocalOnly(true)
+        notificationBuilder =
+            NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.drawable.notification_icon).setContentTitle("Downloading ... (Queue size: ${downloads.size})")
+                .setOngoing(true).setLocalOnly(true)
         startForeground(2, notificationBuilder.build())
         job = GlobalScope.launch(Dispatchers.IO) {
             do {
                 while (downloads.isNotEmpty()) {
-                    val dl = downloads.removeFirst()
+                    val dl = downloads.first().apply { downloads.remove(this) }
                     downloader.download(dl.first, {
                         dl.third(it)
                         onFinishDownload(dl)
+                        updateNotification()
                     })
                 }
                 delay(5000)
@@ -54,6 +64,11 @@ class InAppDownloadService : Service() {
 
             stopSelf()
         }
+    }
+
+    private fun updateNotification() {
+        notificationBuilder.setContentTitle("Downloading ... (Queue size: ${downloads.size})")
+        notificationManager.notify(2, notificationBuilder.build())
     }
 
     private fun onFinishDownload(dl: Download) {
@@ -72,6 +87,7 @@ class InAppDownloadService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        downloads.removeOnAddElementsListener(onAddDownloadListener)
         job?.cancel()
     }
 

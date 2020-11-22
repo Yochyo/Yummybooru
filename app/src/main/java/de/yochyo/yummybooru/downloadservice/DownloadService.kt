@@ -68,10 +68,9 @@ class DownloadService : Service() {
             val (url, id) = getDownloadPathAndId(this@DownloadService, pair.first)
             downloader.download(url, {
                 if (it != null) {
-                    val success = FileUtils.writeFile(this@DownloadService, finalPair.first, it, finalPair.second.server)
+                    FileUtils.writeFile(this@DownloadService, finalPair.first, it, finalPair.second.server)
                     withContext(Dispatchers.Main) {
-                        if (success)
-                            updateNotification(finalPair.second)
+                        updateNotification(finalPair.second)
                     }
                 }
             })

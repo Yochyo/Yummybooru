@@ -13,8 +13,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStream
 
-object FileUtils {
 
+enum class FileWriteResult {
+    SUCCESS, FOLDER_DOES_NOT_EXIST, FAILED, ALREADY_EXISTS;
+}
+
+object FileUtils {
     suspend fun writeBytes(context: Context, documentFile: DocumentFile, input: InputStream): Boolean {
         return withContext(Dispatchers.IO) {
             try {
@@ -33,19 +37,19 @@ object FileUtils {
         }
     }
 
-    suspend fun writeFile(context: Context, post: Post, res: Resource2, server: Server): Boolean {
+    suspend fun writeFile(context: Context, post: Post, res: Resource2, server: Server): FileWriteResult {
         return withContext(Dispatchers.IO) {
             try {
                 val file = createFileOrNull(context, post, server, res.mimetype)
                 if (file != null) {
                     writeBytes(context, file, res.input)
                     res.input.close()
-                    return@withContext true
-                }
+                    return@withContext FileWriteResult.SUCCESS
+                } else FileWriteResult.ALREADY_EXISTS
             } catch (e: Exception) {
                 e.printStackTrace()
+                FileWriteResult.FAILED
             }
-            false
         }
     }
 

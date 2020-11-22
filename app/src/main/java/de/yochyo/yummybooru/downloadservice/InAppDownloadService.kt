@@ -16,6 +16,7 @@ import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
+import de.yochyo.yummybooru.utils.general.FileWriteResult
 import de.yochyo.yummybooru.utils.network.CacheableDownloader
 import kotlinx.coroutines.*
 import java.util.*
@@ -96,7 +97,7 @@ class InAppDownloadService : Service() {
 
 fun saveDownload(context: Context, url: String, id: String, post: Post) = InAppDownloadService.startService(context, url, id) {
     if (it != null) {
-        if (!FileUtils.writeFile(context, post, it, context.db.currentServer))
+        if (FileUtils.writeFile(context, post, it, context.db.currentServer) == FileWriteResult.FAILED)
             withContext(Dispatchers.Main) { Toast.makeText(context, "Saving ${getIdFromMergedId(id)} failed", Toast.LENGTH_SHORT).show() }
     } else withContext(Dispatchers.Main) { Toast.makeText(context, "Failed downloading ${getIdFromMergedId(id)}", Toast.LENGTH_SHORT).show() }
 }

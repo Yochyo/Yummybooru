@@ -129,5 +129,8 @@ private object ServerTemplates {
         templates += Server("Yande.re", "https://yande.re/", Apis.MOEBOORU)
         templates += Server("Gelbooru", "https://gelbooru.com/", Apis.GELBOORU)
         templates += Server("Lolibooru", "https://lolibooru.moe/", Apis.MY_IMOUTO)
+        templates += Server("rule34.xxx", "https://rule34.xxx/", Apis.GELBOORU_BETA)
+        templates += Server("Realbooru", "https://realbooru.com/", Apis.GELBOORU_BETA)
+        templates += Server("Furrybooru", "https://safebooru.org/", Apis.GELBOORU_BETA)
     }
 }

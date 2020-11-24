@@ -56,7 +56,7 @@ open class Tag(
                 TagType.COPYRIGHT -> R.color.violet
                 TagType.ARTIST -> R.color.dark_red
                 TagType.META -> R.color.orange
-                else -> R.color.white
+                else -> R.color.cyan
             }
         }
 

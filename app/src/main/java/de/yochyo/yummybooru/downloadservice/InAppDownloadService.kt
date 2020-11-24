@@ -9,7 +9,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import de.yochyo.booruapi.api.Post
 import de.yochyo.eventcollection.EventCollection
-import de.yochyo.eventcollection.events.OnAddElementsEvent
+import de.yochyo.eventcollection.events.OnChangeObjectEvent
+import de.yochyo.eventcollection.observable.Observable
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Resource2
@@ -25,9 +26,10 @@ private typealias Download = Triple<String, String, suspend (e: Resource2?) -> U
 
 class InAppDownloadService : Service() {
     private val downloader = CacheableDownloader(db.parallelBackgroundDownloads)
-    private val onAddDownloadListener = Listener<OnAddElementsEvent<Download>> {
+
+    private val onAddDownloadListener = Listener<OnChangeObjectEvent<Observable<Int>, Int>> {
         if (this::notificationManager.isInitialized && this::notificationBuilder.isInitialized)
-            updateNotification()
+            updateNotification(it.new.value)
     }
 
     var job: Job? = null
@@ -35,16 +37,18 @@ class InAppDownloadService : Service() {
     lateinit var notificationBuilder: NotificationCompat.Builder
 
     companion object {
+        private var count = Observable(0)
         private val downloads = EventCollection(LinkedList<Download>())
         fun startService(context: Context, url: String, id: String, callback: suspend (e: Resource2?) -> Unit) {
             downloads += Download(url, id, callback)
+            count.value++
             context.startService(Intent(context, InAppDownloadService::class.java))
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        downloads.registerOnAddElementsListener(onAddDownloadListener)
+        count.onChange.registerListener(onAddDownloadListener)
         notificationManager = NotificationManagerCompat.from(this)
         notificationBuilder =
             NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.drawable.notification_icon).setContentTitle("Downloading ... (Queue size: ${downloads.size})")
@@ -57,7 +61,7 @@ class InAppDownloadService : Service() {
                     downloader.download(dl.first, {
                         dl.third(it)
                         onFinishDownload(dl)
-                        updateNotification()
+                        count.value--
                     })
                 }
                 delay(5000)
@@ -67,8 +71,8 @@ class InAppDownloadService : Service() {
         }
     }
 
-    private fun updateNotification() {
-        notificationBuilder.setContentTitle("Downloading ... (Queue size: ${downloads.size})")
+    private fun updateNotification(value: Int) {
+        notificationBuilder.setContentTitle("Downloading ... (Queue size: ${value})")
         notificationManager.notify(2, notificationBuilder.build())
     }
 
@@ -88,7 +92,7 @@ class InAppDownloadService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        downloads.removeOnAddElementsListener(onAddDownloadListener)
+        count.onChange.removeListener(onAddDownloadListener)
         job?.cancel()
     }
 

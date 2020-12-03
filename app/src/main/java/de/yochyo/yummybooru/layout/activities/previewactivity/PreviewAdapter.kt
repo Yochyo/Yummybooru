@@ -77,11 +77,17 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
     override fun createViewHolder(parent: ViewGroup): PreviewViewHolder {
         val framelayout = if (activity.db.previewStaggeredMode)
             (activity.layoutInflater.inflate(R.layout.preview_image_view_staggered, parent, false) as FrameLayout)
-        else (activity.layoutInflater.inflate(R.layout.preview_image_view, parent, false) as FrameLayout)
+        else getNonStaggeredPreviewView(parent)
 
         if (activity.db.cropPreviewImage)
             framelayout.findViewById<ImageView>(R.id.preview_picture).scaleType = ImageView.ScaleType.CENTER_CROP
         return PreviewViewHolder(activity, m, framelayout)
+    }
+
+    private fun getNonStaggeredPreviewView(parent: ViewGroup): FrameLayout {
+        val frameLayout = (activity.layoutInflater.inflate(R.layout.preview_image_view, parent, false) as FrameLayout)
+        frameLayout.minimumHeight = frameLayout.width
+        return frameLayout
     }
 
     override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
@@ -93,6 +99,9 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
                     GlobalScope.launch(Dispatchers.Main) { holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it.bitmap) }
             }, activity.isScrolling)
         }
+        println("Height: ${holder.layout.height}, width: ${holder.layout.width}")
+        // holder.layout.requestLayout()
+        // holder.layout.invalidate()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): PreviewViewHolder {

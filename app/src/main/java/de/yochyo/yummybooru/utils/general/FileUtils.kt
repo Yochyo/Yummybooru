@@ -70,7 +70,6 @@ object FileUtils {
 
     suspend fun createFileOrNull(context: Context, subfolder: String? = null, name: String, mimeType: String): DocumentFile? {
         return withContext(Dispatchers.IO) {
-            val folder = context.db.saveFolder
             val root = getOrCreateFolder(context.db.saveFolder, context.getString(R.string.app_name))
             if (root != null) {
                 val folder = if (subfolder == null) root else getOrCreateFolder(root, subfolder)

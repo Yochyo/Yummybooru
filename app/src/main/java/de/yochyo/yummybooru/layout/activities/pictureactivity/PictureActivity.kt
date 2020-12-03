@@ -150,8 +150,9 @@ class PictureActivity : AppCompatActivity() {
                 val post = m.currentPost
                 if (post != null) {
                     val intent = Intent().apply {
+                        val url = if (post.extension == "zip" && db.downloadWebm) post.fileSampleURL else post.fileURL
                         action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_TEXT, if (post.extension == "zip" && db.downloadWebm) post.fileSampleURL else post.fileURL)
+                        putExtra(Intent.EXTRA_TEXT, url)
                         type = "text/plain"
                     }
                     startActivity(Intent.createChooser(intent, null))

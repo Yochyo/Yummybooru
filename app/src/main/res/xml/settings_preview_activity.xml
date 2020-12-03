@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
     <androidx.preference.SeekBarPreference
         android:defaultValue="@integer/preview_columns_default_value"
         android:key="@string/preview_columns"
@@ -9,10 +9,15 @@
         android:title="Amount of columns of preview images"
         app:allowDividerAbove="true"
         app:min="1"
-        app:showSeekBarValue="true" />
+        app:showSeekBarValue="true"/>
     <androidx.preference.SwitchPreference
         android:defaultValue="@bool/preview_staggered_mode_default_value"
         android:key="@string/preview_staggered_mode"
         android:summary="Enables staggered mode for previews"
-        android:title="Staggered mode" />
+        android:title="Staggered mode"/>
+    <androidx.preference.SwitchPreference
+        android:defaultValue="@bool/crop_preview_default_value"
+        android:key="@string/crop_preview"
+        android:summary="Crops image to square"
+        android:title="Crop image"/>
 </PreferenceScreen>

@@ -14,7 +14,7 @@
     <string name="is_first_app_usage">first_usage</string>
     <string name="use_nomedia">no_media</string>
     <string name="hide_download_toast">hide_download_toast</string>
-
+    <string name="crop_preview">crop_preview</string>
 
     <string name="page_size_default_value">50</string>
     <bool name="downloadWebm_default_value">true</bool>
@@ -27,6 +27,7 @@
     <bool name="is_first_app_usage_default_value">true</bool>
     <bool name="use_nomedia_default_value">true</bool>
     <bool name="hide_download_toast_default_value">false</bool>
+    <bool name="crop_preview_default_value">false</bool>
 
     <string-array name="post_limit">
         <item>30</item>

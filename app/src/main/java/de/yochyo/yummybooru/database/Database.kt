@@ -144,6 +144,9 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     var previewStaggeredMode: Boolean
         get() = getPreference(context.getString(R.string.preview_staggered_mode), context.resources.getBoolean(R.bool.preview_staggered_mode_default_value))
         set(value) = setPreference(context.getString(R.string.preview_staggered_mode), value)
+    var cropPreviewImage: Boolean
+        get() = getPreference(context.getString(R.string.crop_preview), context.resources.getBoolean(R.bool.crop_preview_default_value))
+        set(value) = setPreference(context.getString(R.string.crop_preview), value)
 
     var saveFolderUri: String
         get() = getPreference(context.getString(R.string.savePath), "")

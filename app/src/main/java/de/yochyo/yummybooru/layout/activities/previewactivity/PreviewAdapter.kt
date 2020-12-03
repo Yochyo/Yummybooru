@@ -74,12 +74,15 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
         notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
     }
 
-    override fun createViewHolder(parent: ViewGroup) = PreviewViewHolder(
-        activity, m,
-        if (activity.db.previewStaggeredMode)
+    override fun createViewHolder(parent: ViewGroup): PreviewViewHolder {
+        val framelayout = if (activity.db.previewStaggeredMode)
             (activity.layoutInflater.inflate(R.layout.preview_image_view_staggered, parent, false) as FrameLayout)
         else (activity.layoutInflater.inflate(R.layout.preview_image_view, parent, false) as FrameLayout)
-    )
+
+        if (activity.db.cropPreviewImage)
+            framelayout.findViewById<ImageView>(R.id.preview_picture).scaleType = ImageView.ScaleType.CENTER_CROP
+        return PreviewViewHolder(activity, m, framelayout)
+    }
 
     override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
         val pos = holder.adapterPosition

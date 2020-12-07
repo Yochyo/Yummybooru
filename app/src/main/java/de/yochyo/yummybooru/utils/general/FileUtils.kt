@@ -23,13 +23,12 @@ object FileUtils {
         return withContext(Dispatchers.IO) {
             try {
                 val stream = context.contentResolver.openOutputStream(documentFile.uri)
-                if (stream != null) {
-                    stream.use {
-                        input.copyTo(it)
-                    }
+                stream?.use {
+                    input.copyTo(it)
                     return@withContext true
-                }
+                } ?: throw Exception("could not create stream for file: ${documentFile.name}")
             } catch (e: Exception) {
+                documentFile.delete()
                 e.printStackTrace()
                 e.sendFirebase()
             }

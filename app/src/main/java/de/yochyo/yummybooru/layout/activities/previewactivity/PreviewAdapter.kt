@@ -90,7 +90,9 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
         return frameLayout
     }
 
-    override fun onViewAttachedToWindow(holder: PreviewViewHolder) {
+    override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) {
+        super.onBindViewHolder(holder, position)
+        holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(null)
         val pos = holder.adapterPosition
         if (pos in m.posts.indices) {
             val p = m.posts[holder.adapterPosition]
@@ -99,19 +101,6 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
                     GlobalScope.launch(Dispatchers.Main) { holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it.bitmap) }
             }, activity.isScrolling)
         }
-        println("Height: ${holder.layout.height}, width: ${holder.layout.width}")
-        // holder.layout.requestLayout()
-        // holder.layout.invalidate()
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, position: Int): PreviewViewHolder {
-        val holder = super.onCreateViewHolder(parent, position)
-        return holder
-    }
-
-    override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) {
-        super.onBindViewHolder(holder, position)
-        holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(null)
     }
 
     override fun getItemCount(): Int = size

@@ -6,13 +6,11 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.widget.ViewPager2
 import com.github.chrisbanes.photoview.PhotoView
 import de.yochyo.booruapi.api.Post
 import de.yochyo.booruapi.api.TagType
@@ -53,8 +51,9 @@ class PictureActivity : AppCompatActivity() {
 
     private lateinit var tagRecyclerView: RecyclerView
     private lateinit var tagInfoAdapter: TagInfoAdapter
-
     private lateinit var pictureAdapter: PictureAdapter
+
+    private lateinit var advancedOnPageChangeCallback: AdvancedOnPageChangeCallback<View>
 
     private val managerListener = Listener<OnUpdateEvent<Post>>
     { GlobalScope.launch(Dispatchers.Main) { this@PictureActivity.pictureAdapter.updatePosts() } }
@@ -81,49 +80,37 @@ class PictureActivity : AppCompatActivity() {
                 this.offscreenPageLimit = db.preloadedImages
                 m.posts.registerOnUpdateListener(managerListener)
                 pictureAdapter.updatePosts()
+
+                advancedOnPageChangeCallback = AdvancedOnPageChangeCallback(this)
+                advancedOnPageChangeCallback.onPageSelected = { oldPosition: Int, newPosition: Int ->
+                    if (pictureAdapter.itemCount - 1 == newPosition && m.reachedLastPage)
+                        Toast.makeText(this@PictureActivity, getString(R.string.manager_end), Toast.LENGTH_SHORT).show()
+
+                    m.position = newPosition
+                    m.currentPost?.updateCurrentTags()
+                    getMediaView(oldPosition)?.pause()
+                    if (newPosition + 2 + db.preloadedImages >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
+
+                    getMediaView(newPosition)?.resume()
+                    view_pager2.isUserInputEnabled = getPhotoView(newPosition)?.scale != 1f
+                }
+
                 setCurrentItem(m.position, false)
-                onPageSelected(-1, m.position)
-                registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-                    override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
-
-                    var lastSelected = -1
-                    override fun onPageSelected(position: Int) {
-                        if (pictureAdapter.itemCount - 1 == position && m.reachedLastPage)
-                            Toast.makeText(this@PictureActivity, getString(R.string.manager_end), Toast.LENGTH_SHORT).show()
-
-                        onPageSelected(lastSelected, position)
-                        lastSelected = position
-                    }
-
-                })
             }
         }
     }
 
-    fun onPageSelected(old: Int, position: Int) {
-        m.position = position
-        m.currentPost?.updateCurrentTags()
-        if (old != -1) getMediaView(old)?.pause()
-        getMediaView(position)?.resume()
-        if (position + 2 + db.preloadedImages >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
-        view_pager2.isUserInputEnabled = if (old == -1) false
-        else getPhotoView(position)?.scale != 1f
-    }
 
     private fun getMediaView(position: Int): MediaView? {
-        val child = getViewAtPosition(position)
+        val child = view_pager2.getViewAt<View>(position)
         return if (child is MediaView) child
         else null
     }
 
     private fun getPhotoView(position: Int): PhotoView? {
-        val child = getViewAtPosition(position)
+        val child = view_pager2.getViewAt<View>(position)
         return if (child is PhotoView) child
         else null
-    }
-
-    private fun getViewAtPosition(position: Int): View? {
-        return (view_pager2.findViewWithTag<View>(position) as ViewGroup?)?.getChildAt(0)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

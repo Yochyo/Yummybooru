@@ -15,6 +15,8 @@ class ManagerWrapper(private val manager: IManager) : IManager by manager {
         }
     var position = -1
 
+    var reachedLastPage = false
+
     override fun toString() = manager.toString()
 
     override suspend fun downloadNextPage(): List<Post>? {
@@ -24,6 +26,8 @@ class ManagerWrapper(private val manager: IManager) : IManager by manager {
     override suspend fun downloadNextPages(amount: Int): List<Post>? {
         val result = manager.downloadNextPages(amount)
         if (result != null && result.isEmpty()) posts.triggerOnAddElementsEvent(OnAddElementsEvent(posts, emptyList()))
+
+        reachedLastPage = result?.isEmpty() == true
         return result
     }
 

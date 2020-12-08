@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -85,16 +86,17 @@ class PictureActivity : AppCompatActivity() {
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
 
-
                     var lastSelected = -1
                     override fun onPageSelected(position: Int) {
+                        if (pictureAdapter.itemCount - 1 == position && m.reachedLastPage)
+                            Toast.makeText(this@PictureActivity, getString(R.string.manager_end), Toast.LENGTH_SHORT).show()
+
                         onPageSelected(lastSelected, position)
                         lastSelected = position
                     }
 
                 })
             }
-
         }
     }
 

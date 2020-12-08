@@ -60,10 +60,11 @@ open class PreviewActivity : AppCompatActivity() {
     lateinit var managerPointer: Pointer<ManagerWrapper>
     val m: ManagerWrapper get() = managerPointer.value
 
+
     private val managerListener = Listener<OnAddElementsEvent<Post>> {
         GlobalScope.launch(Dispatchers.Main) {
-            if (it.elements.isEmpty()) Toast.makeText(this@PreviewActivity, getString(R.string.manager_end), Toast.LENGTH_SHORT).show()
-            else previewAdapter.updatePosts(it.elements)
+            if (!it.elements.isEmpty())
+                previewAdapter.updatePosts(it.elements)
         }
     }
 
@@ -139,6 +140,12 @@ open class PreviewActivity : AppCompatActivity() {
                 if (!isLoadingView)
                     if (layoutManager.findFirstVisibleItemPositions(null).maxOrNull()!! + OFFSET_BEFORE_LOAD_NEXT_PAGE + db.limit >= m.posts.size) loadNextPage()
                 return super.onScrollStateChanged(recyclerView, newState)
+            }
+
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if (!recyclerView.canScrollVertically(1) && m.reachedLastPage)
+                    Toast.makeText(this@PreviewActivity, getString(R.string.manager_end), Toast.LENGTH_SHORT).show()
             }
         })
     }

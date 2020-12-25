@@ -62,8 +62,8 @@ dependencies {
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
 
     implementation "de.yochyo.eventcollection:EventCollection:1.6.4"
-    implementation "de.yochyo.downloader:Downloader:1.7.0"
-    implementation "de.yochyo.booruapi:BooruAPI:1.9.7"
+    implementation "de.yochyo.downloader:Downloader:1.8.0"
+    implementation "de.yochyo.booruapi:BooruAPI:2.0.0-TEST1"
 
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     implementation "org.jetbrains.anko:anko-sqlite:0.10.8"

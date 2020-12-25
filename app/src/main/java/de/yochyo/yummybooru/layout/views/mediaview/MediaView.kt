@@ -56,10 +56,10 @@ class MediaView(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0
     }
 
 
-    fun setVideoPath(path: String, headers: Map<String, String>? = null) = setVideoUri(Uri.parse(path), headers)
-    fun setVideoUri(uri: Uri, headers: Map<String, String>? = null) = setImpl(VIDEO, uri, headers)
+    fun setVideoPath(path: String, headers: Map<String, String>) = setVideoUri(Uri.parse(path), headers)
+    fun setVideoUri(uri: Uri, headers: Map<String, String>) = setImpl(VIDEO, uri, headers)
 
-    private fun setImpl(type: Int, uri: Uri, headers: Map<String, String>? = null) {
+    private fun setImpl(type: Int, uri: Uri, headers: Map<String, String>) {
         val f: () -> Unit = {
             impl?.destroy()
 

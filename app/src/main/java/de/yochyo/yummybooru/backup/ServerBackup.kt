@@ -21,6 +21,7 @@ object ServerBackup : BackupableEntity<Server> {
     override suspend fun restoreEntity(json: JSONObject, context: Context) {
         try {
             val server = Server(
+                context,
                 json.getString("name"), json.getString("url"), json.getString("api"),
                 json.getString("userName"), json.getString("password"), json.getInt("id")
             )

@@ -2,6 +2,7 @@ package de.yochyo.yummybooru.api.entities
 
 import android.content.Context
 import de.yochyo.booruapi.api.IBooruApi
+import de.yochyo.booruapi.api.pixiv.PixivApi2
 import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventcollection.observable.IObservableObject
 import de.yochyo.eventmanager.EventHandler
@@ -12,9 +13,11 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.net.URL
 
-open class Server(name: String, url: String, apiName: String, username: String = "", password: String = "", var id: Int = Int.MAX_VALUE) : Comparable<Server>,
+open class Server(val context: Context, name: String, url: String, apiName: String, username: String = "", password: String = "", var id: Int = Int.MAX_VALUE) : Comparable<Server>,
     IObservableObject<Server,
             Int> {
+    val headers get() = api.getHeaders()
+
     var api: IBooruApi = Apis.getApi(apiName, url)
         private set
     var name = name
@@ -71,12 +74,42 @@ open class Server(name: String, url: String, apiName: String, username: String =
     }
 
     init {
-        GlobalScope.launch { login(username, password) }
+        GlobalScope.launch { login() }
+    }
+
+    @Deprecated("temp method cause I have no time")
+    private fun login() {
+        GlobalScope.launch {
+            val api = this@Server.api
+            if (api is PixivApi2) {
+                val refreshToken = context.db.prefs.getString("pixiv-$username", null)
+                if (refreshToken == null) {
+                    if (api.login(username, password)) {
+                        val ref = api.refreshToken
+                        if (ref != null) {
+                            context.db.setPreference("pixiv-$username", ref)
+                            api.login("X", ref)
+                        }
+                    }
+                } else {
+                    if (!api.login("", refreshToken)) {
+                        if (api.login(username, password)) {
+                            val ref = api.refreshToken
+                            if (ref != null) {
+                                context.db.setPreference("pixiv-$username", ref)
+                                api.login("", ref)
+                            }
+                        }
+                    }
+                }
+
+            } else api.login(username, password)
+        }
     }
 
     protected fun trigger(change: Int) = onChange.trigger(OnChangeObjectEvent(this, change))
 
-    suspend fun login(username: String, password: String) = api.login(username, password)
+    //suspend fun login(username: String, password: String) = api.login(username, password)
     suspend fun getMatchingTags(context: Context, beginSequence: String, limit: Int = 10) = api.getTagAutoCompletion(beginSequence, limit)?.map { it.toBooruTag(context) }
     suspend fun getTag(context: Context, name: String): Tag? = api.getTag(name)?.toBooruTag(context)
     suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = 30) = api.getPosts(page, tags.joinToString(" "), limit)

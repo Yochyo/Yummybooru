@@ -8,12 +8,14 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import de.yochyo.booruapi.api.Post
+import de.yochyo.downloader.Download
 import de.yochyo.eventcollection.EventCollection
 import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventcollection.observable.Observable
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Resource2
+import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
@@ -21,8 +23,6 @@ import de.yochyo.yummybooru.utils.general.FileWriteResult
 import de.yochyo.yummybooru.utils.network.CacheableDownloader
 import kotlinx.coroutines.*
 import java.util.*
-
-private typealias Download = Triple<String, String, suspend (e: Resource2?) -> Unit> //url, id, callback
 
 class InAppDownloadService : Service() {
     private val downloader = CacheableDownloader(db.parallelBackgroundDownloads)
@@ -38,9 +38,9 @@ class InAppDownloadService : Service() {
 
     companion object {
         private var count = Observable(0)
-        private val downloads = EventCollection(LinkedList<Download>())
-        fun startService(context: Context, url: String, id: String, callback: suspend (e: Resource2?) -> Unit) {
-            downloads += Download(url, id, callback)
+        private val downloads = EventCollection(LinkedList<Download<Resource2>>())
+        fun startService(context: Context, url: String, id: String, server: Server, callback: suspend (e: Resource2?) -> Unit) {
+            downloads += Download(url, server.headers, callback, id)
             count.value++
             context.startService(Intent(context, InAppDownloadService::class.java))
         }
@@ -58,11 +58,11 @@ class InAppDownloadService : Service() {
             do {
                 while (downloads.isNotEmpty()) {
                     val dl = downloads.first().apply { downloads.remove(this) }
-                    downloader.download(dl.first, {
-                        dl.third(it)
+                    downloader.download(dl.url, {
+                        dl.callback(it)
                         onFinishDownload(dl)
                         count.value--
-                    })
+                    }, dl.headers)
                 }
                 delay(5000)
             } while (downloader.dl.activeCoroutines > 0)
@@ -76,12 +76,12 @@ class InAppDownloadService : Service() {
         notificationManager.notify(2, notificationBuilder.build())
     }
 
-    private fun onFinishDownload(dl: Download) {
+    private fun onFinishDownload(dl: Download<Resource2>) {
         if (!db.hideDownloadToast)
             GlobalScope.launch(Dispatchers.Main) {
                 Toast.makeText(
                     this@InAppDownloadService,
-                    getString(R.string.download_post_with_id, getIdFromMergedId(dl.second).toInt()), Toast.LENGTH_SHORT
+                    getString(R.string.download_post_with_id, getIdFromMergedId(dl.data.toString()).toInt()), Toast.LENGTH_SHORT
                 ).show()
             }
     }
@@ -99,7 +99,7 @@ class InAppDownloadService : Service() {
     override fun onBind(intent: Intent): IBinder? = null
 }
 
-fun saveDownload(context: Context, url: String, id: String, post: Post) = InAppDownloadService.startService(context, url, id) {
+fun saveDownload(context: Context, url: String, id: String, server: Server, post: Post) = InAppDownloadService.startService(context, url, id, server) {
     if (it != null) {
         if (FileUtils.writeFile(context, post, it, context.db.currentServer) == FileWriteResult.FAILED)
             withContext(Dispatchers.Main) { Toast.makeText(context, "Saving ${getIdFromMergedId(id)} failed", Toast.LENGTH_SHORT).show() }

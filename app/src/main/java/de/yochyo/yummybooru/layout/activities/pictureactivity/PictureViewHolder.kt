@@ -90,19 +90,19 @@ class PictureViewHolder(
                     downloadedOriginalImage = it != null
                     it?.loadIntoImageView(photoView)
                 }
-            }, downloadNow = true)
+            }, activity.db.currentServer.headers, downloadNow = true)
             downloader.downloadPostPreviewIMG(activity, post, {
                 mutex.withLock {
                     if (!downloadedOriginalImage && it != null)
                         GlobalScope.launch(Dispatchers.Main) { photoView.setImageBitmap(it.bitmap) }
                 }
-            }, downloadFirst = true)
+            }, activity.db.currentServer.headers, downloadFirst = true)
         }
         currentChild = photoView
     }
 
     fun loadVideo(post: Post) {
-        mediaView.setVideoPath(post.fileSampleURL)
+        mediaView.setVideoPath(post.fileSampleURL, activity.db.currentServer.api.getHeaders())
         currentChild = mediaView
     }
 

@@ -40,7 +40,7 @@ fun TextView.setColor(colorCode: Int) {
 fun downloadAndSaveImage(context: Context, post: Post) {
     val (url, id) = getDownloadPathAndId(context, post)
     GlobalScope.launch {
-        saveDownload(context, url, id, post)
+        saveDownload(context, url, id, context.db.currentServer, post)
     }
 }
 

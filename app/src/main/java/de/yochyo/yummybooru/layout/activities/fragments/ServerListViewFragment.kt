@@ -103,7 +103,7 @@ class ServerListViewFragment : Fragment() {
         }
 
         private fun editServerDialog(server: Server) {
-            AddServerDialog {
+            AddServerDialog(ctx) {
                 GlobalScope.launch {
                     server.name = it.name
                     server.url = it.url

@@ -71,11 +71,15 @@
     <string name="confirm">Confirm</string>
 
     <!-- AddServerDialog -->
+    <string name="hint_username">Username</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_username_or_email">Username/Password</string>
     <string name="hint_password">Password</string>
     <string name="hint_api_key">Api key</string>
     <string name="hint_password_or_api_key">Password/Api key</string>
     <string name="bad_login">(Probably) bad login</string>
     <string name="url_not_supported">Url is wrong or not supported</string>
+    <string name="url_hint">Url</string>
 
     <!-- AddSpecialTagDialog -->
     <string name="add_special_tag_dialog_title">Post filter</string>
@@ -90,9 +94,6 @@
     <!-- AddTagDialog -->
     <string name="search_tag">Search</string>
     <string name="tag_hint">Tag</string>
-    <string name="url_hint">Url</string>
-    <string name="username_hint">Username</string>
-    <string name="password_hint">Password/Api</string>
 
     <!-- DownloadPostDialog -->
     <string name="download_all">Download all</string>

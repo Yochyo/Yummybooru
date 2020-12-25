@@ -73,7 +73,7 @@ class DownloadService : Service() {
                         updateNotification(finalPair.second)
                     }
                 }
-            })
+            }, pair.second.server.headers)
             pair = getNextElement()
         }
     }

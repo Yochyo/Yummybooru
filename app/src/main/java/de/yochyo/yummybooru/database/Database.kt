@@ -25,7 +25,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     val prefs = context.getSharedPreferences("default", Context.MODE_PRIVATE)
 
     val tagDao = TagDao(this)
-    val serverDao = ServerDao(this)
+    val serverDao = ServerDao(context, this)
 
     private val serverLock = Any()
     private var clearServerCache = true
@@ -105,7 +105,7 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
                     ?: if (servers.isNotEmpty()) servers.first() else null
             }
 
-            return _currentServer ?: Server("", "", "", "", "")
+            return _currentServer ?: Server(context, "", "", "", "", "")
         }
 
 
@@ -184,17 +184,17 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     private fun getPreference(name: String, default: String) = prefs.getString(name, default)!!
     private fun getPreference(name: String, default: Int = 0) = prefs.getInt(name, default)
     private fun getPreference(name: String, default: Boolean = false) = prefs.getBoolean(name, default)
-    private fun setPreference(name: String, value: String) = with(prefs.edit()) {
+    fun setPreference(name: String, value: String) = with(prefs.edit()) {
         putString(name, value)
         apply()
     }
 
-    private fun setPreference(name: String, value: Int) = with(prefs.edit()) {
+    fun setPreference(name: String, value: Int) = with(prefs.edit()) {
         putInt(name, value)
         apply()
     }
 
-    private fun setPreference(name: String, value: Boolean) = with(prefs.edit()) {
+    fun setPreference(name: String, value: Boolean) = with(prefs.edit()) {
         putBoolean(name, value)
         apply()
     }

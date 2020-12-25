@@ -99,7 +99,7 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
             downloader.downloadPostPreviewIMG(activity, p, {
                 if (pos == holder.adapterPosition && it != null)
                     GlobalScope.launch(Dispatchers.Main) { holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it.bitmap) }
-            }, activity.isScrolling)
+            }, activity.db.currentServer.headers, activity.isScrolling)
         }
     }
 

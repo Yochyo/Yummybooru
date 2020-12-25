@@ -62,7 +62,7 @@ class AutoUpdater(private val context: Context) {
                 if (!file.exists()) {
                     val url = newestDownloadUrl()
                     if (url != null) {
-                        val stream = DownloadUtils.getUrlInputStream(url)
+                        val stream = DownloadUtils.getUrlInputStream(url, emptyMap())
                         if (stream != null) {
                             val byteArray = stream.readBytes()
                             stream.close()

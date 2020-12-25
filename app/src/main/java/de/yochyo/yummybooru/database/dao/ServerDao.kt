@@ -1,10 +1,15 @@
 package de.yochyo.yummybooru.database.dao
 
+import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import de.yochyo.yummybooru.api.entities.Server
 import org.jetbrains.anko.db.*
 
-class ServerDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
+class ServerDao(context: Context, database: ManagedSQLiteOpenHelper) : Dao(database) {
+    val parser = rowParser { name: String, url: String, api: String, username: String, password: String, id: Long ->
+        Server(context, name, url, api, username, password, id = id.toInt())
+    }
+
     private companion object {
         const val TABLE_NAME = "servers"
         const val NAME = "name"
@@ -13,10 +18,6 @@ class ServerDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
         const val USERNAME = "username"
         const val PASSWORD = "password"
         const val ID = "id"
-
-        val parser = rowParser { name: String, url: String, api: String, username: String, password: String, id: Long ->
-            Server(name, url, api, username, password, id = id.toInt())
-        }
     }
 
     override fun createTable(database: SQLiteDatabase) {

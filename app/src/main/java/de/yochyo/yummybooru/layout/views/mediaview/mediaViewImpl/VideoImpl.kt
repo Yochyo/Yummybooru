@@ -7,6 +7,7 @@ import android.view.Surface
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.video.VideoListener
 import de.yochyo.mediaview.mediaViewImpl.MediaViewImpl
 import de.yochyo.yummybooru.R
@@ -16,7 +17,7 @@ class VideoImpl(private val context: Context, val surface: Surface, val paused: 
     override var onSizeChange = { width: Int, height: Int -> }
 
     private var uri: Uri? = null
-    private var headers: Map<String, String>? = null
+    private var headers: Map<String, String> = emptyMap()
 
     private var mPlayer: SimpleExoPlayer? = null
 
@@ -33,7 +34,7 @@ class VideoImpl(private val context: Context, val surface: Surface, val paused: 
         mPlayer?.playWhenReady = true
     }
 
-    override fun setUri(uri: Uri, headers: Map<String, String>?) {
+    override fun setUri(uri: Uri, headers: Map<String, String>) {
         this.uri = uri
         this.headers = headers
         openVideo()
@@ -48,11 +49,15 @@ class VideoImpl(private val context: Context, val surface: Surface, val paused: 
             mPlayer?.repeatMode = SimpleExoPlayer.REPEAT_MODE_ONE
             mPlayer?.setVideoSurface(surface)
             mPlayer?.playWhenReady = !paused
-            mPlayer?.addVideoListener(object: VideoListener{
+            mPlayer?.addVideoListener(object : VideoListener {
                 override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
                     onSizeChange(width, height)
                 }
             })
+            val httpDataSourceFactory = DefaultHttpDataSourceFactory(context.getString(R.string.app_name), null)
+            for (header in headers) httpDataSourceFactory.defaultRequestProperties[header.key] = header.value
+
+
             val factory = DefaultDataSourceFactory(context, context.getString(R.string.app_name))
             val source = ProgressiveMediaSource.Factory(factory).createMediaSource(uri!!)
             mPlayer?.prepare(source)

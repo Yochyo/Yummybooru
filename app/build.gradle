@@ -21,6 +21,10 @@ android {
         }
     }
 
+    lintOptions {
+        abortOnError false
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -63,7 +67,7 @@ dependencies {
 
     implementation "de.yochyo.eventcollection:EventCollection:1.6.4"
     implementation "de.yochyo.downloader:Downloader:1.8.0"
-    implementation "de.yochyo.booruapi:BooruAPI:2.0.0-TEST1"
+    implementation "de.yochyo.booruapi:BooruAPI:2.0.1"
 
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     implementation "org.jetbrains.anko:anko-sqlite:0.10.8"
@@ -71,7 +75,7 @@ dependencies {
     implementation 'com.afollestad:drag-select-recyclerview:2.4.0'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'com.google.firebase:firebase-crashlytics:17.3.0'
-    implementation 'com.google.firebase:firebase-perf:19.0.10'
+    implementation 'com.google.firebase:firebase-perf:19.0.11'
     implementation 'com.google.firebase:firebase-analytics-ktx:18.0.0'
     implementation 'com.jakewharton:disklrucache:2.0.2'
     implementation 'com.github.AppIntro:AppIntro:6.0.0'

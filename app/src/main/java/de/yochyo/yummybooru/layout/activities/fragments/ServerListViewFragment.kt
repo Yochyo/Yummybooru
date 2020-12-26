@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -43,8 +44,10 @@ class ServerListViewFragment : Fragment() {
         override fun getItemCount(): Int = servers.size
 
         override fun onCreateViewHolder(parent: ViewGroup, position: Int): ServerViewHolder {
-            val holder = ServerViewHolder((LayoutInflater.from(context).inflate(R.layout.server_item_layout, parent, false) as LinearLayout),
-            servers.elementAt(position))
+            val holder = ServerViewHolder(
+                (LayoutInflater.from(context).inflate(R.layout.server_item_layout, parent, false) as LinearLayout),
+                servers.elementAt(position)
+            )
             holder.layout.setOnClickListener(holder)
             holder.layout.setOnLongClickListener(holder)
             return holder
@@ -56,7 +59,7 @@ class ServerListViewFragment : Fragment() {
             fillServerLayoutFields(holder.layout, server, server.isSelected(ctx))
         }
 
-        fun update(s: Collection<Server>){
+        fun update(s: Collection<Server>) {
             servers = s
             notifyDataSetChanged()
         }
@@ -64,10 +67,12 @@ class ServerListViewFragment : Fragment() {
         fun fillServerLayoutFields(layout: LinearLayout, server: Server, isSelected: Boolean = false) {
             val text1 = layout.findViewById<TextView>(R.id.server_text1)
             text1.text = server.name
-            if (isSelected) text1.setColor(R.color.dark_red)
-            else text1.setColor(R.color.violet)
+            text1.setColor(if (isSelected) R.color.dark_red else R.color.violet)
             layout.findViewById<TextView>(R.id.server_text2).text = server.apiName
-            layout.findViewById<TextView>(R.id.server_text3).text = server.username
+
+            layout.findViewById<ImageView>(R.id.server_logged_in).visibility =
+                if (server.username != "" && server.password != "") View.VISIBLE
+                else View.INVISIBLE
         }
 
     }

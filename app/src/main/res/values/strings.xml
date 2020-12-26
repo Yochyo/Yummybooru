@@ -53,6 +53,8 @@
     <string name="wait_for_backup_restore">Please wait until the backup is restored</string>
     <!-- ServerListFragment -->
     <string name="edit_server">Edit server</string>
+    <string name="logged_in">Logged in: Yes</string>
+    <string name="not_logged_in">Logged in: No</string>
     <string name="edit_server_with_name">Edit server [%s]</string>
     <string name="delete_server">Delete server</string>
     <string name="delete_server_with_name">Delete server [%s]</string>

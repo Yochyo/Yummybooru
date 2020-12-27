@@ -91,8 +91,7 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
             val pref = findPreference<Preference>(getString(R.string.savePath))
             if (pref != null) {
                 val file = ctx.db.saveFolder
-                pref.summary = file.name
-                file.parentFile
+                pref.summary = file.getName()
             }
         } catch (e: Exception) {
             e.printStackTrace()

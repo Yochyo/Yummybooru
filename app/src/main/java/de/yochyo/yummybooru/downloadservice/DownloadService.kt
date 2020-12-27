@@ -45,7 +45,7 @@ class DownloadService : Service() {
         super.onCreate()
         notificationManager = NotificationManagerCompat.from(this)
         notificationBuilder = NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.drawable.notification_icon).setContentTitle(getString(R.string.downloading))
-            .setOngoing(true).setLocalOnly(true).setProgress(100, 0, false)
+            .setOngoing(true).setLocalOnly(true).setProgress(100, 0, false).setNotificationSilent()
 
         startForeground(1, notificationBuilder.build())
         job = GlobalScope.launch(Dispatchers.IO) {

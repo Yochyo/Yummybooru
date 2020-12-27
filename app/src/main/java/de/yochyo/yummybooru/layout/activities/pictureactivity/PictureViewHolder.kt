@@ -94,7 +94,7 @@ class PictureViewHolder(
             downloader.downloadPostPreviewIMG(activity, post, {
                 mutex.withLock {
                     if (!downloadedOriginalImage && it != null)
-                        GlobalScope.launch(Dispatchers.Main) { photoView.setImageBitmap(it.bitmap) }
+                        photoView.setImageBitmap(it.bitmap)
                 }
             }, activity.db.currentServer.headers, downloadFirst = true)
         }

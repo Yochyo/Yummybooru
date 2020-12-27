@@ -15,20 +15,20 @@ import java.io.InputStream
 
 
 enum class FileWriteResult {
-    SUCCESS, FOLDER_DOES_NOT_EXIST, FAILED, ALREADY_EXISTS;
+    SUCCESS, FAILED, ALREADY_EXISTS;
 }
 
 object FileUtils {
-    suspend fun writeBytes(context: Context, documentFile: DocumentFile, input: InputStream): Boolean {
+    suspend fun writeBytes(context: Context, file: DocumentFile, input: InputStream): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                val stream = context.contentResolver.openOutputStream(documentFile.uri)
+                val stream = context.contentResolver.openOutputStream(file.uri)
                 stream?.use {
                     input.copyTo(it)
                     return@withContext true
-                } ?: throw Exception("could not create stream for file: ${documentFile.name}")
+                } ?: throw Exception("could not create stream for file: ${file.getName()}")
             } catch (e: Exception) {
-                documentFile.delete()
+                file.delete()
                 e.printStackTrace()
                 e.sendFirebase()
             }
@@ -101,10 +101,19 @@ object FileUtils {
     private fun createFileOrNull(parent: DocumentFile, name: String, mimeType: String): DocumentFile? {
         val file = parent.findFile(name)
         return if (file != null) null
-        else return parent.createFile(mimeType, name)
+        else return parent.createFile(name, mimeType)
     }
 
-    private fun getOrCreateFolder(parent: DocumentFile, name: String): DocumentFile? {
-        return parent.findFile(name) ?: parent.createDirectory(name)
+    private fun getOrCreateFolder(parent: DocumentFile, name: String, calledReq: Boolean = false): DocumentFile? {
+        var folder = parent.findFile(name)
+        if (folder != null) return folder
+        else {
+            folder = parent.createDirectory(name)
+            if (folder?.name != name) folder?.delete()
+            else return folder
+
+            if (!calledReq) return getOrCreateFolder(parent, name, true)
+        }
+        return null
     }
 }

@@ -52,7 +52,7 @@ class InAppDownloadService : Service() {
         notificationManager = NotificationManagerCompat.from(this)
         notificationBuilder =
             NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.drawable.notification_icon).setContentTitle("Downloading ... (Queue size: ${downloads.size})")
-                .setOngoing(true).setLocalOnly(true)
+                .setOngoing(true).setLocalOnly(true).setNotificationSilent()
         startForeground(2, notificationBuilder.build())
         job = GlobalScope.launch(Dispatchers.IO) {
             do {

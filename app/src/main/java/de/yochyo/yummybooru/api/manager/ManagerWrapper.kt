@@ -32,6 +32,6 @@ class ManagerWrapper(private val manager: IManager) : IManager by manager {
     }
 
     companion object {
-        fun build(context: Context, s: String) = ManagerWrapper(ManagerBuilder.toManager(context.db.currentServer.api, s, context.db.limit))
+        fun build(context: Context, s: String) = ManagerWrapper(ManagerBuilder.createManager(context.db.currentServer.api, s, context.db.limit))
     }
 }

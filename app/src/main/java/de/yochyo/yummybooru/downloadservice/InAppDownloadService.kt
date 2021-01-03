@@ -9,7 +9,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import de.yochyo.booruapi.api.Post
 import de.yochyo.downloader.Download
-import de.yochyo.eventcollection.EventCollection
 import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventcollection.observable.Observable
 import de.yochyo.eventmanager.Listener
@@ -27,7 +26,8 @@ import java.util.*
 class InAppDownloadService : Service() {
     private val downloader = CacheableDownloader(db.parallelBackgroundDownloads)
 
-    private val onAddDownloadListener = Listener<OnChangeObjectEvent<Observable<Int>, Int>> {
+
+    private val onChange: Listener<OnChangeObjectEvent<Observable<Int>, Int>> = Listener {
         if (this::notificationManager.isInitialized && this::notificationBuilder.isInitialized)
             updateNotification(it.new.value)
     }
@@ -37,33 +37,36 @@ class InAppDownloadService : Service() {
     lateinit var notificationBuilder: NotificationCompat.Builder
 
     companion object {
-        private var count = Observable(0)
-        private val downloads = EventCollection(LinkedList<Download<Resource2>>())
-        fun startService(context: Context, url: String, id: String, server: Server, callback: suspend (e: Resource2?) -> Unit) {
-            downloads += Download(url, server.headers, callback, id)
-            count.value++
+        private val util = ServiceDownloadUtil<Download<Resource2>>()
+        suspend fun startService(context: Context, url: String, id: String, server: Server, callback: suspend (e: Resource2?) -> Unit) {
+            util += Download(url, server.headers, callback, id)
             context.startService(Intent(context, InAppDownloadService::class.java))
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        count.onChange.registerListener(onAddDownloadListener)
+        util.size.onChange.registerListener(onChange)
+
         notificationManager = NotificationManagerCompat.from(this)
         notificationBuilder =
-            NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.drawable.notification_icon).setContentTitle("Downloading ... (Queue size: ${downloads.size})")
+            NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.drawable.notification_icon).setContentTitle("Downloading ... (Queue size: ${util.totalSize})")
                 .setOngoing(true).setLocalOnly(true).setNotificationSilent()
+
         startForeground(2, notificationBuilder.build())
         job = GlobalScope.launch(Dispatchers.IO) {
             do {
-                while (downloads.isNotEmpty()) {
-                    val dl = downloads.first().apply { downloads.remove(this) }
+                var dl = util.popOrNull()
+                while (dl != null) {
+                    val finalDl = dl
                     downloader.download(dl.url, {
-                        dl.callback(it)
-                        onFinishDownload(dl)
-                        count.value--
+                        finalDl.callback(it)
+                        onFinishDownload(finalDl)
+                        util.announceFinishedDownload()
                     }, dl.headers)
+                    dl = util.popOrNull()
                 }
+
                 delay(5000)
             } while (downloader.dl.activeCoroutines > 0)
 
@@ -92,14 +95,15 @@ class InAppDownloadService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        count.onChange.removeListener(onAddDownloadListener)
+        util.size.onChange.removeListener(onChange)
+        runBlocking { util.clear() }
         job?.cancel()
     }
 
     override fun onBind(intent: Intent): IBinder? = null
 }
 
-fun saveDownload(context: Context, url: String, id: String, server: Server, post: Post) = InAppDownloadService.startService(context, url, id, server) {
+suspend fun saveDownload(context: Context, url: String, id: String, server: Server, post: Post) = InAppDownloadService.startService(context, url, id, server) {
     if (it != null) {
         if (FileUtils.writeFile(context, post, it, context.db.currentServer) == FileWriteResult.FAILED)
             withContext(Dispatchers.Main) { Toast.makeText(context, "Saving ${getIdFromMergedId(id)} failed", Toast.LENGTH_SHORT).show() }

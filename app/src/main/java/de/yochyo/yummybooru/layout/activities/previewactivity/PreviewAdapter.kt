@@ -44,8 +44,10 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
         when (it.menuItem.itemId) {
             R.id.select_all -> if (selected.size == m.posts.size) deselectAll() else selectAll()
             R.id.download_selected -> {
-                val posts = selected.getSelected(m.posts)
-                DownloadService.startService(activity, m.toString(), posts, activity.db.currentServer)
+                GlobalScope.launch {
+                    val posts = selected.getSelected(m.posts)
+                    DownloadService.startService(activity, m.toString(), posts, activity.db.currentServer)
+                }
                 deselectAll()
             }
             R.id.download_and_add_authors_selected -> {
@@ -56,8 +58,8 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
                             if (tag.tagType == TagType.ARTIST) activity.db.tags += tag.toBooruTag(activity)
                         }
                     }
+                    DownloadService.startService(activity, m.toString(), posts, activity.db.currentServer)
                 }
-                DownloadService.startService(activity, m.toString(), posts, activity.db.currentServer)
                 deselectAll()
             }
         }

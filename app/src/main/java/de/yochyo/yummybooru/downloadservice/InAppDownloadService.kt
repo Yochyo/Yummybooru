@@ -103,11 +103,13 @@ class InAppDownloadService : Service() {
     override fun onBind(intent: Intent): IBinder? = null
 }
 
-suspend fun saveDownload(context: Context, url: String, id: String, server: Server, post: Post) = InAppDownloadService.startService(context, url, id, server) {
-    if (it != null) {
-        if (FileUtils.writeFile(context, post, it, context.db.currentServer) == FileWriteResult.FAILED)
-            withContext(Dispatchers.Main) { Toast.makeText(context, "Saving ${getIdFromMergedId(id)} failed", Toast.LENGTH_SHORT).show() }
-    } else withContext(Dispatchers.Main) { Toast.makeText(context, "Failed downloading ${getIdFromMergedId(id)}", Toast.LENGTH_SHORT).show() }
+fun saveDownload(context: Context, url: String, id: String, server: Server, post: Post) = GlobalScope.launch {
+    InAppDownloadService.startService(context, url, id, server) {
+        if (it != null) {
+            if (FileUtils.writeFile(context, post, it, context.db.currentServer) == FileWriteResult.FAILED)
+                withContext(Dispatchers.Main) { Toast.makeText(context, "Saving ${getIdFromMergedId(id)} failed", Toast.LENGTH_SHORT).show() }
+        } else withContext(Dispatchers.Main) { Toast.makeText(context, "Failed downloading ${getIdFromMergedId(id)}", Toast.LENGTH_SHORT).show() }
+    }
 }
 
 private fun getIdFromMergedId(id: String): String = id.takeWhile { it in '0'..'9' }

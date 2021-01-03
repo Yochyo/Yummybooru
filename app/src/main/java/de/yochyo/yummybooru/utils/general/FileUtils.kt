@@ -99,9 +99,12 @@ object FileUtils {
     }
 
     private fun createFileOrNull(parent: DocumentFile, name: String, mimeType: String): DocumentFile? {
-        val file = parent.findFile(name)
-        return if (file != null) null
-        else return parent.createFile(name, mimeType)
+        val file = parent.createFile(mimeType, name)
+        if (file?.name != name) {
+            file?.delete()
+            return null
+        }
+        return file
     }
 
     private fun getOrCreateFolder(parent: DocumentFile, name: String, calledReq: Boolean = false): DocumentFile? {
@@ -112,8 +115,7 @@ object FileUtils {
             if (folder?.name != name) folder?.delete()
             else return folder
 
-            if (!calledReq) return getOrCreateFolder(parent, name, true)
+            return parent.findFile(name)
         }
-        return null
     }
 }

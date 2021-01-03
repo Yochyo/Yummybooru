@@ -15,7 +15,7 @@ abstract class Distributor<K, V> {
         return pointers[key]!!.getPointer()
     }
 
-    fun getPointer(context: Context, key: K): Pointer<V> {
+    open fun getPointer(context: Context, key: K): Pointer<V> {
         if (values[key] == null)
             values[key] = createIfNotExist(context, key)
         return Pointer(values[key]!!, getPointerId(key))

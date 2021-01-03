@@ -18,6 +18,7 @@ import de.yochyo.yummybooru.utils.network.CacheableDownloader
 import kotlinx.coroutines.*
 import java.util.*
 
+private class DownloadPost(val tags: String, val post: Post, val server: Server)
 class DownloadService : Service() {
     private val downloader = CacheableDownloader(db.parallelBackgroundDownloads)
 
@@ -25,20 +26,15 @@ class DownloadService : Service() {
     lateinit var notificationManager: NotificationManagerCompat
     lateinit var notificationBuilder: NotificationCompat.Builder
 
-    private var position = 0
-
     companion object {
-        private var totalItemCount = 0
-        private var currentItem = 0
-        private val downloadPosts = LinkedList<Posts>()
-
-        fun startService(context: Context, tags: String, posts: List<Post>, server: Server) {
-            totalItemCount += posts.size
-            downloadPosts += Posts(tags, posts, server)
+        const val NOTIFICATION_ID = 1
+        private val util = ServiceDownloadUtil<DownloadPost>()
+        suspend fun startService(context: Context, tags: String, posts: List<Post>, server: Server) {
+            util += posts.map { DownloadPost(tags, it, server) }
             context.startService(Intent(context, DownloadService::class.java))
         }
 
-        fun startService(context: Context, manager: IManager, server: Server) = startService(context, manager.toString(), ArrayList(manager.posts), server)
+        suspend fun startService(context: Context, manager: IManager, server: Server) = startService(context, manager.toString(), ArrayList(manager.posts), server)
     }
 
     override fun onCreate() {
@@ -46,75 +42,54 @@ class DownloadService : Service() {
         notificationManager = NotificationManagerCompat.from(this)
         notificationBuilder = NotificationCompat.Builder(this, App.CHANNEL_ID).setSmallIcon(R.drawable.notification_icon).setContentTitle(getString(R.string.downloading))
             .setOngoing(true).setLocalOnly(true).setProgress(100, 0, false).setNotificationSilent()
-
-        startForeground(1, notificationBuilder.build())
+        startForeground(NOTIFICATION_ID, notificationBuilder.build())
         job = GlobalScope.launch(Dispatchers.IO) {
-
             downloadPosts()
-            while (downloader.dl.activeCoroutines > 0) {
+            while (downloader.dl.activeCoroutines > 0 && isActive) {
                 delay(2000)
                 downloadPosts()
             }
-            totalItemCount = 0
-            currentItem = 0
+
             stopSelf()
         }
     }
 
     suspend fun downloadPosts() {
-        var pair = getNextElement()
-        while (pair != null) {
-            val finalPair = pair
-            val (url, id) = getDownloadPathAndId(this@DownloadService, pair.first)
+        var next = util.popOrNull()
+        while (next != null) {
+            val finalNext = next
+            val url = getDownloadPathAndId(this@DownloadService, next.post).first
             downloader.download(url, {
                 if (it != null) {
-                    FileUtils.writeFile(this@DownloadService, finalPair.first, it, finalPair.second.server)
+                    FileUtils.writeFile(this@DownloadService, finalNext.post, it, finalNext.server)
                     withContext(Dispatchers.Main) {
-                        updateNotification(finalPair.second)
+                        util.announceFinishedDownload()
+                        updateNotification(finalNext)
                     }
                 }
-            }, pair.second.server.headers)
-            pair = getNextElement()
+            }, next.server.headers)
+            next = util.popOrNull()
         }
     }
 
-    private fun getNextElement(): Pair<Post, Posts>? {
-        if (downloadPosts.isNotEmpty()) {
-            val posts = downloadPosts[0]
-            return if (posts.posts.size > position) {
-                val post = posts.posts[position]
-                ++position
-                Pair(post, posts)
-            } else {
-                position = 0
-                downloadPosts.removeAt(0)
-                getNextElement()
-            }
-        }
-        return null
-    }
-
-    private suspend fun updateNotification(posts: Posts) {
+    private suspend fun updateNotification(post: DownloadPost) {
         withContext(Dispatchers.Main) {
-            notificationBuilder.setContentTitle(getString(R.string.downloading_part_n_of_m, currentItem, totalItemCount))
-            notificationBuilder.setContentText(posts.tags)
-            notificationBuilder.setProgress(totalItemCount, currentItem, false)
+            notificationBuilder.setContentTitle(getString(R.string.downloading_part_n_of_m, util.downloaded, util.totalSize))
+            notificationBuilder.setContentText(post.tags)
+            notificationBuilder.setProgress(util.totalSize, util.downloaded, false)
             notificationManager.notify(1, notificationBuilder.build())
         }
-        ++currentItem
-    }
-
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return START_STICKY
     }
 
     override fun onDestroy() {
         super.onDestroy()
         job?.cancel()
+        runBlocking { util.clear() }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_STICKY
     }
 
     override fun onBind(intent: Intent): IBinder? = null
 }
-
-private class Posts(val tags: String, val posts: List<Post>, val server: Server)

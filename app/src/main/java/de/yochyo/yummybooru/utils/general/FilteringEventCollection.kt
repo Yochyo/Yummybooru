@@ -31,12 +31,12 @@ class FilteringEventCollection<E : IObservableObject<E, A>, A>(private val getUn
                 } else {
                     for (i in eventCollections.indices.reversed()) {
                         if (name.startsWith(eventCollections[i].second)) {
-                            result = ObservingSubEventCollection(TreeSet(), eventCollections[i].first) { filterBy(it).contains(name) }
+                            result = ObservingSubEventCollection(TreeSet(), eventCollections[i].first) { filterBy(it).contains(name, true) }
                             break
                         }
                     }
                 }
-                if (result == null) result = ObservingSubEventCollection(TreeSet(), getUnfilteredCollection()) { filterBy(it).contains(name) }
+                if (result == null) result = ObservingSubEventCollection(TreeSet(), getUnfilteredCollection()) { filterBy(it).contains(name, true) }
                 eventCollections += Pair(result, name)
             }
         }

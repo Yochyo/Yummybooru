@@ -39,8 +39,8 @@ android {
         applicationId "de.yochyo.yummybooru"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 12
-        versionName "2.4.1"
+        versionCode 13
+        versionName "2.4.2"
     }
 
     buildTypes {
@@ -67,7 +67,7 @@ dependencies {
 
     implementation "de.yochyo.eventcollection:EventCollection:1.6.4"
     implementation "de.yochyo.downloader:Downloader:1.8.0"
-    implementation "de.yochyo.booruapi:BooruAPI:2.1.2"
+    implementation "de.yochyo.booruapi:BooruAPI:2.1.4"
 
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     implementation "org.jetbrains.anko:anko-sqlite:0.10.8"

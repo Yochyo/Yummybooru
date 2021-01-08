@@ -76,6 +76,12 @@ class Changelog(val versionName: String, val version: Int, val description: Stri
                         "Bug fixes\n"
             )
             logs += Changelog("2.4.1", 12, "Bug fixes")
+            logs += Changelog(
+                "2.4.2", 13, "Danbooru works again\n" +
+                        "you can now combine searches by writing <Tag1> OR <Tag2> (Beta)\n" +
+                        "You can now exclude tags from your search by writing <Tag1> NOT(Tag2)\n" +
+                        "Some small changes"
+            )
         }
 
         fun showChangelogs(context: Context) {

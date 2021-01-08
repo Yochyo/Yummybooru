@@ -137,7 +137,7 @@ class TagHistoryFragment : Fragment() {
 
 
     suspend fun filter(name: String) {
-        val result = filteringTagList?.filter(name) ?: null
+        val result = filteringTagList?.filter(name)
         if (result != null) {
             withContext(Dispatchers.Main) {
                 tagLayoutManager.scrollToPosition(0)

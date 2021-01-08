@@ -55,7 +55,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:hint="@string/hint_password_or_api_key"
-        android:inputType="text"
+        android:inputType="textPassword"
         android:maxLines="1" />
 
 </LinearLayout>

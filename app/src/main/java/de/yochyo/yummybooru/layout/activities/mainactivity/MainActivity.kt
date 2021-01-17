@@ -25,6 +25,7 @@ import de.yochyo.yummybooru.layout.menus.SettingsNavView
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
 import de.yochyo.yummybooru.utils.general.toTagString
+import de.yochyo.yummybooru.utils.general.updateCombinedSearchSortAlgorithm
 import de.yochyo.yummybooru.utils.general.updateNomediaFile
 import kotlinx.android.synthetic.main.main_activity_layout.*
 
@@ -40,7 +41,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity_layout)
-
+        updateCombinedSearchSortAlgorithm(db.combinedSearchSort)
         if (db.isFirstStart)
             startActivity(Intent(this, IntroActivity::class.java))
         else {

@@ -10,6 +10,7 @@
     <string name="click_to_move_to_next_image">click_to_move_to_next_image</string>
     <string name="parallel_background_downloads">parallel_background_downloads</string>
     <string name="preview_columns">preview_columns</string>
+    <string name="combined_search_sort">combined_search_sort</string>
     <string name="preview_staggered_mode">preview_staggered_mode</string>
     <string name="is_first_app_usage">first_usage</string>
     <string name="use_nomedia">no_media</string>
@@ -17,6 +18,7 @@
     <string name="crop_preview">crop_preview</string>
 
     <string name="page_size_default_value">50</string>
+    <integer name="combined_search_sort_default_value">0</integer>
     <bool name="downloadWebm_default_value">true</bool>
     <bool name="downloadOriginal_default_value">true</bool>
     <integer name="preloaded_large_pictures_default_value">1</integer>

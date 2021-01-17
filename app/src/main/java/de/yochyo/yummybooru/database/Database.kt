@@ -166,6 +166,9 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     var hideDownloadToast: Boolean
         get() = getPreference(context.getString(R.string.hide_download_toast), context.resources.getBoolean(R.bool.hide_download_toast_default_value))
         set(value) = setPreference(context.getString(R.string.hide_download_toast), value)
+    var combinedSearchSort: Int
+        get() = getPreference(context.getString(R.string.combined_search_sort), context.resources.getInteger(R.integer.combined_search_sort_default_value))
+        set(value) = setPreference(context.getString(R.string.combined_search_sort), value)
 
     suspend fun deleteEverything() {
         withContext(Dispatchers.Default) {

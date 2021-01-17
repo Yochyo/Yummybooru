@@ -12,6 +12,10 @@ import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import de.yochyo.booruapi.api.Post
 import de.yochyo.booruapi.api.Tag
+import de.yochyo.booruapi.manager.ManagerOR
+import de.yochyo.booruapi.manager.ManagerORAlternatingAlgorithm
+import de.yochyo.booruapi.manager.ManagerORDefaultSortingAlgorithm
+import de.yochyo.booruapi.manager.ManagerORRandomSortingAlgorithm
 import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.IResource
 import de.yochyo.yummybooru.api.entities.Resource2
@@ -114,6 +118,14 @@ fun parseURL(url: String): String {
     if (!url.endsWith("/"))
         b.append("/")
     return b.toString()
+}
+
+fun updateCombinedSearchSortAlgorithm(value: Int) {
+    ManagerOR.defaultSortingAlgerithm = when (value) {
+        -1 -> ManagerORRandomSortingAlgorithm()
+        in 1..10 -> ManagerORAlternatingAlgorithm(value)
+        else -> ManagerORDefaultSortingAlgorithm()
+    }
 }
 
 fun InputStream.toBitmap(): Bitmap? {

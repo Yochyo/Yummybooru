@@ -20,4 +20,14 @@
         android:key="@string/crop_preview"
         android:summary="Crops image to square"
         android:title="Crop image"/>
+    <androidx.preference.SeekBarPreference
+        android:defaultValue="@integer/combined_search_sort_default_value"
+        android:key="@string/combined_search_sort"
+        android:max="10"
+        android:summary="Sorts searches which contain 'OR' (0=default, -1=random, >1=Alternating n images of each tag)"
+        android:title="Sort combined searches"
+        app:allowDividerAbove="true"
+        app:defaultValue="0"
+        app:min="-1"
+        app:showSeekBarValue="true"/>
 </PreferenceScreen>

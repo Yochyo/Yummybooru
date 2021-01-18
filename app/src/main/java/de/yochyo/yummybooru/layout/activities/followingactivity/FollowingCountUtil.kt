@@ -17,8 +17,10 @@ class FollowingCountUtil(val activity: FollowingActivity) {
         while (isActive) {
             try {
                 for (i in activity.layoutManager.findFirstVisibleItemPosition()..activity.layoutManager.findLastVisibleItemPosition()) {
-                    val follow = activity.filteringFollowingList.elementAt(i)
-                    cacheCount(follow.name)
+                    if (i in activity.filteringFollowingList.indices) {
+                        val follow = activity.filteringFollowingList.elementAt(i)
+                        cacheCount(follow.name)
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

@@ -9,6 +9,8 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.sendFirebase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,22 +39,30 @@ object BackupUtils {
         }
     }
 
-    suspend fun restoreBackup(byteArray: ByteArray, context: Context) {
+    suspend fun restoreBackup(byteArray: ByteArray, context: Context): Pair<Flow<Int>, Int>? {
+        var size = 0
         try {
             val obj = updateRestoreObject(JSONObject(String(byteArray)))
             val tags = obj.getJSONArray("tags")
             val servers = obj.getJSONArray("servers")
-            withContext(Dispatchers.IO) {
-                context.db.deleteEverything()
-                PreferencesBackup.restoreEntity(obj.getJSONObject("preferences"), context)
-                servers.map { ServerBackup.restoreEntity(it as JSONObject, context) }
-                tags.map { launch { TagBackup.restoreEntity(it as JSONObject, context) } }.joinAll()
-                context.db.clearCache()
+            size = 1 + tags.length() + servers.length()
+            val flow = channelFlow {
+                withContext(Dispatchers.IO) {
+                    context.db.deleteEverything()
+                    PreferencesBackup.restoreEntity(obj.getJSONObject("preferences"), context)
+                    withContext(Dispatchers.Main) { send(0) }
+
+                    servers.map { ServerBackup.restoreEntity(it as JSONObject, context);withContext(Dispatchers.Main) { send(0) } }
+                    tags.map { launch { TagBackup.restoreEntity(it as JSONObject, context);withContext(Dispatchers.Main) { send(0) } } }.joinAll()
+                    context.db.clearCache()
+                }
             }
+            return Pair(flow, size)
         } catch (e: Exception) {
             e.printStackTrace()
             e.sendFirebase()
         }
+        return null
     }
 
     fun updateRestoreObject(json: JSONObject): JSONObject {

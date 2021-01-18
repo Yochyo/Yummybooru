@@ -8,7 +8,7 @@
         android:title="Save path"
         app:allowDividerBelow="true"/>
     <Preference
-        android:icon="@drawable/download_black"
+        android:icon="@drawable/user_icon_black"
         android:key="general"
         android:title="General"
         app:allowDividerAbove="true"

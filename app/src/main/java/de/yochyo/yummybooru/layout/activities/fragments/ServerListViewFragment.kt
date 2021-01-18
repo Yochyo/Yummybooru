@@ -32,10 +32,9 @@ class ServerListViewFragment : Fragment() {
         val serverRecyclerView = layout.findViewById<RecyclerView>(R.id.server_recycler_view)
         serverRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         serverAdapter = ServerAdapter().apply { serverRecyclerView.adapter = this }
-        GlobalScope.launch {
-            inflater.context.db.servers.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.update(it.collection) } }
-            withContext(Dispatchers.Main) { serverAdapter.update(inflater.context.db.servers) }
-        }
+
+        inflater.context.db.servers.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { serverAdapter.update(it.collection) } }
+        serverAdapter.update(inflater.context.db.servers)
         return layout
     }
 

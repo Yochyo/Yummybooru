@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.booruapi.api.TagType
+import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventcollection.observablecollection.ObservingEventCollection
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.R
@@ -74,10 +75,12 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     fun clearServerCache() = synchronized(clearTagCache) {
         clearServerCache = true
+        servers.onUpdate.trigger(OnUpdateEvent(servers))
     }
 
     fun clearTagCache() = synchronized(clearServerCache) {
         clearTagCache = true
+        tags.onUpdate.trigger(OnUpdateEvent(tags))
     }
 
 
@@ -85,7 +88,6 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
         val oldServer = currentServer
         currentServerID = server.id
         clearTagCache = true
-        tags
         SelectServerEvent.trigger(SelectServerEvent(context, oldServer, server))
     }
 

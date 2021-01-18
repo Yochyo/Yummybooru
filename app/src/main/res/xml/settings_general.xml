@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <androidx.preference.SwitchPreference
+        android:defaultValue="@bool/show_favorites_first_default_value"
+        android:key="@string/show_favorites_first"
+        android:summary="Shows your non-favorite tags after your favorite tags"
+        android:title="Show favorite tags first"/>
+    <androidx.preference.SwitchPreference
+        android:defaultValue="@bool/sort_by_tag_type_default_value"
+        android:key="@string/sort_by_tag_type"
+        android:summary="Has lower priority than above"
+        android:title="Sort by tag type"/>
+    <androidx.preference.ListPreference
+        android:defaultValue="@string/sort_tag_comparator_default_value"
+        android:entries="@array/sort_tag_comparator"
+        android:entryValues="@array/sort_tag_comparator_values"
+        android:key="@string/sort_tag_comparator"
+        android:summary="Sort tags"
+        android:title="Change how tags are sorted"/>
+</PreferenceScreen>

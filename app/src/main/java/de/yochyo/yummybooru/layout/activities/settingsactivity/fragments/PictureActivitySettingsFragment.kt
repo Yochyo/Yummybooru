@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout.activities.settingsactivity
+package de.yochyo.yummybooru.layout.activities.settingsactivity.fragments
 
 import android.os.Bundle
 import androidx.preference.PreferenceFragmentCompat

@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
+import de.yochyo.booruapi.api.TagType
 import de.yochyo.eventcollection.observablecollection.ObservingEventCollection
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.R
@@ -11,9 +12,11 @@ import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.dao.ServerDao
 import de.yochyo.yummybooru.database.dao.TagDao
+import de.yochyo.yummybooru.database.eventcollections.TagEventCollection
 import de.yochyo.yummybooru.database.utils.Upgrade
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.utils.GlobalListeners
+import de.yochyo.yummybooru.utils.enums.TagSortType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.anko.db.ManagedSQLiteOpenHelper
@@ -45,21 +48,11 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
 
     private val tagLock = Any()
     private var clearTagCache = true
-    val tags = object : ObservingEventCollection<Tag, Int>(TreeSet()) {
-        override fun add(element: Tag): Boolean {
-            var isContained = false
-            if (contains(element)) isContained = true
-            else {
-                element.isFavorite = !element.isFavorite
-                if (contains(element)) isContained = true
-                element.isFavorite = !element.isFavorite
-            }
-            return if (isContained) false else super.add(element)
-        }
-    }
+    val tags = ObservingEventCollection(TagEventCollection(getTagComparator()))
         get() = synchronized(tagLock) {
             if (clearTagCache) {
-                field.replaceCollection(TreeSet(tagDao.selectWhere(currentServer)))
+                field.replaceCollection(TagEventCollection(getTagComparator())
+                    .apply { addAll(TreeSet(tagDao.selectWhere(currentServer))) })
                 clearTagCache = false
             }
             return field
@@ -169,6 +162,54 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     var combinedSearchSort: Int
         get() = getPreference(context.getString(R.string.combined_search_sort), context.resources.getInteger(R.integer.combined_search_sort_default_value))
         set(value) = setPreference(context.getString(R.string.combined_search_sort), value)
+    var sortTagsByFavoriteFirst: Boolean
+        get() = getPreference(context.getString(R.string.show_favorites_first), context.resources.getBoolean(R.bool.show_favorites_first_default_value))
+        set(value) = setPreference(context.getString(R.string.show_favorites_first), value)
+    var sortTagsByTagType: Boolean
+        get() = getPreference(context.getString(R.string.sort_by_tag_type), context.resources.getBoolean(R.bool.sort_by_tag_type_default_value))
+        set(value) = setPreference(context.getString(R.string.sort_by_tag_type), value)
+    var tagSortType: TagSortType
+        get() = TagSortType.fromValue(
+            getPreference(
+                context.getString(R.string.sort_tag_comparator),
+                context.resources.getString(R.string.sort_tag_comparator_default_value)
+            ).toInt()
+        )
+        set(value) = setPreference(context.getString(R.string.sort_tag_comparator), value.value.toString())
+
+    fun getTagComparator(): Comparator<Tag> {
+        fun TagType.toInt() = when (this) {
+            TagType.ARTIST -> 0
+            TagType.COPYRIGHT -> 1
+            TagType.CHARACTER -> 2
+            TagType.GENERAL -> 3
+            TagType.META -> 4
+            TagType.UNKNOWN -> 5
+        }
+
+        val comparatorChain = ArrayList<Comparator<Tag>>()
+        if (sortTagsByFavoriteFirst) comparatorChain += Comparator { o1, o2 ->
+            if (o1.isFavorite == o2.isFavorite) 0
+            else if (o1.isFavorite && !o2.isFavorite) -1
+            else 1
+        }
+
+        if (sortTagsByTagType) comparatorChain += Comparator { o1, o2 -> o1.type.toInt().compareTo(o2.type.toInt()) }
+        comparatorChain += when (tagSortType) {
+            TagSortType.NAME_ASC -> Comparator { o1, o2 -> o1.name.compareTo(o2.name) }
+            TagSortType.NAME_DES -> Comparator { o1, o2 -> o2.name.compareTo(o1.name) }
+            TagSortType.DATE_ASC -> Comparator { o1, o2 -> o2.creation.compareTo(o1.creation) }
+            TagSortType.DATE_DES -> Comparator { o1, o2 -> o2.creation.compareTo(o1.creation) }
+        }
+        return Comparator { o1, o2 ->
+            var res = 0
+            for (comparator in comparatorChain) {
+                res = comparator.compare(o1, o2)
+                if (res != 0) break
+            }
+            res
+        }
+    }
 
     suspend fun deleteEverything() {
         withContext(Dispatchers.Default) {

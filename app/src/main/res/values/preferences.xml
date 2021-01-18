@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="page_size">page_size_string</string>
+    <string name="sort_tag_comparator">sort_tag_comparator</string>
     <string name="downloadWebm">downloadWebm</string>
     <string name="downloadOriginal">downloadOriginal</string>
     <string name="lastVersion">lastVersion</string>
@@ -18,8 +19,13 @@
     <string name="crop_preview">crop_preview</string>
 
     <string name="page_size_default_value">50</string>
+    <string name="sort_tag_comparator_default_value">1</string>
     <integer name="combined_search_sort_default_value">0</integer>
     <bool name="downloadWebm_default_value">true</bool>
+    <string name="show_favorites_first">show_favorites_first</string>
+    <string name="sort_by_tag_type">sort_by_tag_type</string>
+    <bool name="show_favorites_first_default_value">true</bool>
+    <bool name="sort_by_tag_type_default_value">false</bool>
     <bool name="downloadOriginal_default_value">true</bool>
     <integer name="preloaded_large_pictures_default_value">1</integer>
     <bool name="click_to_move_to_next_image_default_value">true</bool>
@@ -31,12 +37,24 @@
     <bool name="hide_download_toast_default_value">false</bool>
     <bool name="crop_preview_default_value">false</bool>
 
+    <string-array name="sort_tag_comparator">
+        <item>Name (asc)</item>
+        <item>Name (des)</item>
+        <item>Date (asc)</item>
+        <item>Date (des)</item>
+    </string-array>
     <string-array name="post_limit">
         <item>30</item>
         <item>50</item>
         <item>100</item>
         <item>150</item>
         <item>200</item>
+    </string-array>
+    <string-array name="sort_tag_comparator_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
     </string-array>
 
 </resources>

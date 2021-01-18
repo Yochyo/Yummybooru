@@ -1,28 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
     <androidx.preference.Preference
         android:enabled="true"
         android:icon="@drawable/save_black"
         android:key="@string/savePath"
         android:title="Save path"
-        app:allowDividerBelow="true" />
+        app:allowDividerBelow="true"/>
+    <Preference
+        android:icon="@drawable/download_black"
+        android:key="general"
+        android:title="General"
+        app:allowDividerAbove="true"
+        app:fragment="de.yochyo.yummybooru.layout.activities.settingsactivity.fragments.GeneralSettingsFragment"/>
     <Preference
         android:icon="@drawable/download_black"
         android:key="downloads"
         android:title="Downloads"
-        app:allowDividerAbove="true"
-        app:fragment="de.yochyo.yummybooru.layout.activities.settingsactivity.DownloadSettingsFragment" />
+        app:fragment="de.yochyo.yummybooru.layout.activities.settingsactivity.fragments.DownloadSettingsFragment"/>
     <Preference
         android:icon="@drawable/image_black"
         android:key="preview_images"
         android:title="Preview images"
-        app:fragment="de.yochyo.yummybooru.layout.activities.settingsactivity.PreviewActivitySettingsFragment" />
+        app:fragment="de.yochyo.yummybooru.layout.activities.settingsactivity.fragments.PreviewActivitySettingsFragment"/>
     <Preference
         android:icon="@drawable/image_black"
         android:key="large_images"
         android:title="Large images"
-        app:fragment="de.yochyo.yummybooru.layout.activities.settingsactivity.PictureActivitySettingsFragment" />
+        app:fragment="de.yochyo.yummybooru.layout.activities.settingsactivity.fragments.PictureActivitySettingsFragment"/>
 
     <androidx.preference.Preference
         android:enabled="true"

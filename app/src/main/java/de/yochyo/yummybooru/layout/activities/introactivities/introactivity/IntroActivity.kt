@@ -1,6 +1,7 @@
 package de.yochyo.yummybooru.layout.activities.introactivities.introactivity
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -10,6 +11,7 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.activities.introactivities.IIntroActivity
 
 class IntroActivity : AppIntro2(), IIntroActivity {
+    @SuppressLint("MissingSuperCall")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

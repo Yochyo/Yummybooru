@@ -14,8 +14,8 @@ import com.google.android.material.navigation.NavigationView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
-import de.yochyo.yummybooru.layout.activities.fragments.ServerListViewFragment
-import de.yochyo.yummybooru.layout.activities.fragments.TagHistoryFragment
+import de.yochyo.yummybooru.layout.activities.fragments.serverListViewFragment.ServerListFragment
+import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.TagHistoryFragment
 import de.yochyo.yummybooru.layout.activities.introactivities.introactivity.IntroActivity
 import de.yochyo.yummybooru.layout.activities.introactivities.savefolderactivity.SaveFolderChangerActivity
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
                 supportFragmentManager.getFragment(bundle, TAG_FRAGMENT) as TagHistoryFragment
             serverListFragment = supportFragmentManager.getFragment(bundle, SERVER_FRAGMENT)
         }
-        if (serverListFragment == null) serverListFragment = ServerListViewFragment()
+        if (serverListFragment == null) serverListFragment = ServerListFragment()
         if (tagHistoryFragment == null) tagHistoryFragment = TagHistoryFragment()
 
         tagHistoryFragment!!.onSearchButtonClick = {

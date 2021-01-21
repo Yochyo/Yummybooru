@@ -1,11 +1,9 @@
-package de.yochyo.yummybooru.layout.activities.fragments
+package de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -22,26 +20,22 @@ import de.yochyo.yummybooru.database.eventcollections.TagEventCollection
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
-import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
-import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.utils.general.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private typealias OnSearch = (tags: List<String>) -> Unit
-
 class TagHistoryFragment : Fragment() {
-    var onSearchButtonClick: OnSearch = {}
+    var onSearchButtonClick: (tags: List<String>) -> Unit = {}
     private var filteringTagList: FilteringEventCollection<Tag, Int>? = null
 
 
-    private lateinit var tagAdapter: TagAdapter
+    private lateinit var tagAdapter: TagHistoryFragmentAdapter
     private lateinit var tagLayoutManager: LinearLayoutManager
 
 
-    val selectedTags = ArrayList<String>()
+    private val selectedTags = ArrayList<String>()
 
     private val selectedTagRemovedListener = Listener<OnRemoveElementsEvent<Tag>> { selectedTags.removeAll(it.elements.map { it.name }) }
     private val selectedServerChangedEvent = Listener<SelectServerEvent> {
@@ -89,7 +83,7 @@ class TagHistoryFragment : Fragment() {
             override fun onQueryTextSubmit(query: String?) = true
         })
 
-        tagAdapter = TagAdapter().apply { tagRecyclerView.adapter = this }
+        tagAdapter = TagHistoryFragmentAdapter(ctx, selectedTags).apply { tagRecyclerView.adapter = this }
     }
 
     private fun configureDrawerToolbar(toolbar: Toolbar) {
@@ -132,14 +126,6 @@ class TagHistoryFragment : Fragment() {
         outState.putStringArray(SELECTED, selectedTags.toTypedArray())
     }
 
-    override fun onDestroy() {
-        ctx.db.tags.removeOnRemoveElementsListener(selectedTagRemovedListener)
-        ctx.db.tags.removeOnUpdateListener(onUpdateTags)
-        SelectServerEvent.removeListener(selectedServerChangedEvent)
-        super.onDestroy()
-    }
-
-
     suspend fun filter(name: String) {
         val result = filteringTagList?.filter(name)
         if (result != null) {
@@ -150,59 +136,11 @@ class TagHistoryFragment : Fragment() {
         }
     }
 
-    inner class TagAdapter : RecyclerView.Adapter<TagViewHolder>() {
-        private var tags: Collection<Tag> = emptyList()
-
-        fun update(t: Collection<Tag>) {
-            tags = t
-            notifyDataSetChanged()
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TagViewHolder =
-            TagViewHolder((LayoutInflater.from(context).inflate(R.layout.search_item_layout, parent, false) as android.widget.Toolbar)).apply {
-                toolbar.inflateMenu(R.menu.activity_main_search_menu)
-                val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
-
-                fun onClick() {
-                    if (check.isChecked) selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
-                    else selectedTags.remove(tags.elementAt(adapterPosition).name)
-                }
-                toolbar.setOnClickListener {
-                    check.isChecked = !check.isChecked
-                    onClick()
-                }
-                check.setOnClickListener { onClick() }
-
-                toolbar.setOnMenuItemClickListener {
-                    val tag = tags.elementAt(adapterPosition)
-                    when (it.itemId) {
-                        R.id.main_search_favorite_tag -> tag.isFavorite = !tag.isFavorite
-                        R.id.main_search_follow_tag -> {
-                            GlobalScope.launch {
-                                if (tag.following == null) tag.addFollowing(ctx)
-                                else tag.following = null
-                                withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
-                            }
-                        }
-                        R.id.main_search_delete_tag -> {
-                            ConfirmDialog { ctx.db.tags -= tag }
-                                .withTitle(getString(R.string.delete_tag)).withMessage(getString(R.string.delete_tag_with_name, tag.name)).build(ctx)
-                        }
-                    }
-                    true
-                }
-            }
-
-        override fun onBindViewHolder(holder: TagViewHolder, position: Int) {
-            val tag = tags.elementAt(position)
-            holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox).isChecked = selectedTags.contains(tag.name)
-            val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
-            textView.text = tag.name;textView.setColor(tag.color);textView.underline(tag.isFavorite)
-            Menus.initMainSearchTagMenu(ctx, holder.toolbar.menu, tag)
-        }
-
-        override fun getItemCount(): Int = tags.size
+    override fun onDestroy() {
+        ctx.db.tags.removeOnRemoveElementsListener(selectedTagRemovedListener)
+        ctx.db.tags.removeOnUpdateListener(onUpdateTags)
+        SelectServerEvent.removeListener(selectedServerChangedEvent)
+        super.onDestroy()
     }
 
-    class TagViewHolder(val toolbar: android.widget.Toolbar) : RecyclerView.ViewHolder(toolbar)
 }

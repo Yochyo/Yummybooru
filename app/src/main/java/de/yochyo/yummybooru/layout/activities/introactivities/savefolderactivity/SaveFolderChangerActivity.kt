@@ -1,5 +1,6 @@
 package de.yochyo.yummybooru.layout.activities.introactivities.savefolderactivity
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -10,6 +11,7 @@ import de.yochyo.yummybooru.layout.activities.introactivities.introactivity.Intr
 import de.yochyo.yummybooru.layout.activities.introactivities.introactivity.IntroSelectDirFragment
 
 class SaveFolderChangerActivity : AppIntro2(), IIntroActivity {
+    @SuppressLint("MissingSuperCall")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         addSlide(

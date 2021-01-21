@@ -15,6 +15,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.eventcollections.TagEventCollection
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.utils.general.FilteringEventCollection
@@ -50,7 +51,14 @@ class FollowingActivity : AppCompatActivity() {
         val oldId = savedInstanceState?.getInt("id")
         val oldCount = savedInstanceState?.getInt("count")
         if (oldName != null && oldId != null && oldCount != null) onClickedData = FollowingData(oldName, oldId, oldCount)
-        filteringFollowingList = FilteringEventCollection({ ObservingSubEventCollection(TreeSet(), db.tags) { it.following != null } }, { it.name })
+        filteringFollowingList = FilteringEventCollection({
+            ObservingSubEventCollection(
+                TagEventCollection.getInstance(this), db.tags
+            ) { it.following != null }
+        },
+            { it.name },
+            { TagEventCollection.getInstance(this) })
+
         setContentView(R.layout.activity_following)
         setSupportActionBar(toolbar_following)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

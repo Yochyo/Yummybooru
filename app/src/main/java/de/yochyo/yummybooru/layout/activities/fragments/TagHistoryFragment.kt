@@ -13,10 +13,12 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.eventcollection.events.OnRemoveElementsEvent
+import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.eventcollections.TagEventCollection
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
@@ -46,6 +48,7 @@ class TagHistoryFragment : Fragment() {
         if (it.oldServer != it.newServer)
             selectedTags.clear()
     }
+    private val onUpdateTags = Listener<OnUpdateEvent<Tag>> { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList!!) } }
 
     companion object {
         private const val SELECTED = "SELECTED"
@@ -66,8 +69,8 @@ class TagHistoryFragment : Fragment() {
         val layout = inflater.inflate(R.layout.fragment_tag_history, container, false) as ViewGroup
         configureTagDrawer(layout)
         GlobalScope.launch {
-            filteringTagList = FilteringEventCollection({ inflater.context.db.tags }, { it.name })
-            inflater.context.db.tags.registerOnUpdateListener { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList!!) } }
+            filteringTagList = FilteringEventCollection({ inflater.context.db.tags }, { it.name }, { TagEventCollection.getInstance(ctx) })
+            inflater.context.db.tags.registerOnUpdateListener(onUpdateTags)
             withContext(Dispatchers.Main) { tagAdapter.update(inflater.context.db.tags) }
         }
         return layout
@@ -131,6 +134,7 @@ class TagHistoryFragment : Fragment() {
 
     override fun onDestroy() {
         ctx.db.tags.removeOnRemoveElementsListener(selectedTagRemovedListener)
+        ctx.db.tags.removeOnUpdateListener(onUpdateTags)
         SelectServerEvent.removeListener(selectedServerChangedEvent)
         super.onDestroy()
     }

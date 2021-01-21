@@ -11,7 +11,11 @@ import kotlinx.coroutines.withContext
 import java.util.*
 import kotlin.collections.ArrayList
 
-class FilteringEventCollection<E : IObservableObject<E, A>, A>(private val getUnfilteredCollection: () -> IObservableCollection<E, A>, private val filterBy: (e: E) -> String) : Collection<E> {
+class FilteringEventCollection<E : IObservableObject<E, A>, A>(
+    private val getUnfilteredCollection: () -> IObservableCollection<E, A>,
+    private val filterBy: (e: E) -> String,
+    private val createCollection: () -> MutableCollection<E> = { TreeSet() }
+) : Collection<E> {
     private val eventCollections = ArrayList<Pair<IObservableCollection<E, A>, String>>()
 
     private fun getLatestEventCollection(): IObservableCollection<E, A> {
@@ -31,12 +35,12 @@ class FilteringEventCollection<E : IObservableObject<E, A>, A>(private val getUn
                 } else {
                     for (i in eventCollections.indices.reversed()) {
                         if (name.startsWith(eventCollections[i].second)) {
-                            result = ObservingSubEventCollection(TreeSet(), eventCollections[i].first) { filterBy(it).contains(name, true) }
+                            result = ObservingSubEventCollection(createCollection(), eventCollections[i].first) { filterBy(it).contains(name, true) }
                             break
                         }
                     }
                 }
-                if (result == null) result = ObservingSubEventCollection(TreeSet(), getUnfilteredCollection()) { filterBy(it).contains(name, true) }
+                if (result == null) result = ObservingSubEventCollection(createCollection(), getUnfilteredCollection()) { filterBy(it).contains(name, true) }
                 eventCollections += Pair(result, name)
             }
         }

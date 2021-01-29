@@ -2,14 +2,11 @@ package de.yochyo.yummybooru.utils.general
 
 import android.content.Context
 import de.yochyo.yummybooru.database.db
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 object SettingsUtils {
-    val a: String by lazy {
-        Thread.sleep(1000)
-        ""
-    }
-
     fun updateTagComparator(context: Context) {
-        context.db.clearTagCache()
+        GlobalScope.launch { context.db.reloadDB() }
     }
 }

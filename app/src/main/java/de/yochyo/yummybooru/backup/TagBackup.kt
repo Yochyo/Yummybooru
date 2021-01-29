@@ -5,7 +5,6 @@ import de.yochyo.booruapi.api.TagType
 import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.Tag
-import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.general.sendFirebase
 import java.util.*
 
@@ -23,18 +22,21 @@ object TagBackup : BackupableEntity<Tag> {
     }
 
     override suspend fun restoreEntity(json: JSONObject, context: Context) {
-        try {
+        TODO()
+    }
+
+    fun restoreEntity2(json: JSONObject, context: Context): Tag? {
+        return try {
             var following: Following? = Following(json.getInt("lastID"), json.getInt("lastCount"))
             if (following?.lastID == -1 && following.lastCount == -1) following = null
-            context.db.tagDao.insert(
-                Tag(
-                    json.getString("name"), TagType.valueOf(json.getInt("type")), json.getBoolean("isFavorite"),
-                    0, following, Date(json.getLong("creation")), json.getInt("serverID")
-                )
+            Tag(
+                json.getString("name"), TagType.valueOf(json.getInt("type")), json.getBoolean("isFavorite"),
+                0, following, Date(json.getLong("creation")), json.getInt("serverID")
             )
         } catch (e: Exception) {
             e.printStackTrace()
             e.sendFirebase()
+            null
         }
     }
 

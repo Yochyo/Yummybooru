@@ -5,7 +5,6 @@ import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.booruapi.api.TagType
-import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventcollection.observablecollection.ObservingEventCollection
 import de.yochyo.yummybooru.BuildConfig
 import de.yochyo.yummybooru.R
@@ -31,33 +30,18 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
     val tagDao = TagDao(this)
     val serverDao = ServerDao(context, this)
 
-    private val serverLock = Any()
-    private var clearServerCache = true
-    val servers = object : ObservingEventCollection<Server, Int>(TreeSet()) {
-        override fun remove(element: Server): Boolean {
-            return if (currentServerID == element.id) false
-            else super.remove(element)
+    val servers by lazy {
+        object : ObservingEventCollection<Server, Int>(TreeSet(serverDao.selectAll())) {
+            override fun remove(element: Server): Boolean {
+                return if (currentServerID == element.id) false
+                else super.remove(element)
+            }
         }
     }
-        get() = synchronized(serverLock) {
-            if (clearServerCache) {
-                field.replaceCollection(TreeSet(serverDao.selectAll()))
-                clearServerCache = false
-            }
-            return field
-        }
 
-    private val tagLock = Any()
-    private var clearTagCache = true
-    val tags = ObservingEventCollection(TagEventCollection(getTagComparator()))
-        get() = synchronized(tagLock) {
-            if (clearTagCache) {
-                field.replaceCollection(TagEventCollection(getTagComparator())
-                    .apply { addAll(TreeSet(tagDao.selectWhere(currentServer))) })
-                clearTagCache = false
-            }
-            return field
-        }
+    val tags by lazy {
+        ObservingEventCollection(TagEventCollection(getTagComparator()).apply { addAll(TreeSet(tagDao.selectWhere(currentServer))) })
+    }
 
     companion object {
         private var instance: Database? = null
@@ -68,26 +52,28 @@ class Database(private val context: Context) : ManagedSQLiteOpenHelper(context, 
         }
     }
 
-    fun clearCache() {
-        clearServerCache()
-        clearTagCache()
+    suspend fun reloadTags() {
+        withContext(Dispatchers.IO) {
+            val t = TagEventCollection(getTagComparator()).apply { addAll(TreeSet(tagDao.selectWhere(currentServer))) }
+            this@Database.tags.replaceCollection(t)
+        }
     }
 
-    fun clearServerCache() = synchronized(clearTagCache) {
-        clearServerCache = true
-        servers.onUpdate.trigger(OnUpdateEvent(servers))
+    suspend fun reloadServers() {
+        withContext(Dispatchers.IO) {
+            this@Database.servers.replaceCollection(TreeSet(serverDao.selectAll()))
+        }
     }
 
-    fun clearTagCache() = synchronized(clearServerCache) {
-        clearTagCache = true
-        tags.onUpdate.trigger(OnUpdateEvent(tags))
+    suspend fun reloadDB() {
+        reloadServers()
+        reloadTags()
     }
 
-
-    fun loadServer(server: Server) {
+    suspend fun loadServer(server: Server) {
         val oldServer = currentServer
         currentServerID = server.id
-        clearTagCache = true
+        reloadTags()
         SelectServerEvent.trigger(SelectServerEvent(context, oldServer, server))
     }
 

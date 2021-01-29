@@ -106,7 +106,7 @@ private object DatabaseListeners {
     private lateinit var changeTagListener: Listener<OnChangeObjectEvent<Tag, Int>>
     fun registerListeners(context: Context) {
         val db = context.db
-        addTagListener = Listener { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> db.tagDao.insert(element) } } }
+        addTagListener = Listener { GlobalScope.launch(Dispatchers.IO) { db.tagDao.insert(it.elements) } }
         removeTagListener = Listener { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> db.tagDao.delete(element) } } }
         changeTagListener = Listener { GlobalScope.launch(Dispatchers.IO) { db.tagDao.update(it.new) } }
 

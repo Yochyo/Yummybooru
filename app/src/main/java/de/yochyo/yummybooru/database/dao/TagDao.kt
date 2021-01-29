@@ -43,18 +43,24 @@ class TagDao(database: ManagedSQLiteOpenHelper) : Dao(database) {
         }
     }
 
-    fun insert(tag: Tag) {
+    fun insert(tag: Tag) = insert(listOf(tag))
+
+    fun insert(tags: Collection<Tag>) {
         database.use {
-            insert(
-                TABLE_NAME,
-                NAME to tag.name,
-                TYPE to tag.type.value,
-                SERVER_ID to tag.serverID,
-                IS_FAVORITE to ConvertBoolean.toInteger(tag.isFavorite),
-                CREATION to ConvertDate.toTimestamp(tag.creation),
-                LAST_COUNT to tag.following?.lastCount,
-                LAST_ID to tag.following?.lastID
-            )
+            transaction {
+                for (tag in tags) {
+                    insert(
+                        TABLE_NAME,
+                        NAME to tag.name,
+                        TYPE to tag.type.value,
+                        SERVER_ID to tag.serverID,
+                        IS_FAVORITE to ConvertBoolean.toInteger(tag.isFavorite),
+                        CREATION to ConvertDate.toTimestamp(tag.creation),
+                        LAST_COUNT to tag.following?.lastCount,
+                        LAST_ID to tag.following?.lastID
+                    )
+                }
+            }
         }
     }
 

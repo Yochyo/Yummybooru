@@ -11,8 +11,6 @@ import de.yochyo.yummybooru.utils.general.sendFirebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 
@@ -53,8 +51,9 @@ object BackupUtils {
                     withContext(Dispatchers.Main) { send(0) }
 
                     servers.map { ServerBackup.restoreEntity(it as JSONObject, context);withContext(Dispatchers.Main) { send(0) } }
-                    tags.map { launch { TagBackup.restoreEntity(it as JSONObject, context);withContext(Dispatchers.Main) { send(0) } } }.joinAll()
-                    context.db.clearCache()
+                    val _tags = tags.mapNotNull { withContext(Dispatchers.Main) { send(0) };TagBackup.restoreEntity2(it as JSONObject, context) }
+                    context.db.tagDao.insert(_tags)
+                    context.db.reloadDB()
                 }
             }
             return Pair(flow, size)

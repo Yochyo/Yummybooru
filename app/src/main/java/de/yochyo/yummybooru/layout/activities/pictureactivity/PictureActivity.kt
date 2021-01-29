@@ -45,6 +45,7 @@ class PictureActivity : AppCompatActivity() {
             })
         }
     }
+    private var isInit = true
 
     lateinit var managerPointer: Pointer<ManagerWrapper>
     val m: ManagerWrapper get() = managerPointer.value
@@ -92,10 +93,12 @@ class PictureActivity : AppCompatActivity() {
                     if (newPosition + 2 + db.preloadedImages >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
 
                     getMediaView(newPosition)?.resume()
-                    view_pager2.isUserInputEnabled = getPhotoView(newPosition)?.scale != 1f
+                    val scale = getPhotoView(newPosition)?.scale ?: 1f
+                    view_pager2.isUserInputEnabled = scale != 1f
                 }
 
-                setCurrentItem(m.position, false)
+                setCurrentItem(m.position, !isInit)
+                isInit = false
             }
         }
     }

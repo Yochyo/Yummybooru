@@ -15,6 +15,7 @@ class FollowingTagViewHolder(val activity: FollowingActivity, layout: FrameLayou
             val count = activity.db.currentServer.getTag(activity, tag.name)
             if (id != null && count != null) activity.onClickedData = FollowingData(tag.name, id, count.count)
         }
-        PreviewActivity.startActivity(activity, "id:>${tag.following?.lastID ?: Int.MAX_VALUE} ${tag.name}")
+        val string = tag.name.split(" OR ").joinToString(" OR ") { "id:>${tag.following?.lastID ?: Int.MAX_VALUE} $it" }
+        PreviewActivity.startActivity(activity, string)
     }
 }

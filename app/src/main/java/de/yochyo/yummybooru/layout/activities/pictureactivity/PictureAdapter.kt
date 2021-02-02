@@ -11,9 +11,12 @@ class PictureAdapter(val activity: PictureActivity) : RecyclerView.Adapter<Pictu
     private var size = m.posts.size
 
     fun updatePosts() {
-        if (size != m.posts.size) {
+        if (size < m.posts.size) {
+            val pos = size
+            val inserted = m.posts.size - size
             size = m.posts.size
-            notifyDataSetChanged()
+
+            notifyItemRangeInserted(pos, inserted)
         }
     }
 

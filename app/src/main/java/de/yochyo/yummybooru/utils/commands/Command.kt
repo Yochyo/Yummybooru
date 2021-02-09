@@ -12,7 +12,7 @@ interface Command {
         suspend fun execute(view: View, command: Command): Boolean {
             val res = command.run()
             if (res) {
-                val snack = Snackbar.make(view, command.undoMessage, 1000)
+                val snack = Snackbar.make(view, command.undoMessage, 2000)
                 snack.setAction("Undo") { GlobalScope.launch { command.undo() } }
                 withContext(Dispatchers.Main) { snack.show() }
             }

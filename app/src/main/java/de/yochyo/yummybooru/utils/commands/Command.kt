@@ -1,5 +1,6 @@
 package de.yochyo.yummybooru.utils.commands
 
+import android.content.Context
 import android.view.View
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -10,17 +11,17 @@ import kotlinx.coroutines.withContext
 interface Command {
     companion object {
         suspend fun execute(view: View, command: Command): Boolean {
-            val res = command.run()
+            val res = command.run(view.context)
             if (res) {
-                val snack = Snackbar.make(view, command.undoMessage, 2000)
-                snack.setAction("Undo") { GlobalScope.launch { command.undo() } }
+                val snack = Snackbar.make(view, command.getUndoMessage(view.context), 2000)
+                snack.setAction("Undo") { GlobalScope.launch { command.undo(view.context) } }
                 withContext(Dispatchers.Main) { snack.show() }
             }
             return res
         }
     }
 
-    val undoMessage: String
-    suspend fun run(): Boolean
-    suspend fun undo(): Boolean
+    fun getUndoMessage(context: Context): String
+    suspend fun run(context: Context): Boolean
+    suspend fun undo(context: Context): Boolean
 }

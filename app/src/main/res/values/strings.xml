@@ -113,4 +113,8 @@
     <string name="downloading">Downloading</string>
     <string name="downloading_part_n_of_m">Downloading %d/%d</string>
     <string name="update_to_version">Update now to version %s</string>
+
+    <!-- UndoCommandMessages -->
+    <string name="undo_add_tag_with_name">Delete tag [%s]</string>
+    <string name="undo_updating_tag_with_name">Undo updating tag [%s]</string>
 </resources>

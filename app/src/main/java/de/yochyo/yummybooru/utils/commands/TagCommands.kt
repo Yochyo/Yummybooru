@@ -9,6 +9,7 @@ import de.yochyo.yummybooru.utils.general.TagDispatcher
 import kotlinx.coroutines.withContext
 
 class CommandAddTag(private val tag: Tag) : Command {
+    override val showSnackbarDefault = false
     override fun getUndoMessage(context: Context): String {
         return context.getString(R.string.undo_add_tag_with_name, tag.name)
     }
@@ -23,6 +24,7 @@ class CommandAddTag(private val tag: Tag) : Command {
 }
 
 class CommandDeleteTag(private val tag: Tag) : Command {
+    override val showSnackbarDefault = true
     override fun getUndoMessage(context: Context): String {
         return context.getString(R.string.add_tag_with_name, tag.name)
     }
@@ -37,6 +39,7 @@ class CommandDeleteTag(private val tag: Tag) : Command {
 }
 
 class CommandFavoriteTag(private val tag: Tag, private val value: Boolean) : Command {
+    override val showSnackbarDefault = true
     override fun getUndoMessage(context: Context): String {
         return context.getString(R.string.undo_updating_tag_with_name, tag.name)
     }
@@ -62,6 +65,7 @@ class CommandFavoriteTag(private val tag: Tag, private val value: Boolean) : Com
 class CommandUpdateFollowingTagData(private val tag: Tag, private val following: Following?) : Command {
     private val _following = tag.following
 
+    override val showSnackbarDefault = true
     override fun getUndoMessage(context: Context): String {
         return context.getString(R.string.undo_updating_tag_with_name, tag.name)
     }

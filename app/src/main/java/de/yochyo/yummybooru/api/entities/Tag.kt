@@ -9,7 +9,7 @@ import java.util.*
 
 open class Tag(
     val name: String,
-    type: TagType,
+    val type: TagType,
     isFavorite: Boolean = false,
     val count: Int = 0,
     following: Following? = null,
@@ -17,11 +17,6 @@ open class Tag(
     var serverID: Int = -1
 ) :
     Comparable<Tag>, IObservableObject<Tag, Int> {
-    var type = type
-        set(value) {
-            field = value
-            trigger(CHANGED_TYPE)
-        }
     var isFavorite = isFavorite
         set(value) {
             field = value
@@ -36,7 +31,6 @@ open class Tag(
         }
 
     companion object {
-        const val CHANGED_TYPE = 0
         const val CHANGED_FAVORITE = 1
         const val CHANGED_FOLLOWING = 2
         const val FOLLOWING = 3

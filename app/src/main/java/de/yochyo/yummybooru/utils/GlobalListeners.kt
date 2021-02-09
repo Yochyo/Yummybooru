@@ -57,7 +57,6 @@ private object ToastListeners {
             GlobalScope.launch(Dispatchers.Main) {
                 when (it.arg) {
                     Tag.CHANGED_FAVORITE -> Toast.makeText(context, "${if (it.new.isFavorite) "Favorite" else "Unfavorite"} tag [${it.new.name}]", Toast.LENGTH_SHORT).show()
-                    Tag.CHANGED_TYPE -> Toast.makeText(context, "Changed tag [${it.new.name}]", Toast.LENGTH_SHORT).show()
                     Tag.CHANGED_FOLLOWING -> Toast.makeText(context, "${if (it.new.following == null) "Unfollowing" else "Updated"} [${it.new.name}]", Toast.LENGTH_SHORT).show()
                     Tag.FOLLOWING -> Toast.makeText(context, "Following [${it.new.name}]", Toast.LENGTH_SHORT).show()
                 }

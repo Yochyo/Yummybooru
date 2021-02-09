@@ -1,7 +1,6 @@
-package de.yochyo.yummybooru.database.utils
+package de.yochyo.yummybooru.database.upgrades
 
 import android.database.sqlite.SQLiteDatabase
-import de.yochyo.yummybooru.database.updates.Upgrade2
 
 abstract class Upgrade(val oldVersion: Int) {
     companion object {

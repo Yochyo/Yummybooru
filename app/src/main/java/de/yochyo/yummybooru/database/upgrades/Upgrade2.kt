@@ -1,7 +1,6 @@
-package de.yochyo.yummybooru.database.updates
+package de.yochyo.yummybooru.database.upgrades
 
 import android.database.sqlite.SQLiteDatabase
-import de.yochyo.yummybooru.database.utils.Upgrade
 
 class Upgrade2 : Upgrade(2) {
     override fun upgrade(sql: SQLiteDatabase) {

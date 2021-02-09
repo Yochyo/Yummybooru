@@ -13,7 +13,7 @@ import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.dao.ServerDao
 import de.yochyo.yummybooru.database.dao.TagDao
 import de.yochyo.yummybooru.database.eventcollections.TagEventCollection
-import de.yochyo.yummybooru.database.utils.Upgrade
+import de.yochyo.yummybooru.database.upgrades.Upgrade
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.utils.GlobalListeners
 import de.yochyo.yummybooru.utils.enums.TagSortType

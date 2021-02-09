@@ -5,16 +5,18 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.utils.general.TagDispatcher
+import kotlinx.coroutines.withContext
 
 class CommandAddTag(private val context: Context, private val tag: Tag) : Command {
     override val undoMessage: String = context.getString(R.string.undo_add_tag_with_name, tag.name)
 
     override suspend fun run(): Boolean {
-        return context.db.tags.add(tag)
+        return withContext(TagDispatcher) { context.db.tags.add(tag) }
     }
 
     override suspend fun undo(): Boolean {
-        return context.db.tags.remove(tag)
+        return withContext(TagDispatcher) { context.db.tags.remove(tag) }
     }
 }
 
@@ -22,11 +24,11 @@ class CommandDeleteTag(private val context: Context, private val tag: Tag) : Com
     override val undoMessage: String = context.getString(R.string.add_tag_with_name, tag.name)
 
     override suspend fun run(): Boolean {
-        return context.db.tags.remove(tag)
+        return withContext(TagDispatcher) { context.db.tags.remove(tag) }
     }
 
     override suspend fun undo(): Boolean {
-        return context.db.tags.add(tag)
+        return withContext(TagDispatcher) { context.db.tags.add(tag) }
     }
 }
 
@@ -34,16 +36,20 @@ class CommandFavoriteTag(private val context: Context, private val tag: Tag, pri
     override val undoMessage: String = context.getString(R.string.undo_updating_tag_with_name, tag.name)
 
     override suspend fun run(): Boolean {
-        if (tag.isFavorite == value) return false
-        tag.isFavorite = value
-        return true
+        return withContext(TagDispatcher) {
+            if (tag.isFavorite == value) return@withContext false
+            tag.isFavorite = value
+            return@withContext true
+        }
     }
 
     override suspend fun undo(): Boolean {
-        return if (tag.isFavorite == value) {
-            tag.isFavorite = !value
-            true
-        } else false
+        return withContext(TagDispatcher) {
+            if (tag.isFavorite == value) {
+                tag.isFavorite = !value
+                true
+            } else false
+        }
     }
 }
 
@@ -52,12 +58,16 @@ class CommandUpdateFollowedData(private val context: Context, private val tag: T
     override val undoMessage: String = context.getString(R.string.undo_updating_tag_with_name, tag.name)
 
     override suspend fun run(): Boolean {
-        tag.following = following
-        return true
+        return withContext(TagDispatcher) {
+            tag.following = following
+            true
+        }
     }
 
     override suspend fun undo(): Boolean {
-        tag.following = _following
-        return true
+        return withContext(TagDispatcher) {
+            tag.following = _following
+            true
+        }
     }
 }

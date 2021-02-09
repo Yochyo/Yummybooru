@@ -53,7 +53,7 @@ class CommandFavoriteTag(private val context: Context, private val tag: Tag, pri
     }
 }
 
-class CommandUpdateFollowedData(private val context: Context, private val tag: Tag, private val following: Following) : Command {
+class CommandUpdateFollowingTagData(private val context: Context, private val tag: Tag, private val following: Following?) : Command {
     private val _following = tag.following
     override val undoMessage: String = context.getString(R.string.undo_updating_tag_with_name, tag.name)
 

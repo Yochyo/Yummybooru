@@ -107,11 +107,10 @@ open class Server(val context: Context, name: String, url: String, apiName: Stri
         }
     }
 
-    protected fun trigger(change: Int) = onChange.trigger(OnChangeObjectEvent(this, change))
+    private fun trigger(change: Int) = onChange.trigger(OnChangeObjectEvent(this, change))
 
-    //suspend fun login(username: String, password: String) = api.login(username, password)
     suspend fun getMatchingTags(context: Context, beginSequence: String, limit: Int = 10) = api.getTagAutoCompletion(beginSequence, limit)?.map { it.toBooruTag(context) }
-    suspend fun getTag(context: Context, name: String): Tag? = api.getTag(name)?.toBooruTag(context)
+    suspend fun getTag(context: Context, name: String): Tag = api.getTag(name).toBooruTag(context)
     suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = 30) = api.getPosts(page, tags.joinToString(" "), limit)
     suspend fun newestID() = api.getNewestPost()?.id
 

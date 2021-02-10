@@ -11,10 +11,13 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
 import de.yochyo.yummybooru.layout.views.photoview.PhotoViewWithoutSecondDoubleTap
+import de.yochyo.yummybooru.utils.commands.Command
+import de.yochyo.yummybooru.utils.commands.CommandAddTag
 import de.yochyo.yummybooru.utils.general.downloadAndSaveImage
 import de.yochyo.yummybooru.utils.general.loadIntoImageView
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import de.yochyo.yummybooru.utils.network.downloader
+import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.picture_activity_drawer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -41,16 +44,17 @@ class PictureViewHolder(
             val time = System.currentTimeMillis()
             if (time - lastSwipeUp > 400L) { //download
                 downloadAndSaveImage(activity, post)
-                val snack = Snackbar.make(viewPager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT)
-                snack.show()
-                GlobalScope.launch(Dispatchers.Main) {
-                    delay(150)
-                    snack.dismiss()
+                Snackbar.make(viewPager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT).apply {
+                    GlobalScope.launch(Dispatchers.Main) {
+                        show()
+                        delay(150)
+                        dismiss()
+                    }
                 }
             } else { //double swipe
                 GlobalScope.launch {
                     for (tag in post.getTags().filter { it.tagType == TagType.ARTIST })
-                        activity.db.tags += tag.toBooruTag(activity)
+                        Command.execute(activity.picture_activity_container, CommandAddTag(tag.toBooruTag(activity)))
                 }
             }
             lastSwipeUp = time

@@ -16,8 +16,11 @@ import de.yochyo.yummybooru.layout.selectableRecyclerView.ActionModeClickEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.SelectableRecyclerViewAdapter
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
+import de.yochyo.yummybooru.utils.commands.Command
+import de.yochyo.yummybooru.utils.commands.CommandAddTag
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import de.yochyo.yummybooru.utils.network.downloader
+import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -53,10 +56,8 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
             R.id.download_and_add_authors_selected -> {
                 val posts = selected.getSelected(m.posts)
                 GlobalScope.launch {
-                    for (post in posts) {
-                        for (tag in post.getTags()) {
-                            if (tag.tagType == TagType.ARTIST) activity.db.tags += tag.toBooruTag(activity)
-                        }
+                    posts.map { post -> post.getTags() }.flatMap { tags -> tags.filter { tag -> tag.tagType == TagType.ARTIST } }.forEach { t ->
+                        Command.execute(activity.preview_activity_container, CommandAddTag(t.toBooruTag(activity)))
                     }
                     DownloadService.startService(activity, m.toString(), posts, activity.db.currentServer)
                 }

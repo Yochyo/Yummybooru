@@ -7,22 +7,24 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.menus.Menus
+import de.yochyo.yummybooru.utils.general.TagDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ActionBarListener(val context: Context, tag: String, menu: Menu) {
     private var registered: Boolean = false
 
     private val listener = Listener<OnUpdateEvent<Tag>> {
-        val tag = it.collection.find { it.name == tag }
-        GlobalScope.launch(Dispatchers.Main) {
-            Menus.initPreviewMenu(context, menu, tag)
+        GlobalScope.launch(TagDispatcher) {
+            val tag = it.collection.find { it.name == tag }
+            withContext(Dispatchers.Main) { Menus.initPreviewMenu(context, menu, tag) }
         }
     }
 
     fun registerListeners() {
-        if (!registered){
+        if (!registered) {
             registered = true
             context.db.tags.registerOnUpdateListener(listener)
         }

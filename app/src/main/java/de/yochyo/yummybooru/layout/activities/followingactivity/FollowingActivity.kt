@@ -3,7 +3,6 @@ package de.yochyo.yummybooru.layout.activities.followingactivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,7 +17,10 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.eventcollections.TagEventCollection
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
+import de.yochyo.yummybooru.utils.commands.Command
+import de.yochyo.yummybooru.utils.commands.CommandUpdateFollowingTagData
 import de.yochyo.yummybooru.utils.general.FilteringEventCollection
+import de.yochyo.yummybooru.utils.general.TagDispatcher
 import de.yochyo.yummybooru.utils.general.createTagAndOrChangeFollowingState
 import kotlinx.android.synthetic.main.activity_following.*
 import kotlinx.android.synthetic.main.content_following.*
@@ -104,22 +106,11 @@ class FollowingActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         adapter.util.paused = false
-        val clickedData = onClickedData
-        if (clickedData != null) {
-            val tag = filteringFollowingList.find { it.name == clickedData.name }
-            if (tag != null) {
-                val builder = AlertDialog.Builder(this)
-                builder.setTitle(R.string.save).setMessage(getString(R.string.update_followed_tag_with_name, tag.name))
-                builder.setNegativeButton(R.string.negative_button_name) { _, _ -> onClickedData = null }
-                builder.setOnCancelListener { onClickedData = null }
-                builder.setPositiveButton(R.string.positive_button_name) { _, _ ->
-                    GlobalScope.launch(Dispatchers.Main) {
-                        tag.following = Following(clickedData.idWhenClicked, clickedData.countWhenClicked)
-                        onClickedData = null
-                    }
-                }
-                builder.show()
-            }
+        val clickedData = onClickedData ?: return
+        GlobalScope.launch {
+            val tag = filteringFollowingList.find { it.name == clickedData.name } ?: return@launch
+            Command.execute(following_layout, CommandUpdateFollowingTagData(tag, Following(clickedData.idWhenClicked, clickedData.countWhenClicked)))
+            onClickedData = null
         }
     }
 
@@ -134,9 +125,9 @@ class FollowingActivity : AppCompatActivity() {
             R.id.add_following -> {
                 AddTagDialog {
                     GlobalScope.launch {
-                        val following = createTagAndOrChangeFollowingState(this@FollowingActivity, it.text.toString())
+                        val following = createTagAndOrChangeFollowingState(following_layout, it.text.toString())
                         withContext(Dispatchers.Main) {
-                            layoutManager.scrollToPositionWithOffset(filteringFollowingList.indexOfFirst { it.name == following?.name }, 0)
+                            layoutManager.scrollToPositionWithOffset(filteringFollowingList.indexOfFirst { it.name == following.name }, 0)
                         }
                     }
                 }.withTitle(getString(R.string.follow_tag)).build(this)
@@ -152,16 +143,10 @@ class FollowingActivity : AppCompatActivity() {
 
     suspend fun updateFollowing(following: Collection<Tag>) {
         withContext(Dispatchers.IO) {
-            val id = db.currentServer.newestID()
-            if (id != null) {
-                following.map {
-                    launch {
-                        val tag = db.currentServer.getTag(this@FollowingActivity, it.name)
-                        if (tag != null) {
-                            val tagInDb = db.getTag(tag.name)
-                            tagInDb?.following = Following(id, tag.count)
-                        }
-                    }
+            val id = db.currentServer.newestID() ?: return@withContext
+            withContext(TagDispatcher) {
+                following.forEach {
+                    Command.execute(following_layout, CommandUpdateFollowingTagData(it, Following(id, it.count)))
                 }
             }
         }

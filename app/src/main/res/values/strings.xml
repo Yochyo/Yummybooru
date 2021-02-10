@@ -117,4 +117,8 @@
     <!-- UndoCommandMessages -->
     <string name="undo_add_tag_with_name">Delete tag [%s]</string>
     <string name="undo_updating_tag_with_name">Undo updating tag [%s]</string>
+    <string name="undo_following_tag_with_name">Undo following tag [%s]</string>
+    <string name="undo_unfollowing_tag_with_name">Undo unfollowing tag [%s]</string>
+    <string name="unfavorite_tag_with_name">Unfavorite tag [%s]</string>
+    <string name="favorite_tag_with_name">Favorite tag [%s]</string>
 </resources>

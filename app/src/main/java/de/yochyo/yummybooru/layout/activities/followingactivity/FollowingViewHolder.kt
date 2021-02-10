@@ -12,8 +12,10 @@ class FollowingTagViewHolder(val activity: FollowingActivity, layout: FrameLayou
         val tag = activity.filteringFollowingList.elementAt(adapterPosition)
         GlobalScope.launch {
             val id = activity.db.currentServer.newestID()
-            val count = activity.db.currentServer.getTag(activity, tag.name)
-            if (id != null && count != null) activity.onClickedData = FollowingData(tag.name, id, count.count)
+            if (id != null) {
+                val count = activity.db.currentServer.getTag(activity, tag.name).count
+                activity.onClickedData = FollowingData(tag.name, id, count)
+            }
         }
         val string = tag.name.split(" OR ").joinToString(" OR ") { "id:>${tag.following?.lastID ?: Int.MAX_VALUE} $it" }
         PreviewActivity.startActivity(activity, string)

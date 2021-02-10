@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Paint
 import android.os.Build
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -22,6 +23,10 @@ import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.saveDownload
+import de.yochyo.yummybooru.utils.commands.Command
+import de.yochyo.yummybooru.utils.commands.CommandAddTag
+import de.yochyo.yummybooru.utils.commands.CommandFavoriteTag
+import de.yochyo.yummybooru.utils.commands.CommandUpdateFollowingTagData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -81,32 +86,41 @@ fun TextView.underline(underline: Boolean) {
 
 fun Tag.toBooruTag(context: Context) = de.yochyo.yummybooru.api.entities.Tag(name, tagType, false, count, null, serverID = context.db.currentServer.id)
 
-suspend fun de.yochyo.yummybooru.api.entities.Tag.addFollowing(context: Context): Boolean {
-    val s = context.db.currentServer
-    val t = s.getTag(context, name)
-    val id = s.newestID()
-    return if (t != null && id != null) {
-        this.following = Following(id, t.count)
-        true
-    } else false
+suspend fun de.yochyo.yummybooru.api.entities.Tag.addFollowing(viewForSnackbar: View): Boolean {
+    val following = getFollowingData(viewForSnackbar.context, this) ?: return false
+    Command.execute(viewForSnackbar, CommandUpdateFollowingTagData(this, following))
+    return true
 }
 
-suspend fun createTagAndOrChangeFollowingState(context: Context, name: String): de.yochyo.yummybooru.api.entities.Tag? {
-    val db = context.db
-    val tag = db.getTag(name)
-    if (tag != null) {
-        if (tag.following == null) tag.addFollowing(context)
-        else tag.following = null
-        return tag
-    } else {
-        val t = context.db.currentServer.getTag(context, name)
-        if (t != null) {
-            t.addFollowing(context)
-            db.tags += t
-            return t
+suspend fun getFollowingData(context: Context, tag: de.yochyo.yummybooru.api.entities.Tag): Following? {
+    val s = context.db.currentServer
+    val t = s.getTag(context, tag.name)
+    val id = s.newestID()
+    return if (id != null) Following(id, t.count)
+    else null
+}
+
+suspend fun createTagAndOrChangeFavoriteSate(viewForSnackbar: View, name: String) {
+    withContext(TagDispatcher) {
+        val context = viewForSnackbar.context
+        val tag = context.db.getTag(name)
+
+        if (tag == null) Command.execute(viewForSnackbar, CommandAddTag(context.db.currentServer.getTag(context, name).apply { isFavorite = true }))
+        else Command.execute(viewForSnackbar, CommandFavoriteTag(tag, !tag.isFavorite))
+    }
+}
+
+suspend fun createTagAndOrChangeFollowingState(viewForSnackbar: View, name: String): de.yochyo.yummybooru.api.entities.Tag {
+    return withContext(TagDispatcher) {
+        val context = viewForSnackbar.context
+        viewForSnackbar.context.db.getTag(name)?.apply {
+            if (following == null) addFollowing(viewForSnackbar)
+            else Command.execute(viewForSnackbar, CommandUpdateFollowingTagData(this, null))
+        } ?: context.db.currentServer.getTag(context, name).apply {
+            following = getFollowingData(context, this)
+            Command.execute(viewForSnackbar, CommandAddTag(this))
         }
     }
-    return null
 }
 
 val Fragment.ctx: Context get() = this.requireContext()
@@ -138,8 +152,8 @@ fun InputStream.toBitmap(): Bitmap? {
         e.sendFirebase()
     } finally {
         close()
-        return result
     }
+    return result
 }
 
 fun ByteArray.toBitmap() = BitmapFactory.decodeByteArray(this, 0, this.size)

@@ -41,7 +41,8 @@ class CommandDeleteTag(private val tag: Tag) : Command {
 class CommandFavoriteTag(private val tag: Tag, private val value: Boolean) : Command {
     override val showSnackbarDefault = true
     override fun getUndoMessage(context: Context): String {
-        return context.getString(R.string.undo_updating_tag_with_name, tag.name)
+        return if (value) context.getString(R.string.unfavorite_tag_with_name, tag.name)
+        else context.getString(R.string.favorite_tag_with_name, tag.name)
     }
 
     override suspend fun run(context: Context): Boolean {

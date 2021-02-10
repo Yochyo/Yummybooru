@@ -58,13 +58,18 @@ class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Inf
         }
 
     override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
-        val tag = tags.elementAt(position).toBooruTag(activity)
-        val tagInDatabase = db.getTag(tag.name)
-        val textView = holder.toolbar.findViewById<TextView>(R.id.info_textview)
-        textView.text = tag.name
-        textView.setColor(tag.color)
-        textView.underline(tagInDatabase != null && tagInDatabase.isFavorite)
-        Menus.initPictureInfoTagMenu(activity, holder.toolbar.menu, tagInDatabase ?: tag)
+        GlobalScope.launch(TagDispatcher) {
+            val tag = tags.elementAt(position).toBooruTag(activity)
+            val tagInDatabase = db.getTag(tag.name)
+            withContext(Dispatchers.Main) {
+                val textView = holder.toolbar.findViewById<TextView>(R.id.info_textview)
+                textView.text = tag.name
+                textView.setColor(tag.color)
+                textView.underline(tagInDatabase != null && tagInDatabase.isFavorite)
+                Menus.initPictureInfoTagMenu(activity, holder.toolbar.menu, tagInDatabase ?: tag)
+            }
+        }
+
     }
 
     override fun getItemCount(): Int = tags.size

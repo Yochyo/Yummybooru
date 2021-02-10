@@ -30,35 +30,41 @@ class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Inf
         notifyDataSetChanged()
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InfoButtonHolder = InfoButtonHolder(activity.layoutInflater.inflate(R.layout.info_item_button, parent, false) as Toolbar).apply {
-        toolbar.inflateMenu(R.menu.picture_info_menu)
-        toolbar.setOnClickListener {
-            PreviewActivity.startActivity(activity, toolbar.findViewById<TextView>(R.id.info_textview).text.toString())
-            activity.drawer_picture2.closeDrawer(GravityCompat.END)
-        }
-        toolbar.setOnMenuItemClickListener {
-            val tag = tags.elementAt(adapterPosition)
-            when (it.itemId) {
-                R.id.picture_info_item_add_history -> GlobalScope.launch { db.tags += tag.toBooruTag(activity) }
-                R.id.picture_info_item_add_favorite -> {
-                    GlobalScope.launch {
-                        val t = db.getTag(tag.name)
-                        if (t == null) db.tags += tag.toBooruTag(activity).apply { isFavorite = true }
-                        else t.isFavorite = !t.isFavorite
-                        withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
-                    }
-                }
-                R.id.picture_info_item_following -> {
-                    GlobalScope.launch {
-                        createTagAndOrChangeFollowingState(activity, tag.name)
-                    }
-                }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InfoButtonHolder =
+        InfoButtonHolder(activity.layoutInflater.inflate(R.layout.info_item_button, parent, false) as Toolbar).apply {
+            toolbar.inflateMenu(R.menu.picture_info_menu)
+            toolbar.setOnClickListener {
+                PreviewActivity.startActivity(activity, toolbar.findViewById<TextView>(R.id.info_textview).text.toString())
+                activity.drawer_picture2.closeDrawer(GravityCompat.END)
             }
-            true
+            toolbar.setOnMenuItemClickListener {
+                val pos = adapterPosition
+                if (pos !in tags.indices) return@setOnMenuItemClickListener true
+
+                val tag = tags.elementAt(pos)
+                when (it.itemId) {
+                    R.id.picture_info_item_add_history -> GlobalScope.launch { db.tags += tag.toBooruTag(activity) }
+                    R.id.picture_info_item_add_favorite -> {
+                        GlobalScope.launch {
+                            val t = db.getTag(tag.name)
+                            if (t == null) db.tags += tag.toBooruTag(activity).apply { isFavorite = true }
+                            else t.isFavorite = !t.isFavorite
+                            withContext(Dispatchers.Main) { notifyItemChanged(pos) }
+                        }
+                    }
+                    R.id.picture_info_item_following -> {
+                        GlobalScope.launch {
+                            createTagAndOrChangeFollowingState(activity, tag.name)
+                        }
+                    }
+                }
+                true
+            }
         }
-    }
 
     override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
+        if (position !in tags.indices) return
+
         val tag = tags.elementAt(position).toBooruTag(activity)
         val tagInDatabase = db.getTag(tag.name)
         val textView = holder.toolbar.findViewById<TextView>(R.id.info_textview)

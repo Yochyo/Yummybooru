@@ -34,8 +34,11 @@ class TagHistoryFragmentAdapter(val context: Context, val selectedTags: MutableL
             val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
 
             fun onClick() {
+                val pos = adapterPosition
+                if (pos !in tags.indices) return
+
                 if (check.isChecked) selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
-                else selectedTags.remove(tags.elementAt(adapterPosition).name)
+                else selectedTags.remove(tags.elementAt(pos).name)
             }
 
             toolbar.setOnClickListener {
@@ -45,14 +48,17 @@ class TagHistoryFragmentAdapter(val context: Context, val selectedTags: MutableL
             check.setOnClickListener { onClick() }
 
             toolbar.setOnMenuItemClickListener {
-                val tag = tags.elementAt(adapterPosition)
+                val pos = adapterPosition
+                if (pos !in tags.indices) return@setOnMenuItemClickListener true
+
+                val tag = tags.elementAt(pos)
                 when (it.itemId) {
                     R.id.main_search_favorite_tag -> tag.isFavorite = !tag.isFavorite
                     R.id.main_search_follow_tag -> {
                         GlobalScope.launch {
                             if (tag.following == null) tag.addFollowing(context)
                             else tag.following = null
-                            withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
+                            withContext(Dispatchers.Main) { notifyItemChanged(pos) }
                         }
                     }
                     R.id.main_search_delete_tag -> {

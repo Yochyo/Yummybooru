@@ -111,10 +111,11 @@ open class PreviewActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         if (this::managerPointer.isInitialized) {
             outState.putString(TAGS, m.toString())
+            val pos = m.position
+            val id = m.currentPost?.id
             if (m.position > 0) {
-                outState.putInt(POSITION, m.position)
-                if (m.posts.isNotEmpty())
-                    outState.putInt(LAST_ID, m.posts[m.position].id)
+                outState.putInt(POSITION, pos)
+                if (id != null) outState.putInt(LAST_ID, id)
             }
         }
     }

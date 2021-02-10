@@ -93,6 +93,8 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
     }
 
     override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) {
+        if (position !in m.posts.indices) return
+
         super.onBindViewHolder(holder, position)
         holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(null)
         val pos = holder.adapterPosition

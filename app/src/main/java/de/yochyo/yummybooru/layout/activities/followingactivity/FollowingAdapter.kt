@@ -94,6 +94,9 @@ class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: Recycle
         val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
         toolbar.inflateMenu(R.menu.activity_subscription_item_menu)
         toolbar.setOnMenuItemClickListener {
+            val pos = holder.adapterPosition
+            if (pos !in followedTags.indices) return@setOnMenuItemClickListener true
+
             val sub = followedTags.elementAt(holder.adapterPosition)
             when (it.itemId) {
                 R.id.following_set_favorite -> sub.isFavorite = !sub.isFavorite

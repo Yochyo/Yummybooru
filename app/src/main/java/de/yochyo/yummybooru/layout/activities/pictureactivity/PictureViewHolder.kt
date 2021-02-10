@@ -37,7 +37,10 @@ class PictureViewHolder(
         fun onSwipeLeft() = activity.view_pager2.currentItem++
         fun onSwipeRight() = activity.view_pager2.currentItem--
         fun onSwipeUp() {
-            val post = activity.m.posts[adapterPosition]
+            val pos = adapterPosition
+            if (pos !in activity.m.posts.indices) return
+
+            val post = activity.m.posts[pos]
             val time = System.currentTimeMillis()
             if (time - lastSwipeUp > 400L) { //download
                 downloadAndSaveImage(activity, post)

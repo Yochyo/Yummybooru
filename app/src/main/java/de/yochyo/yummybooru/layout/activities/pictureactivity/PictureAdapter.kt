@@ -23,6 +23,8 @@ class PictureAdapter(val activity: PictureActivity) : RecyclerView.Adapter<Pictu
     override fun getItemCount() = m.posts.size
 
     override fun onBindViewHolder(holder: PictureViewHolder, position: Int) {
+        if (position !in m.posts.indices) return
+
         holder.layout.tag = position
         val post = m.posts.elementAt(position)
         when (IResource.typeFromMimeType(post.fileSampleURL.mimeType ?: "")) {

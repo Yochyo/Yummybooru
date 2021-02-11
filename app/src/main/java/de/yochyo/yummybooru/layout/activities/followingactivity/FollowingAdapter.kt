@@ -4,7 +4,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.eventmanager.Listener
@@ -16,8 +15,14 @@ import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.SelectableRecyclerViewAdapter
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
+import de.yochyo.yummybooru.utils.commands.Command
+import de.yochyo.yummybooru.utils.commands.CommandDeleteTag
+import de.yochyo.yummybooru.utils.commands.CommandFavoriteTag
+import de.yochyo.yummybooru.utils.commands.CommandUpdateFollowingTagData
+import de.yochyo.yummybooru.utils.general.TagDispatcher
 import de.yochyo.yummybooru.utils.general.setColor
 import de.yochyo.yummybooru.utils.general.underline
+import kotlinx.android.synthetic.main.activity_following.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -70,24 +75,6 @@ class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: Recycle
         return FollowingTagViewHolder(activity, activity.layoutInflater.inflate(R.layout.subscription_item_layout, parent, false) as FrameLayout)
     }
 
-    private fun deleteSubDialog(tag: Tag) {
-        val b = AlertDialog.Builder(activity)
-        b.setTitle(R.string.unfollow)
-        b.setMessage(activity.getString(R.string.unfollow_tag_with_name, tag.name))
-        b.setNegativeButton(R.string.negative_button_name) { _, _ -> }
-        b.setPositiveButton(R.string.positive_button_name) { _, _ -> GlobalScope.launch { tag.following = null } }
-        b.show()
-    }
-
-    private fun deleteTagDialog(tag: Tag) {
-        val b = AlertDialog.Builder(activity)
-        b.setTitle(R.string.delete)
-        b.setMessage(activity.getString(R.string.delete_tag_with_name, tag.name))
-        b.setNegativeButton(R.string.negative_button_name) { _, _ -> }
-        b.setPositiveButton(R.string.positive_button_name) { _, _ -> GlobalScope.launch { db.tags -= tag } }
-        b.show()
-    }
-
     override fun getItemCount(): Int = followedTags.size
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): FollowingTagViewHolder {
         val holder = super.onCreateViewHolder(parent, position)
@@ -97,11 +84,13 @@ class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: Recycle
             val pos = holder.adapterPosition
             if (pos !in followedTags.indices) return@setOnMenuItemClickListener true
 
-            val sub = followedTags.elementAt(holder.adapterPosition)
-            when (it.itemId) {
-                R.id.following_set_favorite -> sub.isFavorite = !sub.isFavorite
-                R.id.unfollow -> deleteSubDialog(sub)
-                R.id.delete_tag -> deleteTagDialog(sub)
+            GlobalScope.launch(TagDispatcher) {
+                val tag = followedTags.elementAt(holder.adapterPosition)
+                when (it.itemId) {
+                    R.id.following_set_favorite -> Command.execute(activity.following_layout, CommandFavoriteTag(tag, !tag.isFavorite))
+                    R.id.unfollow -> Command.execute(activity.following_layout, CommandUpdateFollowingTagData(tag, null))
+                    R.id.delete_tag -> Command.execute(activity.following_layout, CommandDeleteTag(tag))
+                }
             }
             true
         }

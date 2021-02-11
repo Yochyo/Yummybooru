@@ -20,7 +20,10 @@ import de.yochyo.yummybooru.database.eventcollections.TagEventCollection
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
+import de.yochyo.yummybooru.utils.commands.Command
+import de.yochyo.yummybooru.utils.commands.CommandAddTag
 import de.yochyo.yummybooru.utils.general.*
+import kotlinx.android.synthetic.main.fragment_tag_history.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -62,11 +65,9 @@ class TagHistoryFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val layout = inflater.inflate(R.layout.fragment_tag_history, container, false) as ViewGroup
         configureTagDrawer(layout)
-        GlobalScope.launch {
-            filteringTagList = FilteringEventCollection({ inflater.context.db.tags }, { it.name }, { TagEventCollection.getInstance(ctx) })
-            inflater.context.db.tags.registerOnUpdateListener(onUpdateTags)
-            withContext(Dispatchers.Main) { tagAdapter.update(inflater.context.db.tags) }
-        }
+        filteringTagList = FilteringEventCollection({ inflater.context.db.tags }, { it.name }, { TagEventCollection.getInstance(ctx) })
+        inflater.context.db.tags.registerOnUpdateListener(onUpdateTags)
+        tagAdapter.update(inflater.context.db.tags)
         return layout
     }
 
@@ -83,7 +84,7 @@ class TagHistoryFragment : Fragment() {
             override fun onQueryTextSubmit(query: String?) = true
         })
 
-        tagAdapter = TagHistoryFragmentAdapter(ctx, selectedTags).apply { tagRecyclerView.adapter = this }
+        tagAdapter = TagHistoryFragmentAdapter(this, selectedTags).apply { tagRecyclerView.adapter = this }
     }
 
     private fun configureDrawerToolbar(toolbar: Toolbar) {
@@ -103,12 +104,10 @@ class TagHistoryFragment : Fragment() {
                     AddTagDialog {
                         GlobalScope.launch {
                             val t = ctx.db.currentServer.getTag(ctx, it.text.toString())
-                            if (t != null) {
-                                ctx.db.tags += t
-                                withContext(Dispatchers.Main) {
-                                    tagLayoutManager.scrollToPositionWithOffset(filteringTagList?.indexOfFirst { it.name == t.name }
-                                        ?: 0, 0)
-                                }
+                            Command.execute(fragment_tag_history, CommandAddTag(t))
+                            withContext(Dispatchers.Main) {
+                                tagLayoutManager.scrollToPositionWithOffset(filteringTagList?.indexOfFirst { it.name == t.name }
+                                    ?: 0, 0)
                             }
                         }
                     }.build(ctx)

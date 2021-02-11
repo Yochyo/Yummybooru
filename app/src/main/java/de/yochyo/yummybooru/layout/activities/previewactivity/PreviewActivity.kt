@@ -20,7 +20,12 @@ import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsDialog
 import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
+import de.yochyo.yummybooru.utils.commands.Command
+import de.yochyo.yummybooru.utils.commands.CommandAddTag
+import de.yochyo.yummybooru.utils.commands.CommandDeleteTag
 import de.yochyo.yummybooru.utils.distributor.Pointer
+import de.yochyo.yummybooru.utils.general.TagDispatcher
+import de.yochyo.yummybooru.utils.general.createTagAndOrChangeFavoriteSate
 import de.yochyo.yummybooru.utils.general.createTagAndOrChangeFollowingState
 import de.yochyo.yummybooru.utils.general.restoreManager
 import kotlinx.android.synthetic.main.activity_preview.*
@@ -178,28 +183,13 @@ open class PreviewActivity : AppCompatActivity() {
             android.R.id.home -> finish()
             R.id.download_all -> DownloadPostsDialog(this, m)
             R.id.select_all -> previewAdapter.selectAll()
-            R.id.favorite -> {
+            R.id.favorite -> GlobalScope.launch(TagDispatcher) { createTagAndOrChangeFavoriteSate(preview_activity_container, m.toString()) }
+            R.id.add_tag -> GlobalScope.launch(TagDispatcher) {
                 val tag = db.getTag(m.toString())
-
-                if (tag == null) GlobalScope.launch {
-                    val t = db.currentServer.getTag(this@PreviewActivity, m.toString())
-                    if (t != null) db.tags += t.apply { isFavorite = true }
-                }
-                else tag.isFavorite = !tag.isFavorite
+                if (tag == null) Command.execute(preview_activity_container, CommandAddTag(db.currentServer.getTag(this@PreviewActivity, m.toString())))
+                else Command.execute(preview_activity_container, CommandDeleteTag(tag))
             }
-            R.id.add_tag -> {
-                val tag = db.getTag(m.toString())
-                if (tag == null) GlobalScope.launch {
-                    val t = db.currentServer.getTag(this@PreviewActivity, m.toString())
-                    if (t != null) db.tags += t
-                }
-                else db.tags -= tag
-            }
-            R.id.follow -> {
-                GlobalScope.launch {
-                    createTagAndOrChangeFollowingState(this@PreviewActivity, m.toString())
-                }
-            }
+            R.id.follow -> GlobalScope.launch { createTagAndOrChangeFollowingState(preview_activity_container, m.toString()) }
         }
         return super.onOptionsItemSelected(item)
     }

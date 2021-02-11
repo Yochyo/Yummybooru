@@ -73,8 +73,13 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
     }
 
     fun updatePosts(newPage: Collection<Post>) {
-        size = m.posts.size
-        notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
+        if (m.posts.size < size) {
+            size = m.posts.size
+            notifyDataSetChanged()
+        } else {
+            size = m.posts.size
+            notifyItemRangeInserted(m.posts.size - newPage.size, newPage.size)
+        }
     }
 
     override fun createViewHolder(parent: ViewGroup): PreviewViewHolder {

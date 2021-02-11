@@ -66,12 +66,7 @@ open class PreviewActivity : AppCompatActivity() {
     val m: ManagerWrapper get() = managerPointer.value
 
 
-    private val managerListener = Listener<OnAddElementsEvent<Post>> {
-        GlobalScope.launch(Dispatchers.Main) {
-            if (!it.elements.isEmpty())
-                previewAdapter.updatePosts(it.elements)
-        }
-    }
+    private val managerListener = Listener<OnAddElementsEvent<Post>> { GlobalScope.launch(Dispatchers.Main) { previewAdapter.updatePosts(it.elements) } }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -160,11 +155,9 @@ open class PreviewActivity : AppCompatActivity() {
         swipeRefreshLayout.setOnRefreshListener {
             swipeRefreshLayout.isRefreshing = false
             if (previewAdapter.actionmode == null) {
-                GlobalScope.launch {
+                GlobalScope.launch(Dispatchers.Main) {
                     m.clear()
-                    withContext(Dispatchers.Main) {
-                        previewAdapter.notifyDataSetChanged()
-                    }
+                    previewAdapter.updatePosts(m.posts)
                     loadNextPage()
                 }
             }

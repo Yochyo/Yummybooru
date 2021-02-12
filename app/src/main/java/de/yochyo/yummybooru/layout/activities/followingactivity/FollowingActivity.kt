@@ -19,6 +19,7 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandUpdateFollowingTagData
+import de.yochyo.yummybooru.utils.commands.CommandUpdateSeveralFollowingTagData
 import de.yochyo.yummybooru.utils.general.FilteringEventCollection
 import de.yochyo.yummybooru.utils.general.TagDispatcher
 import de.yochyo.yummybooru.utils.general.createTagAndOrChangeFollowingState
@@ -132,24 +133,24 @@ class FollowingActivity : AppCompatActivity() {
                     }
                 }.withTitle(getString(R.string.follow_tag)).build(this)
             }
-            R.id.update_following -> {
-                ConfirmDialog {
-                    GlobalScope.launch { updateFollowing(filteringFollowingList) }
-                }.withTitle(getString(R.string.update_followed_tags)).build(this@FollowingActivity)
-            }
+            R.id.update_following -> updateFollowing(filteringFollowingList)
         }
         return super.onOptionsItemSelected(item)
     }
 
-    suspend fun updateFollowing(following: Collection<Tag>) {
-        withContext(Dispatchers.IO) {
-            val id = db.currentServer.newestID() ?: return@withContext
-            withContext(TagDispatcher) {
-                following.forEach {
-                    Command.execute(following_layout, CommandUpdateFollowingTagData(it, Following(id, it.count)))
+    fun updateFollowing(following: Collection<Tag>, message: String = getString(R.string.update_followed_tags)) {
+        ConfirmDialog {
+            GlobalScope.launch {
+                val id = db.currentServer.newestID() ?: return@launch
+                withContext(TagDispatcher) {
+                    Command.execute(
+                        following_layout,
+                        CommandUpdateSeveralFollowingTagData(following.map { tag -> Pair(tag, Following(id, tag.following?.lastCount ?: tag.count)) })
+                    )
                 }
             }
-        }
+        }.withTitle(message).build(this@FollowingActivity)
+
     }
 
     override fun onDestroy() {

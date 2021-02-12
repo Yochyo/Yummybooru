@@ -85,3 +85,26 @@ class CommandUpdateFollowingTagData(private val tag: Tag, private val following:
         }
     }
 }
+
+class CommandUpdateSeveralFollowingTagData(private val tagFollowingDatapairs: List<Pair<Tag, Following?>>) : Command {
+    private val _following = tagFollowingDatapairs.map { Pair(it.first, it.first.following) }
+
+    override val showSnackbarDefault = true
+    override fun getUndoMessage(context: Context): String {
+        return context.getString(R.string.undo_updating_tags)
+    }
+
+    override suspend fun run(context: Context): Boolean {
+        return withContext(TagDispatcher) {
+            tagFollowingDatapairs.forEach { it.first.following = it.second }
+            true
+        }
+    }
+
+    override suspend fun undo(context: Context): Boolean {
+        return withContext(TagDispatcher) {
+            _following.forEach { it.first.following = it.second }
+            true
+        }
+    }
+}

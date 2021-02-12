@@ -10,15 +10,11 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.SelectableRecyclerViewAdapter
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
-import de.yochyo.yummybooru.utils.commands.Command
-import de.yochyo.yummybooru.utils.commands.CommandDeleteTag
-import de.yochyo.yummybooru.utils.commands.CommandFavoriteTag
-import de.yochyo.yummybooru.utils.commands.CommandUpdateFollowingTagData
+import de.yochyo.yummybooru.utils.commands.*
 import de.yochyo.yummybooru.utils.general.TagDispatcher
 import de.yochyo.yummybooru.utils.general.setColor
 import de.yochyo.yummybooru.utils.general.underline
@@ -53,13 +49,7 @@ class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: Recycle
                     Toast.makeText(activity, activity.getString(R.string.not_implemented), Toast.LENGTH_SHORT).show()
                     deselectAll()
                 }
-                R.id.update_following -> {
-                    ConfirmDialog {
-                        val select = selected.getSelected(followedTags)
-                        deselectAll()
-                        GlobalScope.launch { activity.updateFollowing(select) }
-                    }.withTitle(activity.getString(R.string.update_selected_followed_tags)).build(activity)
-                }
+                R.id.update_following -> activity.updateFollowing(followedTags, activity.getString(R.string.update_selected_followed_tags))
             }
         }
     }

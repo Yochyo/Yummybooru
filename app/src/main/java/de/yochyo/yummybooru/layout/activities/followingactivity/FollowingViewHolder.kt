@@ -17,7 +17,8 @@ class FollowingTagViewHolder(val activity: FollowingActivity, layout: FrameLayou
                 activity.onClickedData = FollowingData(tag.name, id, count)
             }
         }
-        val string = tag.name.split(" OR ").joinToString(" OR ") { "id:>${tag.following?.lastID ?: Int.MAX_VALUE} $it" }
+        val string = tag.name.split(" THEN ").joinToString(" THEN ") { "id:>${tag.following?.lastID ?: Int.MAX_VALUE} $it" }
+            .split(" OR ").joinToString(" OR ") { "id:>${tag.following?.lastID ?: Int.MAX_VALUE} $it" }
         PreviewActivity.startActivity(activity, string)
     }
 }

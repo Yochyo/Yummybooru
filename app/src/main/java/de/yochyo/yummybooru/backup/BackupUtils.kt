@@ -2,6 +2,8 @@ package de.yochyo.yummybooru.backup
 
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
+import de.yochyo.eventcollection.events.OnChangeObjectEvent
+import de.yochyo.eventmanager.EventHandler
 import de.yochyo.json.JSONArray
 import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.BuildConfig
@@ -9,8 +11,6 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.sendFirebase
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.withContext
 import java.util.*
 
@@ -37,31 +37,30 @@ object BackupUtils {
         }
     }
 
-    suspend fun restoreBackup(byteArray: ByteArray, context: Context): Pair<Flow<Int>, Int>? {
-        var size = 0
-        try {
+    suspend fun restoreBackup(byteArray: ByteArray, context: Context, observable: EventHandler<OnChangeObjectEvent<Int, Int>>) {
+        return try {
             val obj = updateRestoreObject(JSONObject(String(byteArray)))
             val tags = obj.getJSONArray("tags")
             val servers = obj.getJSONArray("servers")
-            size = 1 + tags.length() + servers.length()
-            val flow = channelFlow {
-                withContext(Dispatchers.IO) {
-                    context.db.deleteEverything()
-                    PreferencesBackup.restoreEntity(obj.getJSONObject("preferences"), context)
-                    withContext(Dispatchers.Main) { send(0) }
+            val size = 1 + tags.length() + servers.length()
 
-                    servers.map { ServerBackup.restoreEntity(it as JSONObject, context);withContext(Dispatchers.Main) { send(0) } }
-                    val _tags = tags.mapNotNull { withContext(Dispatchers.Main) { send(0) };TagBackup.restoreEntity2(it as JSONObject, context) }
-                    context.db.tagDao.insert(_tags)
-                    context.db.reloadDB()
-                }
+            var progress = 0
+            fun incrementProgress() = observable.trigger(OnChangeObjectEvent(++progress, size))
+
+            withContext(Dispatchers.IO) {
+                context.db.deleteEverything()
+                PreferencesBackup.restoreEntity(obj.getJSONObject("preferences"), context)
+                incrementProgress()
+
+                servers.map { ServerBackup.restoreEntity(it as JSONObject, context); incrementProgress() }
+                val _tags = tags.mapNotNull { incrementProgress();TagBackup.restoreEntity2(it as JSONObject, context) }
+                context.db.tagDao.insert(_tags)
+                context.db.reloadDB()
             }
-            return Pair(flow, size)
         } catch (e: Exception) {
             e.printStackTrace()
             e.sendFirebase()
         }
-        return null
     }
 
     fun updateRestoreObject(json: JSONObject): JSONObject {

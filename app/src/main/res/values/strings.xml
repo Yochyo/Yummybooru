@@ -50,7 +50,6 @@
     <string name="backup_failed">Backup failed</string>
     <string name="checking_for_updates">Checking for updates</string>
     <string name="restored_backup">Restored backup</string>
-    <string name="wait_for_backup_restore">Please wait until the backup is restored</string>
     <!-- ServerListFragment -->
     <string name="edit_server">Edit server</string>
     <string name="logged_in">Logged in: Yes</string>

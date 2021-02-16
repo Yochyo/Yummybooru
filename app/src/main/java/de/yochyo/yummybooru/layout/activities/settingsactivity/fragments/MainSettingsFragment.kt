@@ -6,10 +6,12 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import de.yochyo.eventcollection.events.OnChangeObjectEvent
+import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.backup.BackupUtils
 import de.yochyo.yummybooru.database.db
-import de.yochyo.yummybooru.layout.alertdialogs.RestoreBackupDailog
+import de.yochyo.yummybooru.layout.alertdialogs.ProgressDialog
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
 import de.yochyo.yummybooru.utils.general.FileUtils
@@ -17,7 +19,6 @@ import de.yochyo.yummybooru.utils.general.ctx
 import de.yochyo.yummybooru.utils.general.logFirebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -79,13 +80,10 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
                     val bytes = stream!!.readBytes()
                     stream.close()
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, getString(R.string.wait_for_backup_restore), Toast.LENGTH_LONG).show()
-                        val (flow, size) = BackupUtils.restoreBackup(bytes, requireContext()) ?: Pair(null, 0)
-                        if (flow != null) {
-                            val dialog = RestoreBackupDailog(size).apply { build(ctx) }
-                            flow.collect { dialog.progress++ }
-                            dialog.stop()
-                        }
+                        val observable = EventHandler<OnChangeObjectEvent<Int, Int>>()
+                        val dialog = ProgressDialog(observable).apply { title = "Restoring backup"; build(ctx) }
+                        BackupUtils.restoreBackup(bytes, requireContext(), observable)
+                        dialog.stop()
                         Toast.makeText(context, getString(R.string.restored_backup), Toast.LENGTH_LONG).show()
                     }
                 }

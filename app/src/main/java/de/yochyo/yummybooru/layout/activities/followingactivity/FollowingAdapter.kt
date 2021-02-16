@@ -25,8 +25,7 @@ import kotlinx.coroutines.launch
 class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: RecyclerView, s: Collection<Tag>) : SelectableRecyclerViewAdapter<FollowingTagViewHolder>(
     activity, recyclerView, R.menu.following_activity_selection_menu
 ) {
-    private val db = activity.db
-    val util = FollowingCountUtil(activity)
+    val followingObserves = FollowingObservers()
 
     private var followedTags: Collection<Tag> = s
 
@@ -89,15 +88,19 @@ class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: Recycle
 
     override fun onBindViewHolder(holder: FollowingTagViewHolder, position: Int) {
         super.onBindViewHolder(holder, position)
+        val tag = followedTags.elementAt(position)
+
         val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
         val text1 = toolbar.findViewById<TextView>(android.R.id.text1)
         val text2 = toolbar.findViewById<TextView>(android.R.id.text2)
-        val tag = followedTags.elementAt(position)
         text1.text = tag.name
         text1.setColor(tag.color)
         text1.underline(tag.isFavorite)
-        text2.text = activity.getString(R.string.number_of_new_pictures, util.getCount(tag))
         Menus.initFollowingMenu(activity, toolbar.menu, tag)
         toolbar.menu.setGroupEnabled(0, selected.isEmpty()) //Cannot access menu when selecting items
+
+        val observer = followingObserves.createObserver(activity, activity.db.currentServer, tag)
+        text2.text = activity.getString(R.string.number_of_new_pictures, observer.value)
+        holder.registerObserver(observer)
     }
 }

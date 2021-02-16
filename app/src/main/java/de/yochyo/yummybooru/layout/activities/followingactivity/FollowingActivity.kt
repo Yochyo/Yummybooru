@@ -68,7 +68,7 @@ class FollowingActivity : AppCompatActivity() {
         recyclerView = following_recycler
         recyclerView.layoutManager = LinearLayoutManager(this@FollowingActivity).apply { layoutManager = this }
 
-        recyclerView.adapter = FollowingTagAdapter(this, recyclerView, filteringFollowingList).apply { adapter = this;util.adapter = this }
+        recyclerView.adapter = FollowingTagAdapter(this, recyclerView, filteringFollowingList).apply { adapter = this }
         following_filter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
                 if (newText != null) GlobalScope.launch { filter(newText) }
@@ -106,7 +106,7 @@ class FollowingActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        adapter.util.paused = false
+        adapter.followingObserves.paused = false
         val clickedData = onClickedData ?: return
         GlobalScope.launch {
             val tag = filteringFollowingList.find { it.name == clickedData.name } ?: return@launch
@@ -117,7 +117,7 @@ class FollowingActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        adapter.util.paused = true
+        adapter.followingObserves.paused = true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -156,7 +156,7 @@ class FollowingActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         db.tags.removeOnUpdateListener(updateFollowingListener)
-        adapter.util.close()
+        adapter.followingObserves.close()
     }
 
 

@@ -7,8 +7,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventcollection.observablecollection.ObservingSubEventCollection
+import de.yochyo.eventmanager.EventHandler
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Following
@@ -17,6 +19,7 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.eventcollections.TagEventCollection
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
+import de.yochyo.yummybooru.layout.alertdialogs.ProgressDialog
 import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandUpdateFollowingTagData
 import de.yochyo.yummybooru.utils.commands.CommandUpdateSeveralFollowingTagData
@@ -25,10 +28,7 @@ import de.yochyo.yummybooru.utils.general.TagDispatcher
 import de.yochyo.yummybooru.utils.general.createTagAndOrChangeFollowingState
 import kotlinx.android.synthetic.main.activity_following.*
 import kotlinx.android.synthetic.main.content_following.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.util.*
 
 class FollowingActivity : AppCompatActivity() {
@@ -140,14 +140,23 @@ class FollowingActivity : AppCompatActivity() {
 
     fun updateFollowing(following: Collection<Tag>, message: String = getString(R.string.update_followed_tags)) {
         ConfirmDialog {
-            GlobalScope.launch {
+            GlobalScope.launch(Dispatchers.IO) {
                 val id = db.currentServer.newestID() ?: return@launch
-                withContext(TagDispatcher) {
-                    Command.execute(
-                        following_layout,
-                        CommandUpdateSeveralFollowingTagData(following.map { tag -> Pair(tag, Following(id, db.currentServer.getTag(this@FollowingActivity, tag.name).count)) })
-                    )
+
+                val observable = EventHandler<OnChangeObjectEvent<Int, Int>>()
+                val dialog = withContext(Dispatchers.Main) { ProgressDialog(observable).apply { title = message; build(this@FollowingActivity) } }
+                var progress = 0
+                val updatedTags = withContext(TagDispatcher) {
+                    following.map { tag ->
+                        async {
+                            val pair = Pair(tag, Following(id, db.currentServer.getTag(this@FollowingActivity, tag.name).count))
+                            observable.trigger(OnChangeObjectEvent(++progress, following.size))
+                            pair
+                        }
+                    }.awaitAll()
                 }
+                Command.execute(following_layout, CommandUpdateSeveralFollowingTagData(updatedTags))
+                withContext(Dispatchers.Main) { dialog.stop() }
             }
         }.withTitle(message).build(this@FollowingActivity)
 

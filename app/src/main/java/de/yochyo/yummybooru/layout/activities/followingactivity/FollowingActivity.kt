@@ -145,7 +145,7 @@ class FollowingActivity : AppCompatActivity() {
                 withContext(TagDispatcher) {
                     Command.execute(
                         following_layout,
-                        CommandUpdateSeveralFollowingTagData(following.map { tag -> Pair(tag, Following(id, tag.following?.lastCount ?: tag.count)) })
+                        CommandUpdateSeveralFollowingTagData(following.map { tag -> Pair(tag, Following(id, db.currentServer.getTag(this@FollowingActivity, tag.name).count)) })
                     )
                 }
             }

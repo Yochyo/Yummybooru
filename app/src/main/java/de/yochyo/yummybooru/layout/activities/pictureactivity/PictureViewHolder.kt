@@ -9,6 +9,7 @@ import de.yochyo.booruapi.api.Post
 import de.yochyo.booruapi.api.TagType
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
 import de.yochyo.yummybooru.layout.views.photoview.PhotoViewWithoutSecondDoubleTap
 import de.yochyo.yummybooru.utils.commands.Command
@@ -162,7 +163,7 @@ class PictureViewHolder(
     }
 
     private fun onClick(position: Int) {
-        if (activity.db.clickToMoveToNextPicture)
+        if (activity.preferences.clickToMoveToNextPicture)
             viewPager.currentItem = position + 1
     }
 }

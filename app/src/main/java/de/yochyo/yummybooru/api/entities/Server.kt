@@ -1,6 +1,11 @@
 package de.yochyo.yummybooru.api.entities
 
 import android.content.Context
+import androidx.annotation.NonNull
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
 import de.yochyo.booruapi.api.IBooruApi
 import de.yochyo.booruapi.api.pixiv.PixivApi2
 import de.yochyo.eventcollection.events.OnChangeObjectEvent
@@ -8,16 +13,28 @@ import de.yochyo.eventcollection.observable.IObservableObject
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.Apis
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.net.URL
 
-open class Server(val context: Context, name: String, url: String, apiName: String, username: String = "", password: String = "", var id: Int = Int.MAX_VALUE) : Comparable<Server>,
+@Entity(tableName = "servers")
+class Server(
+    @NonNull name: String,
+    @NonNull url: String,
+    apiName: String,
+    @NonNull username: String = "",
+    @NonNull password: String = "",
+    @PrimaryKey(autoGenerate = true) @NonNull var id: Int = 0
+) : Comparable<Server>,
     IObservableObject<Server,
             Int> {
-    val headers get() = api.getHeaders()
 
+    val headers
+        get() = api.getHeaders()
+
+    @Ignore
     var api: IBooruApi = Apis.getApi(apiName, url)
         private set
     var name = name
@@ -25,6 +42,7 @@ open class Server(val context: Context, name: String, url: String, apiName: Stri
             field = value
             trigger(CHANGED_NAME)
         }
+
     var url = url
         set(value) {
             field = value
@@ -34,6 +52,9 @@ open class Server(val context: Context, name: String, url: String, apiName: Stri
                 trigger(CHANGED_URL)
             }
         }
+
+    @NonNull
+    @ColumnInfo(name = "api")
     var apiName = apiName
         set(value) {
             field = value
@@ -43,20 +64,27 @@ open class Server(val context: Context, name: String, url: String, apiName: Stri
                 trigger(CHANGED_API)
             }
         }
+
+    @NonNull
     var username = username
         set(value) {
             field = value
             GlobalScope.launch { api.login(value, password) }
             trigger(CHANGED_USERNAME)
         }
+
+    @NonNull
     var password = password
         set(value) {
             field = value
             GlobalScope.launch { api.login(username, value) }
             trigger(CHANGED_PASSWORD)
         }
+
+    @Ignore
     override val onChange = EventHandler<OnChangeObjectEvent<Server, Int>>()
 
+    @Ignore
     val urlHost: String = try {
         if (url == "") ""
         else URL(url).host
@@ -73,21 +101,17 @@ open class Server(val context: Context, name: String, url: String, apiName: Stri
         const val CHANGED_PASSWORD = 4
     }
 
-    init {
-        GlobalScope.launch { login() }
-    }
-
     @Deprecated("temp method cause I have no time")
-    private fun login() {
+    private fun login(context: Context) {
         GlobalScope.launch {
             val api = this@Server.api
             if (api is PixivApi2) {
-                val refreshToken = context.db.prefs.getString("pixiv-$username", null)
+                val refreshToken = context.preferences.prefs.getString("pixiv-$username", null)
                 if (refreshToken == null) {
                     if (api.login(username, password)) {
                         val ref = api.refreshToken
                         if (ref != null) {
-                            context.db.setPreference("pixiv-$username", ref)
+                            context.preferences.setPreference("pixiv-$username", ref)
                             api.login("X", ref)
                         }
                     }
@@ -96,7 +120,7 @@ open class Server(val context: Context, name: String, url: String, apiName: Stri
                         if (api.login(username, password)) {
                             val ref = api.refreshToken
                             if (ref != null) {
-                                context.db.setPreference("pixiv-$username", ref)
+                                context.preferences.setPreference("pixiv-$username", ref)
                                 api.login("", ref)
                             }
                         }

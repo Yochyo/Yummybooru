@@ -16,6 +16,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.FileWriteResult
@@ -24,7 +25,7 @@ import kotlinx.coroutines.*
 import java.util.*
 
 class InAppDownloadService : Service() {
-    private val downloader = CacheableDownloader(db.parallelBackgroundDownloads)
+    private val downloader = CacheableDownloader(preferences.parallelBackgroundDownloads)
 
 
     private val onChange: Listener<OnChangeObjectEvent<Observable<Int>, Int>> = Listener {
@@ -80,7 +81,7 @@ class InAppDownloadService : Service() {
     }
 
     private fun onFinishDownload(dl: Download<Resource2>) {
-        if (!db.hideDownloadToast)
+        if (!preferences.hideDownloadToast)
             GlobalScope.launch(Dispatchers.Main) {
                 Toast.makeText(
                     this@InAppDownloadService,

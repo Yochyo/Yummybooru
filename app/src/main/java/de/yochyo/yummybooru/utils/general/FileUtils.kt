@@ -8,7 +8,7 @@ import de.yochyo.booruapi.api.Post
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.api.entities.Server
-import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStream
@@ -58,7 +58,7 @@ object FileUtils {
 
     suspend fun getFile(context: Context, subfolder: String? = null, name: String): DocumentFile? {
         return withContext(Dispatchers.IO) {
-            val root = getOrCreateFolder(context.db.saveFolder, context.getString(R.string.app_name))
+            val root = getOrCreateFolder(context.preferences.saveFolder, context.getString(R.string.app_name))
             if (root != null) {
                 val folder = if (subfolder == null) root else getOrCreateFolder(root, subfolder)
                 if (folder != null) return@withContext folder.findFile(name)
@@ -69,7 +69,7 @@ object FileUtils {
 
     suspend fun createFileOrNull(context: Context, subfolder: String? = null, name: String, mimeType: String): DocumentFile? {
         return withContext(Dispatchers.IO) {
-            val root = getOrCreateFolder(context.db.saveFolder, context.getString(R.string.app_name))
+            val root = getOrCreateFolder(context.preferences.saveFolder, context.getString(R.string.app_name))
             if (root != null) {
                 val folder = if (subfolder == null) root else getOrCreateFolder(root, subfolder)
                 if (folder != null) return@withContext createFileOrNull(folder, name, mimeType)
@@ -87,7 +87,7 @@ object FileUtils {
             Intent.FLAG_GRANT_READ_URI_PERMISSION or
                     Intent.FLAG_GRANT_WRITE_URI_PERMISSION
         )
-        context.db.saveFolder = DocumentFile.fromTreeUri(context, uri)!!
+        context.preferences.saveFolder = DocumentFile.fromTreeUri(context, uri)!!
     }
 
     private fun postToFilename(p: Post, mimeType: String, server: Server): String {

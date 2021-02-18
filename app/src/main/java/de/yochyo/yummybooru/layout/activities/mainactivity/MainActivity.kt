@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
 import de.yochyo.yummybooru.layout.activities.fragments.serverListViewFragment.ServerListFragment
 import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.TagHistoryFragment
@@ -41,12 +42,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity_layout)
-        updateCombinedSearchSortAlgorithm(db.combinedSearchSort)
-        if (db.isFirstStart)
+        updateCombinedSearchSortAlgorithm(preferences.combinedSearchSort)
+        if (preferences.isFirstStart)
             startActivity(Intent(this, IntroActivity::class.java))
         else {
             try {
-                if (!db.saveFolder.exists())
+                if (!preferences.saveFolder.exists())
                     startActivity(Intent(this, SaveFolderChangerActivity::class.java))
             } catch (e: Exception) {
                 e.printStackTrace()

@@ -22,6 +22,7 @@ import de.yochyo.yummybooru.api.entities.IResource
 import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.downloadservice.saveDownload
 import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandAddTag
@@ -55,7 +56,7 @@ fun downloadAndSaveImage(context: Context, post: Post) {
 
 fun updateNomediaFile(context: Context, newValue: Boolean? = null) {
     GlobalScope.launch {
-        if (newValue == true || context.db.useNomedia) FileUtils.createFileOrNull(context, null, ".nomedia", "")
+        if (newValue == true || context.preferences.useNomedia) FileUtils.createFileOrNull(context, null, ".nomedia", "")
         else FileUtils.getFile(context, null, ".nomedia")?.delete()
     }
 }
@@ -63,8 +64,8 @@ fun updateNomediaFile(context: Context, newValue: Boolean? = null) {
 fun getDownloadPathAndId(context: Context, p: Post): Pair<String, String> {
     val url: String
     val id: String
-    if (context.db.downloadOriginal) {
-        if (p.fileURL.mimeType == "zip" && context.db.downloadWebm) {
+    if (context.preferences.downloadOriginal) {
+        if (p.fileURL.mimeType == "zip" && context.preferences.downloadWebm) {
             url = p.fileSampleURL
             id = context.sample(p.id)
         } else {
@@ -84,7 +85,7 @@ fun TextView.underline(underline: Boolean) {
     else paintFlags = p.apply { isUnderlineText = false }.flags
 }
 
-fun Tag.toBooruTag(context: Context) = de.yochyo.yummybooru.api.entities.Tag(name, tagType, false, count, null, serverID = context.db.currentServer.id)
+fun Tag.toBooruTag(context: Context) = de.yochyo.yummybooru.api.entities.Tag(name, tagType, false, count, null, serverId = context.db.currentServer.id)
 
 suspend fun de.yochyo.yummybooru.api.entities.Tag.addFollowing(viewForSnackbar: View): Boolean {
     val following = getFollowingData(viewForSnackbar.context, this) ?: return false
@@ -114,10 +115,11 @@ suspend fun createTagAndOrChangeFollowingState(viewForSnackbar: View, name: Stri
     return withContext(TagDispatcher) {
         val context = viewForSnackbar.context
         viewForSnackbar.context.db.getTag(name)?.apply {
-            if (following == null) addFollowing(viewForSnackbar)
+            if (lastCount == null || lastId == null) addFollowing(viewForSnackbar)
             else Command.execute(viewForSnackbar, CommandUpdateFollowingTagData(this, null))
         } ?: context.db.currentServer.getTag(context, name).apply {
-            following = getFollowingData(context, this)
+            val data = getFollowingData(context, this)
+            setFollowing(data?.lastCount, data?.lastID)
             Command.execute(viewForSnackbar, CommandAddTag(this))
         }
     }
@@ -190,7 +192,7 @@ fun Context.drawable(id: Int) = ContextCompat.getDrawable(this, id)
 
 suspend fun ManagerWrapper.restoreManager(context: Context, lastId: Int, lastPosition: Int) {
     if (lastId > 0) {
-        downloadNextPages(lastPosition / context.db.limit + 1)
+        downloadNextPages(lastPosition / context.preferences.limit + 1)
         while (this.posts.indexOfFirst { it.id == lastId } == -1) downloadNextPage()
         this.position = this.posts.indexOfFirst { it.id == lastId }
     }

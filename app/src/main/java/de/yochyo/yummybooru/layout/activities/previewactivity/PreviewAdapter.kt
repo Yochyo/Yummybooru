@@ -11,6 +11,7 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.downloadservice.DownloadService
 import de.yochyo.yummybooru.layout.selectableRecyclerView.ActionModeClickEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.SelectableRecyclerViewAdapter
@@ -83,11 +84,11 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
     }
 
     override fun createViewHolder(parent: ViewGroup): PreviewViewHolder {
-        val framelayout = if (activity.db.previewStaggeredMode)
+        val framelayout = if (activity.preferences.previewStaggeredMode)
             (activity.layoutInflater.inflate(R.layout.preview_image_view_staggered, parent, false) as FrameLayout)
         else getNonStaggeredPreviewView(parent)
 
-        if (activity.db.cropPreviewImage)
+        if (activity.preferences.cropPreviewImage)
             framelayout.findViewById<ImageView>(R.id.preview_picture).scaleType = ImageView.ScaleType.CENTER_CROP
         return PreviewViewHolder(activity, m, framelayout)
     }

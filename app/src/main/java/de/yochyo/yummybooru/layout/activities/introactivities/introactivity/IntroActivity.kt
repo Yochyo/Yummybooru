@@ -7,7 +7,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import com.github.appintro.AppIntro2
 import com.github.appintro.R
-import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.activities.introactivities.IIntroActivity
 
 class IntroActivity : AppIntro2(), IIntroActivity {
@@ -39,7 +39,7 @@ class IntroActivity : AppIntro2(), IIntroActivity {
 
     override fun onDonePressed(currentFragment: Fragment?) {
         super.onDonePressed(currentFragment)
-        db.isFirstStart = false
+        preferences.isFirstStart = false
         finish()
     }
 }

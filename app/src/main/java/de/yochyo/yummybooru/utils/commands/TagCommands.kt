@@ -47,7 +47,7 @@ class CommandFavoriteTag(private val tag: Tag, private val value: Boolean) : Com
 
     override suspend fun run(context: Context): Boolean {
         return withContext(TagDispatcher) {
-            if (tag.isFavorite == value) return@withContext false
+            if (tag.isFavorite) return@withContext false
             tag.isFavorite = value
             return@withContext true
         }
@@ -55,8 +55,8 @@ class CommandFavoriteTag(private val tag: Tag, private val value: Boolean) : Com
 
     override suspend fun undo(context: Context): Boolean {
         return withContext(TagDispatcher) {
-            if (tag.isFavorite == value) {
-                tag.isFavorite = !value
+            if (tag.isFavorite) {
+                tag.isFavorite = value
                 true
             } else false
         }
@@ -64,7 +64,8 @@ class CommandFavoriteTag(private val tag: Tag, private val value: Boolean) : Com
 }
 
 class CommandUpdateFollowingTagData(private val tag: Tag, private val following: Following?) : Command {
-    private val _following = tag.following
+    private val _lastCount = tag.lastCount
+    private val _lastId = tag.lastId
 
     override val showSnackbarDefault = true
     override fun getUndoMessage(context: Context): String {
@@ -73,21 +74,21 @@ class CommandUpdateFollowingTagData(private val tag: Tag, private val following:
 
     override suspend fun run(context: Context): Boolean {
         return withContext(TagDispatcher) {
-            tag.following = following
+            tag.setFollowing(following?.lastCount, following?.lastID)
             true
         }
     }
 
     override suspend fun undo(context: Context): Boolean {
         return withContext(TagDispatcher) {
-            tag.following = _following
+            tag.setFollowing(_lastCount, _lastId)
             true
         }
     }
 }
 
 class CommandUpdateSeveralFollowingTagData(private val tagFollowingDatapairs: List<Pair<Tag, Following?>>) : Command {
-    private val _following = tagFollowingDatapairs.map { Pair(it.first, it.first.following) }
+    private val _following = tagFollowingDatapairs.map { Pair(it.first, Pair(it.first.lastCount, it.first.lastId)) }
 
     override val showSnackbarDefault = true
     override fun getUndoMessage(context: Context): String {
@@ -96,14 +97,14 @@ class CommandUpdateSeveralFollowingTagData(private val tagFollowingDatapairs: Li
 
     override suspend fun run(context: Context): Boolean {
         return withContext(TagDispatcher) {
-            tagFollowingDatapairs.forEach { it.first.following = it.second }
+            tagFollowingDatapairs.forEach { it.first.setFollowing(it.second?.lastCount, it.second?.lastID) }
             true
         }
     }
 
     override suspend fun undo(context: Context): Boolean {
         return withContext(TagDispatcher) {
-            _following.forEach { it.first.following = it.second }
+            _following.forEach { it.first.setFollowing(it.second.first, it.second.second) }
             true
         }
     }

@@ -1,5 +1,9 @@
 package de.yochyo.yummybooru.api.entities
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Ignore
 import de.yochyo.booruapi.api.TagType
 import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventcollection.observable.IObservableObject
@@ -7,38 +11,88 @@ import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.R
 import java.util.*
 
-open class Tag(
-    val name: String,
-    val type: TagType,
-    isFavorite: Boolean = false,
-    val count: Int = 0,
-    following: Following? = null,
-    val creation: Date = Date(),
-    var serverID: Int = -1
-) :
-    Comparable<Tag>, IObservableObject<Tag, Int> {
-    var isFavorite = isFavorite
-        set(value) {
-            field = value
-            trigger(CHANGED_FAVORITE)
-        }
-    var following = following
-        set(value) {
-            var trig = CHANGED_FOLLOWING
-            if (field == null && value != null) trig = FOLLOWING
-            field = value
-            trigger(trig)
-        }
-
+@Entity(
+    tableName = "tags",
+    foreignKeys = [ForeignKey(
+        onDelete = ForeignKey.CASCADE,
+        onUpdate = ForeignKey.CASCADE,
+        entity = Server::class,
+        parentColumns = arrayOf("id"),
+        childColumns = arrayOf("server_id")
+    )],
+    primaryKeys = ["name", "server_id"]
+)
+class Tag : IObservableObject<Tag, Int> {
     companion object {
         const val CHANGED_FAVORITE = 1
         const val CHANGED_FOLLOWING = 2
         const val FOLLOWING = 3
     }
 
-    //tag, change
+    val name: String
+    val type: TagType
+
+    @ColumnInfo(name = "isFavorite")
+    private var _isFavorite: Boolean
+    var isFavorite
+        get() = _isFavorite
+        set(value) {
+            _isFavorite = value
+            trigger(CHANGED_FAVORITE)
+        }
+
+    @Ignore
+    val count: Int
+
+    @ColumnInfo(name = "last_count")
+    var lastCount: Int?
+        private set
+
+    @ColumnInfo(name = "last_id")
+    var lastId: Int?
+        private set
+
+    val creation: Date
+
+    @ColumnInfo(name = "server_id")
+    val serverId: Int
+
+    constructor(
+        name: String,
+        type: TagType,
+        isFavorite: Boolean = false,
+        count: Int = 0,
+        lastCount: Int? = null,
+        lastId: Int? = null,
+        creation: Date = Date(),
+        serverId: Int = -1,
+    ) {
+        this.name = name
+        this.type = type
+        this._isFavorite = isFavorite
+        this.count = count
+        this.lastCount = lastCount
+        this.lastId = lastId
+        this.creation = creation
+        this.serverId = serverId
+    }
+
+    constructor(name: String, type: TagType, isFavorite: Boolean, creation: Date, lastCount: Int?, lastId: Int?, serverId: Int) :
+            this(name, type, isFavorite, 0, lastCount, lastId, creation, serverId)
+
+
+    fun setFollowing(lastCount: Int?, lastId: Int?) {
+        if (this.lastCount != lastCount && this.lastId != lastId) {
+            val trig = if (this.lastCount == null && this.lastId == null && lastCount != null && lastId != null) FOLLOWING else CHANGED_FOLLOWING
+            this.lastCount = lastCount
+            this.lastId = lastId
+            trigger(trig)
+        }
+    }
+
+    @Ignore
     override val onChange = EventHandler<OnChangeObjectEvent<Tag, Int>>()
-    protected fun trigger(change: Int) {
+    private fun trigger(change: Int) {
         onChange.trigger(OnChangeObjectEvent(this, change))
     }
 
@@ -55,14 +109,5 @@ open class Tag(
         }
 
     override fun toString(): String = name
-
-    override fun equals(other: Any?) = if (other is Tag) (compareTo(other) == 0) else false
-    override fun compareTo(other: Tag): Int {
-        if (name == other.name) return 0
-        if (isFavorite && !other.isFavorite)
-            return -1
-        if (!isFavorite && other.isFavorite)
-            return 1
-        return name.compareTo(other.name)
-    }
+    override fun equals(other: Any?) = if (other is Tag) name == other.name else false
 }

@@ -44,7 +44,8 @@ private object ToastListeners {
         onAddTags = Listener {
             GlobalScope.launch(Dispatchers.Main) {
                 it.elements.forEach { element ->
-                    val message = "${if (element.following != null) "Following" else if (element.isFavorite) "Add favorite tag" else "Add tag"} [${element.name}]"
+                    val message = "${if (element.lastId != null && element.lastCount != null) "Following" else if (element.isFavorite) "Add favorite tag" else "Add tag"} " +
+                            "[${element.name}]"
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 }
             }
@@ -97,7 +98,7 @@ private object DatabaseListeners {
         removeTagListener = Listener { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> db.tagDao.delete(element) } } }
         changeTagListener = Listener { GlobalScope.launch(Dispatchers.IO) { db.tagDao.update(it.new) } }
 
-        addServerListener = Listener { GlobalScope.launch(Dispatchers.IO) { for (server in it.elements) server.id = db.serverDao.insert(server) } }
+        addServerListener = Listener { GlobalScope.launch(Dispatchers.IO) { for (server in it.elements) server.id = db.serverDao.insert(server).toInt() } }
         removeServerListener = Listener { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> db.serverDao.delete(element) } } }
         changeServerListener = Listener { GlobalScope.launch(Dispatchers.IO) { db.serverDao.update(it.new) } }
 

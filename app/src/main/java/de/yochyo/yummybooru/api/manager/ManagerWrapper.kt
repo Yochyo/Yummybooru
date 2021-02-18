@@ -6,6 +6,7 @@ import de.yochyo.booruapi.manager.IManager
 import de.yochyo.booruapi.manager.ManagerBuilder
 import de.yochyo.eventcollection.events.OnAddElementsEvent
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 
 open class ManagerWrapper(private val manager: IManager) : IManager by manager {
     val currentPost: Post?
@@ -28,6 +29,6 @@ open class ManagerWrapper(private val manager: IManager) : IManager by manager {
     override fun toString() = manager.toString()
 
     companion object {
-        fun build(context: Context, s: String) = ManagerWrapper(ManagerBuilder.createManager(context.db.currentServer.api, s, context.db.limit))
+        fun build(context: Context, s: String) = ManagerWrapper(ManagerBuilder.createManager(context.db.currentServer.api, s, context.preferences.limit))
     }
 }

@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class AddServerDialog(context: Context, val runOnPositive: (s: Server) -> Unit) {
-    var server = Server(context, "", "", "")
+    var server = Server("", "", "")
     var title: String? = null
 
     fun withServer(server: Server) = apply { this.server = server }
@@ -58,7 +58,7 @@ class AddServerDialog(context: Context, val runOnPositive: (s: Server) -> Unit) 
 
             val templateSpinner = layout.findViewById<Spinner>(R.id.server_template)
             val templateSpinnerAdapter = ArrayAdapter<Server>(context, android.R.layout.simple_list_item_1)
-            templateSpinnerAdapter.add(Server(context, "Template", "", ""))
+            templateSpinnerAdapter.add(Server("Template", "", ""))
             templateSpinnerAdapter.addAll(ServerTemplates(context).templates)
             templateSpinner.adapter = templateSpinnerAdapter
             templateSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -96,7 +96,7 @@ class AddServerDialog(context: Context, val runOnPositive: (s: Server) -> Unit) 
 
         builder.setPositiveButton(context.getString(R.string.positive_button_name)) { _, _ ->
             GlobalScope.launch(Dispatchers.IO) {
-                val s = Server(context, serverName, parseURL(url), apiName, username, password, id = server.id)
+                val s = Server(serverName, parseURL(url), apiName, username, password, id = server.id)
                 if (s.apiName == "auto") s.apiName = getCorrectApi(s)
                 try {
                     if (s.newestID() == null)
@@ -129,14 +129,14 @@ private class ServerTemplates(context: Context) {
     val templates = ArrayList<Server>()
 
     init {
-        templates += Server(context, "Danbooru", "https://danbooru.donmai.us/", Apis.DANBOORU)
-        templates += Server(context, "Konachan", "https://konachan.com/", Apis.MOEBOORU)
-        templates += Server(context, "Yande.re", "https://yande.re/", Apis.MOEBOORU)
-        templates += Server(context, "Gelbooru", "https://gelbooru.com/", Apis.GELBOORU)
-        templates += Server(context, "Lolibooru", "https://lolibooru.moe/", Apis.MY_IMOUTO)
-        templates += Server(context, "rule34.xxx", "https://rule34.xxx/", Apis.GELBOORU_BETA)
-        templates += Server(context, "Realbooru", "https://realbooru.com/", Apis.GELBOORU_BETA)
-        templates += Server(context, "Furrybooru", "https://safebooru.org/", Apis.GELBOORU_BETA)
-        templates += Server(context, "Pixiv", "https://pixiv.net", Apis.PIXIV)
+        templates += Server("Danbooru", "https://danbooru.donmai.us/", Apis.DANBOORU)
+        templates += Server("Konachan", "https://konachan.com/", Apis.MOEBOORU)
+        templates += Server("Yande.re", "https://yande.re/", Apis.MOEBOORU)
+        templates += Server("Gelbooru", "https://gelbooru.com/", Apis.GELBOORU)
+        templates += Server("Lolibooru", "https://lolibooru.moe/", Apis.MY_IMOUTO)
+        templates += Server("rule34.xxx", "https://rule34.xxx/", Apis.GELBOORU_BETA)
+        templates += Server("Realbooru", "https://realbooru.com/", Apis.GELBOORU_BETA)
+        templates += Server("Furrybooru", "https://safebooru.org/", Apis.GELBOORU_BETA)
+        templates += Server("Pixiv", "https://pixiv.net", Apis.PIXIV)
     }
 }

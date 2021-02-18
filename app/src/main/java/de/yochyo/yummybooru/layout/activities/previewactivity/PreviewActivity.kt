@@ -16,6 +16,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.manager.ManagerDistributor
 import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsDialog
 import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
@@ -36,7 +37,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 open class PreviewActivity : AppCompatActivity() {
-    private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + db.limit / 2
+    private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + preferences.limit / 2
 
     companion object {
         private const val TAGS = "tags"
@@ -82,7 +83,7 @@ open class PreviewActivity : AppCompatActivity() {
                 initToolbar()
                 m.posts.registerOnAddElementsListener(managerListener)
 
-                recycler_view.layoutManager = object : StaggeredGridLayoutManager(db.previewColumns, RecyclerView.VERTICAL) {
+                recycler_view.layoutManager = object : StaggeredGridLayoutManager(preferences.previewColumns, RecyclerView.VERTICAL) {
                     override fun onLayoutChildren(recycler: RecyclerView.Recycler?, state: RecyclerView.State?) {
                         try {
                             super.onLayoutChildren(recycler, state)
@@ -139,7 +140,7 @@ open class PreviewActivity : AppCompatActivity() {
                     RecyclerView.SCROLL_STATE_DRAGGING -> isScrolling = true
                 }
                 if (!isLoadingView)
-                    if (layoutManager.findFirstVisibleItemPositions(null).maxOrNull()!! + OFFSET_BEFORE_LOAD_NEXT_PAGE + db.limit >= m.posts.size) loadNextPage()
+                    if (layoutManager.findFirstVisibleItemPositions(null).maxOrNull()!! + OFFSET_BEFORE_LOAD_NEXT_PAGE + preferences.limit >= m.posts.size) loadNextPage()
                 return super.onScrollStateChanged(recyclerView, newState)
             }
 

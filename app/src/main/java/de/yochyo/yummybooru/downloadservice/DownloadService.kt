@@ -10,7 +10,7 @@ import de.yochyo.booruapi.api.Post
 import de.yochyo.booruapi.manager.IManager
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Server
-import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.getDownloadPathAndId
@@ -20,7 +20,7 @@ import java.util.*
 
 private class DownloadPost(val tags: String, val post: Post, val server: Server)
 class DownloadService : Service() {
-    private val downloader = CacheableDownloader(db.parallelBackgroundDownloads)
+    private val downloader = CacheableDownloader(preferences.parallelBackgroundDownloads)
 
     var job: Job? = null
     lateinit var notificationManager: NotificationManagerCompat

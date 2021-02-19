@@ -21,7 +21,6 @@ import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.picture_activity_drawer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -47,12 +46,9 @@ class PictureViewHolder(
             val time = System.currentTimeMillis()
             if (time - lastSwipeUp > 400L) { //download
                 downloadAndSaveImage(activity, post)
-                Snackbar.make(viewPager, activity.getString(R.string.download), Snackbar.LENGTH_SHORT).apply {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        show()
-                        delay(150)
-                        dismiss()
-                    }
+                GlobalScope.launch(Dispatchers.Main) {
+                    val snack = Snackbar.make(viewPager, activity.getString(R.string.download), 150)
+                    snack.show()
                 }
             } else { //double swipe
                 GlobalScope.launch {

@@ -20,6 +20,6 @@ class Migration3To4 : Migration(3, 4) {
             "CREATE TABLE IF NOT EXISTS `TagCollection` (`name` TEXT NOT NULL, `serverId` INTEGER NOT NULL, `collectionId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`serverId`) REFERENCES `servers`(`id`) ON UPDATE CASCADE ON DELETE CASCADE)"
         )
         db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_TagCollection_name_serverId` ON `TagCollection` (`name`, `serverId`)")
-        db.execSQL("CREATE TABLE IF NOT EXISTS `TagCollectionTagCrossRef` (`collectionId` INTEGER NOT NULL, `tagId` INTEGER NOT NULL, PRIMARY KEY(`collectionId`, `tagId`))")
+        db.execSQL("CREATE TABLE IF NOT EXISTS `TagCollectionTagCrossRef` (`collectionId` INTEGER NOT NULL, `tagId` INTEGER NOT NULL, PRIMARY KEY(`collectionId`, `tagId`), FOREIGN KEY(`collectionId`) REFERENCES `TagCollection`(`collectionId`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`tagId`) REFERENCES `tags`(`tagId`) ON UPDATE CASCADE ON DELETE CASCADE )")
     }
 }

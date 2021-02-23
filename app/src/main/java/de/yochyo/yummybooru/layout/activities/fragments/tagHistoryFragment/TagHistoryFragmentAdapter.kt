@@ -57,7 +57,7 @@ class TagHistoryFragmentAdapter(val fragment: TagHistoryFragment, val selectedTa
                     when (it.itemId) {
                         R.id.main_search_favorite_tag -> Command.execute(fragment.fragment_tag_history, CommandFavoriteTag(tag, !tag.isFavorite))
                         R.id.main_search_follow_tag -> {
-                            if (tag.lastId == null || tag.lastCount == null) tag.addFollowing(fragment.fragment_tag_history)
+                            if (tag.following == null) tag.addFollowing(fragment.fragment_tag_history)
                             else Command.execute(fragment.fragment_tag_history, CommandUpdateFollowingTagData(tag, null))
                             withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
                         }

@@ -37,7 +37,7 @@ class FollowingObservers : Closeable {
         suspend fun updateCountDifference() {
             withContext(Dispatchers.IO) {
                 val tag = context.db.currentServer.getTag(context, tag.name)
-                val value = max(0, tag.count - (this@FollowingObserver.tag.lastCount ?: 0))
+                val value = max(0, tag.count - (this@FollowingObserver.tag.following?.lastCount ?: 0))
                 this@FollowingObserver.value = value
                 onChange.trigger(OnChangeObjectEvent(tag.count, value))
             }

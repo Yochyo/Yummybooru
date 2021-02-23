@@ -57,7 +57,7 @@ class FollowingActivity : AppCompatActivity() {
         filteringFollowingList = FilteringEventCollection({
             ObservingSubEventCollection(
                 TagEventCollection.getInstance(this), db.tags
-            ) { it.lastCount != null && it.lastId != null }
+            ) { it.following != null }
         },
             { it.name },
             { TagEventCollection.getInstance(this) })

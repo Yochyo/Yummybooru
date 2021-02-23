@@ -13,7 +13,7 @@ object Menus {
             else context.getString(R.string.favorite)
         }
         with(menu.findItem(R.id.main_search_follow_tag)) {
-            title = if (tag.lastId == null || tag.lastCount == null) context.getString(R.string.follow)
+            title = if (tag.following == null) context.getString(R.string.follow)
             else context.getString(R.string.unfollow)
         }
         with(menu.findItem(R.id.main_search_delete_tag)) {
@@ -38,7 +38,7 @@ object Menus {
                 menu.findItem(R.id.favorite).title = context.getString(R.string.favorite)
             }
 
-            if (tag.lastId == null || tag.lastCount == null) {
+            if (tag.following == null) {
                 menu.findItem(R.id.follow).icon = context.drawable(R.drawable.star_empty)
                 menu.findItem(R.id.follow).title = context.getString(R.string.follow)
             } else {
@@ -56,7 +56,7 @@ object Menus {
             title = if (tag.isFavorite) context.getString(R.string.unfavorite) else context.getString(R.string.favorite)
         }
         with(menu.findItem(R.id.picture_info_item_following)) {
-            title = if (tag.lastId == null || tag.lastCount == null) context.getString(R.string.follow) else context.getString(R.string.unfavorite)
+            title = if (tag.following == null) context.getString(R.string.follow) else context.getString(R.string.unfavorite)
         }
     }
 

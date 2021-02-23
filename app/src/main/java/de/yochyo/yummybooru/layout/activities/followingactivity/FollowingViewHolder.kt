@@ -22,7 +22,7 @@ class FollowingTagViewHolder(val activity: FollowingActivity, layout: FrameLayou
                 activity.onClickedData = FollowingData(tag.name, id, count)
             }
         }
-        val lastId = "id:>${tag.lastId ?: Int.MAX_VALUE}"
+        val lastId = "id:>${tag.following?.lastID ?: Int.MAX_VALUE}"
         val string = "$lastId ${tag.name.replace(" THEN ", " THEN $lastId ").replace(" OR ", " OR $lastId ")}"
 
         PreviewActivity.startActivity(activity, string)

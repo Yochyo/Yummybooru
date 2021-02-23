@@ -1,9 +1,6 @@
 package de.yochyo.yummybooru.api.entities
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Ignore
+import androidx.room.*
 import de.yochyo.booruapi.api.TagType
 import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventcollection.observable.IObservableObject
@@ -17,78 +14,46 @@ import java.util.*
         onDelete = ForeignKey.CASCADE,
         onUpdate = ForeignKey.CASCADE,
         entity = Server::class,
-        parentColumns = arrayOf("id"),
-        childColumns = arrayOf("server_id")
+        parentColumns = ["id"],
+        childColumns = ["server_id"]
     )],
     primaryKeys = ["name", "server_id"]
 )
-class Tag : IObservableObject<Tag, Int> {
+class Tag(
+    val name: String,
+    val type: TagType,
+    isFavorite: Boolean = false,
+    @Ignore
+    val count: Int = 0,
+    following: Following? = null,
+    val creation: Date = Date(),
+    @ColumnInfo(name = "server_id")
+    val serverId: Int = -1
+) : IObservableObject<Tag, Int> {
     companion object {
         const val CHANGED_FAVORITE = 1
         const val CHANGED_FOLLOWING = 2
         const val FOLLOWING = 3
     }
 
-    val name: String
-    val type: TagType
-
-    @ColumnInfo(name = "isFavorite")
-    private var _isFavorite: Boolean
-    var isFavorite
-        get() = _isFavorite
+    var isFavorite = isFavorite
         set(value) {
-            _isFavorite = value
+            field = value
             trigger(CHANGED_FAVORITE)
         }
 
-    @Ignore
-    val count: Int
-
-    @ColumnInfo(name = "last_count")
-    var lastCount: Int?
-        private set
-
-    @ColumnInfo(name = "last_id")
-    var lastId: Int?
-        private set
-
-    val creation: Date
-
-    @ColumnInfo(name = "server_id")
-    val serverId: Int
-
-    constructor(
-        name: String,
-        type: TagType,
-        isFavorite: Boolean = false,
-        count: Int = 0,
-        lastCount: Int? = null,
-        lastId: Int? = null,
-        creation: Date = Date(),
-        serverId: Int = -1,
-    ) {
-        this.name = name
-        this.type = type
-        this._isFavorite = isFavorite
-        this.count = count
-        this.lastCount = lastCount
-        this.lastId = lastId
-        this.creation = creation
-        this.serverId = serverId
-    }
-
-    constructor(name: String, type: TagType, isFavorite: Boolean, creation: Date, lastCount: Int?, lastId: Int?, serverId: Int) :
-            this(name, type, isFavorite, 0, lastCount, lastId, creation, serverId)
-
-
-    fun setFollowing(lastCount: Int?, lastId: Int?) {
-        if (this.lastCount != lastCount && this.lastId != lastId) {
-            val trig = if (this.lastCount == null && this.lastId == null && lastCount != null && lastId != null) FOLLOWING else CHANGED_FOLLOWING
-            this.lastCount = lastCount
-            this.lastId = lastId
+    @Embedded
+    var following = following
+        set(value) {
+            var trig = CHANGED_FOLLOWING
+            if (field == null && value != null) trig = FOLLOWING
+            field = value
             trigger(trig)
         }
-    }
+
+    constructor(name: String, type: TagType, isFavorite: Boolean, creation: Date, following: Following?, serverId: Int) :
+            this(name, type, isFavorite, 0, following, creation, serverId)
+
 
     @Ignore
     override val onChange = EventHandler<OnChangeObjectEvent<Tag, Int>>()

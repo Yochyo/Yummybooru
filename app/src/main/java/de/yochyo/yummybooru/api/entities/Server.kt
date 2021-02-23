@@ -1,7 +1,6 @@
 package de.yochyo.yummybooru.api.entities
 
 import android.content.Context
-import androidx.annotation.NonNull
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -21,12 +20,12 @@ import java.net.URL
 
 @Entity(tableName = "servers")
 class Server(
-    @NonNull name: String,
-    @NonNull url: String,
+    name: String,
+    url: String,
     apiName: String,
-    @NonNull username: String = "",
-    @NonNull password: String = "",
-    @PrimaryKey(autoGenerate = true) @NonNull var id: Int = 0
+    username: String = "",
+    password: String = "",
+    @PrimaryKey(autoGenerate = true) var id: Int = 0
 ) : Comparable<Server>,
     IObservableObject<Server,
             Int> {
@@ -53,7 +52,6 @@ class Server(
             }
         }
 
-    @NonNull
     @ColumnInfo(name = "api")
     var apiName = apiName
         set(value) {
@@ -65,7 +63,6 @@ class Server(
             }
         }
 
-    @NonNull
     var username = username
         set(value) {
             field = value
@@ -73,7 +70,6 @@ class Server(
             trigger(CHANGED_USERNAME)
         }
 
-    @NonNull
     var password = password
         set(value) {
             field = value

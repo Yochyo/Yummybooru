@@ -44,8 +44,10 @@ private object ToastListeners {
         onAddTags = Listener {
             GlobalScope.launch(Dispatchers.Main) {
                 it.elements.forEach { element ->
-                    val message = "${if (element.lastId != null && element.lastCount != null) "Following" else if (element.isFavorite) "Add favorite tag" else "Add tag"} " +
-                            "[${element.name}]"
+                    val message = "${
+                        if (element.following?.lastID != null && element.following?.lastCount != null) "Following" else if (element.isFavorite) "Add favorite tag"
+                        else "Add tag"
+                    } [${element.name}]"
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 }
             }

@@ -115,11 +115,10 @@ suspend fun createTagAndOrChangeFollowingState(viewForSnackbar: View, name: Stri
     return withContext(TagDispatcher) {
         val context = viewForSnackbar.context
         viewForSnackbar.context.db.getTag(name)?.apply {
-            if (lastCount == null || lastId == null) addFollowing(viewForSnackbar)
+            if (following == null) addFollowing(viewForSnackbar)
             else Command.execute(viewForSnackbar, CommandUpdateFollowingTagData(this, null))
         } ?: context.db.currentServer.getTag(context, name).apply {
-            val data = getFollowingData(context, this)
-            setFollowing(data?.lastCount, data?.lastID)
+            following = getFollowingData(context, this)
             Command.execute(viewForSnackbar, CommandAddTag(this))
         }
     }

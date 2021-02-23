@@ -47,7 +47,7 @@ class InAppDownloadService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        util.size.onChange.registerListener(onChange)
+        util.size.registerListener(onChange)
 
         notificationManager = NotificationManagerCompat.from(this)
         notificationBuilder =
@@ -96,7 +96,7 @@ class InAppDownloadService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        util.size.onChange.removeListener(onChange)
+        util.size.removeListener(onChange)
         runBlocking { util.clear() }
         job?.cancel()
     }

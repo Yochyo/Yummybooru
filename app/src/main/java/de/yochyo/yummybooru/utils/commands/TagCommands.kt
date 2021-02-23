@@ -39,6 +39,7 @@ class CommandDeleteTag(private val tag: Tag) : Command {
 }
 
 class CommandFavoriteTag(private val tag: Tag, private val value: Boolean) : Command {
+    private val copy = tag.copy(isFavorite = value)
     override val showSnackbarDefault = true
     override fun getUndoMessage(context: Context): String {
         return if (value) context.getString(R.string.unfavorite_tag_with_name, tag.name)
@@ -47,8 +48,7 @@ class CommandFavoriteTag(private val tag: Tag, private val value: Boolean) : Com
 
     override suspend fun run(context: Context): Boolean {
         return withContext(TagDispatcher) {
-            if (tag.isFavorite) return@withContext false
-            tag.isFavorite = value
+            context.db.tags.replaceElement(tag, copy)
             return@withContext true
         }
     }
@@ -56,7 +56,7 @@ class CommandFavoriteTag(private val tag: Tag, private val value: Boolean) : Com
     override suspend fun undo(context: Context): Boolean {
         return withContext(TagDispatcher) {
             if (tag.isFavorite) {
-                tag.isFavorite = value
+                context.db.tags.replaceElement(copy, tag)
                 true
             } else false
         }
@@ -64,7 +64,7 @@ class CommandFavoriteTag(private val tag: Tag, private val value: Boolean) : Com
 }
 
 class CommandUpdateFollowingTagData(private val tag: Tag, private val following: Following?) : Command {
-    private val _following = tag.following
+    private val copy = tag.copy(following = following)
 
     override val showSnackbarDefault = true
     override fun getUndoMessage(context: Context): String {
@@ -73,21 +73,21 @@ class CommandUpdateFollowingTagData(private val tag: Tag, private val following:
 
     override suspend fun run(context: Context): Boolean {
         return withContext(TagDispatcher) {
-            tag.following = following
+            context.db.tags.replaceElement(tag, copy)
             true
         }
     }
 
     override suspend fun undo(context: Context): Boolean {
         return withContext(TagDispatcher) {
-            tag.following = _following
+            context.db.tags.replaceElement(copy, tag)
             true
         }
     }
 }
 
-class CommandUpdateSeveralFollowingTagData(private val tagFollowingDatapairs: List<Pair<Tag, Following?>>) : Command {
-    private val _following = tagFollowingDatapairs.map { Pair(it.first, it.first.following) }
+class CommandUpdateSeveralFollowingTagData(private val tagFollowingDataPairs: List<Pair<Tag, Following?>>) : Command {
+    private val copy = tagFollowingDataPairs.map { Pair(it.first, it.first.copy(following = it.second)) }
 
     override val showSnackbarDefault = true
     override fun getUndoMessage(context: Context): String {
@@ -96,14 +96,14 @@ class CommandUpdateSeveralFollowingTagData(private val tagFollowingDatapairs: Li
 
     override suspend fun run(context: Context): Boolean {
         return withContext(TagDispatcher) {
-            tagFollowingDatapairs.forEach { it.first.following = it.second }
+            copy.forEach { context.db.tags.replaceElement(it.first, it.second) }
             true
         }
     }
 
     override suspend fun undo(context: Context): Boolean {
         return withContext(TagDispatcher) {
-            _following.forEach { it.first.following = it.second }
+            copy.forEach { context.db.tags.replaceElement(it.second, it.first) }
             true
         }
     }

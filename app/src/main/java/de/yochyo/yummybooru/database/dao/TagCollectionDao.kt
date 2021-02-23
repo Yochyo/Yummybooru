@@ -11,7 +11,7 @@ interface TagCollectionDao {
     fun selectAll(): List<TagCollectionWithTags>
 
     @Query("SELECT * FROM TagCollection WHERE serverId = :serverId")
-    fun selectWhere(serverId: Int): TagCollectionWithTags
+    fun selectWhere(serverId: Int): List<TagCollectionWithTags>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertCollection(collection: TagCollection): Long

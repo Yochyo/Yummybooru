@@ -14,7 +14,7 @@ class TagCollection(
     val serverId: Int,
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "collectionId")
-    val id: Int = 0
+    var id: Int = 0
 ) {
     override fun toString(): String = "[$id] $name"
 }

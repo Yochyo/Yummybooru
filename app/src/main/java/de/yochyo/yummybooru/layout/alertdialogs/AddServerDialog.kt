@@ -59,7 +59,7 @@ class AddServerDialog(context: Context, val runOnPositive: (s: Server) -> Unit) 
             val templateSpinner = layout.findViewById<Spinner>(R.id.server_template)
             val templateSpinnerAdapter = ArrayAdapter<Server>(context, android.R.layout.simple_list_item_1)
             templateSpinnerAdapter.add(Server("Template", "", ""))
-            templateSpinnerAdapter.addAll(ServerTemplates(context).templates)
+            templateSpinnerAdapter.addAll(ServerTemplates.templates)
             templateSpinner.adapter = templateSpinnerAdapter
             templateSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -96,8 +96,8 @@ class AddServerDialog(context: Context, val runOnPositive: (s: Server) -> Unit) 
 
         builder.setPositiveButton(context.getString(R.string.positive_button_name)) { _, _ ->
             GlobalScope.launch(Dispatchers.IO) {
-                val s = Server(serverName, parseURL(url), apiName, username, password, id = server.id)
-                if (s.apiName == "auto") s.apiName = getCorrectApi(s)
+                var s = Server(serverName, parseURL(url), apiName, username, password, id = server.id)
+                if (s.apiName == "auto") s = s.copy(apiName = getCorrectApi(s))
                 try {
                     if (s.newestID() == null)
                         throw Exception("")
@@ -125,7 +125,7 @@ class AddServerDialog(context: Context, val runOnPositive: (s: Server) -> Unit) 
     }
 }
 
-private class ServerTemplates(context: Context) {
+private object ServerTemplates {
     val templates = ArrayList<Server>()
 
     init {

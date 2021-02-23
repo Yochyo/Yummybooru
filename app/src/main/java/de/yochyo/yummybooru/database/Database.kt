@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import de.yochyo.booruapi.api.TagType
-import de.yochyo.eventcollection.observablecollection.ObservingEventCollection
+import de.yochyo.eventcollection.EventCollection
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.converter.ConvertBoolean
@@ -18,6 +18,7 @@ import de.yochyo.yummybooru.database.dao.TagCollectionDao
 import de.yochyo.yummybooru.database.dao.TagDao
 import de.yochyo.yummybooru.database.entities.TagCollection
 import de.yochyo.yummybooru.database.entities.TagCollectionTagCrossRef
+import de.yochyo.yummybooru.database.entities.TagCollectionWithTags
 import de.yochyo.yummybooru.database.eventcollections.TagEventCollection
 import de.yochyo.yummybooru.database.migrations.Migration3To4
 import de.yochyo.yummybooru.events.events.SelectServerEvent
@@ -26,6 +27,7 @@ import de.yochyo.yummybooru.utils.enums.TagSortType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
+import kotlin.collections.ArrayList
 
 @Database(entities = [Tag::class, Server::class, TagCollection::class, TagCollectionTagCrossRef::class], version = 4, exportSchema = true)
 @TypeConverters(ConvertDate::class, ConvertBoolean::class, ConvertTagType::class)
@@ -47,23 +49,81 @@ abstract class RoomDb : RoomDatabase() {
     }
 
     val servers by lazy {
-        object : ObservingEventCollection<Server, Int>(TreeSet(serverDao.selectAll())) {
+        object : EventCollection<Server>(TreeSet(serverDao.selectAll())) {
             override fun remove(element: Server): Boolean {
-                return if (context.preferences.currentServerID == element.id) false
-                else super.remove(element)
+                if (context.preferences.currentServerID == element.id) return false
+                serverDao.delete(element)
+                return super.remove(element)
+            }
+
+            override fun add(element: Server): Boolean {
+                val id = serverDao.insert(element).toInt()
+                if (id != -1) super.add(element.copy(id = id))
+                return false
+            }
+
+            override fun replaceElement(old: Server, new: Server): Boolean {
+                serverDao.update(new)
+                return super.replaceElement(old, new)
             }
         }
     }
 
     val tags by lazy {
-        val a = ObservingEventCollection(TagEventCollection(getTagComparator()).apply { addAll(tagDao.selectWhere(currentServer.id)) })
-        println()
-        a
+        object : EventCollection<Tag>(TagEventCollection(getTagComparator()).apply { addAll(tagDao.selectWhere(currentServer.id)) }) {
+            override fun add(element: Tag): Boolean {
+                val id = tagDao.insert(element).toInt()
+                if (id != -1) super.add(element.copy(id = id))
+                return false
+            }
+
+            override fun remove(element: Tag): Boolean {
+                tagDao.delete(element)
+                return super.remove(element)
+            }
+
+            override fun replaceElement(old: Tag, new: Tag): Boolean {
+                tagDao.update(new)
+                return super.replaceElement(old, new)
+            }
+        }
+    }
+
+    val tagCollections by lazy {
+        object : EventCollection<TagCollectionWithTags>(ArrayList(tagCollectionDao.selectWhere(currentServer.id))) {
+            override fun add(element: TagCollectionWithTags): Boolean {
+                val id = tagCollectionDao.insertCollection(element.collection).toInt()
+                if (id != -1) return super.add(TagCollectionWithTags(TagCollection(element.collection.name, element.collection.serverId, id), emptyList()))
+                return false
+            }
+
+            override fun remove(element: TagCollectionWithTags): Boolean {
+                tagCollectionDao.deleteCollection(element.collection)
+                return super.remove(element)
+            }
+
+            override fun replaceElement(old: TagCollectionWithTags, new: TagCollectionWithTags): Boolean {
+                tagCollectionDao.updateCollection(new.collection)
+                return super.replaceElement(old, new)
+            }
+        }
+    }
+
+    fun addTagToCollection(collection: TagCollectionWithTags, tag: Tag) {
+        collection.tags += tag
+        tagCollectionDao.insertCollectionCrossRef(TagCollectionTagCrossRef(collection.collection.id, tag.id))
+    }
+
+    fun removeTagFromCollection(collection: TagCollectionWithTags, tag: Tag) {
+        collection.tags -= tag
+        tagCollectionDao.deleteCrossRef(TagCollectionTagCrossRef(collection.collection.id, tag.id))
     }
 
     suspend fun reloadTags() {
-        withContext(Dispatchers.IO) {
-            tags.replaceCollection(TagEventCollection(getTagComparator()).apply { tagDao.selectWhere(currentServer.id) })
+        withContext(Dispatchers.IO)
+        {
+            tags.replaceCollection(TagEventCollection(getTagComparator()).apply { addAll(tagDao.selectWhere(currentServer.id)) })
+            tagCollections.replaceCollection(ArrayList(tagCollectionDao.selectWhere(currentServer.id)))
         }
     }
 
@@ -86,7 +146,7 @@ abstract class RoomDb : RoomDatabase() {
         get() {
             val s = _currentServer
             if (s == null || s.id != context.preferences.currentServerID) {
-                _currentServer = getServer(context, context.preferences.currentServerID)
+                _currentServer = getServer(context.preferences.currentServerID)
                     ?: if (servers.isNotEmpty()) servers.first() else null
             }
 
@@ -138,7 +198,7 @@ abstract class RoomDb : RoomDatabase() {
     }
 
     fun getTag(name: String) = tags.find { it.name == name }
-    fun getServer(context: Context, id: Int) = servers.find { it.id == id }
+    fun getServer(id: Int) = servers.find { it.id == id }
 
     abstract val tagDao: TagDao
     abstract val serverDao: ServerDao

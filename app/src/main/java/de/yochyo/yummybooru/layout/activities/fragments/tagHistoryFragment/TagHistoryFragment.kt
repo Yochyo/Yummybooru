@@ -31,7 +31,7 @@ import kotlinx.coroutines.withContext
 
 class TagHistoryFragment : Fragment() {
     var onSearchButtonClick: (tags: List<String>) -> Unit = {}
-    private var filteringTagList: FilteringEventCollection<Tag, Int>? = null
+    private var filteringTagList: FilteringEventCollection<Tag>? = null
 
 
     private lateinit var tagAdapter: TagHistoryFragmentAdapter
@@ -45,7 +45,11 @@ class TagHistoryFragment : Fragment() {
         if (it.oldServer != it.newServer)
             selectedTags.clear()
     }
-    private val onUpdateTags = Listener<OnUpdateEvent<Tag>> { GlobalScope.launch(Dispatchers.Main) { tagAdapter.update(filteringTagList!!) } }
+    private val onUpdateTags = Listener<OnUpdateEvent<Tag>> {
+        GlobalScope.launch(Dispatchers.Main) {
+            tagAdapter.update(filteringTagList!!)
+        }
+    }
 
     companion object {
         private const val SELECTED = "SELECTED"

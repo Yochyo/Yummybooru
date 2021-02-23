@@ -72,7 +72,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
 
-    implementation "de.yochyo.eventcollection:EventCollection:1.7.0"
+    implementation "de.yochyo.eventcollection:EventCollection:1.7.1"
     implementation "de.yochyo.downloader:Downloader:1.8.0"
     implementation "de.yochyo.booruapi:BooruAPI:2.3.0"
 

@@ -7,9 +7,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import de.yochyo.eventcollection.SubEventCollection
 import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventcollection.events.OnUpdateEvent
-import de.yochyo.eventcollection.observablecollection.ObservingSubEventCollection
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
@@ -32,7 +32,7 @@ import kotlinx.coroutines.*
 import java.util.*
 
 class FollowingActivity : AppCompatActivity() {
-    lateinit var filteringFollowingList: FilteringEventCollection<Tag, Int>
+    lateinit var filteringFollowingList: FilteringEventCollection<Tag>
     suspend fun filter(name: String) {
         val result = filteringFollowingList.filter(name)
         withContext(Dispatchers.Main) {
@@ -54,11 +54,7 @@ class FollowingActivity : AppCompatActivity() {
         val oldId = savedInstanceState?.getInt("id")
         val oldCount = savedInstanceState?.getInt("count")
         if (oldName != null && oldId != null && oldCount != null) onClickedData = FollowingData(oldName, oldId, oldCount)
-        filteringFollowingList = FilteringEventCollection({
-            ObservingSubEventCollection(
-                TagEventCollection.getInstance(this), db.tags
-            ) { it.following != null }
-        },
+        filteringFollowingList = FilteringEventCollection({ SubEventCollection(TagEventCollection.getInstance(this), db.tags) { it.following != null } },
             { it.name },
             { TagEventCollection.getInstance(this) })
 

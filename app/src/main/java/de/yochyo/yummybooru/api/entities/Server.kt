@@ -7,9 +7,6 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import de.yochyo.booruapi.api.IBooruApi
 import de.yochyo.booruapi.api.pixiv.PixivApi2
-import de.yochyo.eventcollection.events.OnChangeObjectEvent
-import de.yochyo.eventcollection.observable.IObservableObject
-import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.api.Apis
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.preferences
@@ -19,66 +16,21 @@ import kotlinx.coroutines.launch
 import java.net.URL
 
 @Entity(tableName = "servers")
-class Server(
-    name: String,
-    url: String,
-    apiName: String,
-    username: String = "",
-    password: String = "",
-    @PrimaryKey(autoGenerate = true) var id: Int = 0
-) : Comparable<Server>,
-    IObservableObject<Server,
-            Int> {
-
-    val headers
-        get() = api.getHeaders()
-
+data class Server(
+    val name: String,
+    val url: String,
+    @ColumnInfo(name = "api")
+    val apiName: String,
+    val username: String = "",
+    val password: String = "",
+    @PrimaryKey(autoGenerate = true) val id: Int = 0
+) : Comparable<Server> {
     @Ignore
     var api: IBooruApi = Apis.getApi(apiName, url)
         private set
-    var name = name
-        set(value) {
-            field = value
-            trigger(CHANGED_NAME)
-        }
 
-    var url = url
-        set(value) {
-            field = value
-            GlobalScope.launch {
-                api = Apis.getApi(apiName, value)
-                api.login(username, password)
-                trigger(CHANGED_URL)
-            }
-        }
-
-    @ColumnInfo(name = "api")
-    var apiName = apiName
-        set(value) {
-            field = value
-            GlobalScope.launch {
-                api = Apis.getApi(value, url)
-                api.login(username, password)
-                trigger(CHANGED_API)
-            }
-        }
-
-    var username = username
-        set(value) {
-            field = value
-            GlobalScope.launch { api.login(value, password) }
-            trigger(CHANGED_USERNAME)
-        }
-
-    var password = password
-        set(value) {
-            field = value
-            GlobalScope.launch { api.login(username, value) }
-            trigger(CHANGED_PASSWORD)
-        }
-
-    @Ignore
-    override val onChange = EventHandler<OnChangeObjectEvent<Server, Int>>()
+    val headers
+        get() = api.getHeaders()
 
     @Ignore
     val urlHost: String = try {
@@ -87,14 +39,6 @@ class Server(
     } catch (e: Exception) {
         e.printStackTrace()
         ""
-    }
-
-    companion object {
-        const val CHANGED_NAME = 0
-        const val CHANGED_URL = 1
-        const val CHANGED_API = 2
-        const val CHANGED_USERNAME = 3
-        const val CHANGED_PASSWORD = 4
     }
 
     @Deprecated("temp method cause I have no time")
@@ -126,8 +70,6 @@ class Server(
             } else api.login(username, password)
         }
     }
-
-    private fun trigger(change: Int) = onChange.trigger(OnChangeObjectEvent(this, change))
 
     suspend fun getMatchingTags(context: Context, beginSequence: String, limit: Int = 10) = api.getTagAutoCompletion(beginSequence, limit)?.map { it.toBooruTag(context) }
     suspend fun getTag(context: Context, name: String): Tag = api.getTag(name).toBooruTag(context)

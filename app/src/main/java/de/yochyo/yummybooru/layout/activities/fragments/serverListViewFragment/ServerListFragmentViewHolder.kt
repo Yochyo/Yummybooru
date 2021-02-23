@@ -50,11 +50,7 @@ class ServerListFragmentViewHolder(val adapter: ServerListFragmentAdapter, val l
     private fun editServerDialog(server: Server) {
         AddServerDialog(ctx) {
             GlobalScope.launch {
-                server.name = it.name
-                server.url = it.url
-                server.apiName = it.apiName
-                server.username = it.username
-                server.password = it.password
+                ctx.db.servers.replaceElement(server, it)
                 withContext(Dispatchers.Main) { Toast.makeText(ctx, ctx.getString(R.string.edit_server_with_name, it.name), Toast.LENGTH_SHORT).show() }
             }
         }.withServer(server).withTitle(ctx.getString(R.string.edit_server)).build(ctx)

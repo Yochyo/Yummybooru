@@ -106,7 +106,7 @@ suspend fun createTagAndOrChangeFavoriteSate(viewForSnackbar: View, name: String
         val context = viewForSnackbar.context
         val tag = context.db.getTag(name)
 
-        if (tag == null) Command.execute(viewForSnackbar, CommandAddTag(context.db.currentServer.getTag(context, name).apply { isFavorite = true }))
+        if (tag == null) Command.execute(viewForSnackbar, CommandAddTag(context.db.currentServer.getTag(context, name).copy(isFavorite = true)))
         else Command.execute(viewForSnackbar, CommandFavoriteTag(tag, !tag.isFavorite))
     }
 }
@@ -117,8 +117,7 @@ suspend fun createTagAndOrChangeFollowingState(viewForSnackbar: View, name: Stri
         viewForSnackbar.context.db.getTag(name)?.apply {
             if (following == null) addFollowing(viewForSnackbar)
             else Command.execute(viewForSnackbar, CommandUpdateFollowingTagData(this, null))
-        } ?: context.db.currentServer.getTag(context, name).apply {
-            following = getFollowingData(context, this)
+        } ?: context.db.currentServer.getTag(context, name).let { it.copy(following = getFollowingData(context, it)) }.apply {
             Command.execute(viewForSnackbar, CommandAddTag(this))
         }
     }

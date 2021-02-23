@@ -1,9 +1,7 @@
 package de.yochyo.yummybooru.utils.general
 
+import de.yochyo.eventcollection.IEventCollection
 import de.yochyo.eventcollection.SubEventCollection
-import de.yochyo.eventcollection.observable.IObservableObject
-import de.yochyo.eventcollection.observablecollection.IObservableCollection
-import de.yochyo.eventcollection.observablecollection.ObservingSubEventCollection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -11,36 +9,36 @@ import kotlinx.coroutines.withContext
 import java.util.*
 import kotlin.collections.ArrayList
 
-class FilteringEventCollection<E : IObservableObject<E, A>, A>(
-    private val getUnfilteredCollection: () -> IObservableCollection<E, A>,
+class FilteringEventCollection<E>(
+    private val getUnfilteredCollection: () -> IEventCollection<E>,
     private val filterBy: (e: E) -> String,
     private val createCollection: () -> MutableCollection<E> = { TreeSet() }
 ) : Collection<E> {
-    private val eventCollections = ArrayList<Pair<IObservableCollection<E, A>, String>>()
+    private val eventCollections = ArrayList<Pair<IEventCollection<E>, String>>()
 
-    private fun getLatestEventCollection(): IObservableCollection<E, A> {
+    private fun getLatestEventCollection(): IEventCollection<E> {
         if (eventCollections.isEmpty()) eventCollections += Pair(getUnfilteredCollection(), "")
         return eventCollections.last().first
     }
 
     private val filterMutex = Mutex()
 
-    suspend fun filter(name: String): IObservableCollection<E, A> {
+    suspend fun filter(name: String): IEventCollection<E> {
         filterMutex.withLock {
             withContext(Dispatchers.Default) {
-                var result: IObservableCollection<E, A>? = null
+                var result: IEventCollection<E>? = null
                 if (name == "") {
                     clear()
                     result = getUnfilteredCollection()
                 } else {
                     for (i in eventCollections.indices.reversed()) {
                         if (name.startsWith(eventCollections[i].second)) {
-                            result = ObservingSubEventCollection(createCollection(), eventCollections[i].first) { filterBy(it).contains(name, true) }
+                            result = SubEventCollection(createCollection(), eventCollections[i].first) { filterBy(it).contains(name, true) }
                             break
                         }
                     }
                 }
-                if (result == null) result = ObservingSubEventCollection(createCollection(), getUnfilteredCollection()) { filterBy(it).contains(name, true) }
+                if (result == null) result = SubEventCollection(createCollection(), getUnfilteredCollection()) { filterBy(it).contains(name, true) }
                 eventCollections += Pair(result, name)
             }
         }

@@ -3,7 +3,6 @@ package de.yochyo.yummybooru.utils
 import android.content.Context
 import android.widget.Toast
 import de.yochyo.eventcollection.events.OnAddElementsEvent
-import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventcollection.events.OnRemoveElementsEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.api.entities.Server
@@ -19,7 +18,6 @@ object GlobalListeners {
     fun registerGlobalListeners(context: Context) {
         if (!registered) {
             registered = true
-            DatabaseListeners.registerListeners(context)
             ToastListeners.registerListeners(context)
         }
     }
@@ -27,7 +25,6 @@ object GlobalListeners {
     fun unregisterGlobalListeners(context: Context) {
         if (registered) {
             registered = false
-            DatabaseListeners.unregisterListeners(context)
             ToastListeners.unregisterListeners(context)
         }
     }
@@ -45,7 +42,7 @@ private object ToastListeners {
             GlobalScope.launch(Dispatchers.Main) {
                 it.elements.forEach { element ->
                     val message = "${
-                        if (element.following?.lastID != null && element.following?.lastCount != null) "Following" else if (element.isFavorite) "Add favorite tag"
+                        if (element.following != null) "Following" else if (element.isFavorite) "Add favorite tag"
                         else "Add tag"
                     } [${element.name}]"
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
@@ -83,48 +80,5 @@ private object ToastListeners {
         db.tags.removeOnRemoveElementsListener(onRemoveTags)
         db.servers.removeOnAddElementsListener(onAddServers)
         db.servers.removeOnRemoveElementsListener(onRemoveServers)
-    }
-}
-
-private object DatabaseListeners {
-    //The listeners in this class automatically update the database when the ObservingEventCollection changes
-    private lateinit var addServerListener: Listener<OnAddElementsEvent<Server>>
-    private lateinit var removeServerListener: Listener<OnRemoveElementsEvent<Server>>
-    private lateinit var changeServerListener: Listener<OnChangeObjectEvent<Server, Int>>
-    private lateinit var addTagListener: Listener<OnAddElementsEvent<Tag>>
-    private lateinit var removeTagListener: Listener<OnRemoveElementsEvent<Tag>>
-    private lateinit var changeTagListener: Listener<OnChangeObjectEvent<Tag, Int>>
-    fun registerListeners(context: Context) {
-        val db = context.db
-        addTagListener = Listener { GlobalScope.launch(Dispatchers.IO) { db.tagDao.insert(it.elements) } }
-        removeTagListener = Listener { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> db.tagDao.delete(element) } } }
-        changeTagListener = Listener { GlobalScope.launch(Dispatchers.IO) { db.tagDao.update(it.new) } }
-
-        addServerListener = Listener { GlobalScope.launch(Dispatchers.IO) { for (server in it.elements) server.id = db.serverDao.insert(server).toInt() } }
-        removeServerListener = Listener { GlobalScope.launch(Dispatchers.IO) { it.elements.forEach { element -> db.serverDao.delete(element) } } }
-        changeServerListener = Listener { GlobalScope.launch(Dispatchers.IO) { db.serverDao.update(it.new) } }
-
-        with(db.tags) {
-            registerOnAddElementsListener(addTagListener)
-            registerOnRemoveElementsListener(removeTagListener)
-            registerOnElementChangeListener(changeTagListener)
-        }
-        with(db.servers) {
-            registerOnAddElementsListener(addServerListener)
-            registerOnRemoveElementsListener(removeServerListener)
-            registerOnElementChangeListener(changeServerListener)
-        }
-
-    }
-
-    fun unregisterListeners(context: Context) {
-        val db = context.db
-        db.servers.removeOnAddElementsListener(addServerListener)
-        db.servers.removeOnRemoveElementsListener(removeServerListener)
-        db.servers.removeOnElementChangeListener(changeServerListener)
-
-        db.tags.removeOnAddElementsListener(addTagListener)
-        db.tags.removeOnRemoveElementsListener(removeTagListener)
-        db.tags.removeOnElementChangeListener(changeTagListener)
     }
 }

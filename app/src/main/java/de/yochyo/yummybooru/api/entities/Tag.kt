@@ -17,7 +17,6 @@ import java.util.*
         parentColumns = ["id"],
         childColumns = ["server_id"]
     )],
-    primaryKeys = ["name", "server_id"]
 )
 class Tag(
     val name: String,
@@ -28,7 +27,8 @@ class Tag(
     following: Following? = null,
     val creation: Date = Date(),
     @ColumnInfo(name = "server_id")
-    val serverId: Int = -1
+    val serverId: Int = -1,
+    @PrimaryKey val id: Int = 0
 ) : IObservableObject<Tag, Int> {
     companion object {
         const val CHANGED_FAVORITE = 1
@@ -51,8 +51,8 @@ class Tag(
             trigger(trig)
         }
 
-    constructor(name: String, type: TagType, isFavorite: Boolean, creation: Date, following: Following?, serverId: Int) :
-            this(name, type, isFavorite, 0, following, creation, serverId)
+    constructor(name: String, type: TagType, isFavorite: Boolean, creation: Date, following: Following?, serverId: Int, id: Int) :
+            this(name, type, isFavorite, 0, following, creation, serverId, id)
 
 
     @Ignore

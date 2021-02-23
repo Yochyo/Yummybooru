@@ -14,8 +14,12 @@ import de.yochyo.yummybooru.database.converter.ConvertBoolean
 import de.yochyo.yummybooru.database.converter.ConvertDate
 import de.yochyo.yummybooru.database.converter.ConvertTagType
 import de.yochyo.yummybooru.database.dao.ServerDao
+import de.yochyo.yummybooru.database.dao.TagCollectionDao
 import de.yochyo.yummybooru.database.dao.TagDao
+import de.yochyo.yummybooru.database.entities.TagCollection
+import de.yochyo.yummybooru.database.entities.TagCollectionTagCrossRef
 import de.yochyo.yummybooru.database.eventcollections.TagEventCollection
+import de.yochyo.yummybooru.database.migrations.Migration3To4
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.utils.GlobalListeners
 import de.yochyo.yummybooru.utils.enums.TagSortType
@@ -23,7 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
 
-@Database(entities = [Tag::class, Server::class], version = 3, exportSchema = false)
+@Database(entities = [Tag::class, Server::class, TagCollection::class, TagCollectionTagCrossRef::class], version = 4, exportSchema = true)
 @TypeConverters(ConvertDate::class, ConvertBoolean::class, ConvertTagType::class)
 abstract class RoomDb : RoomDatabase() {
     companion object {
@@ -38,7 +42,7 @@ abstract class RoomDb : RoomDatabase() {
                     db.execSQL("INSERT INTO servers VALUES ('Konachan', 'https://konachan.com/', 'moebooru', '', '', NULL);", emptyArray())
                     db.execSQL("INSERT INTO servers VALUES ('Yande.re', 'https://yande.re/', 'moebooru', '', '', NULL);", emptyArray())
                 }
-            }).allowMainThreadQueries().build().apply { _db = this }
+            }).allowMainThreadQueries().addMigrations(Migration3To4()).build().apply { _db = this }
         }
     }
 
@@ -52,7 +56,9 @@ abstract class RoomDb : RoomDatabase() {
     }
 
     val tags by lazy {
-        ObservingEventCollection(TagEventCollection(getTagComparator()).apply { addAll(tagDao.selectWhere(currentServer.id)) })
+        val a = ObservingEventCollection(TagEventCollection(getTagComparator()).apply { addAll(tagDao.selectWhere(currentServer.id)) })
+        println()
+        a
     }
 
     suspend fun reloadTags() {
@@ -136,6 +142,7 @@ abstract class RoomDb : RoomDatabase() {
 
     abstract val tagDao: TagDao
     abstract val serverDao: ServerDao
+    abstract val tagCollectionDao: TagCollectionDao
 }
 
 val Context.db get() = RoomDb.getDb(this)

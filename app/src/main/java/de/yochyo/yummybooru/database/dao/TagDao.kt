@@ -12,7 +12,7 @@ interface TagDao {
     fun selectWhere(serverId: Int): List<Tag>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(tag: Tag)
+    fun insert(tag: Tag): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(tags: Collection<Tag>)

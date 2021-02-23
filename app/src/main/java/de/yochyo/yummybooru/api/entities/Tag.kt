@@ -17,6 +17,7 @@ import java.util.*
         parentColumns = ["id"],
         childColumns = ["server_id"]
     )],
+    indices = [Index(value = ["name", "server_id"], unique = true)]
 )
 class Tag(
     val name: String,
@@ -28,7 +29,7 @@ class Tag(
     val creation: Date = Date(),
     @ColumnInfo(name = "server_id")
     val serverId: Int = -1,
-    @PrimaryKey val id: Int = 0
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "tagId") val id: Int = 0
 ) : IObservableObject<Tag, Int> {
     companion object {
         const val CHANGED_FAVORITE = 1

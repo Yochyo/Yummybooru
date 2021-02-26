@@ -1,22 +1,26 @@
 package de.yochyo.yummybooru.database.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 import de.yochyo.yummybooru.api.entities.Server
 
 @Dao
 interface ServerDao {
     @Query("SELECT * FROM servers")
-    fun selectAll(): List<Server>
+    fun selectAll(): LiveData<List<Server>>
 
-    @Query("SELECT * FROM servers WHERE id = :id")
-    fun select(id: Int): Server
+    @Query("SELECT * FROM servers")
+    fun selectAllNoFlow(): List<Server>
 
     @Delete
-    fun delete(server: Server)
+    fun delete(server: Server): Int
 
-    @Insert //autogenerates id if id is 0
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(server: Server): Long
 
-    @Update
-    fun update(server: Server)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(servers: List<Server>): List<Long>
+
+    @Update(onConflict = OnConflictStrategy.IGNORE)
+    fun update(server: Server): Int
 }

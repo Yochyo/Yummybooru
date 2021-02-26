@@ -31,6 +31,10 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
     repositories {
         maven { url "https://jitpack.io" }
         mavenLocal()
@@ -90,4 +94,5 @@ dependencies {
     implementation "androidx.room:room-runtime:2.2.6"
     implementation "androidx.room:room-ktx:2.2.6"
     kapt "androidx.room:room-compiler:2.2.6"
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.0'
 }

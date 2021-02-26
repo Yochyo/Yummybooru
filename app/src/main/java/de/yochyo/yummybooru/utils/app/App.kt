@@ -6,7 +6,6 @@ import android.app.NotificationManager
 import android.os.Build
 import de.yochyo.yummybooru.events.events.SelectServerEvent
 import de.yochyo.yummybooru.events.listeners.DisplayToastSelectServerListener
-import de.yochyo.yummybooru.utils.GlobalListeners
 
 class App : Application() {
     companion object {
@@ -21,7 +20,6 @@ class App : Application() {
 
     private fun initListeners() {
         SelectServerEvent.registerListener(DisplayToastSelectServerListener())
-        GlobalListeners.registerGlobalListeners(this)
     }
 
     private fun createNotificationChannel() {

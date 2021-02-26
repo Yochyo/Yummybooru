@@ -16,7 +16,7 @@ class DownloadPostsDialog(context: Context, manager: IManager) {
         builder.setMessage(context.getString(R.string.check_storage_space))
         builder.setPositiveButton(context.getString(R.string.positive_button_name)) { _, _ ->
             GlobalScope.launch {
-                val server = context.db.currentServer
+                val server = context.db.selectedServerValue
                 DownloadService.startService(context, manager, server)
                 do {
                     val page = manager.downloadNextPage()

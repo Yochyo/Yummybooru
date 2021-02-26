@@ -9,27 +9,23 @@ import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
-import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.SelectableRecyclerViewAdapter
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
 import de.yochyo.yummybooru.utils.commands.*
-import de.yochyo.yummybooru.utils.general.TagDispatcher
 import de.yochyo.yummybooru.utils.general.setColor
 import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.android.synthetic.main.activity_following.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
-class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: RecyclerView, s: Collection<Tag>) : SelectableRecyclerViewAdapter<FollowingTagViewHolder>(
+class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: RecyclerView) : SelectableRecyclerViewAdapter<FollowingTagViewHolder>(
     activity, recyclerView, R.menu.following_activity_selection_menu
 ) {
-    val followingObserves = FollowingObservers()
+    val followingObserves = FollowingObservers(activity)
 
-    private var followedTags: Collection<Tag> = s
+    private var followedTags: List<Tag> = emptyList()
 
-    fun updateFollowing(s: Collection<Tag>) {
+    fun updateFollowing(s: List<Tag>) {
         followedTags = s
         notifyDataSetChanged()
     }
@@ -60,35 +56,32 @@ class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: Recycle
     }
 
 
-    override fun createViewHolder(parent: ViewGroup): FollowingTagViewHolder {
-        return FollowingTagViewHolder(activity, activity.layoutInflater.inflate(R.layout.subscription_item_layout, parent, false) as FrameLayout)
-    }
-
-    override fun getItemCount(): Int = followedTags.size
-    override fun onCreateViewHolder(parent: ViewGroup, position: Int): FollowingTagViewHolder {
-        val holder = super.onCreateViewHolder(parent, position)
+    override fun createViewHolder(position: Int, parent: ViewGroup): FollowingTagViewHolder {
+        val tag = followedTags[position]
+        val holder = FollowingTagViewHolder(activity, activity.layoutInflater.inflate(R.layout.subscription_item_layout, parent, false) as FrameLayout, tag)
         val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
         toolbar.inflateMenu(R.menu.activity_subscription_item_menu)
         toolbar.setOnMenuItemClickListener {
             val pos = holder.adapterPosition
             if (pos !in followedTags.indices) return@setOnMenuItemClickListener true
 
-            GlobalScope.launch(TagDispatcher) {
-                val tag = followedTags.elementAt(holder.adapterPosition)
-                when (it.itemId) {
-                    R.id.following_set_favorite -> Command.execute(activity.following_layout, CommandFavoriteTag(tag, !tag.isFavorite))
-                    R.id.unfollow -> Command.execute(activity.following_layout, CommandUpdateFollowingTagData(tag, null))
-                    R.id.delete_tag -> Command.execute(activity.following_layout, CommandDeleteTag(tag))
-                }
+            val tag = followedTags[holder.adapterPosition]
+            when (it.itemId) {
+                R.id.following_set_favorite -> Command.execute(activity.following_layout, CommandFavoriteTag(tag, !tag.isFavorite))
+                R.id.unfollow -> Command.execute(activity.following_layout, CommandUpdateFollowingTagData(tag, null))
+                R.id.delete_tag -> Command.execute(activity.following_layout, CommandDeleteTag(tag))
             }
             true
         }
         return holder
     }
 
+    override fun getItemCount(): Int = followedTags.size
+
     override fun onBindViewHolder(holder: FollowingTagViewHolder, position: Int) {
         super.onBindViewHolder(holder, position)
-        val tag = followedTags.elementAt(position)
+        val tag = followedTags[position]
+        holder.tag = tag
 
         val toolbar = holder.layout.findViewById<Toolbar>(R.id.toolbar)
         val text1 = toolbar.findViewById<TextView>(android.R.id.text1)
@@ -99,7 +92,7 @@ class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: Recycle
         Menus.initFollowingMenu(activity, toolbar.menu, tag)
         toolbar.menu.setGroupEnabled(0, selected.isEmpty()) //Cannot access menu when selecting items
 
-        val observer = followingObserves.createObserver(activity, activity.db.currentServer, tag)
+        val observer = followingObserves.createObserver(activity, activity.viewModel.server, tag)
         text2.text = activity.getString(R.string.number_of_new_pictures, observer.value)
         holder.registerObserver(observer)
     }

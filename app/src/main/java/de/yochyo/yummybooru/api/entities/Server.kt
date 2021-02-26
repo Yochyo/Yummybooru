@@ -8,7 +8,6 @@ import androidx.room.PrimaryKey
 import de.yochyo.booruapi.api.IBooruApi
 import de.yochyo.booruapi.api.pixiv.PixivApi2
 import de.yochyo.yummybooru.api.Apis
-import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import kotlinx.coroutines.GlobalScope
@@ -71,13 +70,13 @@ data class Server(
         }
     }
 
-    suspend fun getMatchingTags(context: Context, beginSequence: String, limit: Int = 10) = api.getTagAutoCompletion(beginSequence, limit)?.map { it.toBooruTag(context) }
-    suspend fun getTag(context: Context, name: String): Tag = api.getTag(name).toBooruTag(context)
+    suspend fun getMatchingTags(context: Context, beginSequence: String, limit: Int = 10) = api.getTagAutoCompletion(beginSequence, limit)?.map { it.toBooruTag(this) }
+    suspend fun getTag(name: String): Tag = api.getTag(name).toBooruTag(this)
     suspend fun getPosts(page: Int, tags: Array<String>, limit: Int = 30) = api.getPosts(page, tags.joinToString(" "), limit)
     suspend fun newestID() = api.getNewestPost()?.id
 
 
-    fun isSelected(context: Context): Boolean = context.db.currentServer.id == id
+    fun isSelected(context: Context): Boolean = context.preferences.currentServerId == id
 
     override fun compareTo(other: Server) = id.compareTo(other.id)
     override fun toString() = name

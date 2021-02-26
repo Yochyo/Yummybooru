@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import de.yochyo.booruapi.api.Post
@@ -15,19 +16,13 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.manager.ManagerDistributor
 import de.yochyo.yummybooru.api.manager.ManagerWrapper
-import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsDialog
 import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
-import de.yochyo.yummybooru.utils.commands.Command
-import de.yochyo.yummybooru.utils.commands.CommandAddTag
-import de.yochyo.yummybooru.utils.commands.CommandDeleteTag
+import de.yochyo.yummybooru.utils.TagUtil
 import de.yochyo.yummybooru.utils.distributor.Pointer
-import de.yochyo.yummybooru.utils.general.TagDispatcher
-import de.yochyo.yummybooru.utils.general.createTagAndOrChangeFavoriteSate
-import de.yochyo.yummybooru.utils.general.createTagAndOrChangeFollowingState
 import de.yochyo.yummybooru.utils.general.restoreManager
 import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*
@@ -51,7 +46,7 @@ open class PreviewActivity : AppCompatActivity() {
         }
     }
 
-    private lateinit var actionBarListener: ActionBarListener
+    lateinit var viewModel: PreviewActivityViewModel
 
     private val disableSwipeRefreshOnSelectionListener = Listener<StartSelectingEvent> { swipeRefreshLayout.isEnabled = false }
     private val reEnableSwipeRefreshOnSelectionListener =
@@ -72,6 +67,7 @@ open class PreviewActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel = ViewModelProvider(this).get(PreviewActivityViewModel::class.java)
         setContentView(R.layout.activity_preview)
         initData(savedInstanceState)
     }
@@ -177,22 +173,20 @@ open class PreviewActivity : AppCompatActivity() {
             android.R.id.home -> finish()
             R.id.download_all -> DownloadPostsDialog(this, m)
             R.id.select_all -> previewAdapter.selectAll()
-            R.id.favorite -> GlobalScope.launch(TagDispatcher) { createTagAndOrChangeFavoriteSate(preview_activity_container, m.toString()) }
-            R.id.add_tag -> GlobalScope.launch(TagDispatcher) {
-                val tag = db.getTag(m.toString())
-                if (tag == null) Command.execute(preview_activity_container, CommandAddTag(db.currentServer.getTag(this@PreviewActivity, m.toString())))
-                else Command.execute(preview_activity_container, CommandDeleteTag(tag))
-            }
-            R.id.follow -> GlobalScope.launch { createTagAndOrChangeFollowingState(preview_activity_container, m.toString()) }
+
+            R.id.favorite -> TagUtil.favoriteOrCreateTagIfNotExist(preview_activity_container, this, m.toString())
+            R.id.add_tag -> TagUtil.addTagOrDeleteIfExists(preview_activity_container, this, m.toString())
+            R.id.follow -> TagUtil.CreateFollowedTagOrChangeFollowing(preview_activity_container, this, m.toString())
         }
         return super.onOptionsItemSelected(item)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.preview_menu, menu)
-        val tag = db.getTag(m.toString())
-        Menus.initPreviewMenu(this, menu, tag)
-        actionBarListener = ActionBarListener(this, m.toString(), menu).apply { registerListeners() }
+        viewModel.tags.observe(this, {
+            val tag = it.find { it.name == m.toString() }
+            Menus.initPreviewMenu(this, menu, tag)
+        })
         return true
     }
 
@@ -207,8 +201,6 @@ open class PreviewActivity : AppCompatActivity() {
             m.posts.removeOnAddElementsListener(managerListener)
             ManagerDistributor.releasePointer(m.toString(), managerPointer)
         }
-        if (this::actionBarListener.isInitialized)
-            actionBarListener.unregisterListeners()
         if (this::previewAdapter.isInitialized) {
             previewAdapter.onStartSelection.removeListener(disableSwipeRefreshOnSelectionListener)
             previewAdapter.onStopSelection.removeListener(reEnableSwipeRefreshOnSelectionListener)

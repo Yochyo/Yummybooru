@@ -1,6 +1,5 @@
 package de.yochyo.yummybooru.layout.activities.fragments.serverListViewFragment
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,17 +9,18 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Server
+import de.yochyo.yummybooru.utils.general.ctx
 import de.yochyo.yummybooru.utils.general.setColor
 
-class ServerListFragmentAdapter(val context: Context) : RecyclerView.Adapter<ServerListFragmentViewHolder>() {
-    var servers: Collection<Server> = emptyList()
+class ServerListFragmentAdapter(val fragment: ServerListFragment) : RecyclerView.Adapter<ServerListFragmentViewHolder>() {
+    val context = fragment.ctx
+    var servers: List<Server> = emptyList()
     override fun getItemCount(): Int = servers.size
 
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): ServerListFragmentViewHolder {
         val holder = ServerListFragmentViewHolder(
-            this,
-            (LayoutInflater.from(context).inflate(R.layout.server_item_layout, parent, false) as LinearLayout),
-            servers.elementAt(position)
+            fragment, this, (LayoutInflater.from(context).inflate(R.layout.server_item_layout, parent, false) as LinearLayout),
+            servers[position]
         )
         holder.layout.setOnClickListener(holder)
         holder.layout.setOnLongClickListener(holder)
@@ -33,7 +33,7 @@ class ServerListFragmentAdapter(val context: Context) : RecyclerView.Adapter<Ser
         fillServerLayoutFields(holder.layout, server, server.isSelected(context))
     }
 
-    fun update(s: Collection<Server>) {
+    fun update(s: List<Server>) {
         servers = s
         notifyDataSetChanged()
     }

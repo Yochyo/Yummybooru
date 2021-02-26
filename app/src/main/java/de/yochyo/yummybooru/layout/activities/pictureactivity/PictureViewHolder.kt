@@ -8,7 +8,6 @@ import com.google.android.material.snackbar.Snackbar
 import de.yochyo.booruapi.api.Post
 import de.yochyo.booruapi.api.TagType
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
 import de.yochyo.yummybooru.layout.views.photoview.PhotoViewWithoutSecondDoubleTap
@@ -58,7 +57,7 @@ class PictureViewHolder(
             } else { //double swipe
                 GlobalScope.launch {
                     for (tag in post.getTags().filter { it.tagType == TagType.ARTIST })
-                        Command.execute(activity.picture_activity_container, CommandAddTag(tag.toBooruTag(activity)))
+                        Command.execute(activity.picture_activity_container, CommandAddTag(tag.toBooruTag(activity.viewModel.server)))
                 }
             }
             lastSwipeUp = time
@@ -98,19 +97,19 @@ class PictureViewHolder(
                     downloadedOriginalImage = it != null
                     it?.loadIntoImageView(photoView)
                 }
-            }, activity.db.currentServer.headers, downloadNow = true)
+            }, activity.viewModel.server.headers, downloadNow = true)
             downloader.downloadPostPreviewIMG(activity, post, {
                 mutex.withLock {
                     if (!downloadedOriginalImage && it != null)
                         GlobalScope.launch(Dispatchers.Main) { photoView.setImageBitmap(it.bitmap) }
                 }
-            }, activity.db.currentServer.headers, downloadFirst = true)
+            }, activity.viewModel.server.headers, downloadFirst = true)
         }
         currentChild = photoView
     }
 
     fun loadVideo(post: Post) {
-        mediaView.setVideoPath(post.fileSampleURL, activity.db.currentServer.api.getHeaders())
+        mediaView.setVideoPath(post.fileSampleURL, activity.viewModel.server.api.getHeaders())
         currentChild = mediaView
     }
 

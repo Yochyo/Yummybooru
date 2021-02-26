@@ -8,39 +8,34 @@ import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
-class ServerListFragmentViewHolder(val adapter: ServerListFragmentAdapter, val layout: LinearLayout, var server: Server) : RecyclerView.ViewHolder(layout), View.OnClickListener,
-    View.OnLongClickListener {
+class ServerListFragmentViewHolder(val fragment: ServerListFragment, val adapter: ServerListFragmentAdapter, val layout: LinearLayout, var server: Server) :
+    RecyclerView.ViewHolder(layout), View.OnClickListener, View.OnLongClickListener {
 
-    val ctx = layout.context
+    val viewModel = fragment.viewModel
+    val context = layout.context
     override fun onClick(v: View?) {
-        GlobalScope.launch(Dispatchers.Main) {
-            ctx.db.loadServer(server)
-            adapter.notifyDataSetChanged()
-        }
+        context.preferences.currentServerId = server.id
     }
 
     override fun onLongClick(v: View?): Boolean {
-        longClickDialog(server)
+        longClickDialog()
         return true
     }
 
-    private fun longClickDialog(server: Server) {
-        val builder = AlertDialog.Builder(ctx)
+    private fun longClickDialog() {
+        val builder = AlertDialog.Builder(context)
         builder.setTitle(server.name)
-        builder.setItems(arrayOf(ctx.getString(R.string.edit_server), ctx.getString(R.string.delete_server))) { dialog, i ->
+        builder.setItems(arrayOf(context.getString(R.string.edit_server), context.getString(R.string.delete_server))) { dialog, i ->
             dialog.cancel()
             when (i) {
                 0 -> editServerDialog(server)
                 1 -> {
-                    if (!server.isSelected(ctx)) ConfirmDialog { ctx.db.servers -= server }.withTitle(ctx.getString(R.string.delete_server_with_name, server.name)).build(ctx)
-                    else Toast.makeText(ctx, ctx.getString(R.string.cannot_delete_server), Toast.LENGTH_LONG).show()
+                    if (server == viewModel.selectedServerValue.value) Toast.makeText(context, context.getString(R.string.cannot_delete_server), Toast.LENGTH_LONG).show()
+                    else ConfirmDialog { context.db.serverDao.delete(server) }.withTitle(context.getString(R.string.delete_server_with_name, server.name)).build(context)
                 }
             }
         }
@@ -48,11 +43,9 @@ class ServerListFragmentViewHolder(val adapter: ServerListFragmentAdapter, val l
     }
 
     private fun editServerDialog(server: Server) {
-        AddServerDialog(ctx) {
-            GlobalScope.launch {
-                ctx.db.servers.replaceElement(server, it)
-                withContext(Dispatchers.Main) { Toast.makeText(ctx, ctx.getString(R.string.edit_server_with_name, it.name), Toast.LENGTH_SHORT).show() }
-            }
-        }.withServer(server).withTitle(ctx.getString(R.string.edit_server)).build(ctx)
+        AddServerDialog(context) {
+            context.db.updateServer(server)
+            Toast.makeText(context, context.getString(R.string.edit_server_with_name, it.name), Toast.LENGTH_SHORT).show()
+        }.withServer(server).withTitle(context.getString(R.string.edit_server)).build(context)
     }
 }

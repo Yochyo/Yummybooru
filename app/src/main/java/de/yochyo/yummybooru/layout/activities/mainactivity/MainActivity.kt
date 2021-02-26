@@ -123,7 +123,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_add_server -> AddServerDialog(this) { db.servers += it }.build(this)
+            R.id.action_add_server -> AddServerDialog(this) { db.serverDao.insert(it) }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
         }
         return super.onOptionsItemSelected(item)

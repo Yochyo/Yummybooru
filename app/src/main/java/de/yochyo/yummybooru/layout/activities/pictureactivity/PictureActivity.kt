@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.chrisbanes.photoview.PhotoView
@@ -59,11 +60,11 @@ class PictureActivity : AppCompatActivity() {
     private val managerListener = Listener<OnUpdateEvent<Post>>
     { GlobalScope.launch(Dispatchers.Main) { this@PictureActivity.pictureAdapter.updatePosts() } }
 
-
-    //TODO wird onDetach automatisch aufgerufen wenn die activity pausiert wird?
+    lateinit var viewModel: PictureActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel = ViewModelProvider(this).get(PictureActivityViewModel::class.java)
         setContentView(R.layout.activity_picture)
         setSupportActionBar(toolbar_picture2)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

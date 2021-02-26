@@ -29,6 +29,6 @@ open class ManagerWrapper(private val manager: IManager) : IManager by manager {
     override fun toString() = manager.toString()
 
     companion object {
-        fun build(context: Context, s: String) = ManagerWrapper(ManagerBuilder.createManager(context.db.currentServer.api, s, context.preferences.limit))
+        fun build(context: Context, s: String) = ManagerWrapper(ManagerBuilder.createManager(context.db.selectedServerValue.api, s, context.preferences.limit))
     }
 }

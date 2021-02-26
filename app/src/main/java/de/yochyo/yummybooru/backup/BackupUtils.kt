@@ -20,9 +20,9 @@ object BackupUtils {
             val json = JSONObject()
             val tagArray = JSONArray()
             val serverArray = JSONArray()
-            for (tag in context.db.tagDao.selectAll())
+            for (tag in context.db.tagDao.selectAllNoFlow())
                 tagArray.put(TagBackup.toJSONObject(tag, context))
-            for (server in context.db.serverDao.selectAll())
+            for (server in context.db.serverDao.selectAllNoFlow())
                 serverArray.put(ServerBackup.toJSONObject(server, context))
             json.put("tags", tagArray)
             json.put("servers", serverArray)
@@ -38,7 +38,7 @@ object BackupUtils {
     }
 
     suspend fun restoreBackup(byteArray: ByteArray, context: Context, observable: EventHandler<OnChangeObjectEvent<Int, Int>>) {
-        return try {
+        try {
             val obj = updateRestoreObject(JSONObject(String(byteArray)))
             val tags = obj.getJSONArray("tags")
             val servers = obj.getJSONArray("servers")
@@ -54,8 +54,7 @@ object BackupUtils {
 
                 servers.map { ServerBackup.restoreEntity(it as JSONObject, context); incrementProgress() }
                 val _tags = tags.mapNotNull { incrementProgress();TagBackup.restoreEntity2(it as JSONObject, context) }
-                context.db.tagDao.insert(_tags)
-                context.db.reloadDB()
+                context.db.addTags(_tags)
             }
         } catch (e: Exception) {
             e.printStackTrace()

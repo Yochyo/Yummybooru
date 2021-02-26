@@ -10,7 +10,6 @@ import de.yochyo.eventcollection.events.OnUpdateEvent
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.manager.ManagerWrapper
-import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.downloadservice.DownloadService
 import de.yochyo.yummybooru.layout.selectableRecyclerView.ActionModeClickEvent
@@ -50,7 +49,7 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
             R.id.download_selected -> {
                 GlobalScope.launch {
                     val posts = selected.getSelected(m.posts)
-                    DownloadService.startService(activity, m.toString(), posts, activity.db.currentServer)
+                    DownloadService.startService(activity, m.toString(), posts, activity.viewModel.server)
                 }
                 deselectAll()
             }
@@ -58,9 +57,9 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
                 val posts = selected.getSelected(m.posts)
                 GlobalScope.launch {
                     posts.map { post -> post.getTags() }.flatMap { tags -> tags.filter { tag -> tag.tagType == TagType.ARTIST } }.forEach { t ->
-                        Command.execute(activity.preview_activity_container, CommandAddTag(t.toBooruTag(activity)))
+                        Command.execute(activity.preview_activity_container, CommandAddTag(t.toBooruTag(activity.viewModel.server)))
                     }
-                    DownloadService.startService(activity, m.toString(), posts, activity.db.currentServer)
+                    DownloadService.startService(activity, m.toString(), posts, activity.viewModel.server)
                 }
                 deselectAll()
             }
@@ -83,7 +82,7 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
         }
     }
 
-    override fun createViewHolder(parent: ViewGroup): PreviewViewHolder {
+    override fun createViewHolder(position: Int, parent: ViewGroup): PreviewViewHolder {
         val framelayout = if (activity.preferences.previewStaggeredMode)
             (activity.layoutInflater.inflate(R.layout.preview_image_view_staggered, parent, false) as FrameLayout)
         else getNonStaggeredPreviewView(parent)
@@ -110,7 +109,7 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
             downloader.downloadPostPreviewIMG(activity, p, {
                 if (pos == holder.adapterPosition && it != null)
                     GlobalScope.launch(Dispatchers.Main) { holder.layout.findViewById<ImageView>(R.id.preview_picture).setImageBitmap(it.bitmap) }
-            }, activity.db.currentServer.headers, activity.isScrolling)
+            }, activity.viewModel.server.headers, activity.isScrolling)
         }
     }
 

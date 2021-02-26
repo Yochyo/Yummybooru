@@ -9,22 +9,19 @@ import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.layout.menus.Menus
+import de.yochyo.yummybooru.utils.TagUtil
 import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandDeleteTag
 import de.yochyo.yummybooru.utils.commands.CommandFavoriteTag
-import de.yochyo.yummybooru.utils.commands.CommandUpdateFollowingTagData
 import de.yochyo.yummybooru.utils.general.*
 import kotlinx.android.synthetic.main.fragment_tag_history.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
-class TagHistoryFragmentAdapter(val fragment: TagHistoryFragment, val selectedTags: MutableList<String>) : RecyclerView.Adapter<TagFragmentViewHolder>() {
+class TagHistoryFragmentAdapter(val fragment: TagHistoryFragment) : RecyclerView.Adapter<TagFragmentViewHolder>() {
     val context = fragment.ctx
-    private var tags: Collection<Tag> = emptyList()
+    val viewModel = fragment.viewModel
+    private var tags: List<Tag> = emptyList()
 
-    fun update(t: Collection<Tag>) {
+    fun update(t: List<Tag>) {
         tags = t
         notifyDataSetChanged()
     }
@@ -35,11 +32,9 @@ class TagHistoryFragmentAdapter(val fragment: TagHistoryFragment, val selectedTa
             val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
 
             fun onClick() {
-                val pos = adapterPosition
-                if (pos !in tags.indices) return
-
-                if (check.isChecked) selectedTags.add(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
-                else selectedTags.remove(tags.elementAt(adapterPosition).name)
+                viewModel.selectedTags.value =
+                    if (check.isChecked) viewModel.selectedTagsValue.value.addToCopy(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
+                    else fragment.viewModel.selectedTagsValue.value.removeFromCopy(toolbar.findViewById<TextView>(R.id.search_textview).text.toString())
             }
 
             toolbar.setOnClickListener {
@@ -49,20 +44,11 @@ class TagHistoryFragmentAdapter(val fragment: TagHistoryFragment, val selectedTa
             check.setOnClickListener { onClick() }
 
             toolbar.setOnMenuItemClickListener {
-                val pos = adapterPosition
-                if (pos !in tags.indices) return@setOnMenuItemClickListener true
-
-                GlobalScope.launch(TagDispatcher) {
-                    val tag = tags.elementAt(adapterPosition)
-                    when (it.itemId) {
-                        R.id.main_search_favorite_tag -> Command.execute(fragment.fragment_tag_history, CommandFavoriteTag(tag, !tag.isFavorite))
-                        R.id.main_search_follow_tag -> {
-                            if (tag.following == null) tag.addFollowing(fragment.fragment_tag_history)
-                            else Command.execute(fragment.fragment_tag_history, CommandUpdateFollowingTagData(tag, null))
-                            withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
-                        }
-                        R.id.main_search_delete_tag -> Command.execute(fragment.fragment_tag_history, CommandDeleteTag(tag))
-                    }
+                val tag = tags[adapterPosition]
+                when (it.itemId) {
+                    R.id.main_search_favorite_tag -> Command.execute(fragment.fragment_tag_history, CommandFavoriteTag(tag, !tag.isFavorite))
+                    R.id.main_search_follow_tag -> TagUtil.followOrUnfollow(fragment.fragment_tag_history, tag)
+                    R.id.main_search_delete_tag -> Command.execute(fragment.fragment_tag_history, CommandDeleteTag(tag))
                 }
                 true
             }
@@ -70,7 +56,7 @@ class TagHistoryFragmentAdapter(val fragment: TagHistoryFragment, val selectedTa
 
     override fun onBindViewHolder(holder: TagFragmentViewHolder, position: Int) {
         val tag = tags.elementAt(position)
-        holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox).isChecked = selectedTags.contains(tag.name)
+        holder.toolbar.findViewById<CheckBox>(R.id.search_checkbox).isChecked = fragment.viewModel.selectedTagsValue.value.contains(tag.name)
         val textView = holder.toolbar.findViewById<TextView>(R.id.search_textview)
         textView.text = tag.name;textView.setColor(tag.color);textView.underline(tag.isFavorite)
         Menus.initMainSearchTagMenu(context, holder.toolbar.menu, tag)

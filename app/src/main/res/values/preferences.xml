@@ -38,10 +38,10 @@
     <bool name="crop_preview_default_value">false</bool>
 
     <string-array name="sort_tag_comparator">
-        <item>Name (asc)</item>
-        <item>Name (des)</item>
-        <item>Date (asc)</item>
-        <item>Date (des)</item>
+        <item>Name (a-z)</item>
+        <item>Name (z-a)</item>
+        <item>Date (oldest-newest)</item>
+        <item>Date (newest-oldest)</item>
     </string-array>
     <string-array name="post_limit">
         <item>30</item>

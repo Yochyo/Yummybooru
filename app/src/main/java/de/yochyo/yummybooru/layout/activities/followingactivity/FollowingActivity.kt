@@ -20,9 +20,11 @@ import de.yochyo.yummybooru.utils.TagUtil
 import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandUpdateFollowingTagData
 import de.yochyo.yummybooru.utils.commands.CommandUpdateSeveralFollowingTagData
+import de.yochyo.yummybooru.utils.observeUntil
 import de.yochyo.yummybooru.utils.withValue
 import kotlinx.android.synthetic.main.activity_following.*
 import kotlinx.android.synthetic.main.content_following.*
+import kotlinx.android.synthetic.main.fragment_tag_history.*
 import kotlinx.coroutines.*
 import java.util.*
 
@@ -107,13 +109,15 @@ class FollowingActivity : AppCompatActivity() {
             android.R.id.home -> finish()
             R.id.add_following -> {
                 AddTagDialog {
-                    TagUtil.CreateFollowedTagOrChangeFollowing(following_layout, this, it.text.toString())
-                    /*
-                    withContext(Dispatchers.Main) {
-                        layoutManager.scrollToPositionWithOffset(filteringFollowingList.indexOfFirst { it.name == following.name }, 0)
+                    TagUtil.CreateFollowedTagOrChangeFollowing(following_layout, this@FollowingActivity, it.text.toString())
+                    GlobalScope.launch(Dispatchers.Main) {
+                        val name = it.toString()
+                        viewModel.tags.observeUntil(this@FollowingActivity, {
+                            val index = it.indexOfFirst { it.name == name }
+                            if (index >= 0)
+                                layoutManager.scrollToPositionWithOffset(index, 0)
+                        }, { it.find { it.name == name } != null })
                     }
-                     */
-                    //TODO
                 }.withTitle(getString(R.string.follow_tag)).build(this)
             }
             R.id.update_following -> viewModel.tags.withValue(this) { updateFollowing(it) }

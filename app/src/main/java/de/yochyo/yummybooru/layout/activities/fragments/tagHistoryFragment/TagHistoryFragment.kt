@@ -17,7 +17,9 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandAddTag
 import de.yochyo.yummybooru.utils.general.*
+import de.yochyo.yummybooru.utils.observeUntil
 import kotlinx.android.synthetic.main.fragment_tag_history.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -85,17 +87,15 @@ class TagHistoryFragment : Fragment() {
                 R.id.search -> onSearchButtonClick(viewModel.selectedTags.value ?: listOf("*"))
                 R.id.add_tag -> {
                     AddTagDialog {
-                        GlobalScope.launch {
+                        GlobalScope.launch(Dispatchers.Main) {
                             val t = viewModel.server.getTag(it.text.toString())
-
-                            Command.execute(fragment_tag_history, CommandAddTag(t))
-                            /*
-                            withContext(Dispatchers.Main) {
-                                tagLayoutManager.scrollToPositionWithOffset(filteringTagList?.indexOfFirst { it.name == t.name }
-                                    ?: 0, 0)
+                            if (Command.executeAsync(fragment_tag_history, CommandAddTag(t))) {
+                                viewModel.tags.observeUntil(this@TagHistoryFragment, {
+                                    val index = it.indexOfFirst { it.name == t.name }
+                                    if (index >= 0)
+                                        tagLayoutManager.scrollToPositionWithOffset(index, 0)
+                                }, { it.find { it.name == t.name } != null })
                             }
-                             */
-                            //TODO
                         }
                     }.build(ctx)
                 }

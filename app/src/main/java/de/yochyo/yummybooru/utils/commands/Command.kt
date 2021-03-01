@@ -17,7 +17,11 @@ interface Command {
 
     companion object {
         fun execute(view: View, command: Command, showSnackbar: Show = command.show) {
-            GlobalScope.launch(Dispatchers.IO) {
+            GlobalScope.launch(Dispatchers.IO) { executeAsync(view, command, showSnackbar) }
+        }
+
+        suspend fun executeAsync(view: View, command: Command, showSnackbar: Show = command.show): Boolean {
+            return withContext(Dispatchers.IO) {
                 val res = command.run(view.context)
                 if (res) {
                     withContext(Dispatchers.Main) {
@@ -31,9 +35,9 @@ interface Command {
                                 Toast.makeText(view.context, command.getToastMessage(view.context), Toast.LENGTH_SHORT).show()
                             }
                         }
-
                     }
                 }
+                res
             }
         }
     }
@@ -46,3 +50,4 @@ interface Command {
 }
 
 fun Command.execute(view: View, showSnackbar: Command.Show = show) = Command.execute(view, this, show)
+suspend fun Command.executeAsync(view: View, showSnackbar: Command.Show = show) = Command.executeAsync(view, this, show)

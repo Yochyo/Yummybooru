@@ -6,8 +6,8 @@ import androidx.lifecycle.Observer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
-class LiveDataValue<T>(livedata: LiveData<T>, owner: LifecycleOwner?) {
-    private var _value: T? = null
+class LiveDataValue<T>(livedata: LiveData<T>, owner: LifecycleOwner?, default: T? = null) {
+    private var _value: T? = default
     val value: T
         get() = runBlocking {
             var v: T? = _value

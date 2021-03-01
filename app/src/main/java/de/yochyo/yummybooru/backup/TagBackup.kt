@@ -5,7 +5,6 @@ import de.yochyo.booruapi.api.TagType
 import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.Tag
-import de.yochyo.yummybooru.utils.general.sendFirebase
 import java.util.*
 
 object TagBackup : BackupableEntity<Tag> {
@@ -36,7 +35,6 @@ object TagBackup : BackupableEntity<Tag> {
             )
         } catch (e: Exception) {
             e.printStackTrace()
-            e.sendFirebase()
             null
         }
     }

@@ -65,6 +65,7 @@ class PictureActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(this).get(PictureActivityViewModel::class.java)
+        viewModel.init(this)
         setContentView(R.layout.activity_picture)
         setSupportActionBar(toolbar_picture2)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

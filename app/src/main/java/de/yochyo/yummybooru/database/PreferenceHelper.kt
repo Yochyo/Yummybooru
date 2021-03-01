@@ -15,7 +15,7 @@ class PreferenceHelper(val context: Context) {
         set(value) = setPreference(context.getString(R.string.page_size), value.toString())
 
 
-    var currentServerId: Int
+    var selectedServerId: Int
         get() = getPreference(context.getString(R.string.currentServer), 1)
         set(value) = setPreference(context.getString(R.string.currentServer), value)
 

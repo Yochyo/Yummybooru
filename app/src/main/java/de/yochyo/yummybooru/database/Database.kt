@@ -24,8 +24,7 @@ import de.yochyo.yummybooru.database.entities.TagCollectionTagCrossRef
 import de.yochyo.yummybooru.database.entities.TagCollectionWithTags
 import de.yochyo.yummybooru.database.migrations.Migration3To4
 import de.yochyo.yummybooru.utils.LiveDataValue
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 @Database(entities = [Tag::class, Server::class, TagCollection::class, TagCollectionTagCrossRef::class], version = 4, exportSchema = true)
 @TypeConverters(ConvertDate::class, ConvertBoolean::class, ConvertTagType::class)
@@ -126,7 +125,22 @@ abstract class RoomDb : RoomDatabase(), DaoMethods {
         update()
     }
 
-    val selectedServerLiveValue by lazy { LiveDataValue(selectedServer, null) }
+
+    val selectedServerLiveValue by lazy {
+        LiveDataValue(selectedServer, null, runBlocking {
+            GlobalScope.async {
+                val servers = serverDao.selectAllNoFlow()
+                servers.find { it.id == context.preferences.selectedServerId } ?: servers.firstOrNull()
+            }.await()
+        })
+    }
+
+
+    /*
+     val selectedServerLiveValue by lazy {
+         LiveDataValue(selectedServer, null)
+     }
+     */
     val selectedServerValue get() = selectedServerLiveValue.value
 
     suspend fun deleteEverything() {

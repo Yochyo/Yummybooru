@@ -18,7 +18,7 @@ class ServerListFragmentViewHolder(val fragment: ServerListFragment, val adapter
     val viewModel = fragment.viewModel
     val context = layout.context
     override fun onClick(v: View?) {
-        context.preferences.currentServerId = server.id
+        context.preferences.selectedServerId = server.id
     }
 
     override fun onLongClick(v: View?): Boolean {

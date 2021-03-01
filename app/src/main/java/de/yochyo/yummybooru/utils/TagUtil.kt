@@ -8,9 +8,7 @@ import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.commands.*
 import kotlinx.android.synthetic.main.activity_preview.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 object TagUtil {
     fun addTag(snackbarView: View, name: String, favorite: Boolean) {
@@ -61,18 +59,20 @@ object TagUtil {
     fun CreateFollowedTagOrChangeFollowing(viewForSnackbar: View, owner: LifecycleOwner, name: String) {
         viewForSnackbar.db.tags.withValue(owner, {
             val tag = it.find { it.name == name }
-            if (tag == null) GlobalScope.launch {
-                CommandAddTag(viewForSnackbar.db.selectedServerValue.getTag(name).copy(following = getFollowingData(viewForSnackbar.context, name)))
+            if (tag == null) GlobalScope.launch(Dispatchers.IO) {
+                CommandAddTag(viewForSnackbar.db.selectedServerValue.getTag(name).copy(following = getFollowingData(viewForSnackbar.context, name))).execute(viewForSnackbar)
             } else followOrUnfollow(viewForSnackbar, tag)
         })
     }
 
     private suspend fun getFollowingData(context: Context, name: String): Following? {
-        val s = context.db.selectedServerValue
-        val tagAsync = GlobalScope.async { s.getTag(name) }
-        val id = s.newestID()
-        return if (id != null) Following(id, tagAsync.await().count)
-        else null
+        return withContext(Dispatchers.IO) {
+            val s = context.db.selectedServerValue
+            val tagAsync = GlobalScope.async { s.getTag(name) }
+            val id = s.newestID()
+            if (id != null) Following(id, tagAsync.await().count)
+            else null
+        }
     }
 
 }

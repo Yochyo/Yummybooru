@@ -30,4 +30,16 @@ object ServerBackup : BackupableEntity<Server> {
             e.sendFirebase()
         }
     }
+
+    fun restoreEntity2(json: JSONObject, context: Context): Server? {
+        return try {
+            return Server(
+                json.getString("name"), json.getString("url"), json.getString("api"),
+                json.getString("userName"), json.getString("password"), json.getInt("id")
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 }

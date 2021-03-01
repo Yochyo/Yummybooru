@@ -65,7 +65,6 @@
     <string name="delete_tag">Delete tag</string>
     <string name="delete_tag_with_name">Delete tag [%s]</string>
 
-
     <!-- Dialogs -->
     <string name="positive_button_name">Ok</string>
     <string name="negative_button_name">No</string>
@@ -117,8 +116,14 @@
     <string name="undo_add_tag_with_name">Delete tag [%s]</string>
     <string name="undo_updating_tag_with_name">Undo updating tag [%s]</string>
     <string name="undo_updating_tags">Undo updating tags</string>
-    <string name="undo_following_tag_with_name">Undo following tag [%s]</string>
-    <string name="undo_unfollowing_tag_with_name">Undo unfollowing tag [%s]</string>
+    <string name="updated_tags">Updated tags</string>
+    <string name="follow_tag_with_name">Follow tag [%s]</string>
     <string name="unfavorite_tag_with_name">Unfavorite tag [%s]</string>
     <string name="favorite_tag_with_name">Favorite tag [%s]</string>
+    <string name="favorited_tag_with_name">Favorited tag [%s]</string>
+    <string name="unfavorited_tag_with_name">Unfavorited tag [%s]</string>
+    <string name="deleted_tag_with_name">Deleted tag [%s]</string>
+    <string name="added_tag_with_name">Added tag [%s]</string>
+    <string name="followed_tag_with_name">Followed tag [%s]</string>
+    <string name="unfollowed_tag_with_name">Unfollowed tag [%s]</string>
 </resources>

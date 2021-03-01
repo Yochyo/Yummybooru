@@ -7,7 +7,12 @@ import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 
 class CommandAddTag(private val tag: Tag) : Command {
-    override val showSnackbarDefault = false
+
+    override val show: Command.Show = Command.Show.TOAST
+    override fun getToastMessage(context: Context): String {
+        return context.getString(R.string.added_tag_with_name, tag.name)
+    }
+
     override fun getUndoMessage(context: Context): String {
         return context.getString(R.string.undo_add_tag_with_name, tag.name)
     }
@@ -22,7 +27,11 @@ class CommandAddTag(private val tag: Tag) : Command {
 }
 
 class CommandDeleteTag(private val tag: Tag) : Command {
-    override val showSnackbarDefault = true
+    override val show = Command.Show.SNACKBAR
+    override fun getToastMessage(context: Context): String {
+        return context.getString(R.string.deleted_tag_with_name, tag.name)
+    }
+
     override fun getUndoMessage(context: Context): String {
         return context.getString(R.string.add_tag_with_name, tag.name)
     }
@@ -32,13 +41,19 @@ class CommandDeleteTag(private val tag: Tag) : Command {
     }
 
     override fun undo(context: Context): Boolean {
-        return context.db.removeTag(tag) > 0
+        return context.db.addTag(tag) > 0
     }
 }
 
 class CommandFavoriteTag(private val tag: Tag, private val value: Boolean) : Command {
     private val copy = tag.copy(isFavorite = value)
-    override val showSnackbarDefault = true
+
+    override val show = Command.Show.SNACKBAR
+    override fun getToastMessage(context: Context): String {
+        return if (value) context.getString(R.string.favorited_tag_with_name, tag.name)
+        else context.getString(R.string.unfavorited_tag_with_name, tag.name)
+    }
+
     override fun getUndoMessage(context: Context): String {
         return if (value) context.getString(R.string.unfavorite_tag_with_name, tag.name)
         else context.getString(R.string.favorite_tag_with_name, tag.name)
@@ -53,12 +68,18 @@ class CommandFavoriteTag(private val tag: Tag, private val value: Boolean) : Com
     }
 }
 
-class CommandUpdateFollowingTagData(private val tag: Tag, following: Following?) : Command {
+class CommandUpdateFollowingTagData(private val tag: Tag, val following: Following?) : Command {
     private val copy = tag.copy(following = following)
 
-    override val showSnackbarDefault = true
+    override val show = Command.Show.SNACKBAR
+    override fun getToastMessage(context: Context): String {
+        return if (following != null) context.getString(R.string.followed_tag_with_name, tag.name)
+        else context.getString(R.string.unfollowed_tag_with_name, tag.name)
+    }
+
     override fun getUndoMessage(context: Context): String {
-        return context.getString(R.string.undo_updating_tag_with_name, tag.name)
+        if (following == null) context.getString(R.string.follow_tag_with_name, tag.name)
+        return context.getString(R.string.unfollow_tag_with_name, tag.name)
     }
 
     override fun run(context: Context): Boolean {
@@ -73,7 +94,11 @@ class CommandUpdateFollowingTagData(private val tag: Tag, following: Following?)
 class CommandUpdateSeveralFollowingTagData(private val tagFollowingDataPairs: List<Pair<Tag, Following?>>) : Command {
     private val copy = tagFollowingDataPairs.map { it.first.copy(following = it.second) }
 
-    override val showSnackbarDefault = true
+    override val show = Command.Show.SNACKBAR
+    override fun getToastMessage(context: Context): String {
+        return context.getString(R.string.updated_tags)
+    }
+
     override fun getUndoMessage(context: Context): String {
         return context.getString(R.string.undo_updating_tags)
     }

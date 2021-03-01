@@ -8,7 +8,6 @@ import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -41,11 +40,13 @@ class TagHistoryFragment : Fragment() {
         val array = savedInstanceState?.getStringArray(SELECTED)
         if (array != null)
             viewModel.selectedTags.value = array.toList()
+
+        registerObservers()
     }
 
     fun registerObservers() {
-        viewModel.tags.observe(this, Observer { tagAdapter.notifyDataSetChanged() })
-        viewModel.selectedTags.observe(this, Observer { tagAdapter.notifyDataSetChanged() })
+        viewModel.tags.observe(this, { tagAdapter.update(it) })
+        viewModel.selectedTags.observe(this, { tagAdapter.notifyDataSetChanged() })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -60,7 +61,7 @@ class TagHistoryFragment : Fragment() {
         tagRecyclerView.layoutManager = LinearLayoutManager(ctx).apply { tagLayoutManager = this }
         layout.findViewById<SearchView>(R.id.tag_filter).setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
-                if (newText != null) GlobalScope.launch { viewModel.filter.value = newText }
+                if (newText != null) viewModel.filter.value = newText
                 return true
             }
 

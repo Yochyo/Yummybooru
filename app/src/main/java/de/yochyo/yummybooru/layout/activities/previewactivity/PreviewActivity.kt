@@ -68,6 +68,7 @@ open class PreviewActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(this).get(PreviewActivityViewModel::class.java)
+        viewModel.init(this)
         setContentView(R.layout.activity_preview)
         initData(savedInstanceState)
     }

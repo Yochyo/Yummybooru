@@ -8,6 +8,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import de.yochyo.booruapi.api.TagType
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandAddTag
@@ -16,7 +17,7 @@ class AddSpecialTagDialog {
     var title: String? = null
     fun withTitle(s: String) = apply { title = s }
 
-    fun build(snackbarView: View) {
+    fun build(snackbarView: View, server: Server) {
         val builder = AlertDialog.Builder(snackbarView.context)
         val layout = LayoutInflater.from(snackbarView.context).inflate(R.layout.main_add_special_tag_layout, null)
         builder.setTitle(title)
@@ -29,7 +30,7 @@ class AddSpecialTagDialog {
                 stringBuilder.append("height")
                 stringBuilder.append(layout.findViewById<Spinner>(R.id.height_spinner).selectedItem.toString())
                 stringBuilder.append(text)
-                val tag = Tag(stringBuilder.toString(), TagType.UNKNOWN)
+                val tag = Tag(stringBuilder.toString(), TagType.UNKNOWN, server.id)
                 Command.execute(snackbarView, CommandAddTag(tag))
             }
         }
@@ -40,7 +41,7 @@ class AddSpecialTagDialog {
                 stringBuilder.append("width")
                 stringBuilder.append(layout.findViewById<Spinner>(R.id.width_spinner).selectedItem.toString())
                 stringBuilder.append(text)
-                val tag = Tag(stringBuilder.toString(), TagType.UNKNOWN)
+                val tag = Tag(stringBuilder.toString(), TagType.UNKNOWN, server.id)
                 Command.execute(snackbarView, CommandAddTag(tag))
             }
         }

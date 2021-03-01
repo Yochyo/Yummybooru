@@ -80,7 +80,7 @@ fun TextView.underline(underline: Boolean) {
     else paintFlags = p.apply { isUnderlineText = false }.flags
 }
 
-fun Tag.toBooruTag(server: Server) = de.yochyo.yummybooru.api.entities.Tag(name, tagType, false, count, null, serverId = server.id)
+fun Tag.toBooruTag(server: Server) = de.yochyo.yummybooru.api.entities.Tag(name, tagType, server.id, count = count)
 
 val Fragment.ctx: Context get() = this.requireContext()
 fun parseURL(url: String): String {

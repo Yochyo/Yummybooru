@@ -30,8 +30,8 @@ object TagBackup : BackupableEntity<Tag> {
             val lastCount = json.getInt("lastCount")
             val following = if (lastId == -1 || lastCount == -1) null else Following(lastId, lastCount)
             Tag(
-                json.getString("name"), TagType.valueOf(json.getInt("type")), json.getBoolean("isFavorite"),
-                0, following, Date(json.getLong("creation")), json.getInt("serverID")
+                json.getString("name"), TagType.valueOf(json.getInt("type")), json.getInt("serverID"), json.getBoolean("isFavorite"),
+                0, following, Date(json.getLong("creation"))
             )
         } catch (e: Exception) {
             e.printStackTrace()

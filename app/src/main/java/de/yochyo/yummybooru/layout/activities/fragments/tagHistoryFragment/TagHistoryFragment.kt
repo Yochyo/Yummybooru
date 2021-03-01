@@ -99,7 +99,7 @@ class TagHistoryFragment : Fragment() {
                         }
                     }.build(ctx)
                 }
-                R.id.add_special_tag -> AddSpecialTagDialog().build(fragment_tag_history)
+                R.id.add_special_tag -> AddSpecialTagDialog().build(fragment_tag_history, viewModel.server)
                 else -> return@setOnMenuItemClickListener false
             }
             return@setOnMenuItemClickListener true

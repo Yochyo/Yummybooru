@@ -21,18 +21,19 @@ import java.util.*
 data class Tag(
     val name: String,
     val type: TagType,
+    @ColumnInfo(name = "server_id")
+    val serverId: Int,
     val isFavorite: Boolean = false,
     @Ignore
     val count: Int = 0,
     @Embedded
     val following: Following? = null,
     val creation: Date = Date(),
-    @ColumnInfo(name = "server_id")
-    val serverId: Int = -1,
+
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "tagId") val id: Int = 0
 ) {
-    constructor(name: String, type: TagType, isFavorite: Boolean, creation: Date, following: Following?, serverId: Int, id: Int) :
-            this(name, type, isFavorite, 0, following, creation, serverId, id)
+    constructor(name: String, type: TagType, serverId: Int, isFavorite: Boolean, creation: Date, following: Following?, id: Int) :
+            this(name, type, serverId, isFavorite, 0, following, creation, id)
 
     val color: Int
         get() {

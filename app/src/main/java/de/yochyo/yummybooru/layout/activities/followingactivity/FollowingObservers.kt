@@ -20,6 +20,7 @@ class FollowingObservers(val activity: FollowingActivity) : Closeable {
     fun createObserver(context: Context, server: Server, tag: Tag): FollowingObserver {
         val observer = observers[tag.name] ?: FollowingObserver(context, server, tag)
         observers[tag.name] = observer
+        observer.tag = tag
         return observer
     }
 
@@ -27,7 +28,7 @@ class FollowingObservers(val activity: FollowingActivity) : Closeable {
         observers.forEach { it.value.close() }
     }
 
-    inner class FollowingObserver(val context: Context, val server: Server, val tag: Tag) : Closeable {
+    inner class FollowingObserver(val context: Context, val server: Server, var tag: Tag) : Closeable {
         //NewTagCount, TagCountDifference
         var value = 0
         private val onChange = EventHandler<OnChangeObjectEvent<Int, Int>>()

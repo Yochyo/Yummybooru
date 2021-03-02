@@ -73,13 +73,15 @@ class CommandUpdateFollowingTagData(private val tag: Tag, val following: Followi
 
     override val show = Command.Show.SNACKBAR
     override fun getToastMessage(context: Context): String {
-        return if (following != null) context.getString(R.string.followed_tag_with_name, tag.name)
+        return if (following != null && tag.following != null) context.getString(R.string.updated_followed_tag_with_name, tag.name)
+        else if (following != null) context.getString(R.string.followed_tag_with_name, tag.name)
         else context.getString(R.string.unfollowed_tag_with_name, tag.name)
     }
 
     override fun getUndoMessage(context: Context): String {
-        if (following == null) context.getString(R.string.follow_tag_with_name, tag.name)
-        return context.getString(R.string.unfollow_tag_with_name, tag.name)
+        return if (following != null && tag.following != null) context.getString(R.string.revert_tag_with_name, tag.name)
+        else if (following == null) context.getString(R.string.follow_tag_with_name, tag.name)
+        else context.getString(R.string.unfollow_tag_with_name, tag.name)
     }
 
     override fun run(context: Context): Boolean {

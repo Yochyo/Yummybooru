@@ -126,4 +126,6 @@
     <string name="added_tag_with_name">Added tag [%s]</string>
     <string name="followed_tag_with_name">Followed tag [%s]</string>
     <string name="unfollowed_tag_with_name">Unfollowed tag [%s]</string>
+    <string name="updated_followed_tag_with_name">Updated tag [%s]</string>
+    <string name="revert_tag_with_name">Revert tag [%s]</string>
 </resources>

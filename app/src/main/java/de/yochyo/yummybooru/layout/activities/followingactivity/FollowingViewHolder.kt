@@ -10,6 +10,7 @@ import de.yochyo.yummybooru.layout.selectableRecyclerView.SelectableViewHolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlin.math.max
 
 class FollowingTagViewHolder(val activity: FollowingActivity, layout: FrameLayout, var tag: Tag) : SelectableViewHolder(layout) {
     var observer: FollowingObservers.FollowingObserver? = null
@@ -34,8 +35,10 @@ class FollowingTagViewHolder(val activity: FollowingActivity, layout: FrameLayou
             GlobalScope.launch(Dispatchers.Main) {
                 val toolbar = layout.findViewById<Toolbar>(R.id.toolbar)
                 val text2 = toolbar.findViewById<TextView>(android.R.id.text2)
-                if (tag == observer.tag)
-                    text2.text = activity.getString(R.string.number_of_new_pictures, it.arg)
+                if (tag == observer.tag) {
+                    val difference = max(0, it.new - (tag.following?.lastCount ?: 0))
+                    text2.text = activity.getString(R.string.number_of_new_pictures, difference)
+                }
             }
         }
         observer.start()

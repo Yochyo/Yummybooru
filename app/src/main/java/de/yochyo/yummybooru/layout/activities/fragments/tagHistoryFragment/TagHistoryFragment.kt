@@ -9,9 +9,8 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.recyclerview.TagHistoryTagFragment
 import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.utils.commands.Command
@@ -19,48 +18,38 @@ import de.yochyo.yummybooru.utils.commands.CommandAddTag
 import de.yochyo.yummybooru.utils.general.*
 import de.yochyo.yummybooru.utils.observeUntil
 import kotlinx.android.synthetic.main.fragment_tag_history.*
+import kotlinx.android.synthetic.main.fragment_tag_history.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class TagHistoryFragment : Fragment() {
+    private lateinit var recyclerviewFragment: TagHistoryTagFragment
     var onSearchButtonClick: (tags: List<String>) -> Unit = {}
 
     lateinit var viewModel: TagHistoryFragmentViewModel
-
-    private lateinit var tagAdapter: TagHistoryFragmentAdapter
-    private lateinit var tagLayoutManager: LinearLayoutManager
 
     companion object {
         private const val SELECTED = "SELECTED"
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(TagHistoryFragmentViewModel::class.java)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        viewModel = ViewModelProvider(requireActivity()).get(TagHistoryFragmentViewModel::class.java)
         viewModel.init(this, ctx)
         val array = savedInstanceState?.getStringArray(SELECTED)
         if (array != null)
             viewModel.selectedTags.value = array.toList()
 
-        registerObservers()
-    }
-
-    fun registerObservers() {
-        viewModel.tags.observe(this, { tagAdapter.update(it) })
-        viewModel.selectedTags.observe(this, { tagAdapter.notifyDataSetChanged() })
-    }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val layout = inflater.inflate(R.layout.fragment_tag_history, container, false) as ViewGroup
         configureTagDrawer(layout)
+        recyclerviewFragment = TagHistoryTagFragment()
+        requireActivity().supportFragmentManager.beginTransaction()
+            .replace(R.id.recycler_view_container, recyclerviewFragment).commit()
         return layout
     }
 
     private fun configureTagDrawer(layout: ViewGroup) {
         configureDrawerToolbar(layout.findViewById(R.id.search_toolbar))
-        val tagRecyclerView = layout.findViewById<RecyclerView>(R.id.recycler_view_search)
-        tagRecyclerView.layoutManager = LinearLayoutManager(ctx).apply { tagLayoutManager = this }
         layout.findViewById<SearchView>(R.id.tag_filter).setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
                 if (newText != null) viewModel.filter.value = newText
@@ -70,7 +59,6 @@ class TagHistoryFragment : Fragment() {
             override fun onQueryTextSubmit(query: String?) = true
         })
 
-        tagAdapter = TagHistoryFragmentAdapter(this).apply { tagRecyclerView.adapter = this }
     }
 
     private fun configureDrawerToolbar(toolbar: Toolbar) {
@@ -93,7 +81,7 @@ class TagHistoryFragment : Fragment() {
                                 viewModel.tags.observeUntil(this@TagHistoryFragment, {
                                     val index = it.indexOfFirst { it.name == t.name }
                                     if (index >= 0)
-                                        tagLayoutManager.scrollToPositionWithOffset(index, 0)
+                                        recyclerviewFragment.tagLayoutManager.scrollToPositionWithOffset(index, 0)
                                 }, { it.find { it.name == t.name } != null })
                             }
                         }

@@ -38,15 +38,14 @@
                     android:maxLines="1"
                     app:iconifiedByDefault="false"
                     app:queryHint="Search"
-                    app:searchIcon="@null" />
+                    app:searchIcon="@null"/>
             </androidx.appcompat.widget.Toolbar>
         </com.google.android.material.appbar.AppBarLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view_search"
+        <LinearLayout
+            android:id="@+id/recycler_view_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+            android:layout_height="match_parent" android:orientation="horizontal"/>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </LinearLayout>

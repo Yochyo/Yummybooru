@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment
+package de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.recyclerview
 
 import androidx.recyclerview.widget.RecyclerView
 

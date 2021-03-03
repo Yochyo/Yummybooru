@@ -28,7 +28,7 @@ interface Command {
                         when (showSnackbar) {
                             Show.SNACKBAR -> {
                                 val snack = Snackbar.make(view, command.getUndoMessage(view.context), 2500)
-                                snack.setAction("Undo") { command.undo(view.context) }
+                                snack.setAction("Undo") { GlobalScope.launch { command.undo(view.context) } }
                                 snack.show()
                             }
                             Show.TOAST -> {

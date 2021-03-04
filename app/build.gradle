@@ -89,7 +89,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx:18.0.0'
     implementation 'com.jakewharton:disklrucache:2.0.2'
     implementation 'com.github.AppIntro:AppIntro:6.0.0'
-    implementation 'com.thoughtbot:expandablerecyclerview:1.4'
+    implementation 'com.github.tank777.expandable-recycler-view:expandablerecyclerview:1.6@aar'
 
     implementation "androidx.room:room-runtime:2.2.6"
     implementation "androidx.room:room-ktx:2.2.6"

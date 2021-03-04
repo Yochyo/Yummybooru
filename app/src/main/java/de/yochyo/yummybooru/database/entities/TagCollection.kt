@@ -9,7 +9,7 @@ import de.yochyo.yummybooru.api.entities.Server
     ],
     indices = [Index(value = ["name", "serverId"], unique = true)]
 )
-class TagCollection(
+data class TagCollection(
     val name: String,
     val serverId: Int,
     @PrimaryKey(autoGenerate = true)

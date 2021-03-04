@@ -1,8 +1,14 @@
 package de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.recyclerview_with_tag_collections
 
-import android.view.View
 import com.thoughtbot.expandablerecyclerview.viewholders.GroupViewHolder
-import de.yochyo.yummybooru.database.entities.TagCollectionWithTags
+import de.yochyo.yummybooru.layout.components.tag_history.TagCollectionComponent
 
-class TagHistoryCollectionViewHolder(val layout: View, var tagCollectionWithTags: TagCollectionWithTags) : GroupViewHolder(layout) {
+class TagHistoryCollectionViewHolder(val component: TagCollectionComponent) : GroupViewHolder(component.toolbar) {
+    override fun collapse() {
+        component.animateCollapse()
+    }
+
+    override fun expand() {
+        component.animateExpand()
+    }
 }

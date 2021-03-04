@@ -42,10 +42,11 @@
             </androidx.appcompat.widget.Toolbar>
         </com.google.android.material.appbar.AppBarLayout>
 
-        <LinearLayout
-            android:id="@+id/recycler_view_container"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_search"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" android:orientation="horizontal"/>
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </LinearLayout>

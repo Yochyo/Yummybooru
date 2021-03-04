@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment
+package de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.recyclerview
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,8 +9,10 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.recyclerview.TagHistoryTagFragment
+import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.TagHistoryFragmentViewModel
 import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.utils.commands.Command
@@ -19,12 +21,17 @@ import de.yochyo.yummybooru.utils.general.*
 import de.yochyo.yummybooru.utils.observeUntil
 import kotlinx.android.synthetic.main.fragment_tag_history.*
 import kotlinx.android.synthetic.main.fragment_tag_history.view.*
+import kotlinx.android.synthetic.main.main_activity_layout.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class TagHistoryFragment : Fragment() {
-    private lateinit var recyclerviewFragment: TagHistoryTagFragment
+    private lateinit var tagRecyclerView: RecyclerView
+    private lateinit var tagAdapter: TagHistoryFragmentAdapter
+    lateinit var tagLayoutManager: LinearLayoutManager
+
+
     var onSearchButtonClick: (tags: List<String>) -> Unit = {}
 
     lateinit var viewModel: TagHistoryFragmentViewModel
@@ -42,10 +49,31 @@ class TagHistoryFragment : Fragment() {
 
         val layout = inflater.inflate(R.layout.fragment_tag_history, container, false) as ViewGroup
         configureTagDrawer(layout)
-        recyclerviewFragment = TagHistoryTagFragment()
-        requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.recycler_view_container, recyclerviewFragment).commit()
+
+        tagRecyclerView = layout.recycler_view_search
+        tagRecyclerView.layoutManager = LinearLayoutManager(ctx).apply { tagLayoutManager = this }
+        tagAdapter = TagHistoryFragmentAdapter(this).apply { tagRecyclerView.adapter = this }
+
+        registerObservers()
+
         return layout
+    }
+
+    fun registerObservers() {
+        viewModel.tags.observe(viewLifecycleOwner, { tagAdapter.update(it) })
+        viewModel.selectedTags.observe(viewLifecycleOwner, { tagAdapter.notifyDataSetChanged() })
+
+        /*
+        viewModel.tags.withValue(viewLifecycleOwner){
+            GlobalScope.launch {
+                val s = viewModel.server
+                var c = TagCollection("Test33", viewModel.server.id)
+                c = c.copy(id = ctx.db.addTagCollection(c).toInt())
+                ctx.db.addTagsToCollection(c, it)
+            }
+        }
+         */
+
     }
 
     private fun configureTagDrawer(layout: ViewGroup) {
@@ -81,7 +109,7 @@ class TagHistoryFragment : Fragment() {
                                 viewModel.tags.observeUntil(this@TagHistoryFragment, {
                                     val index = it.indexOfFirst { it.name == t.name }
                                     if (index >= 0)
-                                        recyclerviewFragment.tagLayoutManager.scrollToPositionWithOffset(index, 0)
+                                        tagLayoutManager.scrollToPositionWithOffset(index, 0)
                                 }, { it.find { it.name == t.name } != null })
                             }
                         }

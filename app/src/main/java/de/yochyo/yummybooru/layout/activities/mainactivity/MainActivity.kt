@@ -16,7 +16,8 @@ import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
 import de.yochyo.yummybooru.layout.activities.fragments.serverListViewFragment.ServerListFragment
-import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.TagHistoryFragment
+import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.recyclerview.TagHistoryFragment
+import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.recyclerview_with_tag_collections.TagHistoryCollectionFragment
 import de.yochyo.yummybooru.layout.activities.introactivities.introactivity.IntroActivity
 import de.yochyo.yummybooru.layout.activities.introactivities.savefolderactivity.SaveFolderChangerActivity
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
@@ -32,7 +33,7 @@ import kotlinx.android.synthetic.main.main_activity_layout.*
 
 class MainActivity : AppCompatActivity() {
     private var serverListFragment: Fragment? = null
-    private var tagHistoryFragment: TagHistoryFragment? = null
+    private var tagHistoryFragment: Fragment? = null
 
     companion object {
         private const val TAG_FRAGMENT = "tag_fragment"
@@ -71,12 +72,17 @@ class MainActivity : AppCompatActivity() {
             serverListFragment = supportFragmentManager.getFragment(bundle, SERVER_FRAGMENT)
         }
         if (serverListFragment == null) serverListFragment = ServerListFragment()
-        if (tagHistoryFragment == null) tagHistoryFragment = TagHistoryFragment()
+        //if (tagHistoryFragment == null) tagHistoryFragment = TagHistoryFragment()
+        if (tagHistoryFragment == null) tagHistoryFragment = TagHistoryCollectionFragment()
 
-        tagHistoryFragment!!.onSearchButtonClick = {
-            this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
-            PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
+        val frag = tagHistoryFragment
+        if (frag is TagHistoryFragment) {
+            frag.onSearchButtonClick = {
+                this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
+                PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
+            }
         }
+
 
         supportFragmentManager.beginTransaction()
             .replace(R.id.main_activity_container, serverListFragment!!).commit()

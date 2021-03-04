@@ -25,5 +25,9 @@ interface DaoMethods {
     fun updateTagCollection(tagCollection: TagCollection) = db.tagCollectionDao.updateCollection(tagCollection)
 
     fun addTagToCollection(tagCollection: TagCollection, tag: Tag) = db.tagCollectionDao.insertCollectionCrossRef(TagCollectionTagCrossRef(tagCollection.id, tag.id))
+    fun addTagsToCollection(tagCollection: TagCollection, tags: List<Tag>) = db.tagCollectionDao.insertCollectionCrossRef(tags.map {
+        TagCollectionTagCrossRef(tagCollection.id, it.id)
+    })
+
     fun removeTagFromCollection(tagCollection: TagCollection, tag: Tag) = db.tagCollectionDao.deleteCrossRef(TagCollectionTagCrossRef(tagCollection.id, tag.id))
 }

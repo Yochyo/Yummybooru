@@ -5,7 +5,7 @@ import androidx.room.Junction
 import androidx.room.Relation
 import de.yochyo.yummybooru.api.entities.Tag
 
-open class TagCollectionWithTags(
+data class TagCollectionWithTags(
     @Embedded val collection: TagCollection,
     @Relation(parentColumn = "collectionId", entityColumn = "tagId", associateBy = Junction(TagCollectionTagCrossRef::class))
     val tags: List<Tag>

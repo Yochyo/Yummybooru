@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
-         android:layout_width="match_parent"
-         android:layout_height="wrap_content"
-         android:id="@+id/search_toolbar">
+<androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+                                   android:id="@+id/search_toolbar"
+                                   android:layout_width="match_parent"
+                                   android:layout_height="wrap_content">
     <CheckBox android:id="@+id/search_checkbox"
               android:layout_width="wrap_content"
               android:layout_height="match_parent"
@@ -16,4 +16,4 @@
               android:textColor="@color/white"
               android:gravity="center_vertical"
               android:textSize="16sp"/>
-</Toolbar>
+</androidx.appcompat.widget.Toolbar>

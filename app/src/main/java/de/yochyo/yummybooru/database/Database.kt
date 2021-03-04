@@ -120,7 +120,7 @@ abstract class RoomDb : RoomDatabase(), DaoMethods {
             value = tags.filter { it.collection.serverId == serverId }
         }
         addSource(selectedServer) { update() }
-        addSource(_tags) { update() }
+        addSource(_tagCollections) { update() }
 
         update()
     }

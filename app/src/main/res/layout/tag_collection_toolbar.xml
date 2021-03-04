@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.Toolbar
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/search_toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <ImageView android:id="@+id/arrow" android:layout_width="wrap_content"
+               android:layout_height="wrap_content" android:layout_marginEnd="16dp" android:src="@drawable/arrow_down"/>
+    <TextView
+        android:id="@+id/search_textview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:textColor="@color/white"
+        android:textSize="16sp"/>
+</androidx.appcompat.widget.Toolbar>

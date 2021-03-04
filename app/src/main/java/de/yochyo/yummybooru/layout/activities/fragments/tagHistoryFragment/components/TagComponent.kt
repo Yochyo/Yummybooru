@@ -1,4 +1,4 @@
-package de.yochyo.yummybooru.layout.components.tag_history
+package de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.components
 
 import android.view.LayoutInflater
 import android.view.View
@@ -23,15 +23,6 @@ class TagComponent(val viewForSnack: View, container: ViewGroup) {
 
     init {
         toolbar.inflateMenu(R.menu.activity_main_search_menu)
-        val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
-
-        fun onClick() = onSelect(tag, check.isChecked)
-        toolbar.setOnClickListener {
-            check.isChecked = !check.isChecked
-            onClick()
-        }
-        check.setOnClickListener { onClick() }
-
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.main_search_favorite_tag -> Command.execute(viewForSnack, CommandFavoriteTag(tag, !tag.isFavorite))
@@ -40,6 +31,15 @@ class TagComponent(val viewForSnack: View, container: ViewGroup) {
             }
             true
         }
+
+        val check = toolbar.findViewById<CheckBox>(R.id.search_checkbox)
+
+        fun onClick() = onSelect(tag, check.isChecked)
+        toolbar.setOnClickListener {
+            check.isChecked = !check.isChecked
+            onClick()
+        }
+        check.setOnClickListener { onClick() }
     }
 
     fun update(tag: Tag, selected: Boolean) {

@@ -3,7 +3,7 @@ package de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.recy
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.api.entities.Tag
-import de.yochyo.yummybooru.layout.components.tag_history.TagComponent
+import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.components.TagComponent
 import de.yochyo.yummybooru.utils.general.addToCopy
 import de.yochyo.yummybooru.utils.general.removeFromCopy
 import kotlinx.android.synthetic.main.fragment_tag_history.*

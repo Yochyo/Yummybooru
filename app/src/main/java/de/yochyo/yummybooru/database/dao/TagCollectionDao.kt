@@ -30,6 +30,9 @@ interface TagCollectionDao {
     fun deleteCrossRef(ref: TagCollectionTagCrossRef): Int
 
     @Delete
+    fun deleteCrossRefs(refs: List<TagCollectionTagCrossRef>): Int
+
+    @Delete
     fun deleteCollection(collection: TagCollection): Int
 
     @Update(onConflict = OnConflictStrategy.IGNORE)

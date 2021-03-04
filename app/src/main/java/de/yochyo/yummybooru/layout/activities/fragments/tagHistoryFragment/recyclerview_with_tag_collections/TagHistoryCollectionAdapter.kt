@@ -6,8 +6,8 @@ import com.thoughtbot.expandablerecyclerview.ExpandableRecyclerViewAdapter
 import com.thoughtbot.expandablerecyclerview.models.ExpandableGroup
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.entities.TagCollectionWithTags
-import de.yochyo.yummybooru.layout.components.tag_history.TagCollectionComponent
-import de.yochyo.yummybooru.layout.components.tag_history.TagComponent
+import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.components.TagCollectionComponent
+import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.components.TagComponent
 import de.yochyo.yummybooru.utils.general.addToCopy
 import de.yochyo.yummybooru.utils.general.removeFromCopy
 import kotlinx.android.synthetic.main.fragment_tag_history.*
@@ -29,7 +29,7 @@ class TagHistoryCollectionAdapter(val fragment: TagHistoryCollectionFragment) :
     }
 
     override fun onCreateGroupViewHolder(parent: ViewGroup, viewType: Int): TagHistoryCollectionViewHolder {
-        val component = TagCollectionComponent(fragment.fragment_tag_history, parent)
+        val component = TagCollectionComponent(fragment.viewModel, fragment.fragment_tag_history, parent, fragment)
         return TagHistoryCollectionViewHolder(component)
     }
 
@@ -50,7 +50,8 @@ class TagHistoryCollectionAdapter(val fragment: TagHistoryCollectionFragment) :
     }
 
     override fun onBindGroupViewHolder(holder: TagHistoryCollectionViewHolder, flatPosition: Int, group: ExpandableGroup<*>) {
+        holder.component.collection = group as TagCollectionExpandableGroup
         val textView = holder.component.toolbar.findViewById<TextView>(R.id.search_textview)
-        textView.text = (group as TagCollectionExpandableGroup).collection.name
+        textView.text = group.collection.name
     }
 }

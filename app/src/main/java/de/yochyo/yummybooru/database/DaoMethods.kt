@@ -30,4 +30,6 @@ interface DaoMethods {
     })
 
     fun removeTagFromCollection(tagCollection: TagCollection, tag: Tag) = db.tagCollectionDao.deleteCrossRef(TagCollectionTagCrossRef(tagCollection.id, tag.id))
+    fun removeTagsFromCollection(tagCollection: TagCollection, tags: List<Tag>) =
+        db.tagCollectionDao.deleteCrossRefs(tags.map { TagCollectionTagCrossRef(tagCollection.id, it.id) })
 }

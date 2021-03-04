@@ -14,12 +14,18 @@ class TagHistoryFragmentViewModel : ViewModel() {
     private lateinit var allCollections: LiveData<List<TagCollectionWithTags>>
     private lateinit var tagSortComparator: LiveData<Comparator<Tag>>
 
-    val selectedTags = MutableLiveData<List<String>>(emptyList())
-    val filter = MutableLiveData("")
-    lateinit var tags: LiveData<List<Tag>>
-    lateinit var collections: LiveData<List<TagCollectionWithTags>>
     lateinit var server: Server
+    val filter = MutableLiveData("")
+    val selectedTags = MutableLiveData<List<String>>(emptyList())
     lateinit var selectedTagsValue: LiveDataValue<List<String>>
+
+    //TagHistoryFragment
+    lateinit var tags: LiveData<List<Tag>>
+
+    //TagHistoryCollectionFragment
+    lateinit var collections: LiveData<List<TagCollectionWithTags>>
+    lateinit var allTagsSorted: LiveData<List<Tag>>
+
 
     fun init(owner: LifecycleOwner, context: Context) {
         selectedTagsValue = LiveDataValue(selectedTags, owner)
@@ -30,7 +36,7 @@ class TagHistoryFragmentViewModel : ViewModel() {
 
         tags = getTagMediator()
         collections = getTagCollectionMediator()
-
+        allTagsSorted = getAllTagsSortedMediator()
         allTags.observe(owner, Observer { tags ->
             selectedTags.value = selectedTags.value?.filter { selectedTag -> tags.find { it.name == selectedTag } != null }
         })
@@ -43,11 +49,27 @@ class TagHistoryFragmentViewModel : ViewModel() {
                 val filter = filter.value ?: return
                 val comparator = tagSortComparator.value ?: return
                 val collections = allCollections.value ?: return
-                value = collections.filter { it.collection.name.contains(filter) || it.tags.find { it.name.contains(filter) } != null }
+                val tags = allTags.value ?: return
+
+                val c = (collections as MutableList<TagCollectionWithTags>).apply { add(TagCollectionWithTags("-", server.id).copy(tags = tags)) }
+                value = c.filter { it.collection.name.contains(filter) || it.tags.find { it.name.contains(filter) } != null }
                     .map { it.copy(tags = it.tags.filter { it.name.contains(filter) }.sortedWith(comparator)) }
             }
             addSource(filter) { update() }
             addSource(allCollections) { update() }
+            addSource(tagSortComparator) { update() }
+            addSource(allTags) { update() }
+        }
+    }
+
+    private fun getAllTagsSortedMediator(): LiveData<List<Tag>> {
+        return MediatorLiveData<List<Tag>>().apply {
+            fun update() {
+                val tags = allTags.value ?: return
+                val comparator = tagSortComparator.value ?: return
+                value = tags.sortedWith(comparator)
+            }
+            addSource(allTags) { update() }
             addSource(tagSortComparator) { update() }
         }
     }

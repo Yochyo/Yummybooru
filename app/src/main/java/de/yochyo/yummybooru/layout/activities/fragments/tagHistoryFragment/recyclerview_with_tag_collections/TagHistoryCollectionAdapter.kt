@@ -16,11 +16,11 @@ class TagHistoryCollectionAdapter(val fragment: TagHistoryCollectionFragment) :
     ExpandableRecyclerViewAdapter<TagHistoryCollectionViewHolder, TagHistoryCollectionChildViewHolder>(listOf(TagCollectionWithTags("Loading...", 0).toExpandableGroup())) {
 
     fun update(collections: List<TagCollectionExpandableGroup>) {
-        expandableList.groups = collections
-        val array = Array(groups.size) {
+        val array = if (collections.size < expandableList.groups.size) Array(groups.size) { false } else Array(groups.size) {
             if (expandableList.expandedGroupIndexes.getOrNull(it) == null) false
-            else expandableList.expandedGroupIndexes.get(it)
+            else expandableList.expandedGroupIndexes[it]
         }
+        expandableList.groups = collections
         expandableList.expandedGroupIndexes = array.toBooleanArray()
         notifyDataSetChanged()
     }

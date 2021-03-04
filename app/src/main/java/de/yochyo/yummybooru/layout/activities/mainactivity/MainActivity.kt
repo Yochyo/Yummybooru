@@ -12,6 +12,7 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.database.booleanLiveData
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
@@ -63,19 +64,36 @@ class MainActivity : AppCompatActivity() {
 
         configureToolbarAndNavView(nav_view)
         initData(savedInstanceState)
+        registerObservers()
     }
 
     fun initData(bundle: Bundle?) {
         if (bundle != null) {
-            tagHistoryFragment =
-                supportFragmentManager.getFragment(bundle, TAG_FRAGMENT) as TagHistoryFragment
+            tagHistoryFragment = supportFragmentManager.getFragment(bundle, TAG_FRAGMENT)
             serverListFragment = supportFragmentManager.getFragment(bundle, SERVER_FRAGMENT)
         }
         if (serverListFragment == null) serverListFragment = ServerListFragment()
-        //if (tagHistoryFragment == null) tagHistoryFragment = TagHistoryFragment()
-        if (tagHistoryFragment == null) tagHistoryFragment = TagHistoryCollectionFragment()
 
-        val frag = tagHistoryFragment
+        registerTagFragment(tagHistoryFragment)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_activity_container, serverListFragment!!).commit()
+        Changelog.showChangelogIfChanges(this)
+        AutoUpdater(this).autoUpdate()
+    }
+
+    fun registerObservers() {
+        preferences.prefs.booleanLiveData(getString(R.string.tag_collection_mode), false).observe(this, {
+            registerTagFragment(if (it) TagHistoryCollectionFragment() else TagHistoryFragment())
+        })
+    }
+
+    fun registerTagFragment(fragment: Fragment?) {
+        tagHistoryFragment = fragment ?: if (preferences.enableTagCollectionMode)
+            TagHistoryCollectionFragment()
+        else
+            TagHistoryFragment()
+
+        val frag = tagHistoryFragment ?: return
         if (frag is TagHistoryFragment) {
             frag.onSearchButtonClick = {
                 this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
@@ -88,16 +106,8 @@ class MainActivity : AppCompatActivity() {
                 PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
             }
         }
-
-
         supportFragmentManager.beginTransaction()
-            .replace(R.id.main_activity_container, serverListFragment!!).commit()
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_activity_right_drawer_container, tagHistoryFragment!!).commit()
-        Changelog.showChangelogIfChanges(this)
-        AutoUpdater(this).autoUpdate()
-
-
+            .replace(R.id.main_activity_right_drawer_container, frag).commit()
     }
 
     private fun configureToolbarAndNavView(navView: NavigationView) {

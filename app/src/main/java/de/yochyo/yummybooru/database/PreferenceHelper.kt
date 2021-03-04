@@ -85,6 +85,10 @@ class PreferenceHelper(val context: Context) {
         )
         set(value) = setPreference(context.getString(R.string.sort_tag_comparator), value.value.toString())
 
+    var enableTagCollectionMode: Boolean
+        get() = getPreference(context.getString(R.string.tag_collection_mode), context.resources.getBoolean(R.bool.tag_collection_mode_default_value))
+        set(value) = setPreference(context.getString(R.string.tag_collection_mode), value)
+
     private fun getPreference(name: String, default: String) = prefs.getString(name, default)!!
     private fun getPreference(name: String, default: Int = 0) = prefs.getInt(name, default)
     private fun getPreference(name: String, default: Boolean = false) = prefs.getBoolean(name, default)

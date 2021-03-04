@@ -82,6 +82,12 @@ class MainActivity : AppCompatActivity() {
                 PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
             }
         }
+        if (frag is TagHistoryCollectionFragment) {
+            frag.onSearchButtonClick = {
+                this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
+                PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
+            }
+        }
 
 
         supportFragmentManager.beginTransaction()

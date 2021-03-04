@@ -30,6 +30,7 @@ class TagHistoryCollectionFragment : Fragment() {
     private lateinit var collectionAdapter: TagHistoryCollectionAdapter
     lateinit var tagLayoutManager: LinearLayoutManager
 
+    var onSearchButtonClick: (tags: List<String>) -> Unit = {}
     lateinit var viewModel: TagHistoryFragmentViewModel
 
     companion object {
@@ -85,7 +86,7 @@ class TagHistoryCollectionFragment : Fragment() {
 
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
-                //R.id.search -> onSearchButtonClick(viewModel.selectedTags.value ?: listOf("*"))
+                R.id.search -> onSearchButtonClick(viewModel.selectedTags.value ?: listOf("*"))
                 R.id.add_tag -> {
                     AddTagDialog {
                         GlobalScope.launch(Dispatchers.Main) {

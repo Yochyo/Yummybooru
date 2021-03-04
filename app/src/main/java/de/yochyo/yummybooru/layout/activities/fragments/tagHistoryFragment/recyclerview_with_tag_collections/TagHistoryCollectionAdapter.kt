@@ -16,10 +16,13 @@ class TagHistoryCollectionAdapter(val fragment: TagHistoryCollectionFragment) :
     ExpandableRecyclerViewAdapter<TagHistoryCollectionViewHolder, TagHistoryCollectionChildViewHolder>(listOf(TagCollectionWithTags("Loading...", 0).toExpandableGroup())) {
 
     fun update(collections: List<TagCollectionExpandableGroup>) {
-        val array = if (collections.size < expandableList.groups.size) Array(groups.size) { false } else Array(groups.size) {
-            if (expandableList.expandedGroupIndexes.getOrNull(it) == null) false
-            else expandableList.expandedGroupIndexes[it]
-        }
+        val array = if (collections.size < expandableList.groups.size)
+            Array(collections.size) { false }
+        else
+            Array(collections.size) {
+                if (expandableList.expandedGroupIndexes.getOrNull(it) == null) false
+                else expandableList.expandedGroupIndexes[it]
+            }
         expandableList.groups = collections
         expandableList.expandedGroupIndexes = array.toBooleanArray()
         notifyDataSetChanged()
@@ -33,8 +36,9 @@ class TagHistoryCollectionAdapter(val fragment: TagHistoryCollectionFragment) :
     override fun onCreateChildViewHolder(parent: ViewGroup, viewType: Int): TagHistoryCollectionChildViewHolder {
         val component = TagComponent(fragment.fragment_tag_history, parent)
         component.onSelect = { tag, selected ->
-            if (selected) fragment.viewModel.selectedTagsValue.value.addToCopy(tag.name)
-            else fragment.viewModel.selectedTagsValue.value.removeFromCopy(tag.name)
+            fragment.viewModel.selectedTags.value =
+                if (selected) fragment.viewModel.selectedTagsValue.value.addToCopy(tag.name)
+                else fragment.viewModel.selectedTagsValue.value.removeFromCopy(tag.name)
         }
         return TagHistoryCollectionChildViewHolder(component)
     }

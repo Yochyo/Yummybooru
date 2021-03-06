@@ -62,18 +62,6 @@ class TagHistoryFragment : Fragment() {
     fun registerObservers() {
         viewModel.tags.observe(viewLifecycleOwner, { tagAdapter.update(it) })
         viewModel.selectedTags.observe(viewLifecycleOwner, { tagAdapter.notifyDataSetChanged() })
-
-        /*
-        viewModel.tags.withValue(viewLifecycleOwner){
-            GlobalScope.launch {
-                val s = viewModel.server
-                var c = TagCollection("Test33", viewModel.server.id)
-                c = c.copy(id = ctx.db.addTagCollection(c).toInt())
-                ctx.db.addTagsToCollection(c, it)
-            }
-        }
-         */
-
     }
 
     private fun configureTagDrawer(layout: ViewGroup) {

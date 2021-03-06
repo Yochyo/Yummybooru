@@ -128,4 +128,6 @@
     <string name="unfollowed_tag_with_name">Unfollowed tag [%s]</string>
     <string name="updated_followed_tag_with_name">Updated tag [%s]</string>
     <string name="revert_tag_with_name">Revert tag [%s]</string>
+    <string name="deleted_tag_collection_with_name">Deleted tag colletion [%s]</string>
+    <string name="add_tag_collection_with_name">Add tag colletion [%s]</string>
 </resources>

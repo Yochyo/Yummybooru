@@ -51,7 +51,7 @@ class TagHistoryFragmentViewModel : ViewModel() {
                 val collections = allCollections.value ?: return
                 val tags = allTags.value ?: return
 
-                val c = (collections as MutableList<TagCollectionWithTags>).apply { add(TagCollectionWithTags("-", server.id).copy(tags = tags)) }
+                val c = (collections.map { it } as MutableList<TagCollectionWithTags>).apply { add(TagCollectionWithTags("-", server.id).copy(tags = tags)) }
                 value = c.filter { it.collection.name.contains(filter) || it.tags.find { it.name.contains(filter) } != null }
                     .map { it.copy(tags = it.tags.filter { it.name.contains(filter) }.sortedWith(comparator)) }
             }

@@ -12,11 +12,15 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.database.entities.TagCollection
 import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.TagHistoryFragmentViewModel
 import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
+import de.yochyo.yummybooru.layout.alertdialogs.InputDialog
 import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandAddTag
+import de.yochyo.yummybooru.utils.commands.CommandAddTagCollection
+import de.yochyo.yummybooru.utils.commands.execute
 import de.yochyo.yummybooru.utils.general.ctx
 import de.yochyo.yummybooru.utils.observeUntil
 import kotlinx.android.synthetic.main.fragment_tag_history.*
@@ -76,7 +80,7 @@ class TagHistoryCollectionFragment : Fragment() {
     }
 
     private fun configureDrawerToolbar(toolbar: Toolbar) {
-        toolbar.inflateMenu(R.menu.main_search_nav_menu)
+        toolbar.inflateMenu(R.menu.tag_collection_fragment_menu)
         toolbar.setNavigationIcon(R.drawable.clear)
         toolbar.navigationContentDescription = getString(R.string.deselect_tags)
         toolbar.setNavigationOnClickListener {
@@ -102,6 +106,8 @@ class TagHistoryCollectionFragment : Fragment() {
                     }.build(ctx)
                 }
                 R.id.add_special_tag -> AddSpecialTagDialog().build(fragment_tag_history, viewModel.server)
+                R.id.add_collection -> InputDialog { CommandAddTagCollection(TagCollection(it, viewModel.server.id)).execute(fragment_tag_history) }
+                    .withTitle("Add tag collection").withHint("Name").build(ctx)
                 else -> return@setOnMenuItemClickListener false
             }
             return@setOnMenuItemClickListener true

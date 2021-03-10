@@ -17,6 +17,7 @@
     <string name="use_nomedia">no_media</string>
     <string name="hide_download_toast">hide_download_toast</string>
     <string name="crop_preview">crop_preview</string>
+    <string name="tag_collection_mode">tag_collection_mode</string>
 
     <string name="page_size_default_value">50</string>
     <string name="sort_tag_comparator_default_value">1</string>
@@ -36,6 +37,7 @@
     <bool name="use_nomedia_default_value">true</bool>
     <bool name="hide_download_toast_default_value">false</bool>
     <bool name="crop_preview_default_value">false</bool>
+    <bool name="tag_collection_mode_default_value">false</bool>
 
     <string-array name="sort_tag_comparator">
         <item>Name (a-z)</item>

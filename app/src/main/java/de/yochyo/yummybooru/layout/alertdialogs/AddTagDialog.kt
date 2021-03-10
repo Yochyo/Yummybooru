@@ -52,7 +52,7 @@ class AddTagDialog(val runOnPositive: (editText: AutoCompleteTextView) -> Unit) 
                 GlobalScope.launch {
                     val lastIndexOf = string.lastIndexOf(" ")
                     val a = if (lastIndexOf != -1) string.substring(0..lastIndexOf) else ""
-                    val tags = context.db.currentServer.getMatchingTags(context, name)?.map { Tag(a + it.name, it.type) } //damit der filter funktioniert
+                    val tags = context.db.selectedServerValue.getMatchingTags(context, name)?.map { it.copy(name = a + it.name) } //damit der filter funktioniert
                     if (tags != null) {
                         launch(Dispatchers.Main) {
                             if (!dialogIsDismissed) {

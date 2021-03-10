@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <androidx.preference.SwitchPreference
+        android:defaultValue="@bool/tag_collection_mode_default_value"
+        android:key="@string/tag_collection_mode"
+        android:summary="Enable it for more freedom"
+        android:title="Enable tag collections"
+        app:allowDividerBelow="true"/>
     <androidx.preference.SwitchPreference
         android:defaultValue="@bool/show_favorites_first_default_value"
         android:key="@string/show_favorites_first"
         android:summary="Shows your non-favorite tags after your favorite tags"
-        android:title="Show favorite tags first"/>
+        android:title="Show favorite tags first"
+        app:allowDividerAbove="true"/>
     <androidx.preference.SwitchPreference
         android:defaultValue="@bool/sort_by_tag_type_default_value"
         android:key="@string/sort_by_tag_type"

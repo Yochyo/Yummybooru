@@ -9,3 +9,4 @@ release/
 /local.properties
 /.gradle/
 /app/signing.properties
+/app/schemas/de.yochyo.yummybooru.database.RoomDb/

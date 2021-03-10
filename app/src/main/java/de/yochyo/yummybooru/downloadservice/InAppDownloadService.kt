@@ -15,7 +15,7 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.api.entities.Server
-import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.utils.app.App
 import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.FileWriteResult
@@ -24,7 +24,7 @@ import kotlinx.coroutines.*
 import java.util.*
 
 class InAppDownloadService : Service() {
-    private val downloader = CacheableDownloader(db.parallelBackgroundDownloads)
+    private val downloader = CacheableDownloader(preferences.parallelBackgroundDownloads)
 
 
     private val onChange: Listener<OnChangeObjectEvent<Observable<Int>, Int>> = Listener {
@@ -46,7 +46,7 @@ class InAppDownloadService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        util.size.onChange.registerListener(onChange)
+        util.size.registerListener(onChange)
 
         notificationManager = NotificationManagerCompat.from(this)
         notificationBuilder =
@@ -80,7 +80,7 @@ class InAppDownloadService : Service() {
     }
 
     private fun onFinishDownload(dl: Download<Resource2>) {
-        if (!db.hideDownloadToast)
+        if (!preferences.hideDownloadToast)
             GlobalScope.launch(Dispatchers.Main) {
                 Toast.makeText(
                     this@InAppDownloadService,
@@ -95,7 +95,7 @@ class InAppDownloadService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        util.size.onChange.removeListener(onChange)
+        util.size.removeListener(onChange)
         runBlocking { util.clear() }
         job?.cancel()
     }
@@ -106,7 +106,7 @@ class InAppDownloadService : Service() {
 fun saveDownload(context: Context, url: String, id: String, server: Server, post: Post) = GlobalScope.launch {
     InAppDownloadService.startService(context, url, id, server) {
         if (it != null) {
-            if (FileUtils.writeFile(context, post, it, context.db.currentServer) == FileWriteResult.FAILED)
+            if (FileUtils.writeFile(context, post, it, server) == FileWriteResult.FAILED)
                 withContext(Dispatchers.Main) { Toast.makeText(context, "Saving ${getIdFromMergedId(id)} failed", Toast.LENGTH_SHORT).show() }
         } else withContext(Dispatchers.Main) { Toast.makeText(context, "Failed downloading ${getIdFromMergedId(id)}", Toast.LENGTH_SHORT).show() }
     }

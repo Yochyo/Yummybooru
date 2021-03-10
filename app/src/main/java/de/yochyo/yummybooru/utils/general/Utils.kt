@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Paint
 import android.os.Build
-import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -17,25 +16,22 @@ import de.yochyo.booruapi.manager.ManagerOR
 import de.yochyo.booruapi.manager.ManagerORAlternatingAlgorithm
 import de.yochyo.booruapi.manager.ManagerORDefaultSortingAlgorithm
 import de.yochyo.booruapi.manager.ManagerORRandomSortingAlgorithm
-import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.IResource
 import de.yochyo.yummybooru.api.entities.Resource2
+import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.downloadservice.saveDownload
-import de.yochyo.yummybooru.utils.commands.Command
-import de.yochyo.yummybooru.utils.commands.CommandAddTag
-import de.yochyo.yummybooru.utils.commands.CommandFavoriteTag
-import de.yochyo.yummybooru.utils.commands.CommandUpdateFollowingTagData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.InputStream
 
-fun Context.preview(id: Int) = "${id}p${db.currentServer.id}"
-fun Context.sample(id: Int) = "${id}s${db.currentServer.id}"
-fun Context.original(id: Int) = "${id}o${db.currentServer.id}"
+fun Context.preview(id: Int) = "${id}p${db.selectedServerValue.id}"
+fun Context.sample(id: Int) = "${id}s${db.selectedServerValue.id}"
+fun Context.original(id: Int) = "${id}o${db.selectedServerValue.id}"
 
 fun String.toTagArray(): Array<String> = split(" ").toTypedArray()
 fun Array<String>.toTagString() = joinToString(" ")
@@ -49,13 +45,13 @@ fun TextView.setColor(colorCode: Int) {
 fun downloadAndSaveImage(context: Context, post: Post) {
     val (url, id) = getDownloadPathAndId(context, post)
     GlobalScope.launch {
-        saveDownload(context, url, id, context.db.currentServer, post)
+        saveDownload(context, url, id, context.db.selectedServerValue, post)
     }
 }
 
 fun updateNomediaFile(context: Context, newValue: Boolean? = null) {
     GlobalScope.launch {
-        if (newValue == true || context.db.useNomedia) FileUtils.createFileOrNull(context, null, ".nomedia", "")
+        if (newValue == true || context.preferences.useNomedia) FileUtils.createFileOrNull(context, null, ".nomedia", "")
         else FileUtils.getFile(context, null, ".nomedia")?.delete()
     }
 }
@@ -63,8 +59,8 @@ fun updateNomediaFile(context: Context, newValue: Boolean? = null) {
 fun getDownloadPathAndId(context: Context, p: Post): Pair<String, String> {
     val url: String
     val id: String
-    if (context.db.downloadOriginal) {
-        if (p.fileURL.mimeType == "zip" && context.db.downloadWebm) {
+    if (context.preferences.downloadOriginal) {
+        if (p.fileURL.mimeType == "zip" && context.preferences.downloadWebm) {
             url = p.fileSampleURL
             id = context.sample(p.id)
         } else {
@@ -84,44 +80,7 @@ fun TextView.underline(underline: Boolean) {
     else paintFlags = p.apply { isUnderlineText = false }.flags
 }
 
-fun Tag.toBooruTag(context: Context) = de.yochyo.yummybooru.api.entities.Tag(name, tagType, false, count, null, serverID = context.db.currentServer.id)
-
-suspend fun de.yochyo.yummybooru.api.entities.Tag.addFollowing(viewForSnackbar: View): Boolean {
-    val following = getFollowingData(viewForSnackbar.context, this) ?: return false
-    Command.execute(viewForSnackbar, CommandUpdateFollowingTagData(this, following))
-    return true
-}
-
-suspend fun getFollowingData(context: Context, tag: de.yochyo.yummybooru.api.entities.Tag): Following? {
-    val s = context.db.currentServer
-    val t = s.getTag(context, tag.name)
-    val id = s.newestID()
-    return if (id != null) Following(id, t.count)
-    else null
-}
-
-suspend fun createTagAndOrChangeFavoriteSate(viewForSnackbar: View, name: String) {
-    withContext(TagDispatcher) {
-        val context = viewForSnackbar.context
-        val tag = context.db.getTag(name)
-
-        if (tag == null) Command.execute(viewForSnackbar, CommandAddTag(context.db.currentServer.getTag(context, name).apply { isFavorite = true }))
-        else Command.execute(viewForSnackbar, CommandFavoriteTag(tag, !tag.isFavorite))
-    }
-}
-
-suspend fun createTagAndOrChangeFollowingState(viewForSnackbar: View, name: String): de.yochyo.yummybooru.api.entities.Tag {
-    return withContext(TagDispatcher) {
-        val context = viewForSnackbar.context
-        viewForSnackbar.context.db.getTag(name)?.apply {
-            if (following == null) addFollowing(viewForSnackbar)
-            else Command.execute(viewForSnackbar, CommandUpdateFollowingTagData(this, null))
-        } ?: context.db.currentServer.getTag(context, name).apply {
-            following = getFollowingData(context, this)
-            Command.execute(viewForSnackbar, CommandAddTag(this))
-        }
-    }
-}
+fun Tag.toBooruTag(server: Server) = de.yochyo.yummybooru.api.entities.Tag(name, tagType, server.id, count = count)
 
 val Fragment.ctx: Context get() = this.requireContext()
 fun parseURL(url: String): String {
@@ -190,8 +149,13 @@ fun Context.drawable(id: Int) = ContextCompat.getDrawable(this, id)
 
 suspend fun ManagerWrapper.restoreManager(context: Context, lastId: Int, lastPosition: Int) {
     if (lastId > 0) {
-        downloadNextPages(lastPosition / context.db.limit + 1)
+        downloadNextPages(lastPosition / context.preferences.limit + 1)
         while (this.posts.indexOfFirst { it.id == lastId } == -1) downloadNextPage()
         this.position = this.posts.indexOfFirst { it.id == lastId }
     }
 }
+
+
+fun <E> List<E>.copy() = this.map { it }
+fun <E> List<E>.addToCopy(element: E) = copy().apply { (this as MutableList<E>).add(element) }
+fun <E> List<E>.removeFromCopy(element: E) = copy().apply { (this as MutableList<E>).remove(element) }

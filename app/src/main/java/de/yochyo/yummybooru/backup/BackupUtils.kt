@@ -7,6 +7,7 @@ import de.yochyo.eventmanager.EventHandler
 import de.yochyo.json.JSONArray
 import de.yochyo.json.JSONObject
 import de.yochyo.yummybooru.BuildConfig
+import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.sendFirebase
@@ -20,9 +21,9 @@ object BackupUtils {
             val json = JSONObject()
             val tagArray = JSONArray()
             val serverArray = JSONArray()
-            for (tag in context.db.tagDao.selectAll())
+            for (tag in context.db.tagDao.selectAllNoFlow())
                 tagArray.put(TagBackup.toJSONObject(tag, context))
-            for (server in context.db.serverDao.selectAll())
+            for (server in context.db.serverDao.selectAllNoFlow())
                 serverArray.put(ServerBackup.toJSONObject(server, context))
             json.put("tags", tagArray)
             json.put("servers", serverArray)
@@ -38,28 +39,47 @@ object BackupUtils {
     }
 
     suspend fun restoreBackup(byteArray: ByteArray, context: Context, observable: EventHandler<OnChangeObjectEvent<Int, Int>>) {
-        return try {
-            val obj = updateRestoreObject(JSONObject(String(byteArray)))
-            val tags = obj.getJSONArray("tags")
-            val servers = obj.getJSONArray("servers")
-            val size = 1 + tags.length() + servers.length()
+        withContext(Dispatchers.IO) {
+            try {
+                val obj = updateRestoreObject(JSONObject(String(byteArray)))
 
-            var progress = 0
-            fun incrementProgress() = observable.trigger(OnChangeObjectEvent(++progress, size))
+                val prefs = obj.getJSONObject("preferences")
+                val servers = obj.getJSONArray("servers").mapNotNull { ServerBackup.restoreEntity2(it as JSONObject, context) }
+                val tags = obj.getJSONArray("tags").mapNotNull { TagBackup.restoreEntity2(it as JSONObject, context) }
+                val size = 1 + tags.size + servers.size
 
-            withContext(Dispatchers.IO) {
+                var progress = 0
+                suspend fun incrementProgress(add: Int) = withContext(Dispatchers.Main) {
+                    progress += add
+                    observable.trigger(OnChangeObjectEvent(progress, size))
+                }
+
+
+                val prefsInt = prefs.getJSONObject("integers")
+                val strCurServer = context.getString(R.string.currentServer)
+                var updatedSelectedServer = false
+
+                incrementProgress(0)
                 context.db.deleteEverything()
-                PreferencesBackup.restoreEntity(obj.getJSONObject("preferences"), context)
-                incrementProgress()
 
-                servers.map { ServerBackup.restoreEntity(it as JSONObject, context); incrementProgress() }
-                val _tags = tags.mapNotNull { incrementProgress();TagBackup.restoreEntity2(it as JSONObject, context) }
-                context.db.tagDao.insert(_tags)
-                context.db.reloadDB()
+                for (server in servers) {
+                    val tags = tags.filter { it.serverId == server.id }
+                    val newId = context.db.addServer(server).toInt()
+                    context.db.addTags(tags.map { it.copy(serverId = newId) })
+                    incrementProgress(1 + tags.size)
+                    if (!updatedSelectedServer && prefsInt.has(strCurServer) && prefsInt.getInt(strCurServer) == server.id) {
+                        updatedSelectedServer = true
+                        prefsInt.put(strCurServer, newId)
+                    }
+                }
+
+                PreferencesBackup.restoreEntity(prefs, context)
+                observable.trigger(OnChangeObjectEvent(size, size))
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                e.sendFirebase()
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            e.sendFirebase()
         }
     }
 

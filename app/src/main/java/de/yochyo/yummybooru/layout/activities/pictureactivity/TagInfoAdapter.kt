@@ -3,29 +3,25 @@ package de.yochyo.yummybooru.layout.activities.pictureactivity
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toolbar
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
 import de.yochyo.yummybooru.layout.menus.Menus
+import de.yochyo.yummybooru.utils.TagUtil
 import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandAddTag
-import de.yochyo.yummybooru.utils.general.*
+import de.yochyo.yummybooru.utils.general.setColor
+import de.yochyo.yummybooru.utils.general.toBooruTag
+import de.yochyo.yummybooru.utils.general.underline
+import de.yochyo.yummybooru.utils.withValue
 import kotlinx.android.synthetic.main.activity_picture.*
 import kotlinx.android.synthetic.main.picture_activity_drawer.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
-class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<InfoButtonHolder>() {
-    private val db = activity.db
+class TagInfoAdapter(val activity: PictureActivity) : RecyclerView.Adapter<InfoButtonHolder>() {
+    private var tags: List<de.yochyo.booruapi.api.Tag> = emptyList()
 
-    private var tags: Collection<de.yochyo.booruapi.api.Tag> = emptyList()
-
-    fun updateInfoTags(t: Collection<de.yochyo.booruapi.api.Tag>) {
+    fun updateInfoTags(t: List<de.yochyo.booruapi.api.Tag>) {
         tags = t
         notifyDataSetChanged()
     }
@@ -38,39 +34,29 @@ class TagInfoAdapter(val activity: AppCompatActivity) : RecyclerView.Adapter<Inf
                 activity.drawer_picture2.closeDrawer(GravityCompat.END)
             }
             toolbar.setOnMenuItemClickListener {
-                val pos = adapterPosition
-                if (pos !in tags.indices) return@setOnMenuItemClickListener true
-
-                GlobalScope.launch(TagDispatcher) {
-                    val tag = tags.elementAt(adapterPosition)
-                    when (it.itemId) {
-                        R.id.picture_info_item_add_history -> Command.execute(activity.picture_activity_container, CommandAddTag(tag.toBooruTag(activity)))
-                        R.id.picture_info_item_add_favorite -> {
-                            createTagAndOrChangeFavoriteSate(activity.picture_activity_container, tag.name)
-                            withContext(Dispatchers.Main) { notifyItemChanged(adapterPosition) }
-                        }
-                        R.id.picture_info_item_following -> createTagAndOrChangeFollowingState(activity.picture_activity_container, tag.name)
-
-                    }
+                val tag = tags[adapterPosition]
+                when (it.itemId) {
+                    R.id.picture_info_item_add_history -> Command.execute(activity.picture_activity_container, CommandAddTag(tag.toBooruTag(activity.viewModel.server)))
+                    R.id.picture_info_item_add_favorite -> TagUtil.favoriteOrCreateTagIfNotExist(activity.picture_activity_container, activity, tag.name)
+                    R.id.picture_info_item_following -> TagUtil.CreateFollowedTagOrChangeFollowing(activity.picture_activity_container, activity, tag.name)
                 }
+
                 true
             }
         }
 
     override fun onBindViewHolder(holder: InfoButtonHolder, position: Int) {
-        if (position !in tags.indices) return
+        val tag = tags[position].toBooruTag(activity.viewModel.server)
+        val tagInDatabase = activity.viewModel.tags.withValue(activity) {
+            val tagInDb = it.find { it.name == tag.name }
+            val textView = holder.toolbar.findViewById<TextView>(R.id.info_textview)
+            textView.text = tag.name
+            textView.setColor(tag.color)
+            textView.underline(tagInDb != null && tagInDb.isFavorite)
+            Menus.initPictureInfoTagMenu(activity, holder.toolbar.menu, tagInDb ?: tag)
 
-        GlobalScope.launch(TagDispatcher) {
-            val tag = tags.elementAt(position).toBooruTag(activity)
-            val tagInDatabase = db.getTag(tag.name)
-            withContext(Dispatchers.Main) {
-                val textView = holder.toolbar.findViewById<TextView>(R.id.info_textview)
-                textView.text = tag.name
-                textView.setColor(tag.color)
-                textView.underline(tagInDatabase != null && tagInDatabase.isFavorite)
-                Menus.initPictureInfoTagMenu(activity, holder.toolbar.menu, tagInDatabase ?: tag)
-            }
         }
+
 
     }
 

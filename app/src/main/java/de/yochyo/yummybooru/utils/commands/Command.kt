@@ -2,6 +2,7 @@ package de.yochyo.yummybooru.utils.commands
 
 import android.content.Context
 import android.view.View
+import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -9,22 +10,44 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 interface Command {
+
+    enum class Show {
+        NONE, SNACKBAR, TOAST;
+    }
+
     companion object {
-        suspend fun execute(view: View, command: Command, showSnackbar: Boolean = command.showSnackbarDefault): Boolean {
-            val res = command.run(view.context)
-            if (res) {
-                val snack = Snackbar.make(view, command.getUndoMessage(view.context), 2500)
-                if (showSnackbar) {
-                    snack.setAction("Undo") { GlobalScope.launch { command.undo(view.context) } }
-                    withContext(Dispatchers.Main) { snack.show() }
+        fun execute(view: View, command: Command, showSnackbar: Show = command.show) {
+            GlobalScope.launch(Dispatchers.IO) { executeAsync(view, command, showSnackbar) }
+        }
+
+        suspend fun executeAsync(view: View, command: Command, showSnackbar: Show = command.show): Boolean {
+            return withContext(Dispatchers.IO) {
+                val res = command.run(view.context)
+                if (res) {
+                    withContext(Dispatchers.Main) {
+                        when (showSnackbar) {
+                            Show.SNACKBAR -> {
+                                val snack = Snackbar.make(view, command.getUndoMessage(view.context), 2500)
+                                snack.setAction("Undo") { GlobalScope.launch { command.undo(view.context) } }
+                                snack.show()
+                            }
+                            Show.TOAST -> {
+                                Toast.makeText(view.context, command.getToastMessage(view.context), Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
                 }
+                res
             }
-            return res
         }
     }
 
-    val showSnackbarDefault: Boolean
+    val show: Show
     fun getUndoMessage(context: Context): String
-    suspend fun run(context: Context): Boolean
-    suspend fun undo(context: Context): Boolean
+    fun getToastMessage(context: Context): String
+    fun run(context: Context): Boolean
+    fun undo(context: Context): Boolean
 }
+
+fun Command.execute(view: View, showSnackbar: Command.Show = show) = Command.execute(view, this, show)
+suspend fun Command.executeAsync(view: View, showSnackbar: Command.Show = show) = Command.executeAsync(view, this, show)

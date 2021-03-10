@@ -2,7 +2,7 @@ package de.yochyo.yummybooru.updater
 
 import android.content.Context
 import de.yochyo.yummybooru.BuildConfig
-import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.alertdialogs.ShowChangelogsDialog
 
 class Changelog(val versionName: String, val version: Int, val description: String) {
@@ -89,10 +89,10 @@ class Changelog(val versionName: String, val version: Int, val description: Stri
         }
 
         fun showChangelogIfChanges(context: Context) {
-            if (BuildConfig.VERSION_CODE != context.db.lastVersion) {
+            if (BuildConfig.VERSION_CODE != context.preferences.lastVersion) {
                 showChangelogs(context)
             }
-            context.db.lastVersion = BuildConfig.VERSION_CODE
+            context.preferences.lastVersion = BuildConfig.VERSION_CODE
         }
 
         fun changeLogs(): List<Changelog> = logs

@@ -6,14 +6,13 @@ import de.yochyo.eventmanager.EventHandler
 import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
-import de.yochyo.yummybooru.database.db
 import kotlinx.coroutines.*
 import java.io.Closeable
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.math.max
 
-class FollowingObservers : Closeable {
+class FollowingObservers(val activity: FollowingActivity) : Closeable {
     var paused = false
 
     private val observers = HashMap<String, FollowingObserver>()
@@ -21,6 +20,7 @@ class FollowingObservers : Closeable {
     fun createObserver(context: Context, server: Server, tag: Tag): FollowingObserver {
         val observer = observers[tag.name] ?: FollowingObserver(context, server, tag)
         observers[tag.name] = observer
+        observer.tag = tag
         return observer
     }
 
@@ -28,7 +28,7 @@ class FollowingObservers : Closeable {
         observers.forEach { it.value.close() }
     }
 
-    inner class FollowingObserver(val context: Context, val server: Server, val tag: Tag) : Closeable {
+    inner class FollowingObserver(val context: Context, val server: Server, var tag: Tag) : Closeable {
         //NewTagCount, TagCountDifference
         var value = 0
         private val onChange = EventHandler<OnChangeObjectEvent<Int, Int>>()
@@ -36,7 +36,7 @@ class FollowingObservers : Closeable {
 
         suspend fun updateCountDifference() {
             withContext(Dispatchers.IO) {
-                val tag = context.db.currentServer.getTag(context, tag.name)
+                val tag = activity.viewModel.server.getTag(tag.name)
                 val value = max(0, tag.count - (this@FollowingObserver.tag.following?.lastCount ?: 0))
                 this@FollowingObserver.value = value
                 onChange.trigger(OnChangeObjectEvent(tag.count, value))

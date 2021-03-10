@@ -10,7 +10,7 @@ import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.backup.BackupUtils
-import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.alertdialogs.ProgressDialog
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
@@ -47,7 +47,7 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
                     val backupResult = BackupUtils.createBackup(context)
                     withContext(Dispatchers.Main) {
                         if (backupResult)
-                            Toast.makeText(context, getString(R.string.new_backup, ctx.db.saveFolder.uri), Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, getString(R.string.new_backup, ctx.preferences.saveFolder.uri), Toast.LENGTH_LONG).show()
                         else
                             Toast.makeText(context, getString(R.string.backup_failed), Toast.LENGTH_LONG).show()
                     }
@@ -95,12 +95,12 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
         try {
             val pref = findPreference<Preference>(getString(R.string.savePath))
             if (pref != null) {
-                val file = ctx.db.saveFolder
+                val file = ctx.preferences.saveFolder
                 pref.summary = file.getName()
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            e.logFirebase(ctx.db.saveFolderUri).send()
+            e.logFirebase(ctx.preferences.saveFolderUri).send()
             //TODO this try catch block shouldn't be necessary, but sometimes
         }
     }

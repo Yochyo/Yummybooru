@@ -12,10 +12,12 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import de.yochyo.yummybooru.R
-import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.booleanLiveData
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
 import de.yochyo.yummybooru.layout.activities.fragments.serverListViewFragment.ServerListFragment
-import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.TagHistoryFragment
+import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.recyclerview.TagHistoryFragment
+import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.recyclerview_with_tag_collections.TagHistoryCollectionFragment
 import de.yochyo.yummybooru.layout.activities.introactivities.introactivity.IntroActivity
 import de.yochyo.yummybooru.layout.activities.introactivities.savefolderactivity.SaveFolderChangerActivity
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
@@ -24,6 +26,8 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.menus.SettingsNavView
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
+import de.yochyo.yummybooru.utils.commands.CommandAddServer
+import de.yochyo.yummybooru.utils.commands.execute
 import de.yochyo.yummybooru.utils.general.toTagString
 import de.yochyo.yummybooru.utils.general.updateCombinedSearchSortAlgorithm
 import de.yochyo.yummybooru.utils.general.updateNomediaFile
@@ -31,7 +35,7 @@ import kotlinx.android.synthetic.main.main_activity_layout.*
 
 class MainActivity : AppCompatActivity() {
     private var serverListFragment: Fragment? = null
-    private var tagHistoryFragment: TagHistoryFragment? = null
+    private var tagHistoryFragment: Fragment? = null
 
     companion object {
         private const val TAG_FRAGMENT = "tag_fragment"
@@ -41,12 +45,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity_layout)
-        updateCombinedSearchSortAlgorithm(db.combinedSearchSort)
-        if (db.isFirstStart)
+        updateCombinedSearchSortAlgorithm(preferences.combinedSearchSort)
+        if (preferences.isFirstStart)
             startActivity(Intent(this, IntroActivity::class.java))
         else {
             try {
-                if (!db.saveFolder.exists())
+                if (!preferences.saveFolder.exists())
                     startActivity(Intent(this, SaveFolderChangerActivity::class.java))
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -61,30 +65,50 @@ class MainActivity : AppCompatActivity() {
 
         configureToolbarAndNavView(nav_view)
         initData(savedInstanceState)
+        registerObservers()
     }
 
     fun initData(bundle: Bundle?) {
         if (bundle != null) {
-            tagHistoryFragment =
-                supportFragmentManager.getFragment(bundle, TAG_FRAGMENT) as TagHistoryFragment
+            tagHistoryFragment = supportFragmentManager.getFragment(bundle, TAG_FRAGMENT)
             serverListFragment = supportFragmentManager.getFragment(bundle, SERVER_FRAGMENT)
         }
         if (serverListFragment == null) serverListFragment = ServerListFragment()
-        if (tagHistoryFragment == null) tagHistoryFragment = TagHistoryFragment()
 
-        tagHistoryFragment!!.onSearchButtonClick = {
-            this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
-            PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
-        }
-
+        registerTagFragment(tagHistoryFragment)
         supportFragmentManager.beginTransaction()
             .replace(R.id.main_activity_container, serverListFragment!!).commit()
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_activity_right_drawer_container, tagHistoryFragment!!).commit()
         Changelog.showChangelogIfChanges(this)
         AutoUpdater(this).autoUpdate()
+    }
 
+    fun registerObservers() {
+        preferences.prefs.booleanLiveData(getString(R.string.tag_collection_mode), false).observe(this, {
+            registerTagFragment(if (it) TagHistoryCollectionFragment() else TagHistoryFragment())
+        })
+    }
 
+    fun registerTagFragment(fragment: Fragment?) {
+        tagHistoryFragment = fragment ?: if (preferences.enableTagCollectionMode)
+            TagHistoryCollectionFragment()
+        else
+            TagHistoryFragment()
+
+        val frag = tagHistoryFragment ?: return
+        if (frag is TagHistoryFragment) {
+            frag.onSearchButtonClick = {
+                this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
+                PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
+            }
+        }
+        if (frag is TagHistoryCollectionFragment) {
+            frag.onSearchButtonClick = {
+                this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
+                PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
+            }
+        }
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_activity_right_drawer_container, frag).commit()
     }
 
     private fun configureToolbarAndNavView(navView: NavigationView) {
@@ -122,7 +146,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_add_server -> AddServerDialog(this) { db.servers += it }.build(this)
+            R.id.action_add_server -> AddServerDialog(this) { CommandAddServer(it).execute(drawer_layout) }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
         }
         return super.onOptionsItemSelected(item)

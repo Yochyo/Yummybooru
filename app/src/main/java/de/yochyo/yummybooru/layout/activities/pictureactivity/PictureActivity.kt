@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.chrisbanes.photoview.PhotoView
@@ -19,7 +20,7 @@ import de.yochyo.eventmanager.Listener
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.manager.ManagerDistributor
 import de.yochyo.yummybooru.api.manager.ManagerWrapper
-import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
 import de.yochyo.yummybooru.utils.distributor.Pointer
 import de.yochyo.yummybooru.utils.general.downloadAndSaveImage
@@ -59,11 +60,12 @@ class PictureActivity : AppCompatActivity() {
     private val managerListener = Listener<OnUpdateEvent<Post>>
     { GlobalScope.launch(Dispatchers.Main) { this@PictureActivity.pictureAdapter.updatePosts() } }
 
-
-    //TODO wird onDetach automatisch aufgerufen wenn die activity pausiert wird?
+    lateinit var viewModel: PictureActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel = ViewModelProvider(this).get(PictureActivityViewModel::class.java)
+        viewModel.init(this)
         setContentView(R.layout.activity_picture)
         setSupportActionBar(toolbar_picture2)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -78,7 +80,7 @@ class PictureActivity : AppCompatActivity() {
             restoreManager(savedInstanceState)
             with(view_pager2) {
                 pictureAdapter = PictureAdapter(this@PictureActivity).apply { this@with.adapter = this }
-                this.offscreenPageLimit = db.preloadedImages
+                this.offscreenPageLimit = preferences.preloadedImages
                 m.posts.registerOnUpdateListener(managerListener)
                 pictureAdapter.updatePosts()
 
@@ -90,7 +92,7 @@ class PictureActivity : AppCompatActivity() {
                     m.position = newPosition
                     m.currentPost?.updateCurrentTags()
                     getMediaView(oldPosition)?.pause()
-                    if (newPosition + 2 + db.preloadedImages >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
+                    if (newPosition + 2 + preferences.preloadedImages >= m.posts.size - 1) GlobalScope.launch { m.downloadNextPage() }
 
                     getMediaView(newPosition)?.resume()
                     val scale = getPhotoView(newPosition)?.scale ?: 1f
@@ -142,7 +144,7 @@ class PictureActivity : AppCompatActivity() {
                 val post = m.currentPost
                 if (post != null) {
                     val intent = Intent().apply {
-                        val url = if (post.extension == "zip" && db.downloadWebm) post.fileSampleURL else post.fileURL
+                        val url = if (post.extension == "zip" && preferences.downloadWebm) post.fileSampleURL else post.fileURL
                         action = Intent.ACTION_SEND
                         putExtra(Intent.EXTRA_TEXT, url)
                         type = "text/plain"

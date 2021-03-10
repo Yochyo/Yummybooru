@@ -122,8 +122,7 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
         else holder.onClickLayout()
     }
 
-    abstract fun createViewHolder(parent: ViewGroup): T
-
+    abstract fun createViewHolder(position: Int, parent: ViewGroup): T
 
     open fun setListeners(holder: T) {
         holder.layout.setOnClickListener { clickHolder(holder) }
@@ -131,7 +130,7 @@ abstract class SelectableRecyclerViewAdapter<T : SelectableViewHolder>(private v
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): T {
-        val holder = createViewHolder(parent)
+        val holder = createViewHolder(position, parent)
         setListeners(holder)
         return holder
     }

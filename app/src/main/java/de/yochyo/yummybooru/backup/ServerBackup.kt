@@ -21,14 +21,25 @@ object ServerBackup : BackupableEntity<Server> {
     override suspend fun restoreEntity(json: JSONObject, context: Context) {
         try {
             val server = Server(
-                context,
                 json.getString("name"), json.getString("url"), json.getString("api"),
                 json.getString("userName"), json.getString("password"), json.getInt("id")
             )
-            context.db.serverDao.insertWithID(server, server.id)
+            context.db.serverDao.insert(server)
         } catch (e: Exception) {
             e.printStackTrace()
             e.sendFirebase()
+        }
+    }
+
+    fun restoreEntity2(json: JSONObject, context: Context): Server? {
+        return try {
+            return Server(
+                json.getString("name"), json.getString("url"), json.getString("api"),
+                json.getString("userName"), json.getString("password"), json.getInt("id")
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 }

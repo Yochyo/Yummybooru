@@ -13,7 +13,6 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.booleanLiveData
-import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
 import de.yochyo.yummybooru.layout.activities.fragments.serverListViewFragment.ServerListFragment
@@ -27,6 +26,8 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.layout.menus.SettingsNavView
 import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
+import de.yochyo.yummybooru.utils.commands.CommandAddServer
+import de.yochyo.yummybooru.utils.commands.execute
 import de.yochyo.yummybooru.utils.general.toTagString
 import de.yochyo.yummybooru.utils.general.updateCombinedSearchSortAlgorithm
 import de.yochyo.yummybooru.utils.general.updateNomediaFile
@@ -145,7 +146,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_add_server -> AddServerDialog(this) { db.serverDao.insert(it) }.build(this)
+            R.id.action_add_server -> AddServerDialog(this) { CommandAddServer(it).execute(drawer_layout) }.build(this)
             R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
         }
         return super.onOptionsItemSelected(item)

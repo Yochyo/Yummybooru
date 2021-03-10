@@ -47,42 +47,6 @@ abstract class RoomDb : RoomDatabase(), DaoMethods {
         }
     }
 
-    /*
-     fun getTagComparator(): Comparator<Tag> {
-         fun TagType.toInt() = when (this) {
-             TagType.ARTIST -> 0
-             TagType.COPYRIGHT -> 1
-             TagType.CHARACTER -> 2
-             TagType.GENERAL -> 3
-             TagType.META -> 4
-             TagType.UNKNOWN -> 5
-         }
-
-         val comparatorChain = ArrayList<Comparator<Tag>>()
-         if (context.preferences.sortTagsByFavoriteFirst) comparatorChain += Comparator { o1, o2 ->
-             if (o1.isFavorite == o2.isFavorite) 0
-             else if (o1.isFavorite && !o2.isFavorite) -1
-             else 1
-         }
-
-         if (context.preferences.sortTagsByTagType) comparatorChain += Comparator { o1, o2 -> o1.type.toInt().compareTo(o2.type.toInt()) }
-         comparatorChain += when (context.preferences.tagSortType) {
-             TagSortType.NAME_ASC -> Comparator { o1, o2 -> o1.name.compareTo(o2.name) }
-             TagSortType.NAME_DES -> Comparator { o1, o2 -> o2.name.compareTo(o1.name) }
-             TagSortType.DATE_ASC -> Comparator { o1, o2 -> o2.creation.compareTo(o1.creation) }
-             TagSortType.DATE_DES -> Comparator { o1, o2 -> o2.creation.compareTo(o1.creation) }
-         }
-         return Comparator { o1, o2 ->
-             var res = 0
-             for (comparator in comparatorChain) {
-                 res = comparator.compare(o1, o2)
-                 if (res != 0) break
-             }
-             res
-         }
-     }
-     */
-
     private val currentServerId = context.preferences.prefs.intLiveData(context.getString(R.string.currentServer), 1)
     private val _tags = tagDao.selectAll()
     private val _tagCollections = tagCollectionDao.selectAll()
@@ -135,12 +99,6 @@ abstract class RoomDb : RoomDatabase(), DaoMethods {
         })
     }
 
-
-    /*
-     val selectedServerLiveValue by lazy {
-         LiveDataValue(selectedServer, null)
-     }
-     */
     val selectedServerValue get() = selectedServerLiveValue.value
 
     suspend fun deleteEverything() {

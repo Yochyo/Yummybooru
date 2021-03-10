@@ -7,10 +7,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Server
-import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
-import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
+import de.yochyo.yummybooru.utils.commands.CommandDeleteServer
+import de.yochyo.yummybooru.utils.commands.CommandUpdateServer
+import de.yochyo.yummybooru.utils.commands.execute
+import kotlinx.android.synthetic.main.server_list_fragment.*
 
 class ServerListFragmentViewHolder(val fragment: ServerListFragment, val adapter: ServerListFragmentAdapter, val layout: LinearLayout, var server: Server) :
     RecyclerView.ViewHolder(layout), View.OnClickListener, View.OnLongClickListener {
@@ -35,7 +37,7 @@ class ServerListFragmentViewHolder(val fragment: ServerListFragment, val adapter
                 0 -> editServerDialog(server)
                 1 -> {
                     if (server == viewModel.selectedServerValue.value) Toast.makeText(context, context.getString(R.string.cannot_delete_server), Toast.LENGTH_LONG).show()
-                    else ConfirmDialog { context.db.serverDao.delete(server) }.withTitle(context.getString(R.string.delete_server_with_name, server.name)).build(context)
+                    else CommandDeleteServer(server).execute(fragment.server_recycler_view)
                 }
             }
         }
@@ -44,8 +46,7 @@ class ServerListFragmentViewHolder(val fragment: ServerListFragment, val adapter
 
     private fun editServerDialog(server: Server) {
         AddServerDialog(context) {
-            context.db.updateServer(server)
-            Toast.makeText(context, context.getString(R.string.edit_server_with_name, it.name), Toast.LENGTH_SHORT).show()
+            CommandUpdateServer(server, it).execute(fragment.server_recycler_view)
         }.withServer(server).withTitle(context.getString(R.string.edit_server)).build(context)
     }
 }

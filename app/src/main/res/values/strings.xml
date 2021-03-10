@@ -132,4 +132,8 @@
     <string name="add_tag_collection_with_name">Add tag collection [%s]</string>
     <string name="delete_tag_collection_with_name">Delete tag collection [%s]</string>
     <string name="added_tag_collection_with_name">Added tag collection [%s]</string>
+    <string name="added_server_with_name">Added server [%s]</string>
+    <string name="deleted_server_with_name">Deleted server [%s]</string>
+    <string name="updated_server_with_name">Updated server [%s]</string>
+    <string name="revert_server_with_name">Revert server [%s]</string>
 </resources>

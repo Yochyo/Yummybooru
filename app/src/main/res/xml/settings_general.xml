@@ -23,5 +23,12 @@
         android:entryValues="@array/sort_tag_comparator_values"
         android:key="@string/sort_tag_comparator"
         android:summary="Sort tags"
-        android:title="Change how tags are sorted"/>
+        android:title="Change how tags are sorted"
+        app:allowDividerBelow="true"/>
+    <androidx.preference.SwitchPreference
+        android:defaultValue="@bool/window_privacy_default_value"
+        android:key="@string/window_privacy"
+        android:summary="Disables screenshots. App content is in overview"
+        android:title="Hide app content"
+        app:allowDividerAbove="true"/>
 </PreferenceScreen>

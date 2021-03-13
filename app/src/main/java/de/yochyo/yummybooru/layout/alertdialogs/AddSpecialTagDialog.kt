@@ -12,6 +12,7 @@ import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandAddTag
+import de.yochyo.yummybooru.utils.general.Configuration
 
 class AddSpecialTagDialog {
     var title: String? = null
@@ -36,7 +37,7 @@ class AddSpecialTagDialog {
         }
         layout.findViewById<ImageView>(R.id.width_add).setOnClickListener {
             val text = layout.findViewById<TextView>(R.id.width_edittext).text
-            if(text.isNotEmpty()) {
+            if (text.isNotEmpty()) {
                 val stringBuilder = StringBuilder()
                 stringBuilder.append("width")
                 stringBuilder.append(layout.findViewById<Spinner>(R.id.width_spinner).selectedItem.toString())
@@ -46,6 +47,8 @@ class AddSpecialTagDialog {
             }
         }
 
-        builder.show()
+        val dialog = builder.create()
+        dialog.window.apply { if (this != null) Configuration.setWindowSecurityFrag(context, this) }
+        dialog.show()
     }
 }

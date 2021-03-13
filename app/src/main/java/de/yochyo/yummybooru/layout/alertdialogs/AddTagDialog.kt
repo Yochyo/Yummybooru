@@ -10,6 +10,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.layout.activities.previewactivity.PreviewActivity
+import de.yochyo.yummybooru.utils.general.Configuration
 import de.yochyo.yummybooru.utils.general.setColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -61,11 +62,13 @@ class AddTagDialog(val runOnPositive: (tag: String) -> Unit) {
         }
 
         val dialog = builder.create()
+        dialog.window.apply { if (this != null) Configuration.setWindowSecurityFrag(context, this) }
         dialog.show()
         editText.requestFocus()
         dialog.window?.setGravity(Gravity.TOP)
         dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+
         return dialog
     }
 

@@ -9,12 +9,13 @@ import com.github.appintro.AppIntro2
 import com.github.appintro.R
 import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.activities.introactivities.IIntroActivity
+import de.yochyo.yummybooru.utils.general.Configuration
 
 class IntroActivity : AppIntro2(), IIntroActivity {
     @SuppressLint("MissingSuperCall")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        Configuration.setWindowSecurityFrag(this, window)
         addSlide(IntroWelcomeFragment())
         addSlide(IntroPermissionFragment())
         addSlide(IntroSelectDirFragment())

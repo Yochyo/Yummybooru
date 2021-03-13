@@ -6,6 +6,7 @@ import de.yochyo.booruapi.manager.IManager
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.downloadservice.DownloadService
+import de.yochyo.yummybooru.utils.general.Configuration
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -25,6 +26,8 @@ class DownloadPostsDialog(context: Context, manager: IManager) {
                 } while (true)
             }
         }
-        builder.show()
+        val dialog = builder.create()
+        dialog.window.apply { if (this != null) Configuration.setWindowSecurityFrag(context, this) }
+        dialog.show()
     }
 }

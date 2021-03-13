@@ -8,6 +8,7 @@ import android.widget.TextView
 import de.yochyo.eventcollection.events.OnChangeObjectEvent
 import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.utils.general.Configuration
 import kotlinx.coroutines.*
 
 class ProgressDialog(val observable: EventHandler<OnChangeObjectEvent<Int, Int>>/*Newprogress, TotalProgress*/) {
@@ -43,6 +44,7 @@ class ProgressDialog(val observable: EventHandler<OnChangeObjectEvent<Int, Int>>
             }
         }
         this.dialog = builder.show()
+        dialog.window.apply { if (this != null) Configuration.setWindowSecurityFrag(context, this) }
     }
 
     private fun setProgress(progress: Int, total: Int) {

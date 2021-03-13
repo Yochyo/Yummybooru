@@ -3,6 +3,7 @@ package de.yochyo.yummybooru.layout.alertdialogs
 import android.app.AlertDialog
 import android.content.Context
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.utils.general.Configuration
 
 class ConfirmDialog(val runOnPositive: () -> Unit) {
     var title: String? = null
@@ -19,6 +20,8 @@ class ConfirmDialog(val runOnPositive: () -> Unit) {
         builder.setPositiveButton(context.getString(R.string.positive_button_name)) { _, _ ->
             runOnPositive()
         }
-        builder.show()
+        val dialog = builder.create()
+        dialog.window.apply { if (this != null) Configuration.setWindowSecurityFrag(context, this) }
+        dialog.show()
     }
 }

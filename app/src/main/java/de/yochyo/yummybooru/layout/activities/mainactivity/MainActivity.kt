@@ -5,7 +5,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -29,6 +28,7 @@ import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
 import de.yochyo.yummybooru.utils.commands.CommandAddServer
 import de.yochyo.yummybooru.utils.commands.execute
+import de.yochyo.yummybooru.utils.general.Configuration
 import de.yochyo.yummybooru.utils.general.toTagString
 import de.yochyo.yummybooru.utils.general.updateCombinedSearchSortAlgorithm
 import de.yochyo.yummybooru.utils.general.updateNomediaFile
@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+        Configuration.setWindowSecurityFrag(this, window)
         setContentView(R.layout.main_activity_layout)
         updateCombinedSearchSortAlgorithm(preferences.combinedSearchSort)
         if (preferences.isFirstStart)

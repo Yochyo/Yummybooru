@@ -8,6 +8,7 @@ import android.widget.*
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Apis
 import de.yochyo.yummybooru.api.entities.Server
+import de.yochyo.yummybooru.utils.general.Configuration
 import de.yochyo.yummybooru.utils.general.parseURL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -109,7 +110,9 @@ class AddServerDialog(context: Context, val runOnPositive: (s: Server) -> Unit) 
                 withContext(Dispatchers.Main) { runOnPositive(s) }
             }
         }
-        builder.show()
+        val dialog = builder.create()
+        dialog.window.apply { if (this != null) Configuration.setWindowSecurityFrag(context, this) }
+        dialog.show()
     }
 
 

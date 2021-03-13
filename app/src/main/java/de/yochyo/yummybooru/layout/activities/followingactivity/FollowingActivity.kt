@@ -20,6 +20,7 @@ import de.yochyo.yummybooru.utils.TagUtil
 import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandUpdateFollowingTagData
 import de.yochyo.yummybooru.utils.commands.CommandUpdateSeveralFollowingTagData
+import de.yochyo.yummybooru.utils.general.Configuration
 import de.yochyo.yummybooru.utils.observeUntil
 import de.yochyo.yummybooru.utils.withValue
 import kotlinx.android.synthetic.main.activity_following.*
@@ -40,6 +41,7 @@ class FollowingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(this).get(FollowingActivityViewModel::class.java)
         viewModel.init(this)
+        Configuration.setWindowSecurityFrag(this, window)
         val oldName = savedInstanceState?.getString("name")
         val oldId = savedInstanceState?.getInt("id")
         val oldCount = savedInstanceState?.getInt("count")

@@ -5,6 +5,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.widget.EditText
 import de.yochyo.yummybooru.R
+import de.yochyo.yummybooru.utils.general.Configuration
 
 class InputDialog(val runOnPositive: (text: String) -> Unit) {
     var title: String? = null
@@ -24,6 +25,8 @@ class InputDialog(val runOnPositive: (text: String) -> Unit) {
         builder.setPositiveButton(context.getString(R.string.positive_button_name)) { _, _ ->
             runOnPositive(text.text.toString())
         }
-        builder.show()
+        val dialog = builder.create()
+        dialog.window.apply { if (this != null) Configuration.setWindowSecurityFrag(context, this) }
+        dialog.show()
     }
 }

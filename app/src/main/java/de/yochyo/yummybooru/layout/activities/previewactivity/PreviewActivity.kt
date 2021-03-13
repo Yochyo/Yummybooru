@@ -23,6 +23,7 @@ import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
 import de.yochyo.yummybooru.utils.TagUtil
 import de.yochyo.yummybooru.utils.distributor.Pointer
+import de.yochyo.yummybooru.utils.general.Configuration
 import de.yochyo.yummybooru.utils.general.restoreManager
 import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.android.synthetic.main.content_preview.*
@@ -69,6 +70,7 @@ open class PreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(this).get(PreviewActivityViewModel::class.java)
         viewModel.init(this)
+        Configuration.setWindowSecurityFrag(this, window)
         setContentView(R.layout.activity_preview)
         initData(savedInstanceState)
     }

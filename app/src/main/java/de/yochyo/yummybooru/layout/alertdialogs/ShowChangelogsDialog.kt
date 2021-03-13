@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.updater.Changelog
+import de.yochyo.yummybooru.utils.general.Configuration
 
 class ShowChangelogsDialog {
     private val changelogs = ArrayList<Changelog>()
@@ -18,7 +19,9 @@ class ShowChangelogsDialog {
         builder.setTitle(context.getString(R.string.changelogs))
         builder.setView(createLayout(context))
         builder.setPositiveButton(context.getString(R.string.positive_button_name)) { _, _ -> }
-        builder.show()
+        val dialog = builder.create()
+        dialog.window.apply { if (this != null) Configuration.setWindowSecurityFrag(context, this) }
+        dialog.show()
     }
 
 

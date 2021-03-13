@@ -13,6 +13,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.entities.TagCollectionWithTags
+import de.yochyo.yummybooru.utils.general.Configuration
 import de.yochyo.yummybooru.utils.general.setColor
 import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.coroutines.GlobalScope
@@ -41,7 +42,10 @@ class TagHistoryCollectionEditDialog(val tags: List<Tag>, val collection: TagCol
         }
         builder.setNegativeButton(context.getString(R.string.negative_button_name)) { _, _ -> }
         builder.setView(layout)
-        builder.show()
+
+        val dialog = builder.create()
+        dialog.window.apply { if (this != null) Configuration.setWindowSecurityFrag(context, this) }
+        dialog.show()
     }
 }
 

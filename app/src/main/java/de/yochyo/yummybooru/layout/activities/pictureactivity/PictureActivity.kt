@@ -23,6 +23,7 @@ import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
 import de.yochyo.yummybooru.utils.distributor.Pointer
+import de.yochyo.yummybooru.utils.general.Configuration
 import de.yochyo.yummybooru.utils.general.downloadAndSaveImage
 import de.yochyo.yummybooru.utils.general.restoreManager
 import kotlinx.android.synthetic.main.activity_picture.*
@@ -66,6 +67,7 @@ class PictureActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(this).get(PictureActivityViewModel::class.java)
         viewModel.init(this)
+        Configuration.setWindowSecurityFrag(this, window)
         setContentView(R.layout.activity_picture)
         setSupportActionBar(toolbar_picture2)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

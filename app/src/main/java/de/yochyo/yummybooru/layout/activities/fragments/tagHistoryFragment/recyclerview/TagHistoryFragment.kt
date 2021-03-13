@@ -92,7 +92,7 @@ class TagHistoryFragment : Fragment() {
                 R.id.add_tag -> {
                     AddTagDialog {
                         GlobalScope.launch(Dispatchers.Main) {
-                            val t = viewModel.server.getTag(it.text.toString())
+                            val t = viewModel.server.getTag(it)
                             if (Command.executeAsync(fragment_tag_history, CommandAddTag(t))) {
                                 viewModel.tags.observeUntil(this@TagHistoryFragment, {
                                     val index = it.indexOfFirst { it.name == t.name }

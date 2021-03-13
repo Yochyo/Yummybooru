@@ -108,10 +108,9 @@ class FollowingActivity : AppCompatActivity() {
         when (item.itemId) {
             android.R.id.home -> finish()
             R.id.add_following -> {
-                AddTagDialog {
-                    TagUtil.CreateFollowedTagOrChangeFollowing(following_layout, this@FollowingActivity, it.text.toString())
+                AddTagDialog { name ->
+                    TagUtil.CreateFollowedTagOrChangeFollowing(following_layout, this@FollowingActivity, name)
                     GlobalScope.launch(Dispatchers.Main) {
-                        val name = it.toString()
                         viewModel.tags.observeUntil(this@FollowingActivity, {
                             val index = it.indexOfFirst { it.name == name }
                             if (index >= 0)

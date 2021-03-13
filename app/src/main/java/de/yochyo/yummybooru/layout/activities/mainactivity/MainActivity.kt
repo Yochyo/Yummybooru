@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -33,6 +34,7 @@ import de.yochyo.yummybooru.utils.general.updateCombinedSearchSortAlgorithm
 import de.yochyo.yummybooru.utils.general.updateNomediaFile
 import kotlinx.android.synthetic.main.main_activity_layout.*
 
+
 class MainActivity : AppCompatActivity() {
     private var serverListFragment: Fragment? = null
     private var tagHistoryFragment: Fragment? = null
@@ -44,6 +46,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
         setContentView(R.layout.main_activity_layout)
         updateCombinedSearchSortAlgorithm(preferences.combinedSearchSort)
         if (preferences.isFirstStart)

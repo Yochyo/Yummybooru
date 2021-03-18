@@ -10,7 +10,6 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.TagHistoryFragmentViewModel
 import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
@@ -27,7 +26,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class TagHistoryFragment : Fragment() {
-    private lateinit var tagRecyclerView: RecyclerView
     private lateinit var tagAdapter: TagHistoryFragmentAdapter
     lateinit var tagLayoutManager: LinearLayoutManager
 
@@ -40,19 +38,24 @@ class TagHistoryFragment : Fragment() {
         private const val SELECTED = "SELECTED"
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(requireActivity()).get(TagHistoryFragmentViewModel::class.java)
         viewModel.init(this, ctx)
         val array = savedInstanceState?.getStringArray(SELECTED)
         if (array != null)
             viewModel.selectedTags.value = array.toList()
 
+        tagLayoutManager = LinearLayoutManager(ctx)
+        tagAdapter = TagHistoryFragmentAdapter(this)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val layout = inflater.inflate(R.layout.fragment_tag_history, container, false) as ViewGroup
         configureTagDrawer(layout)
 
-        tagRecyclerView = layout.recycler_view_search
-        tagRecyclerView.layoutManager = LinearLayoutManager(ctx).apply { tagLayoutManager = this }
-        tagAdapter = TagHistoryFragmentAdapter(this).apply { tagRecyclerView.adapter = this }
+        layout.recycler_view_search.layoutManager = tagLayoutManager
+        layout.recycler_view_search.adapter = tagAdapter
 
         registerObservers()
 

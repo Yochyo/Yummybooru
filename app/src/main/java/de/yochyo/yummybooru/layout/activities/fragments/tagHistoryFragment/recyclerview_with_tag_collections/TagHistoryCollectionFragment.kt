@@ -10,7 +10,6 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.entities.TagCollection
 import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.TagHistoryFragmentViewModel
@@ -30,7 +29,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class TagHistoryCollectionFragment : Fragment() {
-    private lateinit var tagRecyclerView: RecyclerView
     private lateinit var collectionAdapter: TagHistoryCollectionAdapter
     lateinit var tagLayoutManager: LinearLayoutManager
 
@@ -41,23 +39,26 @@ class TagHistoryCollectionFragment : Fragment() {
         private const val SELECTED = "SELECTED"
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(requireActivity()).get(TagHistoryFragmentViewModel::class.java)
         viewModel.init(this, ctx)
-
         val array = savedInstanceState?.getStringArray(SELECTED)
         if (array != null)
             viewModel.selectedTags.value = array.toList()
 
+        collectionAdapter = TagHistoryCollectionAdapter(this)
+        tagLayoutManager = LinearLayoutManager(ctx)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val layout = inflater.inflate(R.layout.fragment_tag_history, container, false) as ViewGroup
         configureTagDrawer(layout)
 
-        tagRecyclerView = layout.recycler_view_search
-        collectionAdapter = TagHistoryCollectionAdapter(this).apply { tagRecyclerView.adapter = this }
-        tagRecyclerView.layoutManager = LinearLayoutManager(ctx).apply { tagLayoutManager = this }
+        layout.recycler_view_search.adapter = collectionAdapter
+        layout.recycler_view_search.layoutManager = tagLayoutManager
 
         registerObservers()
-
         return layout
     }
 

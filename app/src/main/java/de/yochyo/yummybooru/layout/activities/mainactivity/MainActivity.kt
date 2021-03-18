@@ -10,6 +10,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.distinctUntilChanged
 import com.google.android.material.navigation.NavigationView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.booleanLiveData
@@ -86,7 +87,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun registerObservers() {
-        preferences.prefs.booleanLiveData(getString(R.string.tag_collection_mode), false).observe(this, {
+        preferences.prefs.booleanLiveData(getString(R.string.tag_collection_mode), false).distinctUntilChanged().observe(this, {
             registerTagFragment(if (it) TagHistoryCollectionFragment() else TagHistoryFragment())
         })
     }
@@ -111,7 +112,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         supportFragmentManager.beginTransaction()
-            .replace(R.id.main_activity_right_drawer_container, frag).commit()
+            .replace(R.id.main_activity_right_drawer_container, frag).addToBackStack("test").commit()
     }
 
     private fun configureToolbarAndNavView(navView: NavigationView) {

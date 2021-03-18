@@ -16,9 +16,6 @@ object Menus {
             title = if (tag.following == null) context.getString(R.string.follow)
             else context.getString(R.string.unfollow)
         }
-        with(menu.findItem(R.id.main_search_delete_tag)) {
-            title = context.getString(R.string.delete)
-        }
     }
 
     fun initPreviewMenu(context: Context, menu: Menu, tag: Tag?) {

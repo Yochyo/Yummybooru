@@ -113,3 +113,23 @@ class CommandUpdateSeveralFollowingTagData(private val tagFollowingDataPairs: Li
         return context.db.updateTags(tagFollowingDataPairs.map { it.first }) > 0
     }
 }
+
+class CommandUpdateTag(val old: Tag, val new: Tag) : Command {
+    override val show = Command.Show.SNACKBAR
+    override fun getToastMessage(context: Context): String {
+        return context.getString(R.string.updated_tag_with_name, old.name)
+    }
+
+    override fun getUndoMessage(context: Context): String {
+        return context.getString(R.string.revert_tag_with_name, old.name)
+    }
+
+    override fun run(context: Context): Boolean {
+        return context.db.updateTag(new) > 0
+    }
+
+    override fun undo(context: Context): Boolean {
+        return context.db.updateTag(old) > 0
+    }
+}
+

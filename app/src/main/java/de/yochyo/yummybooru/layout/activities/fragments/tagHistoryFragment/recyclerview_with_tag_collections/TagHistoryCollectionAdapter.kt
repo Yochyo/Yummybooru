@@ -34,7 +34,7 @@ class TagHistoryCollectionAdapter(val fragment: TagHistoryCollectionFragment) :
     }
 
     override fun onCreateChildViewHolder(parent: ViewGroup, viewType: Int): TagHistoryCollectionChildViewHolder {
-        val component = TagComponent(fragment.fragment_tag_history, parent)
+        val component = TagComponent(fragment.viewModel.server, fragment.fragment_tag_history, parent)
         component.onSelect = { tag, selected ->
             fragment.viewModel.selectedTags.value =
                 if (selected) fragment.viewModel.selectedTagsValue.value.addToCopy(tag.name)

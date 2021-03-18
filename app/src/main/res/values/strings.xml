@@ -7,6 +7,7 @@
     <string name="add_tag">Add tag</string>
     <string name="add_tag_with_name">Add tag [%s]</string>
     <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
     <string name="not_implemented">Not yet implemented</string>
     <string name="name">Name</string>
 
@@ -117,6 +118,7 @@
     <string name="undo_updating_tag_with_name">Undo updating tag [%s]</string>
     <string name="undo_updating_tags">Undo updating tags</string>
     <string name="updated_tags">Updated tags</string>
+    <string name="updated_tag_with_name">Updated tag [%s]</string>
     <string name="follow_tag_with_name">Follow tag [%s]</string>
     <string name="unfavorite_tag_with_name">Unfavorite tag [%s]</string>
     <string name="favorite_tag_with_name">Favorite tag [%s]</string>

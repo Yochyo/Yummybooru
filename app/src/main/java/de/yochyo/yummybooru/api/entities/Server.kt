@@ -43,8 +43,8 @@ data class Server(
     }
 
     @Deprecated("temp method cause I have no time")
-    private fun login(context: Context) {
-        GlobalScope.launch {
+    fun login(context: Context) {
+        GlobalScope.launch(Dispatchers.IO) {
             val api = this@Server.api
             if (api is PixivApi2) {
                 val refreshToken = context.preferences.prefs.getString("pixiv-$username", null)

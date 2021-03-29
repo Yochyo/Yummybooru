@@ -14,6 +14,7 @@ import androidx.lifecycle.distinctUntilChanged
 import com.google.android.material.navigation.NavigationView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.booleanLiveData
+import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
 import de.yochyo.yummybooru.layout.activities.fragments.serverListViewFragment.ServerListFragment
@@ -90,6 +91,7 @@ class MainActivity : AppCompatActivity() {
         preferences.prefs.booleanLiveData(getString(R.string.tag_collection_mode), false).distinctUntilChanged().observe(this, {
             registerTagFragment(if (it) TagHistoryCollectionFragment() else TagHistoryFragment())
         })
+        db.selectedServer.observe(this, { it?.login(this) })
     }
 
     fun registerTagFragment(fragment: Fragment?) {

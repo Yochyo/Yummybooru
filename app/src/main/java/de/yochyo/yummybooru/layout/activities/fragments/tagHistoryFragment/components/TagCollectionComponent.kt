@@ -14,6 +14,7 @@ import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.recyc
 import de.yochyo.yummybooru.layout.alertdialogs.TagHistoryCollectionEditDialog
 import de.yochyo.yummybooru.utils.commands.CommandDeleteTagCollection
 import de.yochyo.yummybooru.utils.commands.execute
+import de.yochyo.yummybooru.utils.general.addToCopy
 import de.yochyo.yummybooru.utils.withValue
 
 
@@ -30,6 +31,8 @@ class TagCollectionComponent(val viewModel: TagHistoryFragmentViewModel, val vie
         toolbar.inflateMenu(R.menu.tag_collection_menu)
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
+                R.id.select_all_tag_collection -> viewModel.selectedTags.value = viewModel.selectedTagsValue.value
+                    .addToCopy(collection.tags.filter { !viewModel.selectedTagsValue.value.contains(it) }.map { it.name })
                 R.id.edit_tag_collection -> viewModel.allTagsSorted.withValue(owner) { TagHistoryCollectionEditDialog(it, collection.toEntity()).build(viewForSnack.context) }
                 R.id.delete_tag_collection -> CommandDeleteTagCollection(collection.toEntity()).execute(viewForSnack)
             }

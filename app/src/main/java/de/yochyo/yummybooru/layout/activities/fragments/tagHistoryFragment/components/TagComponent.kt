@@ -12,10 +12,10 @@ import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.utils.TagUtil
-import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandDeleteTag
 import de.yochyo.yummybooru.utils.commands.CommandFavoriteTag
 import de.yochyo.yummybooru.utils.commands.CommandUpdateTag
+import de.yochyo.yummybooru.utils.commands.execute
 import de.yochyo.yummybooru.utils.general.setColor
 import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.coroutines.GlobalScope
@@ -30,12 +30,15 @@ class TagComponent(val server: Server, val viewForSnack: View, container: ViewGr
         toolbar.inflateMenu(R.menu.activity_main_search_menu)
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
-                R.id.main_search_favorite_tag -> Command.execute(viewForSnack, CommandFavoriteTag(tag, !tag.isFavorite))
+                R.id.main_search_favorite_tag -> CommandFavoriteTag(tag, !tag.isFavorite).execute(viewForSnack)
                 R.id.main_search_follow_tag -> TagUtil.followOrUnfollow(viewForSnack, tag)
-                R.id.main_search_delete_tag -> Command.execute(viewForSnack, CommandDeleteTag(tag))
+                R.id.main_search_delete_tag -> CommandDeleteTag(tag).execute(viewForSnack)
                 R.id.main_search_edit_tag -> AddTagDialog {
-                    GlobalScope.launch { CommandUpdateTag(tag, server.getTag(it)) }
-                }.build(viewForSnack.context)
+                    GlobalScope.launch {
+                        val new = server.getTag(it).let { new -> tag.copy(name = new.name, type = new.type) }
+                        CommandUpdateTag(tag, new).execute(viewForSnack)
+                    }
+                }.withTag(tag.name).build(viewForSnack.context)
             }
             true
         }

@@ -158,4 +158,5 @@ suspend fun ManagerWrapper.restoreManager(context: Context, lastId: Int, lastPos
 
 fun <E> List<E>.copy() = this.map { it }
 fun <E> List<E>.addToCopy(element: E) = copy().apply { (this as MutableList<E>).add(element) }
+fun <E> List<E>.addToCopy(element: List<E>) = copy().apply { (this as MutableList<E>).addAll(element) }
 fun <E> List<E>.removeFromCopy(element: E) = copy().apply { (this as MutableList<E>).remove(element) }

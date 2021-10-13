@@ -27,12 +27,12 @@ interface Command {
                     withContext(Dispatchers.Main) {
                         when (showSnackbar) {
                             Show.SNACKBAR -> {
-                                val snack = Snackbar.make(view, command.getUndoMessage(view.context), 2500)
+                                val snack = Snackbar.make(view, command.getMessage(view.context), 2500)
                                 snack.setAction("Undo") { GlobalScope.launch { command.undo(view.context) } }
                                 snack.show()
                             }
                             Show.TOAST -> {
-                                Toast.makeText(view.context, command.getToastMessage(view.context), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(view.context, command.getMessage(view.context), Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
@@ -43,8 +43,7 @@ interface Command {
     }
 
     val show: Show
-    fun getUndoMessage(context: Context): String
-    fun getToastMessage(context: Context): String
+    fun getMessage(context: Context): String
     fun run(context: Context): Boolean
     fun undo(context: Context): Boolean
 }

@@ -9,12 +9,7 @@ class CommandAddServer(val server: Server) : Command {
     private lateinit var copy: Server
     override val show: Command.Show = Command.Show.TOAST
 
-    override fun getUndoMessage(context: Context): String {
-        return context.getString(R.string.delete_server_with_name, server.name)
-
-    }
-
-    override fun getToastMessage(context: Context): String {
+    override fun getMessage(context: Context): String {
         return context.getString(R.string.added_server_with_name, server.name)
     }
 
@@ -31,12 +26,7 @@ class CommandAddServer(val server: Server) : Command {
 class CommandDeleteServer(val server: Server) : Command {
     override val show: Command.Show = Command.Show.SNACKBAR
 
-    override fun getUndoMessage(context: Context): String {
-        return context.getString(R.string.add_server_with_name, server.name)
-
-    }
-
-    override fun getToastMessage(context: Context): String {
+    override fun getMessage(context: Context): String {
         return context.getString(R.string.added_server_with_name, server.name)
     }
 
@@ -52,12 +42,7 @@ class CommandDeleteServer(val server: Server) : Command {
 class CommandUpdateServer(val server: Server, val new: Server) : Command {
     override val show: Command.Show = Command.Show.TOAST
 
-    override fun getUndoMessage(context: Context): String {
-        return context.getString(R.string.revert_server_with_name, server.name)
-
-    }
-
-    override fun getToastMessage(context: Context): String {
+    override fun getMessage(context: Context): String {
         return context.getString(R.string.updated_server_with_name, server.name)
     }
 

@@ -9,12 +9,8 @@ import de.yochyo.yummybooru.database.db
 class CommandAddTag(private val tag: Tag) : Command {
 
     override val show: Command.Show = Command.Show.TOAST
-    override fun getToastMessage(context: Context): String {
+    override fun getMessage(context: Context): String {
         return context.getString(R.string.added_tag_with_name, tag.name)
-    }
-
-    override fun getUndoMessage(context: Context): String {
-        return context.getString(R.string.undo_add_tag_with_name, tag.name)
     }
 
     override fun run(context: Context): Boolean {
@@ -28,12 +24,8 @@ class CommandAddTag(private val tag: Tag) : Command {
 
 class CommandDeleteTag(private val tag: Tag) : Command {
     override val show = Command.Show.SNACKBAR
-    override fun getToastMessage(context: Context): String {
+    override fun getMessage(context: Context): String {
         return context.getString(R.string.deleted_tag_with_name, tag.name)
-    }
-
-    override fun getUndoMessage(context: Context): String {
-        return context.getString(R.string.add_tag_with_name, tag.name)
     }
 
     override fun run(context: Context): Boolean {
@@ -49,14 +41,9 @@ class CommandFavoriteTag(private val tag: Tag, private val value: Boolean) : Com
     private val copy = tag.copy(isFavorite = value)
 
     override val show = Command.Show.SNACKBAR
-    override fun getToastMessage(context: Context): String {
+    override fun getMessage(context: Context): String {
         return if (value) context.getString(R.string.favorited_tag_with_name, tag.name)
         else context.getString(R.string.unfavorited_tag_with_name, tag.name)
-    }
-
-    override fun getUndoMessage(context: Context): String {
-        return if (value) context.getString(R.string.unfavorite_tag_with_name, tag.name)
-        else context.getString(R.string.favorite_tag_with_name, tag.name)
     }
 
     override fun run(context: Context): Boolean {
@@ -72,16 +59,10 @@ class CommandUpdateFollowingTagData(private val tag: Tag, val following: Followi
     private val copy = tag.copy(following = following)
 
     override val show = Command.Show.SNACKBAR
-    override fun getToastMessage(context: Context): String {
+    override fun getMessage(context: Context): String {
         return if (following != null && tag.following != null) context.getString(R.string.updated_followed_tag_with_name, tag.name)
         else if (following != null) context.getString(R.string.followed_tag_with_name, tag.name)
         else context.getString(R.string.unfollowed_tag_with_name, tag.name)
-    }
-
-    override fun getUndoMessage(context: Context): String {
-        return if (following != null && tag.following != null) context.getString(R.string.revert_tag_with_name, tag.name)
-        else if (following == null) context.getString(R.string.follow_tag_with_name, tag.name)
-        else context.getString(R.string.unfollow_tag_with_name, tag.name)
     }
 
     override fun run(context: Context): Boolean {
@@ -97,12 +78,8 @@ class CommandUpdateSeveralFollowingTagData(private val tagFollowingDataPairs: Li
     private val copy = tagFollowingDataPairs.map { it.first.copy(following = it.second) }
 
     override val show = Command.Show.SNACKBAR
-    override fun getToastMessage(context: Context): String {
+    override fun getMessage(context: Context): String {
         return context.getString(R.string.updated_tags)
-    }
-
-    override fun getUndoMessage(context: Context): String {
-        return context.getString(R.string.undo_updating_tags)
     }
 
     override fun run(context: Context): Boolean {
@@ -116,12 +93,8 @@ class CommandUpdateSeveralFollowingTagData(private val tagFollowingDataPairs: Li
 
 class CommandUpdateTag(val old: Tag, val new: Tag) : Command {
     override val show = Command.Show.SNACKBAR
-    override fun getToastMessage(context: Context): String {
+    override fun getMessage(context: Context): String {
         return context.getString(R.string.updated_tag_with_name, old.name)
-    }
-
-    override fun getUndoMessage(context: Context): String {
-        return context.getString(R.string.revert_tag_with_name, old.name)
     }
 
     override fun run(context: Context): Boolean {

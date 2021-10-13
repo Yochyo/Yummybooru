@@ -19,6 +19,8 @@ enum class FileWriteResult {
 }
 
 object FileUtils {
+    suspend fun writeBytes(context: Context, uri: Uri, input: InputStream) = writeBytes(context, DocumentFile.fromTreeUri(context, uri)!!, input)
+
     suspend fun writeBytes(context: Context, file: DocumentFile, input: InputStream): Boolean {
         return withContext(Dispatchers.IO) {
             try {

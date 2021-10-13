@@ -9,11 +9,7 @@ import de.yochyo.yummybooru.database.entities.TagCollectionWithTags
 class CommandDeleteTagCollection(val collection: TagCollectionWithTags) : Command {
     override val show: Command.Show = Command.Show.SNACKBAR
 
-    override fun getUndoMessage(context: Context): String {
-        return context.getString(R.string.add_tag_collection_with_name, collection.collection.name)
-    }
-
-    override fun getToastMessage(context: Context): String {
+    override fun getMessage(context: Context): String {
         return context.getString(R.string.deleted_tag_collection_with_name, collection.collection.name)
     }
 
@@ -32,11 +28,7 @@ class CommandAddTagCollection(val collection: TagCollection) : Command {
     private var result: TagCollection? = null
     override val show: Command.Show = Command.Show.TOAST
 
-    override fun getUndoMessage(context: Context): String {
-        return context.getString(R.string.delete_tag_collection_with_name, collection.name)
-    }
-
-    override fun getToastMessage(context: Context): String {
+    override fun getMessage(context: Context): String {
         return context.getString(R.string.added_tag_collection_with_name, collection.name)
     }
 

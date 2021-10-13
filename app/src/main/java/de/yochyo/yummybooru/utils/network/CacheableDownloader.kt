@@ -27,6 +27,8 @@ class CacheableDownloader(max: Int) {
         else dl.download(url, callback, headers, url.mimeType ?: "")
     }
 
+    suspend fun downloadSync(url: String, headers: Map<String, String>) = dl.downloadSync(url, headers, url.mimeType ?: "")
+
     fun downloadPostPreviewIMG(context: Context, post: Post, callback: suspend (e: BitmapResource?) -> Unit, headers: Map<String, String>, downloadFirst: Boolean = false) {
         return downloadBitmap(context, post.filePreviewURL, context.preview(post.id), callback, headers, downloadFirst)
     }

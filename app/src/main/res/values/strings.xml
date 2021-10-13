@@ -10,6 +10,7 @@
     <string name="edit">Edit</string>
     <string name="not_implemented">Not yet implemented</string>
     <string name="name">Name</string>
+    <string name="cancel">Cancel</string>
 
     <!-- Activities -->
     <string name="unfavorite">Unfavorite</string>

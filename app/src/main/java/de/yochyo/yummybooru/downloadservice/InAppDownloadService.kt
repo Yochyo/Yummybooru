@@ -1,3 +1,4 @@
+/*
 package de.yochyo.yummybooru.downloadservice
 
 import android.app.Service
@@ -111,5 +112,4 @@ fun saveDownload(context: Context, url: String, id: String, server: Server, post
         } else withContext(Dispatchers.Main) { Toast.makeText(context, "Failed downloading ${getIdFromMergedId(id)}", Toast.LENGTH_SHORT).show() }
     }
 }
-
-private fun getIdFromMergedId(id: String): String = id.takeWhile { it in '0'..'9' }
+ */

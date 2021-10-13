@@ -82,6 +82,9 @@ class Changelog(val versionName: String, val version: Int, val description: Stri
                         "You can now exclude tags from your search by writing <Tag1> NOT(Tag2)\n" +
                         "Some small changes"
             )
+            logs += Changelog(
+                "2.4.3", 14, "Fixed bugs"
+            )
         }
 
         fun showChangelogs(context: Context) {

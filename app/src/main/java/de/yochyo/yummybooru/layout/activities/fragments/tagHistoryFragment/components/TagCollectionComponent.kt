@@ -32,7 +32,7 @@ class TagCollectionComponent(val viewModel: TagHistoryFragmentViewModel, val vie
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.select_all_tag_collection -> viewModel.selectedTags.value = viewModel.selectedTagsValue.value
-                    .addToCopy(collection.tags.filter { !viewModel.selectedTagsValue.value.contains(it) }.map { it.name })
+                    .addToCopy(collection.tags.filter { tag -> !viewModel.selectedTagsValue.value.contains(tag.name) }.map { tag -> tag.name })
                 R.id.edit_tag_collection -> viewModel.allTagsSorted.withValue(owner) { TagHistoryCollectionEditDialog(it, collection.toEntity()).build(viewForSnack.context) }
                 R.id.delete_tag_collection -> CommandDeleteTagCollection(collection.toEntity()).execute(viewForSnack)
             }

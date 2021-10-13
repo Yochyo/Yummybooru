@@ -18,6 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:exported="false"
             android:name=".layout.activities.mainactivity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -45,7 +46,6 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
         <service android:name=".downloadservice.DownloadService" />
-        <service android:name=".downloadservice.InAppDownloadService" />
 
         <provider
             android:name=".utils.app.FileProvider"

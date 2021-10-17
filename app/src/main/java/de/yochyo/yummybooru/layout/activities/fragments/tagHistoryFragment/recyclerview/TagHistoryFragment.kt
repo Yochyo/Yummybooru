@@ -16,11 +16,10 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandAddTag
-import de.yochyo.yummybooru.utils.general.*
+import de.yochyo.yummybooru.utils.general.ctx
 import de.yochyo.yummybooru.utils.observeUntil
 import kotlinx.android.synthetic.main.fragment_tag_history.*
 import kotlinx.android.synthetic.main.fragment_tag_history.view.*
-import kotlinx.android.synthetic.main.main_activity_layout.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -95,7 +94,7 @@ class TagHistoryFragment : Fragment() {
                 R.id.add_tag -> {
                     AddTagDialog {
                         GlobalScope.launch(Dispatchers.Main) {
-                            val t = viewModel.server.getTag(it)
+                            val t = viewModel.selectedServer.value?.getTag(it) ?: return@launch
                             if (Command.executeAsync(fragment_tag_history, CommandAddTag(t))) {
                                 viewModel.tags.observeUntil(this@TagHistoryFragment, {
                                     val index = it.indexOfFirst { it.name == t.name }
@@ -106,7 +105,7 @@ class TagHistoryFragment : Fragment() {
                         }
                     }.build(ctx)
                 }
-                R.id.add_special_tag -> AddSpecialTagDialog().build(fragment_tag_history, viewModel.server)
+                R.id.add_special_tag -> viewModel.selectedServer.value?.apply { AddSpecialTagDialog().build(fragment_tag_history, this) }
                 else -> return@setOnMenuItemClickListener false
             }
             return@setOnMenuItemClickListener true

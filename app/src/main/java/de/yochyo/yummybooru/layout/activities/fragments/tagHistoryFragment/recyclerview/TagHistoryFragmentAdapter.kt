@@ -17,7 +17,7 @@ class TagHistoryFragmentAdapter(val fragment: TagHistoryFragment) : RecyclerView
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TagHistoryFragmentViewHolder {
-        val component = TagComponent(fragment.viewModel.server, fragment.fragment_tag_history, parent)
+        val component = TagComponent(fragment.viewModel.selectedServer, fragment.fragment_tag_history, parent)
         component.onSelect = { tag, selected ->
             fragment.viewModel.selectedTags.value =
                 if (selected) fragment.viewModel.selectedTagsValue.value.addToCopy(tag.name)

@@ -14,7 +14,8 @@ class TagHistoryFragmentViewModel : ViewModel() {
     private lateinit var allCollections: LiveData<List<TagCollectionWithTags>>
     private lateinit var tagSortComparator: LiveData<Comparator<Tag>>
 
-    lateinit var server: Server
+    lateinit var selectedServer: LiveData<Server>
+
     val filter = MutableLiveData("")
     val selectedTags = MutableLiveData<List<String>>(emptyList())
     lateinit var selectedTagsValue: LiveDataValue<List<String>>
@@ -29,7 +30,7 @@ class TagHistoryFragmentViewModel : ViewModel() {
 
     fun init(owner: LifecycleOwner, context: Context) {
         selectedTagsValue = LiveDataValue(selectedTags, owner)
-        server = context.db.selectedServerValue
+        selectedServer = context.db.selectedServer
         allTags = context.db.tags
         allCollections = context.db.tagCollections
         tagSortComparator = TagUtil.getTagComparatorLiveData(context)
@@ -50,8 +51,16 @@ class TagHistoryFragmentViewModel : ViewModel() {
                 val comparator = tagSortComparator.value ?: return
                 val collections = allCollections.value ?: return
                 val tags = allTags.value ?: return
+                val server = selectedServer.value ?: return
 
-                val c = (collections.map { it } as MutableList<TagCollectionWithTags>).apply { add(TagCollectionWithTags("-", server.id).copy(tags = tags)) }
+                val c = (collections.map { it } as MutableList<TagCollectionWithTags>).apply {
+                    add(
+                        TagCollectionWithTags(
+                            "-",
+                            server.id
+                        ).copy(tags = tags)
+                    )
+                }
                 value = c.filter { it.collection.name.contains(filter) || it.tags.find { it.name.contains(filter) } != null }
                     .map { it.copy(tags = it.tags.filter { it.name.contains(filter) }.sortedWith(comparator)) }
             }

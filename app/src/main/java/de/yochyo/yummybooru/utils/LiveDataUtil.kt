@@ -2,9 +2,16 @@ package de.yochyo.yummybooru.utils
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+
+class NonNullLiveData<T>(val default: T) : MutableLiveData<T>(default) {
+    override fun getValue(): T {
+        return super.getValue() ?: default
+    }
+}
 
 class LiveDataValue<T>(livedata: LiveData<T>, owner: LifecycleOwner?, default: T? = null) {
     private var _value: T? = default

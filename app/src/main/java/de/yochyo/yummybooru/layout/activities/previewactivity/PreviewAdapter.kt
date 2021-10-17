@@ -24,6 +24,7 @@ import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, val m: ManagerWrapper) : SelectableRecyclerViewAdapter<PreviewViewHolder>(
     activity, recyclerView,
@@ -48,10 +49,13 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
             R.id.select_all -> if (selected.size == m.posts.size) deselectAll() else selectAll()
             R.id.download_selected -> {
                 GlobalScope.launch {
+                    val selected = selected
                     val posts = selected.getSelected(m.posts)
                     DownloadService.startService(activity, m.toString(), posts, activity.viewModel.server)
+                    withContext(Dispatchers.Main) {
+                        deselectAll()
+                    }
                 }
-                deselectAll()
             }
             R.id.download_and_add_authors_selected -> {
                 val posts = selected.getSelected(m.posts)
@@ -60,8 +64,10 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
                         Command.execute(activity.preview_activity_container, CommandAddTag(t.toBooruTag(activity.viewModel.server)))
                     }
                     DownloadService.startService(activity, m.toString(), posts, activity.viewModel.server)
+                    withContext(Dispatchers.Main) {
+                        deselectAll()
+                    }
                 }
-                deselectAll()
             }
         }
     }

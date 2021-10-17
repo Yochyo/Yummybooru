@@ -18,7 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:exported="false"
+            android:exported="true"
             android:name=".layout.activities.mainactivity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>

@@ -85,6 +85,9 @@ class Changelog(val versionName: String, val version: Int, val description: Stri
             logs += Changelog(
                 "2.4.3", 14, "Fixed bugs"
             )
+            logs += Changelog(
+                "2.4.4", 15, "Fixed even more bugs"
+            )
         }
 
         fun showChangelogs(context: Context) {

@@ -95,7 +95,7 @@ class TagHistoryCollectionFragment : Fragment() {
                 R.id.add_tag -> {
                     AddTagDialog {
                         GlobalScope.launch(Dispatchers.Main) {
-                            val t = viewModel.server.getTag(it)
+                            val t = viewModel.selectedServer.value?.getTag(it) ?: return@launch
                             if (Command.executeAsync(fragment_tag_history, CommandAddTag(t))) {
                                 viewModel.tags.observeUntil(this@TagHistoryCollectionFragment, {
                                     val index = it.indexOfFirst { it.name == t.name }
@@ -106,9 +106,18 @@ class TagHistoryCollectionFragment : Fragment() {
                         }
                     }.build(ctx)
                 }
-                R.id.add_special_tag -> AddSpecialTagDialog().build(fragment_tag_history, viewModel.server)
-                R.id.add_collection -> InputDialog { CommandAddTagCollection(TagCollection(it, viewModel.server.id)).execute(fragment_tag_history) }
-                    .withTitle("Add tag collection").withHint("Name").build(ctx)
+                R.id.add_special_tag -> viewModel.selectedServer.value?.apply { AddSpecialTagDialog().build(fragment_tag_history, this) }
+                R.id.add_collection -> viewModel.selectedServer.value?.apply {
+                    InputDialog {
+                        CommandAddTagCollection(
+                            TagCollection(
+                                it,
+                                this.id
+                            )
+                        ).execute(fragment_tag_history)
+                    }.withTitle("Add tag collection").withHint("Name").build(ctx)
+                }
+
                 else -> return@setOnMenuItemClickListener false
             }
             return@setOnMenuItemClickListener true

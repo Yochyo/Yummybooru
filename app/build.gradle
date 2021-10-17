@@ -49,8 +49,8 @@ android {
         applicationId "de.yochyo.yummybooru"
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 14
-        versionName "2.4.3"
+        versionCode 15
+        versionName "2.4.4"
     }
 
     buildTypes {

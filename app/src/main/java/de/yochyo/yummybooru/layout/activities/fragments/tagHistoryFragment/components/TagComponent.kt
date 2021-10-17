@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.LiveData
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
@@ -21,7 +22,7 @@ import de.yochyo.yummybooru.utils.general.underline
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class TagComponent(val server: Server, val viewForSnack: View, container: ViewGroup) {
+class TagComponent(val server: LiveData<Server>, val viewForSnack: View, container: ViewGroup) {
     private lateinit var tag: Tag
     val toolbar: Toolbar = LayoutInflater.from(container.context).inflate(R.layout.search_item_layout, container, false) as Toolbar
     var onSelect: (tag: Tag, selected: Boolean) -> Unit = { _, _ -> }
@@ -35,6 +36,7 @@ class TagComponent(val server: Server, val viewForSnack: View, container: ViewGr
                 R.id.main_search_delete_tag -> CommandDeleteTag(tag).execute(viewForSnack)
                 R.id.main_search_edit_tag -> AddTagDialog {
                     GlobalScope.launch {
+                        val server = server.value ?: return@launch
                         val new = server.getTag(it).let { new -> tag.copy(name = new.name, type = new.type) }
                         CommandUpdateTag(tag, new).execute(viewForSnack)
                     }

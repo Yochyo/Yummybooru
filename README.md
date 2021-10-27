@@ -1,8 +1,7 @@
 # Yummybooru for android :3
 
 This application's goal is to be the best available booru client in all aspects. To suggest a feature, join our discord server.
-https://discord.gg/tbGCHpF
-Edit: I unfortunately got banned on discord yesterday. I will make a new server if I can't get my account back. The server is still up though.
+https://discord.gg/dCnjBJtf55
 
 ## Tutorial
 #### Start screen

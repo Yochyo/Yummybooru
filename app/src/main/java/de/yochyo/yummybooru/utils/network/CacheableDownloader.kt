@@ -6,7 +6,10 @@ import de.yochyo.downloader.RegulatingDownloader
 import de.yochyo.yummybooru.api.entities.BitmapResource
 import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.utils.cache.cache
-import de.yochyo.yummybooru.utils.general.*
+import de.yochyo.yummybooru.utils.general.mimeType
+import de.yochyo.yummybooru.utils.general.original
+import de.yochyo.yummybooru.utils.general.preview
+import de.yochyo.yummybooru.utils.general.sample
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.InputStream
@@ -67,7 +70,6 @@ class CacheableDownloader(max: Int) {
             }
         } catch (e: OutOfMemoryError) {
             e.printStackTrace()
-            e.logFirebase(url).log(id).send()
         }
     }
 }

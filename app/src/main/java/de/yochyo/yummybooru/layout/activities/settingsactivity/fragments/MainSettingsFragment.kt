@@ -16,7 +16,6 @@ import de.yochyo.yummybooru.updater.AutoUpdater
 import de.yochyo.yummybooru.updater.Changelog
 import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.ctx
-import de.yochyo.yummybooru.utils.general.logFirebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -100,7 +99,6 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            e.logFirebase(ctx.preferences.saveFolderUri).send()
             //TODO this try catch block shouldn't be necessary, but sometimes
         }
     }

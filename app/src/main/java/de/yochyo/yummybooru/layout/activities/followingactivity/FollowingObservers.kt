@@ -8,8 +8,6 @@ import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.api.entities.Tag
 import kotlinx.coroutines.*
 import java.io.Closeable
-import java.util.*
-import kotlin.collections.HashMap
 import kotlin.math.max
 
 class FollowingObservers(val activity: FollowingActivity) : Closeable {
@@ -35,11 +33,15 @@ class FollowingObservers(val activity: FollowingActivity) : Closeable {
         private var job: Job? = null
 
         suspend fun updateCountDifference() {
-            withContext(Dispatchers.IO) {
-                val tag = activity.viewModel.server.getTag(tag.name)
-                val value = max(0, tag.count - (this@FollowingObserver.tag.following?.lastCount ?: 0))
-                this@FollowingObserver.value = value
-                onChange.trigger(OnChangeObjectEvent(tag.count, value))
+            try {
+                withContext(Dispatchers.IO) {
+                    val tag = activity.viewModel.server.getTag(tag.name)
+                    val value = max(0, tag.count - (this@FollowingObserver.tag.following?.lastCount ?: 0))
+                    this@FollowingObserver.value = value
+                    onChange.trigger(OnChangeObjectEvent(tag.count, value))
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
 

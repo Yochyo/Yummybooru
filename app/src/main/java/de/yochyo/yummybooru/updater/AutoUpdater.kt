@@ -3,6 +3,8 @@ package de.yochyo.yummybooru.updater
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
@@ -27,9 +29,20 @@ class AutoUpdater(private val context: Context) {
             if (!isNewestVersion()) {
                 val file = downloadNewestFile()
                 if (file != null)
-                    throwUpdateNotification(file)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) throwUpdateNotificationM(file)
+                    else throwUpdateNotification(file)
             }
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun throwUpdateNotificationM(file: File) {
+        val builder =
+            NotificationCompat.Builder(context, App.CHANNEL_ID).setContentTitle(context.getString(R.string.update_to_version, file.name.subSequence(0, file.name.lastIndex - 3)))
+                .setSmallIcon(R.drawable.notification_icon).setAutoCancel(true)
+        val intent = installIntent(file)
+        builder.setContentIntent(PendingIntent.getActivity(context, 2, intent, PendingIntent.FLAG_IMMUTABLE))
+        NotificationManagerCompat.from(context).notify(2, builder.build())
     }
 
     private fun throwUpdateNotification(file: File) {

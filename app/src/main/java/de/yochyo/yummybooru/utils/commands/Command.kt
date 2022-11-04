@@ -31,9 +31,12 @@ interface Command {
                                 snack.setAction("Undo") { GlobalScope.launch { command.undo(view.context) } }
                                 snack.show()
                             }
+
                             Show.TOAST -> {
                                 Toast.makeText(view.context, command.getMessage(view.context), Toast.LENGTH_SHORT).show()
                             }
+
+                            else -> {}
                         }
                     }
                 }

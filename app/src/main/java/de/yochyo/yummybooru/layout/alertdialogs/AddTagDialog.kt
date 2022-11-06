@@ -5,7 +5,10 @@ import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.*
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.LinearLayout
+import android.widget.TextView
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.database.db
@@ -78,8 +81,10 @@ class AddTagDialog(val runOnPositive: (tag: String) -> Unit) {
                 try {
                     val tag = getItem(position)
                     val textView = super.getView(position, convertView, parent) as TextView
-                    if (tag != null)
+                    if (tag != null) {
                         textView.setColor(tag.color)
+                        textView.setText("${tag.name} (${tag.count})")
+                    }
 
                     return textView
                 } catch (e: Exception) {

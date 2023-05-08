@@ -13,6 +13,9 @@ class PreferenceHelper(val context: Context) {
     var limit: Int
         get() = getPreference(context.getString(R.string.page_size), context.getString(R.string.page_size_default_value)).toInt()
         set(value) = setPreference(context.getString(R.string.page_size), value.toString())
+    var saveTagsInTxt: Boolean
+        get() = getPreference(context.getString(R.string.tags_in_txt), context.resources.getBoolean(R.bool.tags_in_txt_default_value))
+        set(value) = setPreference(context.getString(R.string.tags_in_txt), value.toString())
 
 
     var selectedServerId: Int

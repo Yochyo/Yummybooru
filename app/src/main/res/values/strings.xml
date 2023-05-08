@@ -104,6 +104,9 @@
     <!-- ShowChangelogsDialog -->
     <string name="changelogs">Changelogs</string>
 
+    <!-- ShowChangelogsDialog -->
+    <string name="download_until">Download until %d</string>
+    <string name="download_until_message">All posts until (and including) the oldest selected image will be downloaded.</string>
 
     <!-- Events -->
     <string name="download_post_with_id">Download %d</string>

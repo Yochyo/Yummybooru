@@ -52,7 +52,7 @@ class InAppDownloadWorker(context: Context, parameters: WorkerParameters) : Coro
     private suspend fun download(dl: Data) {
         val it = downloader.downloadSync(dl.url, dl.headers)
         if (it != null) {
-            if (FileUtils.writeFile(applicationContext, dl.post, it, dl.server) == FileWriteResult.FAILED)
+            if (FileUtils.writePost(applicationContext, dl.post, it, dl.server) == FileWriteResult.FAILED)
                 withContext(Dispatchers.Main) { Toast.makeText(applicationContext, "Saving ${dl.post.id} failed", Toast.LENGTH_SHORT).show() }
         } else withContext(Dispatchers.Main) { Toast.makeText(applicationContext, "Failed downloading ${dl.post.id}", Toast.LENGTH_SHORT).show() }
         setForeground(createForegroundInfo())

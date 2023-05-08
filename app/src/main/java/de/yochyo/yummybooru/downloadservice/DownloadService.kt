@@ -16,7 +16,6 @@ import de.yochyo.yummybooru.utils.general.FileUtils
 import de.yochyo.yummybooru.utils.general.getDownloadPathAndId
 import de.yochyo.yummybooru.utils.network.CacheableDownloader
 import kotlinx.coroutines.*
-import java.util.*
 
 private class DownloadPost(val tags: String, val post: Post, val server: Server)
 class DownloadService : Service() {
@@ -61,7 +60,7 @@ class DownloadService : Service() {
             val url = getDownloadPathAndId(this@DownloadService, next.post).first
             downloader.download(url, {
                 if (it != null) {
-                    FileUtils.writeFile(this@DownloadService, finalNext.post, it, finalNext.server)
+                    FileUtils.writePost(this@DownloadService, finalNext.post, it, finalNext.server)
                     withContext(Dispatchers.Main) {
                         util.announceFinishedDownload()
                         updateNotification(finalNext)

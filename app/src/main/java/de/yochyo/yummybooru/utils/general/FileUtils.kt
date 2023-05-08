@@ -5,11 +5,14 @@ import android.content.Intent
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import de.yochyo.booruapi.api.Post
+import de.yochyo.booruapi.api.TagType
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Resource2
 import de.yochyo.yummybooru.api.entities.Server
 import de.yochyo.yummybooru.database.preferences
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.InputStream
 
@@ -38,10 +41,15 @@ object FileUtils {
         }
     }
 
-    suspend fun writeFile(context: Context, post: Post, res: Resource2, server: Server): FileWriteResult {
+    suspend fun writePost(context: Context, post: Post, res: Resource2, server: Server): FileWriteResult {
         return withContext(Dispatchers.IO) {
             try {
-                val file = createFileOrNull(context, post, server, res.mimetype)
+                val file = createPostFileOrNull(context, post, server, res.mimetype)
+                if (context.preferences.saveTagsInTxt) {
+                    writeTagFile(context, post, server)
+                }
+
+
                 if (file != null) {
                     writeBytes(context, file, res.input)
                     res.input.close()
@@ -54,7 +62,28 @@ object FileUtils {
         }
     }
 
-    private suspend fun createFileOrNull(context: Context, post: Post, server: Server, mimeType: String): DocumentFile? {
+    suspend fun writeTagFile(context: Context, post: Post, server: Server) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val file = createFileOrNull(context, server.urlHost, postToFilename(post, "txt", server), "txt")
+                val tags = post.getTags().joinToString("\n") {
+                    when (it.tagType) {
+                        TagType.GENERAL -> it.name
+                        TagType.ARTIST -> "artist:${it.name}"
+                        TagType.COPYRIGHT -> "copyright:${it.name}"
+                        TagType.CHARACTER -> "character:${it.name}"
+                        TagType.META -> "meta:${it.name}"
+                        TagType.UNKNOWN -> it.name
+                    }
+                }
+                if (file != null) writeBytes(context, file, tags.byteInputStream())
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private suspend fun createPostFileOrNull(context: Context, post: Post, server: Server, mimeType: String): DocumentFile? {
         return createFileOrNull(context, server.urlHost, postToFilename(post, mimeType, server), mimeType)
     }
 

@@ -35,5 +35,11 @@
         android:key="@string/page_size"
         android:summary="More posts can cause longer loading times."
         android:title="Post per page"
-        app:allowDividerAbove="true" />
+        app:allowDividerAbove="true"/>
+
+    <androidx.preference.SwitchPreference
+        android:defaultValue="@bool/tags_in_txt_default_value"
+        android:key="@string/tags_in_txt"
+        android:summary="save tags in separate txt file instead of filename"
+        android:title="save tags in .txt file"/>
 </PreferenceScreen>

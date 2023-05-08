@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="page_size">page_size_string</string>
+    <string name="tags_in_txt">saveTagsInTxt</string>
     <string name="sort_tag_comparator">sort_tag_comparator</string>
     <string name="downloadWebm">downloadWebm</string>
     <string name="downloadOriginal">downloadOriginal</string>
@@ -21,6 +22,7 @@
     <string name="window_privacy">window_privacy</string>
 
     <string name="page_size_default_value">50</string>
+    <bool name="tags_in_txt_default_value">false</bool>
     <string name="sort_tag_comparator_default_value">1</string>
     <integer name="combined_search_sort_default_value">0</integer>
     <bool name="downloadWebm_default_value">true</bool>

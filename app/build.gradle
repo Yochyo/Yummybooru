@@ -43,8 +43,8 @@ android {
         applicationId "de.yochyo.yummybooru"
         minSdkVersion 21
         targetSdkVersion 32
-        versionCode 21
-        versionName "2.4.8"
+        versionCode 24
+        versionName "2.4.12"
     }
 
     buildTypes {
@@ -76,7 +76,7 @@ dependencies {
 
     implementation "de.yochyo.eventcollection:EventCollection:1.7.1"
     implementation "de.yochyo.downloader:Downloader:1.8.0"
-    implementation "de.yochyo.booruapi:BooruAPI:2.4.3"
+    implementation "de.yochyo.booruapi:BooruAPI:2.4.6"
     implementation group: 'androidx.work', name: 'work-runtime-ktx', version: '2.7.0'
 
 

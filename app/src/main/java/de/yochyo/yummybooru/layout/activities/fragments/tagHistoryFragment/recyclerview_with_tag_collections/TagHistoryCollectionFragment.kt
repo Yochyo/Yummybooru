@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.entities.TagCollection
+import de.yochyo.yummybooru.databinding.FragmentTagHistoryBinding
 import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.TagHistoryFragmentViewModel
 import de.yochyo.yummybooru.layout.alertdialogs.AddSpecialTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
@@ -22,13 +23,12 @@ import de.yochyo.yummybooru.utils.commands.CommandAddTagCollection
 import de.yochyo.yummybooru.utils.commands.execute
 import de.yochyo.yummybooru.utils.general.ctx
 import de.yochyo.yummybooru.utils.observeUntil
-import kotlinx.android.synthetic.main.fragment_tag_history.*
-import kotlinx.android.synthetic.main.fragment_tag_history.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class TagHistoryCollectionFragment : Fragment() {
+    lateinit var binding: FragmentTagHistoryBinding
     private lateinit var collectionAdapter: TagHistoryCollectionAdapter
     lateinit var tagLayoutManager: LinearLayoutManager
 
@@ -52,14 +52,14 @@ class TagHistoryCollectionFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val layout = inflater.inflate(R.layout.fragment_tag_history, container, false) as ViewGroup
-        configureTagDrawer(layout)
+        binding = FragmentTagHistoryBinding.inflate(inflater, container, false)
+        configureTagDrawer(binding.root)
 
-        layout.recycler_view_search.adapter = collectionAdapter
-        layout.recycler_view_search.layoutManager = tagLayoutManager
+        binding.recyclerViewSearch.adapter = collectionAdapter
+        binding.recyclerViewSearch.layoutManager = tagLayoutManager
 
         registerObservers()
-        return layout
+        return binding.root
     }
 
     fun registerObservers() {
@@ -96,7 +96,7 @@ class TagHistoryCollectionFragment : Fragment() {
                     AddTagDialog {
                         GlobalScope.launch(Dispatchers.Main) {
                             val t = viewModel.selectedServer.value?.getTag(it) ?: return@launch
-                            if (Command.executeAsync(fragment_tag_history, CommandAddTag(t))) {
+                            if (Command.executeAsync(binding.fragmentTagHistory, CommandAddTag(t))) {
                                 viewModel.tags.observeUntil(this@TagHistoryCollectionFragment, {
                                     val index = it.indexOfFirst { it.name == t.name }
                                     if (index >= 0)
@@ -106,7 +106,8 @@ class TagHistoryCollectionFragment : Fragment() {
                         }
                     }.build(ctx)
                 }
-                R.id.add_special_tag -> viewModel.selectedServer.value?.apply { AddSpecialTagDialog().build(fragment_tag_history, this) }
+
+                R.id.add_special_tag -> viewModel.selectedServer.value?.apply { AddSpecialTagDialog().build(binding.fragmentTagHistory, this) }
                 R.id.add_collection -> viewModel.selectedServer.value?.apply {
                     InputDialog {
                         CommandAddTagCollection(
@@ -114,7 +115,7 @@ class TagHistoryCollectionFragment : Fragment() {
                                 it,
                                 this.id
                             )
-                        ).execute(fragment_tag_history)
+                        ).execute(binding.fragmentTagHistory)
                     }.withTitle("Add tag collection").withHint("Name").build(ctx)
                 }
 

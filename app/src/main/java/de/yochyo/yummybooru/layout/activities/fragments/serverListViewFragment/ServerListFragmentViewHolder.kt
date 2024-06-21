@@ -12,7 +12,6 @@ import de.yochyo.yummybooru.layout.alertdialogs.AddServerDialog
 import de.yochyo.yummybooru.utils.commands.CommandDeleteServer
 import de.yochyo.yummybooru.utils.commands.CommandUpdateServer
 import de.yochyo.yummybooru.utils.commands.execute
-import kotlinx.android.synthetic.main.server_list_fragment.*
 
 class ServerListFragmentViewHolder(val fragment: ServerListFragment, val adapter: ServerListFragmentAdapter, val layout: LinearLayout, var server: Server) :
     RecyclerView.ViewHolder(layout), View.OnClickListener, View.OnLongClickListener {
@@ -37,7 +36,7 @@ class ServerListFragmentViewHolder(val fragment: ServerListFragment, val adapter
                 0 -> editServerDialog(server)
                 1 -> {
                     if (server == viewModel.selectedServerValue.value) Toast.makeText(context, context.getString(R.string.cannot_delete_server), Toast.LENGTH_LONG).show()
-                    else CommandDeleteServer(server).execute(fragment.server_recycler_view)
+                    else CommandDeleteServer(server).execute(fragment.binding.serverRecyclerView)
                 }
             }
         }
@@ -46,7 +45,7 @@ class ServerListFragmentViewHolder(val fragment: ServerListFragment, val adapter
 
     private fun editServerDialog(server: Server) {
         AddServerDialog(context) {
-            CommandUpdateServer(server, it).execute(fragment.server_recycler_view)
+            CommandUpdateServer(server, it).execute(fragment.binding.serverRecyclerView)
         }.withServer(server).withTitle(context.getString(R.string.edit_server)).build(context)
     }
 }

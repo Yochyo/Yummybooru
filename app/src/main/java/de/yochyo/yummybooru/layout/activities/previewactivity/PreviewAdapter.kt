@@ -20,7 +20,6 @@ import de.yochyo.yummybooru.utils.commands.Command
 import de.yochyo.yummybooru.utils.commands.CommandAddTag
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import de.yochyo.yummybooru.utils.network.downloader
-import kotlinx.android.synthetic.main.activity_preview.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -61,7 +60,7 @@ class PreviewAdapter(val activity: PreviewActivity, recyclerView: RecyclerView, 
                 val posts = selected.getSelected(m.posts)
                 GlobalScope.launch {
                     posts.map { post -> post.getTags() }.flatMap { tags -> tags.filter { tag -> tag.tagType == TagType.ARTIST } }.forEach { t ->
-                        Command.execute(activity.preview_activity_container, CommandAddTag(t.toBooruTag(activity.viewModel.server)))
+                        Command.execute(activity.binding.previewActivityContainer, CommandAddTag(t.toBooruTag(activity.viewModel.server)))
                     }
                     DownloadService.startService(activity, m.toString(), posts, activity.viewModel.server)
                     withContext(Dispatchers.Main) {

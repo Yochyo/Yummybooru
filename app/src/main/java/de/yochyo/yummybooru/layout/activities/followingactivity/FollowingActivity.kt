@@ -13,6 +13,7 @@ import de.yochyo.eventmanager.EventHandler
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.Tag
+import de.yochyo.yummybooru.databinding.ActivityFollowingBinding
 import de.yochyo.yummybooru.layout.alertdialogs.AddTagDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ConfirmDialog
 import de.yochyo.yummybooru.layout.alertdialogs.ProgressDialog
@@ -23,13 +24,15 @@ import de.yochyo.yummybooru.utils.commands.CommandUpdateSeveralFollowingTagData
 import de.yochyo.yummybooru.utils.general.Configuration
 import de.yochyo.yummybooru.utils.observeUntil
 import de.yochyo.yummybooru.utils.withValue
-import kotlinx.android.synthetic.main.activity_following.*
-import kotlinx.android.synthetic.main.content_following.*
-import kotlinx.android.synthetic.main.fragment_tag_history.*
-import kotlinx.coroutines.*
-import java.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class FollowingActivity : AppCompatActivity() {
+    lateinit var binding: ActivityFollowingBinding
     var onClickedData: FollowingData? = null
     lateinit var viewModel: FollowingActivityViewModel
 
@@ -39,6 +42,7 @@ class FollowingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityFollowingBinding.inflate(layoutInflater)
         viewModel = ViewModelProvider(this).get(FollowingActivityViewModel::class.java)
         viewModel.init(this)
         Configuration.setWindowSecurityFrag(this, window)
@@ -47,14 +51,14 @@ class FollowingActivity : AppCompatActivity() {
         val oldCount = savedInstanceState?.getInt("count")
         if (oldName != null && oldId != null && oldCount != null) onClickedData = FollowingData(oldName, oldId, oldCount)
 
-        setContentView(R.layout.activity_following)
-        setSupportActionBar(toolbar_following)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbarFollowing)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        recyclerView = following_recycler
+        recyclerView = binding.content.followingRecycler
         recyclerView.layoutManager = LinearLayoutManager(this@FollowingActivity).apply { layoutManager = this }
 
         recyclerView.adapter = FollowingTagAdapter(this, recyclerView).apply { adapter = this }
-        following_filter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        binding.followingFilter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
                 if (newText != null) viewModel.filter.value = newText
                 return true
@@ -62,8 +66,8 @@ class FollowingActivity : AppCompatActivity() {
 
             override fun onQueryTextSubmit(query: String?) = true
         })
-        following_swipe_refresh_layout.setOnRefreshListener {
-            following_swipe_refresh_layout.isRefreshing = false
+        binding.content.followingSwipeRefreshLayout.setOnRefreshListener {
+            binding.content.followingSwipeRefreshLayout.isRefreshing = false
             onClickedData = null
             adapter.notifyDataSetChanged()
         }
@@ -97,7 +101,7 @@ class FollowingActivity : AppCompatActivity() {
         onClickedData = null
         viewModel.tags.withValue(this) {
             val tag = it.find { it.name == clickedData.name } ?: return@withValue
-            Command.execute(following_layout, CommandUpdateFollowingTagData(tag, Following(clickedData.idWhenClicked, clickedData.countWhenClicked)))
+            Command.execute(binding.followingLayout, CommandUpdateFollowingTagData(tag, Following(clickedData.idWhenClicked, clickedData.countWhenClicked)))
         }
     }
 
@@ -111,7 +115,7 @@ class FollowingActivity : AppCompatActivity() {
             android.R.id.home -> finish()
             R.id.add_following -> {
                 AddTagDialog { name ->
-                    TagUtil.CreateFollowedTagOrChangeFollowing(following_layout, this@FollowingActivity, name)
+                    TagUtil.CreateFollowedTagOrChangeFollowing(binding.followingLayout, this@FollowingActivity, name)
                     GlobalScope.launch(Dispatchers.Main) {
                         viewModel.tags.observeUntil(this@FollowingActivity, {
                             val index = it.indexOfFirst { it.name == name }
@@ -141,7 +145,7 @@ class FollowingActivity : AppCompatActivity() {
                         pair
                     }
                 }.awaitAll()
-                Command.execute(following_layout, CommandUpdateSeveralFollowingTagData(updatedTags))
+                Command.execute(binding.followingLayout, CommandUpdateSeveralFollowingTagData(updatedTags))
                 withContext(Dispatchers.Main) { dialog.stop() }
             }
         }.withTitle(message).build(this@FollowingActivity)

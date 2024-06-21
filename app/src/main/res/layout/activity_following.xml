@@ -34,7 +34,9 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_following"/>
+    <include
+        android:id="@+id/content"
+        layout="@layout/content_following" />
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

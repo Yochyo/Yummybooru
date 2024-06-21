@@ -10,7 +10,6 @@ import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.compo
 import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.components.TagComponent
 import de.yochyo.yummybooru.utils.general.addToCopy
 import de.yochyo.yummybooru.utils.general.removeFromCopy
-import kotlinx.android.synthetic.main.fragment_tag_history.*
 
 class TagHistoryCollectionAdapter(val fragment: TagHistoryCollectionFragment) :
     ExpandableRecyclerViewAdapter<TagHistoryCollectionViewHolder, TagHistoryCollectionChildViewHolder>(listOf(TagCollectionWithTags("Loading...", 0).toExpandableGroup())) {
@@ -29,12 +28,12 @@ class TagHistoryCollectionAdapter(val fragment: TagHistoryCollectionFragment) :
     }
 
     override fun onCreateGroupViewHolder(parent: ViewGroup, viewType: Int): TagHistoryCollectionViewHolder {
-        val component = TagCollectionComponent(fragment.viewModel, fragment.fragment_tag_history, parent, fragment)
+        val component = TagCollectionComponent(fragment.viewModel, fragment.binding.fragmentTagHistory, parent, fragment)
         return TagHistoryCollectionViewHolder(component)
     }
 
     override fun onCreateChildViewHolder(parent: ViewGroup, viewType: Int): TagHistoryCollectionChildViewHolder {
-        val component = TagComponent(fragment.viewModel.selectedServer, fragment.fragment_tag_history, parent)
+        val component = TagComponent(fragment.viewModel.selectedServer, fragment.binding.fragmentTagHistory, parent)
         component.onSelect = { tag, selected ->
             fragment.viewModel.selectedTags.value =
                 if (selected) fragment.viewModel.selectedTagsValue.value.addToCopy(tag.name)

@@ -6,7 +6,6 @@ import de.yochyo.yummybooru.api.entities.Tag
 import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.components.TagComponent
 import de.yochyo.yummybooru.utils.general.addToCopy
 import de.yochyo.yummybooru.utils.general.removeFromCopy
-import kotlinx.android.synthetic.main.fragment_tag_history.*
 
 class TagHistoryFragmentAdapter(val fragment: TagHistoryFragment) : RecyclerView.Adapter<TagHistoryFragmentViewHolder>() {
     var tags: List<Tag> = emptyList()
@@ -17,7 +16,7 @@ class TagHistoryFragmentAdapter(val fragment: TagHistoryFragment) : RecyclerView
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TagHistoryFragmentViewHolder {
-        val component = TagComponent(fragment.viewModel.selectedServer, fragment.fragment_tag_history, parent)
+        val component = TagComponent(fragment.viewModel.selectedServer, fragment.binding.fragmentTagHistory, parent)
         component.onSelect = { tag, selected ->
             fragment.viewModel.selectedTags.value =
                 if (selected) fragment.viewModel.selectedTagsValue.value.addToCopy(tag.name)

@@ -15,8 +15,6 @@ import de.yochyo.yummybooru.utils.general.setColor
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import de.yochyo.yummybooru.utils.general.underline
 import de.yochyo.yummybooru.utils.withValue
-import kotlinx.android.synthetic.main.activity_picture.*
-import kotlinx.android.synthetic.main.picture_activity_drawer.*
 
 class TagInfoAdapter(val activity: PictureActivity) : RecyclerView.Adapter<InfoButtonHolder>() {
     private var tags: List<de.yochyo.booruapi.api.Tag> = emptyList()
@@ -31,14 +29,15 @@ class TagInfoAdapter(val activity: PictureActivity) : RecyclerView.Adapter<InfoB
             toolbar.inflateMenu(R.menu.picture_info_menu)
             toolbar.setOnClickListener {
                 PreviewActivity.startActivity(activity, toolbar.findViewById<TextView>(R.id.info_textview).text.toString())
-                activity.drawer_picture2.closeDrawer(GravityCompat.END)
+                activity.binding.content.drawerPicture2.closeDrawer(GravityCompat.END)
             }
+
             toolbar.setOnMenuItemClickListener {
                 val tag = tags[adapterPosition]
                 when (it.itemId) {
-                    R.id.picture_info_item_add_history -> Command.execute(activity.picture_activity_container, CommandAddTag(tag.toBooruTag(activity.viewModel.server)))
-                    R.id.picture_info_item_add_favorite -> TagUtil.favoriteOrCreateTagIfNotExist(activity.picture_activity_container, activity, tag.name)
-                    R.id.picture_info_item_following -> TagUtil.CreateFollowedTagOrChangeFollowing(activity.picture_activity_container, activity, tag.name)
+                    R.id.picture_info_item_add_history -> Command.execute(activity.binding.pictureActivityContainer, CommandAddTag(tag.toBooruTag(activity.viewModel.server)))
+                    R.id.picture_info_item_add_favorite -> TagUtil.favoriteOrCreateTagIfNotExist(activity.binding.pictureActivityContainer, activity, tag.name)
+                    R.id.picture_info_item_following -> TagUtil.CreateFollowedTagOrChangeFollowing(activity.binding.pictureActivityContainer, activity, tag.name)
                 }
 
                 true

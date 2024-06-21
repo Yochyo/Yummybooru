@@ -21,13 +21,12 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.manager.ManagerDistributor
 import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.preferences
+import de.yochyo.yummybooru.databinding.ActivityPictureBinding
 import de.yochyo.yummybooru.layout.views.mediaview.MediaView
 import de.yochyo.yummybooru.utils.distributor.Pointer
 import de.yochyo.yummybooru.utils.general.Configuration
 import de.yochyo.yummybooru.utils.general.downloadAndSaveImage
 import de.yochyo.yummybooru.utils.general.restoreManager
-import kotlinx.android.synthetic.main.activity_picture.*
-import kotlinx.android.synthetic.main.picture_activity_drawer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -48,7 +47,7 @@ class PictureActivity : AppCompatActivity() {
         }
     }
     private var isInit = true
-
+    lateinit var binding: ActivityPictureBinding
     lateinit var managerPointer: Pointer<ManagerWrapper>
     val m: ManagerWrapper get() = managerPointer.value
 
@@ -65,22 +64,23 @@ class PictureActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityPictureBinding.inflate(layoutInflater)
         viewModel = ViewModelProvider(this).get(PictureActivityViewModel::class.java)
         viewModel.init(this)
         Configuration.setWindowSecurityFrag(this, window)
-        setContentView(R.layout.activity_picture)
-        setSupportActionBar(toolbar_picture2)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbarPicture2)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        nav_view_picture.bringToFront()
+        binding.content.navViewPicture.bringToFront()
 
-        tagRecyclerView = nav_view_picture.findViewById(R.id.recycle_view_info)
+        tagRecyclerView = binding.content.navViewPicture.findViewById(R.id.recycle_view_info)
         tagInfoAdapter = TagInfoAdapter(this).apply { tagRecyclerView.adapter = this }
         tagRecyclerView.layoutManager = LinearLayoutManager(this)
 
 
         GlobalScope.launch(Dispatchers.Main) {
             restoreManager(savedInstanceState)
-            with(view_pager2) {
+            with(binding.content.viewPager2) {
                 pictureAdapter = PictureAdapter(this@PictureActivity).apply { this@with.adapter = this }
                 this.offscreenPageLimit = preferences.preloadedImages
                 m.posts.registerOnUpdateListener(managerListener)
@@ -98,7 +98,7 @@ class PictureActivity : AppCompatActivity() {
 
                     getMediaView(newPosition)?.resume()
                     val scale = getPhotoView(newPosition)?.scale ?: 1f
-                    view_pager2.isUserInputEnabled = scale != 1f
+                    binding.content.viewPager2.isUserInputEnabled = scale != 1f
                 }
 
                 setCurrentItem(m.position, !isInit)
@@ -109,13 +109,13 @@ class PictureActivity : AppCompatActivity() {
 
 
     private fun getMediaView(position: Int): MediaView? {
-        val child = view_pager2.getViewAt<View>(position)
+        val child = binding.content.viewPager2.getViewAt<View>(position)
         return if (child is MediaView) child
         else null
     }
 
     private fun getPhotoView(position: Int): PhotoView? {
-        val child = view_pager2.getViewAt<View>(position)
+        val child = binding.content.viewPager2.getViewAt<View>(position)
         return if (child is PhotoView) child
         else null
     }
@@ -140,7 +140,7 @@ class PictureActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
-            R.id.show_info -> drawer_picture2.openDrawer(GravityCompat.END)
+            R.id.show_info -> binding.content.drawerPicture2.openDrawer(GravityCompat.END)
             R.id.save -> m.currentPost?.apply { downloadAndSaveImage(this@PictureActivity, this) }
             R.id.share -> {
                 val post = m.currentPost

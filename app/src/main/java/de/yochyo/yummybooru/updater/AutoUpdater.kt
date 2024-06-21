@@ -50,7 +50,7 @@ class AutoUpdater(private val context: Context) {
             NotificationCompat.Builder(context, App.CHANNEL_ID).setContentTitle(context.getString(R.string.update_to_version, file.name.subSequence(0, file.name.lastIndex - 3)))
                 .setSmallIcon(R.drawable.notification_icon).setAutoCancel(true)
         val intent = installIntent(file)
-        builder.setContentIntent(PendingIntent.getActivity(context, 2, intent, 0))
+        builder.setContentIntent(PendingIntent.getActivity(context, 2, intent, PendingIntent.FLAG_IMMUTABLE))
         NotificationManagerCompat.from(context).notify(2, builder.build())
     }
 

@@ -1,6 +1,10 @@
 package de.yochyo.yummybooru.layout.activities.pictureactivity
 
-import android.view.*
+import android.view.GestureDetector
+import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.github.chrisbanes.photoview.PhotoView
@@ -17,8 +21,6 @@ import de.yochyo.yummybooru.utils.general.downloadAndSaveImage
 import de.yochyo.yummybooru.utils.general.loadIntoImageView
 import de.yochyo.yummybooru.utils.general.toBooruTag
 import de.yochyo.yummybooru.utils.network.downloader
-import kotlinx.android.synthetic.main.activity_picture.*
-import kotlinx.android.synthetic.main.picture_activity_drawer.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -36,8 +38,8 @@ class PictureViewHolder(
 
     var lastSwipeUp = 0L
     var onSwipe: (GestureListener.Direction) -> Boolean = { direction: GestureListener.Direction ->
-        fun onSwipeLeft() = activity.view_pager2.currentItem++
-        fun onSwipeRight() = activity.view_pager2.currentItem--
+        fun onSwipeLeft() = activity.binding.content.viewPager2.currentItem++
+        fun onSwipeRight() = activity.binding.content.viewPager2.currentItem--
         fun onSwipeUp() {
             val pos = adapterPosition
             if (pos !in activity.m.posts.indices) return
@@ -53,7 +55,7 @@ class PictureViewHolder(
             } else { //double swipe
                 GlobalScope.launch {
                     for (tag in post.getTags().filter { it.tagType == TagType.ARTIST })
-                        Command.execute(activity.picture_activity_container, CommandAddTag(tag.toBooruTag(activity.viewModel.server)))
+                        Command.execute(activity.binding.pictureActivityContainer, CommandAddTag(tag.toBooruTag(activity.viewModel.server)))
                 }
             }
             lastSwipeUp = time
@@ -69,7 +71,7 @@ class PictureViewHolder(
     }
 
 
-    private val viewPager = activity.view_pager2
+    private val viewPager = activity.binding.content.viewPager2
 
     private val photoView = createPhotoView()
     private var mediaView: MediaView = createMediaView()
@@ -112,7 +114,7 @@ class PictureViewHolder(
     private fun createPhotoView(): PhotoView {
         val view = PhotoViewWithoutSecondDoubleTap(activity)
         view.setOnScaleChangeListener { scaleFactor, _, _ ->
-            activity.view_pager2.isUserInputEnabled = scaleFactor != 1f
+            activity.binding.content.viewPager2.isUserInputEnabled = scaleFactor != 1f
         }
         view.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         view.setAllowParentInterceptOnEdge(true)

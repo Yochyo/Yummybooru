@@ -16,6 +16,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.database.booleanLiveData
 import de.yochyo.yummybooru.database.db
 import de.yochyo.yummybooru.database.preferences
+import de.yochyo.yummybooru.databinding.MainActivityLayoutBinding
 import de.yochyo.yummybooru.layout.activities.followingactivity.FollowingActivity
 import de.yochyo.yummybooru.layout.activities.fragments.serverListViewFragment.ServerListFragment
 import de.yochyo.yummybooru.layout.activities.fragments.tagHistoryFragment.recyclerview.TagHistoryFragment
@@ -34,10 +35,12 @@ import de.yochyo.yummybooru.utils.general.Configuration
 import de.yochyo.yummybooru.utils.general.toTagString
 import de.yochyo.yummybooru.utils.general.updateCombinedSearchSortAlgorithm
 import de.yochyo.yummybooru.utils.general.updateNomediaFile
-import kotlinx.android.synthetic.main.main_activity_layout.*
 
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: MainActivityLayoutBinding
+
+
     private var serverListFragment: Fragment? = null
     private var tagHistoryFragment: Fragment? = null
 
@@ -48,8 +51,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = MainActivityLayoutBinding.inflate(layoutInflater)
         Configuration.setWindowSecurityFrag(this, window)
-        setContentView(R.layout.main_activity_layout)
+        setContentView(binding.root)
         updateCombinedSearchSortAlgorithm(preferences.combinedSearchSort)
         if (preferences.isFirstStart)
             startActivity(Intent(this, IntroActivity::class.java))
@@ -68,7 +72,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        configureToolbarAndNavView(nav_view)
+        configureToolbarAndNavView(binding.navView)
         initData(savedInstanceState)
         registerObservers()
     }
@@ -103,13 +107,13 @@ class MainActivity : AppCompatActivity() {
         val frag = tagHistoryFragment ?: return
         if (frag is TagHistoryFragment) {
             frag.onSearchButtonClick = {
-                this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
+                binding.drawerLayout.closeDrawer(GravityCompat.END)
                 PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
             }
         }
         if (frag is TagHistoryCollectionFragment) {
             frag.onSearchButtonClick = {
-                this@MainActivity.drawer_layout.closeDrawer(GravityCompat.END)
+                binding.drawerLayout.closeDrawer(GravityCompat.END)
                 PreviewActivity.startActivity(this@MainActivity, if (it.isEmpty()) "*" else it.toTagString())
             }
         }
@@ -118,9 +122,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun configureToolbarAndNavView(navView: NavigationView) {
-        setSupportActionBar(main_activity_toolbar)
-        val toggle = ActionBarDrawerToggle(this, drawer_layout, main_activity_toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
-        drawer_layout.addDrawerListener(toggle)
+        setSupportActionBar(binding.mainActivityToolbar)
+        val toggle = ActionBarDrawerToggle(this, binding.drawerLayout, binding.mainActivityToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+        binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
         navView.setNavigationItemSelectedListener(SettingsNavView(navView)
             .apply { inflateMenu(R.menu.activity_main_drawer_menu, this@MainActivity::onNavigationItemSelected) })
@@ -136,7 +140,7 @@ class MainActivity : AppCompatActivity() {
             R.id.nav_help -> Toast.makeText(this, getString(R.string.join_discord), Toast.LENGTH_SHORT).show()
             else -> return false
         }
-        drawer_layout.closeDrawer(GravityCompat.START)
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 
@@ -152,8 +156,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_add_server -> AddServerDialog(this) { CommandAddServer(it).execute(drawer_layout) }.build(this)
-            R.id.search -> drawer_layout.openDrawer(GravityCompat.END)
+            R.id.action_add_server -> AddServerDialog(this) { CommandAddServer(it).execute(binding.drawerLayout) }.build(this)
+            R.id.search -> binding.drawerLayout.openDrawer(GravityCompat.END)
         }
         return super.onOptionsItemSelected(item)
     }
@@ -165,10 +169,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         when {
-            drawer_layout.isDrawerOpen(GravityCompat.START) -> drawer_layout.closeDrawer(
+            binding.drawerLayout.isDrawerOpen(GravityCompat.START) -> binding.drawerLayout.closeDrawer(
                 GravityCompat.START
             )
-            drawer_layout.isDrawerOpen(GravityCompat.END) -> drawer_layout.closeDrawer(GravityCompat.END)
+
+            binding.drawerLayout.isDrawerOpen(GravityCompat.END) -> binding.drawerLayout.closeDrawer(GravityCompat.END)
         }
     }
 }

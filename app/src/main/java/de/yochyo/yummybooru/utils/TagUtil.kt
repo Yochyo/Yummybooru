@@ -2,21 +2,30 @@ package de.yochyo.yummybooru.utils
 
 import android.content.Context
 import android.view.View
-import androidx.lifecycle.*
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.distinctUntilChanged
 import de.yochyo.booruapi.api.TagType
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Following
 import de.yochyo.yummybooru.api.entities.Tag
-import de.yochyo.yummybooru.database.*
-import de.yochyo.yummybooru.utils.commands.*
+import de.yochyo.yummybooru.database.booleanLiveData
+import de.yochyo.yummybooru.database.db
+import de.yochyo.yummybooru.database.preferences
+import de.yochyo.yummybooru.database.stringLiveData
+import de.yochyo.yummybooru.utils.commands.Command
+import de.yochyo.yummybooru.utils.commands.CommandAddTag
+import de.yochyo.yummybooru.utils.commands.CommandDeleteTag
+import de.yochyo.yummybooru.utils.commands.CommandFavoriteTag
+import de.yochyo.yummybooru.utils.commands.CommandUpdateFollowingTagData
+import de.yochyo.yummybooru.utils.commands.execute
 import de.yochyo.yummybooru.utils.enums.TagSortType
-import kotlinx.android.synthetic.main.activity_preview.*
-import kotlinx.coroutines.*
-import java.util.ArrayList
-import kotlin.Boolean
-import kotlin.Comparator
-import kotlin.String
-import kotlin.apply
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object TagUtil {
     fun addTag(snackbarView: View, name: String, favorite: Boolean) {

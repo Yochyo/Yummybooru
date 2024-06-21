@@ -17,6 +17,7 @@ import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.manager.ManagerDistributor
 import de.yochyo.yummybooru.api.manager.ManagerWrapper
 import de.yochyo.yummybooru.database.preferences
+import de.yochyo.yummybooru.databinding.ActivityPreviewBinding
 import de.yochyo.yummybooru.layout.alertdialogs.DownloadPostsDialog
 import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
@@ -25,14 +26,13 @@ import de.yochyo.yummybooru.utils.TagUtil
 import de.yochyo.yummybooru.utils.distributor.Pointer
 import de.yochyo.yummybooru.utils.general.Configuration
 import de.yochyo.yummybooru.utils.general.restoreManager
-import kotlinx.android.synthetic.main.activity_preview.*
-import kotlinx.android.synthetic.main.content_preview.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 open class PreviewActivity : AppCompatActivity() {
+    lateinit var binding: ActivityPreviewBinding
     private val OFFSET_BEFORE_LOAD_NEXT_PAGE get() = 1 + preferences.limit / 2
 
     companion object {
@@ -49,9 +49,11 @@ open class PreviewActivity : AppCompatActivity() {
 
     lateinit var viewModel: PreviewActivityViewModel
 
-    private val disableSwipeRefreshOnSelectionListener = Listener<StartSelectingEvent> { swipeRefreshLayout.isEnabled = false }
+    private val disableSwipeRefreshOnSelectionListener = Listener<StartSelectingEvent> { binding.content.swipeRefreshLayout.isEnabled = false }
     private val reEnableSwipeRefreshOnSelectionListener =
-        Listener<StopSelectingEvent> { swipeRefreshLayout.isEnabled = true;swipeRefreshLayout.isEnabled = false; swipeRefreshLayout.isEnabled = true }
+        Listener<StopSelectingEvent> {
+            binding.content.swipeRefreshLayout.isEnabled = true;binding.content.swipeRefreshLayout.isEnabled = false; binding.content.swipeRefreshLayout.isEnabled = true
+        }
     private var isLoadingView = false
     var isScrolling = false
 
@@ -68,10 +70,11 @@ open class PreviewActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityPreviewBinding.inflate(layoutInflater)
         viewModel = ViewModelProvider(this).get(PreviewActivityViewModel::class.java)
         viewModel.init(this)
         Configuration.setWindowSecurityFrag(this, window)
-        setContentView(R.layout.activity_preview)
+        setContentView(binding.root)
         initData(savedInstanceState)
     }
 
@@ -82,7 +85,7 @@ open class PreviewActivity : AppCompatActivity() {
                 initToolbar()
                 m.posts.registerOnAddElementsListener(managerListener)
 
-                recycler_view.layoutManager = object : StaggeredGridLayoutManager(preferences.previewColumns, RecyclerView.VERTICAL) {
+                binding.content.recyclerView.layoutManager = object : StaggeredGridLayoutManager(preferences.previewColumns, RecyclerView.VERTICAL) {
                     override fun onLayoutChildren(recycler: RecyclerView.Recycler?, state: RecyclerView.State?) {
                         try {
                             super.onLayoutChildren(recycler, state)
@@ -92,14 +95,14 @@ open class PreviewActivity : AppCompatActivity() {
                     }
                 }.apply { layoutManager = this }
 
-                recycler_view.adapter = PreviewAdapter(this@PreviewActivity, recycler_view, m).apply { previewAdapter = this }
-                previewAdapter.isDragSelectingEnabled(recycler_view, true)
+                binding.content.recyclerView.adapter = PreviewAdapter(this@PreviewActivity, binding.content.recyclerView, m).apply { previewAdapter = this }
+                previewAdapter.isDragSelectingEnabled(binding.content.recyclerView, true)
                 previewAdapter.onStartSelection.registerListener(disableSwipeRefreshOnSelectionListener)
                 previewAdapter.onStopSelection.registerListener(reEnableSwipeRefreshOnSelectionListener)
                 previewAdapter.dragListener.disableAutoScroll()
                 initSwipeRefreshLayout()
                 initScrollView()
-                recycler_view.scrollToPosition(m.position)
+                binding.content.recyclerView.scrollToPosition(m.position)
 
                 loadNextPage()
                 loadNextPage()
@@ -129,7 +132,7 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     private fun initScrollView() {
-        recycler_view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.content.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 when (newState) {
                     RecyclerView.SCROLL_STATE_IDLE -> {
@@ -152,8 +155,8 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     fun initSwipeRefreshLayout() {
-        swipeRefreshLayout.setOnRefreshListener {
-            swipeRefreshLayout.isRefreshing = false
+        binding.content.swipeRefreshLayout.setOnRefreshListener {
+            binding.content.swipeRefreshLayout.isRefreshing = false
             if (previewAdapter.actionmode == null) {
                 GlobalScope.launch(Dispatchers.Main) {
                     m.clear()
@@ -165,7 +168,7 @@ open class PreviewActivity : AppCompatActivity() {
     }
 
     fun initToolbar() {
-        setSupportActionBar(toolbar_preview)
+        setSupportActionBar(binding.toolbarPreview)
         supportActionBar?.title = m.toString()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
@@ -177,9 +180,9 @@ open class PreviewActivity : AppCompatActivity() {
             R.id.download_all -> DownloadPostsDialog(this, m)
             R.id.select_all -> previewAdapter.selectAll()
 
-            R.id.favorite -> TagUtil.favoriteOrCreateTagIfNotExist(preview_activity_container, this, m.toString())
-            R.id.add_tag -> TagUtil.addTagOrDeleteIfExists(preview_activity_container, this, m.toString())
-            R.id.follow -> TagUtil.CreateFollowedTagOrChangeFollowing(preview_activity_container, this, m.toString())
+            R.id.favorite -> TagUtil.favoriteOrCreateTagIfNotExist(binding.previewActivityContainer, this, m.toString())
+            R.id.add_tag -> TagUtil.addTagOrDeleteIfExists(binding.previewActivityContainer, this, m.toString())
+            R.id.follow -> TagUtil.CreateFollowedTagOrChangeFollowing(binding.previewActivityContainer, this, m.toString())
         }
         return super.onOptionsItemSelected(item)
     }

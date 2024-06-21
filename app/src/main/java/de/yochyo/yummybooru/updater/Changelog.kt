@@ -9,6 +9,7 @@ class Changelog(val versionName: String, val version: Int, val description: Stri
     companion object {
         private val logs = ArrayList<Changelog>()
 
+
         init {
             logs += Changelog("1.0", 0, "- First Version")
             logs += Changelog("1.1", 1, "- Bug fixes")

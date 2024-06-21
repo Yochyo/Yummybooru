@@ -23,6 +23,8 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_preview"/>
+    <include
+        android:id="@+id/content"
+        layout="@layout/content_preview" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

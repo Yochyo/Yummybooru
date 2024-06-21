@@ -13,10 +13,12 @@ import de.yochyo.yummybooru.layout.menus.Menus
 import de.yochyo.yummybooru.layout.selectableRecyclerView.SelectableRecyclerViewAdapter
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StartSelectingEvent
 import de.yochyo.yummybooru.layout.selectableRecyclerView.StopSelectingEvent
-import de.yochyo.yummybooru.utils.commands.*
+import de.yochyo.yummybooru.utils.commands.Command
+import de.yochyo.yummybooru.utils.commands.CommandDeleteTag
+import de.yochyo.yummybooru.utils.commands.CommandFavoriteTag
+import de.yochyo.yummybooru.utils.commands.CommandUpdateFollowingTagData
 import de.yochyo.yummybooru.utils.general.setColor
 import de.yochyo.yummybooru.utils.general.underline
-import kotlinx.android.synthetic.main.activity_following.*
 
 class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: RecyclerView) : SelectableRecyclerViewAdapter<FollowingTagViewHolder>(
     activity, recyclerView, R.menu.following_activity_selection_menu
@@ -67,9 +69,9 @@ class FollowingTagAdapter(val activity: FollowingActivity, recyclerView: Recycle
 
             val tag = followedTags[holder.adapterPosition]
             when (it.itemId) {
-                R.id.following_set_favorite -> Command.execute(activity.following_layout, CommandFavoriteTag(tag, !tag.isFavorite))
-                R.id.unfollow -> Command.execute(activity.following_layout, CommandUpdateFollowingTagData(tag, null))
-                R.id.delete_tag -> Command.execute(activity.following_layout, CommandDeleteTag(tag))
+                R.id.following_set_favorite -> Command.execute(activity.binding.followingLayout, CommandFavoriteTag(tag, !tag.isFavorite))
+                R.id.unfollow -> Command.execute(activity.binding.followingLayout, CommandUpdateFollowingTagData(tag, null))
+                R.id.delete_tag -> Command.execute(activity.binding.followingLayout, CommandDeleteTag(tag))
             }
             true
         }

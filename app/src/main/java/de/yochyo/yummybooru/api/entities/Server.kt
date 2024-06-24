@@ -6,7 +6,6 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import de.yochyo.booruapi.api.IBooruApi
-import de.yochyo.booruapi.api.pixiv.PixivApi2
 import de.yochyo.yummybooru.api.Apis
 import de.yochyo.yummybooru.database.preferences
 import de.yochyo.yummybooru.utils.general.toBooruTag
@@ -42,33 +41,9 @@ data class Server(
         ""
     }
 
-    @Deprecated("temp method cause I have no time")
     fun login(context: Context) {
         GlobalScope.launch(Dispatchers.IO) {
-            val api = this@Server.api
-            if (api is PixivApi2) {
-                val refreshToken = context.preferences.prefs.getString("pixiv-$username", null)
-                if (refreshToken == null) {
-                    if (api.login(username, password)) {
-                        val ref = api.refreshToken
-                        if (ref != null) {
-                            context.preferences.setPreference("pixiv-$username", ref)
-                            api.login("X", ref)
-                        }
-                    }
-                } else {
-                    if (!api.login("", refreshToken)) {
-                        if (api.login(username, password)) {
-                            val ref = api.refreshToken
-                            if (ref != null) {
-                                context.preferences.setPreference("pixiv-$username", ref)
-                                api.login("", ref)
-                            }
-                        }
-                    }
-                }
-
-            } else api.login(username, password)
+            api.login(username, password)
         }
     }
 

@@ -1,0 +1,2 @@
+The packages in here are all libraries I wrote ages ago, that are only being used in Yummybooru now. Updating them was a hassle (cause I had to make a new release after every
+single bugfix), so they're included in here now.

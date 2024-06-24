@@ -23,10 +23,15 @@ import de.yochyo.yummybooru.database.entities.TagCollection
 import de.yochyo.yummybooru.database.entities.TagCollectionTagCrossRef
 import de.yochyo.yummybooru.database.entities.TagCollectionWithTags
 import de.yochyo.yummybooru.database.migrations.Migration3To4
+import de.yochyo.yummybooru.database.migrations.Migration4To5
 import de.yochyo.yummybooru.utils.LiveDataValue
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
-@Database(entities = [Tag::class, Server::class, TagCollection::class, TagCollectionTagCrossRef::class], version = 4, exportSchema = true)
+@Database(entities = [Tag::class, Server::class, TagCollection::class, TagCollectionTagCrossRef::class], version = 5, exportSchema = true)
 @TypeConverters(ConvertDate::class, ConvertBoolean::class, ConvertTagType::class)
 abstract class RoomDb : RoomDatabase(), DaoMethods {
     override val db: RoomDb = this
@@ -43,7 +48,7 @@ abstract class RoomDb : RoomDatabase(), DaoMethods {
                     db.execSQL("INSERT INTO servers VALUES ('Konachan', 'https://konachan.com/', 'moebooru', '', '', NULL);", emptyArray())
                     db.execSQL("INSERT INTO servers VALUES ('Yande.re', 'https://yande.re/', 'moebooru', '', '', NULL);", emptyArray())
                 }
-            }).addMigrations(Migration3To4()).build().apply { _db = this }
+            }).addMigrations(Migration3To4(), Migration4To5()).build().apply { _db = this }
         }
     }
 

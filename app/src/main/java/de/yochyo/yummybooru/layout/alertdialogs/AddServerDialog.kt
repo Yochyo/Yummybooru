@@ -4,7 +4,12 @@ import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.LinearLayout
+import android.widget.Spinner
+import android.widget.TextView
+import android.widget.Toast
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.Apis
 import de.yochyo.yummybooru.api.entities.Server
@@ -49,7 +54,6 @@ class AddServerDialog(context: Context, val runOnPositive: (s: Server) -> Unit) 
                     }
                     layout.findViewById<TextView>(R.id.add_server_username).hint = when (item) {
                         "auto" -> context.getString(R.string.hint_username_or_email)
-                        Apis.PIXIV -> context.getString(R.string.hint_email)
                         else -> context.getString(R.string.hint_username)
                     }
                 }
@@ -140,6 +144,5 @@ private object ServerTemplates {
         templates += Server("rule34.xxx", "https://rule34.xxx/", Apis.GELBOORU_BETA)
         templates += Server("Realbooru", "https://realbooru.com/", Apis.GELBOORU_BETA)
         templates += Server("Furrybooru", "https://safebooru.org/", Apis.GELBOORU_BETA)
-        templates += Server("Pixiv", "https://pixiv.net", Apis.PIXIV)
     }
 }

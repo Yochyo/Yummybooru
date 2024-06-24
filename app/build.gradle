@@ -42,8 +42,8 @@ android {
         applicationId "de.yochyo.yummybooru"
         minSdkVersion 21
         targetSdkVersion 32
-        versionCode 24
-        versionName "2.4.12"
+        versionCode 26
+        versionName "2.4.14"
     }
 
     buildTypes {
@@ -77,10 +77,6 @@ dependencies {
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0-native-mt'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
-
-    implementation "de.yochyo.eventcollection:EventCollection:1.7.1"
-    implementation "de.yochyo.downloader:Downloader:1.8.1"
-    implementation "de.yochyo.booruapi:BooruAPI:2.5.0"
     implementation group: 'androidx.work', name: 'work-runtime-ktx', version: '2.7.0'
 
 
@@ -95,4 +91,10 @@ dependencies {
     implementation "androidx.room:room-ktx:2.3.0"
     kapt "androidx.room:room-compiler:2.3.0"
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.1'
+    // dependencies for booruAPI
+    implementation "org.jsoup:jsoup:1.15.3"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.2"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.10.2"
+    implementation "com.fasterxml.jackson.core:jackson-core:2.10.2"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.10.2"
 }

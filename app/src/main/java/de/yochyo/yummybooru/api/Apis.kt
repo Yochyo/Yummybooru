@@ -6,8 +6,7 @@ import de.yochyo.booruapi.api.gelbooru.GelbooruApi
 import de.yochyo.booruapi.api.gelbooru_beta.GelbooruBetaApi
 import de.yochyo.booruapi.api.moebooru.MoebooruApi
 import de.yochyo.booruapi.api.my_imouto.MyImoutoApi
-import de.yochyo.booruapi.api.pixiv.PixivApi2
-import java.util.*
+import java.util.Locale
 
 object Apis {
     val DANBOORU = "Danbooru"
@@ -15,15 +14,13 @@ object Apis {
     val GELBOORU = "Gelbooru"
     val MY_IMOUTO = "MyImouto"
     val GELBOORU_BETA = "GelbooruBeta"
-    val PIXIV = "Pixiv"
-    val apis = arrayListOf(DANBOORU, MOEBOORU, GELBOORU, MY_IMOUTO, GELBOORU_BETA, PIXIV)
+    val apis = arrayListOf(DANBOORU, MOEBOORU, GELBOORU, MY_IMOUTO, GELBOORU_BETA)
     fun getApi(name: String, url: String): IBooruApi {
         return when (name.toLowerCase(Locale.ENGLISH)) {
             MOEBOORU.toLowerCase(Locale.ENGLISH) -> MoebooruApi(url)
             GELBOORU.toLowerCase(Locale.ENGLISH) -> GelbooruApi(url)
             MY_IMOUTO.toLowerCase(Locale.ENGLISH) -> MyImoutoApi(url)
             GELBOORU_BETA.toLowerCase(Locale.ENGLISH) -> GelbooruBetaApi(url)
-            PIXIV.toLowerCase(Locale.ENGLISH) -> PixivApi2()
             else -> DanbooruApi(url)
         }
     }

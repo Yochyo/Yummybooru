@@ -6,11 +6,12 @@ import android.view.MotionEvent
 abstract class GestureListener : GestureDetector.SimpleOnGestureListener() {
     abstract fun onSwipe(direction: Direction): Boolean
 
-    override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+    override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+        if (e1 == null) return false
         return onSwipe(getDirection(e1, e2))
     }
 
-    override fun onDown(e: MotionEvent?): Boolean {
+    override fun onDown(e: MotionEvent): Boolean {
         return true
     }
 

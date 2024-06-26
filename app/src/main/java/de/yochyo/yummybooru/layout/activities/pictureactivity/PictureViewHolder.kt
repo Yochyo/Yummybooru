@@ -133,7 +133,7 @@ class PictureViewHolder(
                 return this@PictureViewHolder.onSwipe(direction)
             }
 
-            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
                 onClick(adapterPosition)
                 return true
             }

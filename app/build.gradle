@@ -7,7 +7,7 @@ Properties props = new Properties()
 props.load(new FileInputStream(file('../signing.properties')))
 
 android {
-    compileSdk 32
+    compileSdk 34
 
     signingConfigs {
         debug {
@@ -41,7 +41,7 @@ android {
         }
         applicationId "de.yochyo.yummybooru"
         minSdkVersion 21
-        targetSdkVersion 32
+        targetSdkVersion 34
         versionCode 26
         versionName "2.4.14"
     }
@@ -75,9 +75,9 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.preference:preference-ktx:1.1.1'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0-native-mt'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
-    implementation group: 'androidx.work', name: 'work-runtime-ktx', version: '2.7.0'
+    implementation 'androidx.work:work-runtime-ktx:2.9.0'
 
 
     implementation 'com.github.bumptech.glide:glide:4.12.0'
@@ -87,9 +87,10 @@ dependencies {
     implementation 'com.github.AppIntro:AppIntro:6.1.0'
     implementation 'com.thoughtbot:expandablecheckrecyclerview:1.4'
 
-    implementation "androidx.room:room-runtime:2.3.0"
-    implementation "androidx.room:room-ktx:2.3.0"
-    kapt "androidx.room:room-compiler:2.3.0"
+    implementation "androidx.room:room-runtime:2.6.1"
+    implementation "androidx.room:room-ktx:2.6.1"
+    kapt "androidx.room:room-compiler:2.6.1"
+
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.1'
     // dependencies for booruAPI
     implementation "org.jsoup:jsoup:1.15.3"

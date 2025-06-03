@@ -3,7 +3,7 @@ buildscript {
     ext {
         agp_version = '8.4.1'
     }
-    ext.kotlin_version = "1.9.0"
+    ext.kotlin_version = "1.9.21"
     repositories {
         google()
         jcenter()
@@ -20,8 +20,9 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
+        maven { url 'https://jitpack.io' }
         mavenCentral()
+        jcenter()
     }
 }
 

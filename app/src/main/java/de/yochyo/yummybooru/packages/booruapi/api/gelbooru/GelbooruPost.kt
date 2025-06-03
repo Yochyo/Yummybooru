@@ -29,10 +29,14 @@ data class GelbooruPost(
     val fileUrl: String,
 //    todo commented out cause date conversion throws errors val createdAt: Date,
     var gelbooruApi: GelbooruApi? = null,
+
+
+    @JsonProperty("sample_url") val v4SampleUrl: String? = null,
+    @JsonProperty("preview_url") val v4PreviewUrl: String? = null,
 ) : Post(
     id, imageName.extension(), width, height, rating, -1, fileUrl,
-    if (sample) getSampleUrl(fileUrl, directory, md5) else fileUrl,
-    getPreviewUrl(fileUrl, directory, md5), tagString
+    if (sample) getSampleUrl(fileUrl, directory, md5, v4SampleUrl) else fileUrl,
+    getPreviewUrl(fileUrl, directory, md5, v4PreviewUrl), tagString
 ) {
     private val _tags by lazy {
         if (gelbooruApi == null) super.getTags()
@@ -47,12 +51,12 @@ data class GelbooruPost(
 
 
     companion object {
-        private fun getSampleUrl(fileUrl: String, directory: String, hash: String): String {
-            return "https://img3.${URL(fileUrl).host.substringAfter(".")}/samples/$directory/sample_$hash.jpg"
+        private fun getSampleUrl(fileUrl: String, directory: String, hash: String, v4SampleUrl: String?): String {
+            return v4SampleUrl ?: "https://img3.${URL(fileUrl).host.substringAfter(".")}/samples/$directory/sample_$hash.jpg"
         }
 
-        private fun getPreviewUrl(fileUrl: String, directory: String, hash: String): String {
-            return "https://img3.${URL(fileUrl).host.substringAfter(".")}/thumbnails/$directory/thumbnail_$hash.jpg"
+        private fun getPreviewUrl(fileUrl: String, directory: String, hash: String, v4PreviewUrl: String?): String {
+            return v4PreviewUrl ?: "https://img3.${URL(fileUrl).host.substringAfter(".")}/thumbnails/$directory/thumbnail_$hash.jpg"
         }
     }
     /*

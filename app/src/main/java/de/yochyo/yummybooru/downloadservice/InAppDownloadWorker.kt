@@ -2,11 +2,16 @@ package de.yochyo.yummybooru.downloadservice
 
 import android.app.Notification
 import android.content.Context
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import androidx.work.*
+import androidx.work.CoroutineWorker
+import androidx.work.ForegroundInfo
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
 import de.yochyo.booruapi.api.Post
 import de.yochyo.yummybooru.R
 import de.yochyo.yummybooru.api.entities.Server
@@ -78,7 +83,13 @@ class InAppDownloadWorker(context: Context, parameters: WorkerParameters) : Coro
             .setOngoing(true).setLocalOnly(true).setSilent(true)
             .addAction(R.drawable.clear, cancel, intent)
             .build()
-        return ForegroundInfo(NOTIFICATION_ID, notification)
+
+        val foregroundInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            ForegroundInfo(NOTIFICATION_ID, notification)
+        }
+        return foregroundInfo
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
